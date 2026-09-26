@@ -3,9 +3,9 @@ module github.com/tailscale/tailscale-android
 go 1.27.1
 
 require (
-	github.com/tailscale/wireguard-go v0.0.0-20260911194433-e3222a3340cd
+	github.com/tailscale/wireguard-go v0.0.0-20260924224943-0a83b87f7908
 	golang.org/x/mobile v0.0.0-20240806205939-81131f6468ab
-	tailscale.com v1.103.0-pre.0.20260922083230-c2a0abe949e1
+	tailscale.com v1.103.0-pre.0.20260926205212-f66c88587716
 )
 
 require (
@@ -39,7 +39,7 @@ require (
 	github.com/gaissmai/bart v0.29.0 // indirect
 	github.com/go-json-experiment/json v0.0.0-20260820222146-c27c302e5fc3 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
-	github.com/go4org/hashtriemap v0.0.0-20260824042624-45fcf11fca0e // indirect
+	github.com/go4org/hashtriemap v0.0.0-20260925222741-44e5305f85d9 // indirect
 	github.com/godbus/dbus/v5 v5.2.2 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
 	github.com/google/btree v1.1.3 // indirect
@@ -92,4 +92,4 @@ require (
 	gvisor.dev/gvisor v0.0.0-20260915211658-a6f909f08a72 // indirect
 )
 
-replace tailscale.com => github.com/Darkaxt/tailscale v1.103.0-pre.0.20260922083230-c2a0abe949e1
+replace tailscale.com => github.com/Darkaxt/tailscale v1.103.0-pre.0.20260926205212-f66c88587716
