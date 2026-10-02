@@ -3,9 +3,9 @@ module github.com/tailscale/tailscale-android
 go 1.27.1
 
 require (
-	github.com/tailscale/wireguard-go v0.0.0-20260924224943-0a83b87f7908
+	github.com/tailscale/wireguard-go v0.0.0-20260928213032-417aef361226
 	golang.org/x/mobile v0.0.0-20240806205939-81131f6468ab
-	tailscale.com v1.103.0-pre.0.20260929091500-fc9403eac635
+	tailscale.com v1.103.0-pre.0.20261001090434-3bc8cb6b200f
 )
 
 require (
@@ -28,6 +28,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.49.0 // indirect
 	github.com/aws/smithy-go v1.28.1 // indirect
 	github.com/axiomhq/hyperloglog v0.2.6 // indirect
+	github.com/benbjohnson/immutable v0.4.3 // indirect
+	github.com/bradfitz/reco v0.0.0-20260929154613-b883fbd17e3f // indirect
 	github.com/coder/websocket v1.8.15 // indirect
 	github.com/coreos/go-iptables v0.8.0 // indirect
 	github.com/creachadair/msync v0.10.1 // indirect
@@ -92,4 +94,4 @@ require (
 	gvisor.dev/gvisor v0.0.0-20260915211658-a6f909f08a72 // indirect
 )
 
-replace tailscale.com => github.com/Darkaxt/tailscale v1.103.0-pre.0.20260929091500-fc9403eac635
+replace tailscale.com => github.com/Darkaxt/tailscale v1.103.0-pre.0.20261001090434-3bc8cb6b200f
