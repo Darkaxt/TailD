@@ -36,32 +36,43 @@ Blockers: none. Tracked deferrals: none.
 
 ## Stage 2 — First read-only Control D data
 
-Status: **ACTIVE**. Requirement: R06.
+Status: **COMPLETE**. Requirement: R06.
 
-Acceptance: documented device/profile read and organization CSV command; safe
+Acceptance: documented device/profile read and the verified CSV route; safe
 credential/error handling and HTTP contract tests; at least one real account read
-and DNS decision without policy changes. Account type determines whether the
-documented organization endpoint applies; do not pretend a personal dashboard
-export is a live API. Use one direct command, not a generic provider layer.
+and DNS decision without policy changes. The organization-only documentation
+label remains a provider-contract distinction, not an artificial rejection of
+the personal-account read proved below. Use one direct command, not a provider layer.
 
-Satisfied: official API boundary investigation only.
-Remaining: implementation, focused tests and actual authenticated validation.
+Satisfied: GET-only device/profile inventory; UTC-bounded first-decision CSV;
+authenticated region discovery; redirect refusal; sanitized HTTP/envelope errors;
+raw-code/source preservation; non-overwriting local export outside the repo.
+Focused real loopback HTTP and synthetic CSV tests passed, together with the
+unchanged inheritance tests. Actual inventory read succeeded. Actual account
+metadata showed no org ID and returned a region label, not a hostname. Vendor
+dashboard source proved the region-to-host mapping. The actual development
+command then discovered the region and retrieved one real CSV DNS decision with
+the user's READ token. API writes, browser cookies and policy changes were absent.
+Public evidence intentionally omits returned identities, queries, IPs and token.
+Remaining: none for R06. Full API breadth and an installed analytics UI are not
+claimed by this initial increment.
 The user supplied a token and explicitly confirmed READ-only permissions. It is
 held only in the execution session and will be supplied to the local command
 through stdin, not arguments, logs, repository files or GitHub secrets.
-Account type and analytics instance remain unknown. Ordinary implementation is
-not blocked by those prerequisites; actual DNS-decision verification can be.
-Tracked deferrals: none.
+Observed personal-account CSV availability is not a documented entitlement for
+every account; future server denial remains an error, never a scope/session upgrade.
+Blockers: none. Tracked deferrals: none.
 
 ## Stage 3 — Real Windows joined record and final reconciliation
 
-Status: **NOT STARTED**. Requirement: R07 and integrated R01–R07 reconciliation.
+Status: **ACTIVE**. Requirement: R07 and integrated R01–R07 reconciliation.
 
 Acceptance: validated read-only application connection + network-byte source;
 one real DNS/process/device joined export with honest provenance/confidence;
 final checks and verified commits. No dashboard or broad telemetry framework.
 
 Satisfied: AppControl field availability was checked live; missing network fields
-are established, not assumed. Remaining: viable GlassWire/other authorized source,
-actual data integration and joined-record proof. Blockers not yet activated.
+are established, not assumed. Remaining: viable validated GlassWire source,
+actual data integration and joined-record proof. Next: read-only interface
+inventory, without opening its UI or modifying its policy/service/data.
 Tracked deferrals: none.

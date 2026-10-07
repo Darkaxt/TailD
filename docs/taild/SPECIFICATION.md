@@ -49,8 +49,11 @@ It does not promise full API breadth, dashboards, or a released TailD client.
   until a separately verified TailD distribution exists; do not publish a second
   app with the existing signing identity or redirect installed TailDNS updates.
 - **R06 First Control D reads:** implement a narrowly scoped, read-only command
-  for documented device/profile inventory and the documented organization CSV
-  analytics interface. No API writes, retry loops, browser scraping or guessed
+  for documented device/profile inventory and the documented CSV route, including
+  the personal-account availability verified with the user's READ token below.
+  Resolve the analytics region from authenticated account metadata or an explicit
+  instance label; validate it before constructing a provider-owned hostname.
+  No API writes, retry loops, browser scraping or guessed
   analytics endpoints. Use a Read bearer token supplied locally, never a resolver
   ID as authentication. No token in command arguments, URLs, output, logs or Git.
   Reject credential-bearing redirects and malformed response envelopes, report
@@ -75,18 +78,27 @@ As of 2026-10-07:
   [devices](https://docs.controld.com/reference/get_devices),
   [profiles](https://docs.controld.com/reference/get_profiles),
   [response conventions](https://docs.controld.com/reference/response-conventions).
-- The documented automated activity CSV API is **organization-only**. It requires
-  the account's analytics instance and a UTC query window; personal dashboard CSV
-  export is not evidence of a supported live API.
+- The documented automated activity CSV API is labeled **organization-only**.
+  On October 7, actual authenticated reads proved the same v2 CSV route accepts
+  this user's READ token without an organization ID and returns the documented
+  23-column schema with a real DNS decision. This is observed account capability,
+  not a claim that the documentation guarantees it for every personal plan.
+  Account metadata returns a region label. The current vendor dashboard's public
+  code constructs `https://<region>.analytics.controld.com/v2/activity-log/csv`;
+  the client uses that verified mapping, not a guessed host or private browser
+  session. API denial remains an error, with no cookie/scope-upgrade fallback.
   [CSV export](https://docs.controld.com/docs/how-to-export-logs-to-csv).
+  [Vendor dashboard source inspected](https://controld.com/_next/static/chunks/pages/_app-ada2d7df9572e3d3.js).
 - A live read-only AppControl MCP probe exposed process identity plus CPU,
   memory and disk counters, but no connection destinations or network-byte
   counters. Disk bytes must not be relabeled as network bytes.
 - GlassWire's supported live telemetry interface has not been established.
   Its remote monitoring UI alone is not an API contract. Do not bypass licensing,
   authentication or access controls. Do not publish private host/query data.
-- User account type and a locally stored Control D Read token are not available
-  yet. These can block real R06 verification, not local implementation/testing.
+- The user supplied a token and explicitly restricted it to READ. Live reads of
+  devices/profiles and account metadata succeeded, without publishing account
+  values. The token is session-held only and is not persisted in this repository,
+  arguments, logs, CI or credential files.
 
 ## Constraints and non-goals
 

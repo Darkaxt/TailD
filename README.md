@@ -18,6 +18,7 @@ status material below describes TailDNS, not verification of TailD analytics.
 
 - [TailD authoritative specification](docs/taild/SPECIFICATION.md)
 - [TailD stages, acceptance evidence and blockers](docs/taild/IMPLEMENTATION-PLAN.md)
+- [Read-only Control D command and verified boundaries](docs/taild/CONTROL-D-READS.md)
 - [Original analytics capability record](https://github.com/Darkaxt/TailDNS/issues/9)
 
 ## Inheritance and development
