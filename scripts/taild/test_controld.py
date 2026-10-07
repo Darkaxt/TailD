@@ -150,6 +150,19 @@ class ControlDTest(unittest.TestCase):
                 controld.activity('synthetic-token', 'organization', 'synthetic-org',
                                   '2026-10-07T07:00:00Z')
 
+    def test_activity_slice_preserves_bounds_and_detects_truncation(self):
+        csv = ('timestamp,endpointId,question,action,answers\n'
+               '2026-10-07T07:00:00Z,synthetic-device,example.invalid,1,192.0.2.1\n'
+               '2026-10-07T07:00:01Z,synthetic-device,other.invalid,999,192.0.2.2\n')
+        self.assertTrue(hasattr(controld,'activity_slice'), 'Decision slice metadata is missing')
+        with patch.object(controld,'_read',return_value=io.BytesIO(csv.encode())):
+            result=controld.activity_slice('synthetic-token','personal','synthetic-org',
+                '2026-10-07T07:00:00Z','2026-10-07T07:01:00Z',endpoint='synthetic-device',limit=1)
+        self.assertTrue(result['truncated'])
+        self.assertEqual(len(result['rows']),1)
+        self.assertEqual(result['query_window']['start_inclusive'],'2026-10-07T07:00:00Z')
+        self.assertEqual(result['endpoint_id'],'synthetic-device')
+
     def test_cli_stdin_token_and_default_summary_do_not_print_private_records(self):
         stdout = io.StringIO()
         with patch('sys.stdin', io.StringIO('synthetic-token\n')), contextlib.redirect_stdout(stdout):

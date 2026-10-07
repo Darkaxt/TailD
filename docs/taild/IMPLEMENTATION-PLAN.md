@@ -73,9 +73,19 @@ final checks and verified commits. No dashboard or broad telemetry framework.
 
 Satisfied: AppControl field availability was checked live; missing network fields
 are established, not assumed. A narrow GlassWire SQLite source and IPv4/path
-decode were independently validated. Remaining: extraction implementation,
-actual data integration and joined-record proof. The elevated source inspection
-is recorded in [GLASSWIRE-READS.md](GLASSWIRE-READS.md).
+decode were independently validated. The implemented on-demand reader queries
+an explicit one-second database/UTC interval in read-only transactions including
+WAL, preserves raw nullable metadata and provenance, rejects malformed identity/
+byte data, and reports limits/unsupported families without invented addresses.
+Actual Control D reads and the actual join CLI produced a private local export
+with nonzero-byte application/destination records and real DNS candidates, plus
+the laptop's live Running TailDNS identity and active matching Control D resolver.
+Both source slices were untruncated. Ambiguous candidates, unmatched buckets,
+unknown families/answers and source-snapshot/TTL/PID/socket limits remain explicit.
+No duplicate byte allocation across candidate domains is performed.
+Remaining: final publication/check evidence and closure reconciliation.
+The elevated inspection is recorded in [GLASSWIRE-READS.md](GLASSWIRE-READS.md);
+the implementation and verification in [LOCAL-READER.md](LOCAL-READER.md).
 
 Resolved access blocker B01: R07's real application connection/destination/network-byte
 acceptance criterion previously had no accessible validated source. Live AppControl
@@ -104,9 +114,17 @@ table. IPv6 and enum meanings are not established. These source counters are
 application/destination/time-bucket metrics, not proven individual PID/socket
 bytes. The source is an observed internal schema, not a stable third-party API.
 Initial database permission
-access is therefore no longer an external blocker; extraction implementation, source
-integration and actual joined proof are ordinary current-stage unfinished work.
-DNS/process/byte joined export and full R01–R07 completion remain unsatisfied.
+access is therefore no longer an external blocker. The previously remaining
+extraction, source integration and actual joined-record proof have now passed.
+The first multi-row live read exposed nullable threat metadata; a reproducing
+SQLite regression test and focused correction preserve null while retaining
+strict network-byte/identity checks. The joined CLI's output and private inputs
+contain no API token or private node key. The validation folder has a private
+user/SYSTEM/Administrators ACL; no source permission/service/policy was changed.
+Fresh focused verification of all TailD contracts passed on the current source,
+including existing Control D/inheritance contracts and new reader/join behavior.
+Fresh GitHub settings and captured TailDNS/main/core pin were checked unchanged.
+Blockers: none.
 Tracked deferrals: none.
 
 ## Initial-increment reconciliation
@@ -115,6 +133,7 @@ R01–R05: satisfied with live repository/settings and exact inherited-build pro
 R06: satisfied with focused contracts plus actual authenticated inventory and
 the development command's real personal-account DNS-decision read. Candidate
 97d2c677c7ce1b1b0683834c3167db4f84bdedbe passed GitHub focused run 37592262745.
-R07: ACTIVE; B01 access resolved, source decoding/integration/proof remain.
-Overall first joined-record increment is not complete.
+R07: real extraction/integration/join proof and focused contracts satisfied;
+final publication/check evidence and closure remain ACTIVE.
+Overall first joined-record increment is not yet declared complete.
 No TailD release/deployment occurred. No Control D write request was made.

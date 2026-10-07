@@ -18,17 +18,19 @@ status material below describes TailDNS, not verification of TailD analytics.
 
 The first read-only development command is implemented and verified against a
 real Control D account: device/profile inventory, analytics-region discovery and
-DNS-decision reads. Elevated read-only inspection has now established a narrow
-GlassWire application/destination/network-byte source, with binary-field checks
-against Windows' process/TCP table. The actual joined Control D record remains
-unfinished; GlassWire's time-bucket counters are not proven individual PID/socket
-bytes. AppControl's current MCP does not expose network-byte counters.
-See the staged plan for exact status.
+DNS-decision reads. The on-demand GlassWire reader and local join command are
+also implemented and verified against real GlassWire traffic, Control D decisions
+and the laptop's active TailDNS resolver/device identity. Joined output preserves
+unmatched records, ambiguous DNS candidates and unsupported address/answer data.
+GlassWire's time-bucket counters are not individual PID/socket bytes. This is a
+development data path, not an installed analytics UI or continuous collector.
+AppControl's current MCP does not expose network-byte counters.
 
 - [TailD authoritative specification](docs/taild/SPECIFICATION.md)
 - [TailD stages, acceptance evidence and blockers](docs/taild/IMPLEMENTATION-PLAN.md)
 - [Read-only Control D command and verified boundaries](docs/taild/CONTROL-D-READS.md)
 - [GlassWire read-only source evidence and limitations](docs/taild/GLASSWIRE-READS.md)
+- [On-demand local reader and joined export](docs/taild/LOCAL-READER.md)
 - [Original analytics capability record](https://github.com/Darkaxt/TailDNS/issues/9)
 
 ## Inheritance and development

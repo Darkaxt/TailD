@@ -104,3 +104,14 @@ alternative if internal source compatibility cannot be established.
 
 This inspection does not authorize a full proprietary protocol implementation,
 API breadth, dashboard, continuously elevated collector, deployment or release.
+
+## Subsequent implementation evidence
+
+The user subsequently authorized the collector/reader implementation. The
+[on-demand local reader](LOCAL-READER.md) now uses the observed narrow layout.
+An actual multi-row read established that `threat_level` can be SQL NULL despite
+its INTEGER declaration. The reader preserves that raw null; numeric identity,
+timestamp, port and network-counter checks remain strict. The real implemented
+reader and join command produced the private Control D/GlassWire/Windows-device
+joined export. Original inspection limits remain: this is not a stable vendor
+API, full binary schema, IPv6 decoder or per-socket counter interface.

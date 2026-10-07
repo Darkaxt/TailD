@@ -26,10 +26,13 @@ be passed as an instance: only a DNS label under `analytics.controld.com` is use
 Inventory reads `/devices` and `/profiles`. Activity reads the provider's
 `/v2/activity-log/csv` interface. Default output contains only source and counts.
 `--output <file>` before the subcommand optionally exports the raw records to a
-new JSON file outside this repository. Existing files are never overwritten.
+new JSON file outside this repository. Inventory exports are unchanged; activity
+exports are a slice envelope containing `rows`, query bounds, selected endpoint,
+collection timestamp and explicit `truncated`. Existing files are never overwritten.
 Choose a private folder: Unix files are created with mode 0600; on Windows the
 destination folder's ACL governs access. Returned records may contain private
 query/device/IP data. Do not publish them. Tokens never enter exported records.
+The [local reader workflow](LOCAL-READER.md) joins this envelope to GlassWire data.
 
 The records preserve source provenance and raw action/trigger/answer values. No
 unverified action-code meaning or process/domain attribution is invented. A CSV

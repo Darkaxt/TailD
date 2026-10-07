@@ -156,6 +156,16 @@ def export_private(path, data):
         raise ControlDError('Private export could not be created; existing files are never overwritten') from None
 
 
+def activity_slice(token, account_type, instance, start, end=None, endpoint=None,
+                   organization=None, limit=1000):
+    if type(limit) is not int or limit < 1:
+        raise ControlDError('Decision limit must be positive')
+    rows = activity(token, account_type, instance, start, end, endpoint, organization, limit + 1)
+    return {'source': 'controld-activity-csv', 'collected_at_utc': utc_now().isoformat(),
+            'query_window': {'start_inclusive': start, 'end_inclusive': end},
+            'endpoint_id': endpoint, 'truncated': len(rows) > limit, 'rows': rows[:limit]}
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--token-stdin', action='store_true', help='Read token from one stdin line; never echoed')
@@ -179,9 +189,10 @@ def main(argv=None):
             summary = {'source': data['source'], 'device_count': len(data['devices']),
                        'profile_count': len(data['profiles'])}
         else:
-            data = activity(token, args.account_type, args.instance, args.start, args.end,
-                            args.endpoint, args.organization, args.limit)
-            summary = {'source': 'controld-activity-csv', 'decision_count': len(data)}
+            data = activity_slice(token, args.account_type, args.instance, args.start, args.end,
+                                  args.endpoint, args.organization, args.limit)
+            summary = {'source': 'controld-activity-csv', 'decision_count': len(data['rows']),
+                       'truncated': data['truncated']}
         if args.output:
             export_private(args.output, data)
         print(json.dumps(summary))

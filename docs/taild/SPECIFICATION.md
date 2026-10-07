@@ -69,6 +69,30 @@ It does not promise full API breadth, dashboards, or a released TailD client.
   process-to-domain attribution. Do not build broad storage, adapters, UI or
   background telemetry before this real slice passes.
 
+### R07 current implementation contract
+
+The October 7 continuation authorizes the collector/reader implementation.
+The first product-purpose slice is an on-demand local reader, not installation
+of a continuous elevated service. Query one explicitly selected observed
+`1sec` statistics database and UTC interval, using SQLite read-only transactions
+including WAL. Read application identities from the primary application table;
+retain row/table/database provenance, raw codes and original binary field
+fingerprints. Do not sum overlapping `1sec`/`30sec`/`600sec` sources or claim
+individual socket/PID byte attribution from these time-bucket counters.
+Reject malformed records/schema; keep well-formed unsupported address families
+explicitly unknown rather than guessing or silently discarding them. Export
+query bounds, truncation and separate-database consistency limitations.
+
+Correlate only with an explicitly identified Control D endpoint and captured
+Windows TailDNS device context. Require a matching destination IP from the DNS
+answer plus a preceding decision inside an explicitly chosen correlation age
+window. Preserve all matching candidates and ambiguity. This is an analytical
+time window, not an execution timeout or a proof of DNS TTL/cache validity.
+Do not allocate the same bucket's bytes repeatedly across candidate domains or
+interpret undocumented action codes as allowed/blocked. Private raw inputs and
+joined output stay outside Git; summaries contain counts only. A real joined
+record remains required before R07 is COMPLETE.
+
 ## Confirmed boundaries, not presumed capabilities
 
 As of 2026-10-07:
