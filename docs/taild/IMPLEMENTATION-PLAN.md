@@ -65,7 +65,7 @@ Blockers: none. Tracked deferrals: none.
 
 ## Stage 3 — Real Windows joined record and final reconciliation
 
-Status: **ACTIVE**. Requirement: R07 and integrated R01–R07 reconciliation.
+Status: **COMPLETE**. Requirement: R07 and integrated R01–R07 reconciliation.
 
 Acceptance: validated read-only application connection + network-byte source;
 one real DNS/process/device joined export with honest provenance/confidence;
@@ -83,7 +83,15 @@ the laptop's live Running TailDNS identity and active matching Control D resolve
 Both source slices were untruncated. Ambiguous candidates, unmatched buckets,
 unknown families/answers and source-snapshot/TTL/PID/socket limits remain explicit.
 No duplicate byte allocation across candidate domains is performed.
-Remaining: final publication/check evidence and closure reconciliation.
+Remaining: none for this initial joined-record increment. Exact implementation
+commit: ae9a9e7ab57e147f0b558ac8359fdd6f5cd2b1ac. GitHub focused run
+37657894730 SUCCESS verified the TailD contracts and inherited lightweight
+version/branding/lifecycle/toolchain/Windows-installer contracts. Native source,
+core pin and app identity are unchanged, so the earlier inherited native build
+evidence remains applicable; no redundant Android build/device operation occurred.
+Private real inputs and joined deliverable are retained in an ACL-restricted
+local validation folder. Temporary validation helpers/reports were transactionally
+removed, and the session-held token was cleared after the authorized reads.
 The elevated inspection is recorded in [GLASSWIRE-READS.md](GLASSWIRE-READS.md);
 the implementation and verification in [LOCAL-READER.md](LOCAL-READER.md).
 
@@ -133,7 +141,11 @@ R01–R05: satisfied with live repository/settings and exact inherited-build pro
 R06: satisfied with focused contracts plus actual authenticated inventory and
 the development command's real personal-account DNS-decision read. Candidate
 97d2c677c7ce1b1b0683834c3167db4f84bdedbe passed GitHub focused run 37592262745.
-R07: real extraction/integration/join proof and focused contracts satisfied;
-final publication/check evidence and closure remain ACTIVE.
-Overall first joined-record increment is not yet declared complete.
+R07: satisfied by real read-only extraction/integration/joined export with actual
+device/endpoint context, explicit provenance/ambiguity/byte limitations and fresh
+focused/local/GitHub verification of the exact implementation commit above.
+R01–R07 initial increment: COMPLETE. Blockers: none. Tracked deferrals: none.
+This is not completion of a full analytics product, API breadth, dashboard,
+native UI integration, IPv6 decode or continuous collection; those are not
+required acceptance criteria of this explicitly bounded initial increment.
 No TailD release/deployment occurred. No Control D write request was made.
