@@ -92,7 +92,12 @@ As of 2026-10-07:
 - A live read-only AppControl MCP probe exposed process identity plus CPU,
   memory and disk counters, but no connection destinations or network-byte
   counters. Disk bytes must not be relabeled as network bytes.
-- GlassWire's supported live telemetry interface has not been established.
+- Elevated read-only inspection on October 7 established an internal GlassWire
+  SQLite source with application, destination, time-bucket and network-byte
+  fields. A narrow IPv4/application-path decode matched Windows' independent
+  TCP/process table. No documented stable third-party interface, full binary
+  schema, IPv6 decode or individual PID/socket byte attribution is established.
+  See [inspection evidence and limitations](GLASSWIRE-READS.md).
   Its remote monitoring UI alone is not an API contract. Do not bypass licensing,
   authentication or access controls. Do not publish private host/query data.
 - The user supplied a token and explicitly restricted it to READ. Live reads of

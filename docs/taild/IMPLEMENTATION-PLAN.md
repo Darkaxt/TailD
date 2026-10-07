@@ -65,18 +65,20 @@ Blockers: none. Tracked deferrals: none.
 
 ## Stage 3 — Real Windows joined record and final reconciliation
 
-Status: **BLOCKED**. Requirement: R07 and integrated R01–R07 reconciliation.
+Status: **ACTIVE**. Requirement: R07 and integrated R01–R07 reconciliation.
 
 Acceptance: validated read-only application connection + network-byte source;
 one real DNS/process/device joined export with honest provenance/confidence;
 final checks and verified commits. No dashboard or broad telemetry framework.
 
 Satisfied: AppControl field availability was checked live; missing network fields
-are established, not assumed. Remaining: viable validated GlassWire source,
-actual data integration and joined-record proof.
+are established, not assumed. A narrow GlassWire SQLite source and IPv4/path
+decode were independently validated. Remaining: extraction implementation,
+actual data integration and joined-record proof. The elevated source inspection
+is recorded in [GLASSWIRE-READS.md](GLASSWIRE-READS.md).
 
-External blocker B01: R07's real application connection/destination/network-byte
-acceptance criterion has no currently accessible validated source. Live AppControl
+Resolved access blocker B01: R07's real application connection/destination/network-byte
+acceptance criterion previously had no accessible validated source. Live AppControl
 MCP lacks those fields. GlassWire 3.10.1138 is running, but its service stats folders,
 both candidate databases opened in SQLite read-only mode, and ACL inspection deny
 access to the current process. No existing CSV/database was found in its scoped
@@ -89,9 +91,22 @@ and time-window information, or authorizes a read-only elevated inspection to
 establish whether local service data is usable. Elevated access is not assumed
 to guarantee a usable/compatible schema. No ACL changes, service stop/restart,
 firewall modification, private protocol bypass or UI operation was attempted.
-Pending user choice is recorded; no joiner/provider framework is implemented
-ahead of its actual source. DNS/process/byte joined export and full R01–R07
-completion remain unsatisfied. This is not a tracked deferral or a COMPLETE stage.
+On October 7 the user authorized elevated read-only inspection. A one-shot
+helper opened both databases without ACL/service changes, then established
+`traffic_stats` columns for application ID, remote host/port, timestamp, inbound
+and outbound network bytes. A normal `mode=ro` transaction including WAL returned
+one actual row with nonzero bytes. The schema-only immutable probe is not used
+as live-row evidence. Application/address fields are binary and remain to be
+validated before any adapter or joined-record claim. Subsequent bounded format
+inspection independently matched the observed executable-path field and
+little-endian IPv4 encoding plus remote port against Windows' own process/TCP
+table. IPv6 and enum meanings are not established. These source counters are
+application/destination/time-bucket metrics, not proven individual PID/socket
+bytes. The source is an observed internal schema, not a stable third-party API.
+Initial database permission
+access is therefore no longer an external blocker; extraction implementation, source
+integration and actual joined proof are ordinary current-stage unfinished work.
+DNS/process/byte joined export and full R01–R07 completion remain unsatisfied.
 Tracked deferrals: none.
 
 ## Initial-increment reconciliation
@@ -100,5 +115,6 @@ R01–R05: satisfied with live repository/settings and exact inherited-build pro
 R06: satisfied with focused contracts plus actual authenticated inventory and
 the development command's real personal-account DNS-decision read. Candidate
 97d2c677c7ce1b1b0683834c3167db4f84bdedbe passed GitHub focused run 37592262745.
-R07: blocked by B01. Overall first joined-record increment is not complete.
+R07: ACTIVE; B01 access resolved, source decoding/integration/proof remain.
+Overall first joined-record increment is not complete.
 No TailD release/deployment occurred. No Control D write request was made.
