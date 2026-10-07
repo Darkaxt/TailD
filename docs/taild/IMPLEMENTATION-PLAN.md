@@ -65,7 +65,7 @@ Blockers: none. Tracked deferrals: none.
 
 ## Stage 3 — Real Windows joined record and final reconciliation
 
-Status: **ACTIVE**. Requirement: R07 and integrated R01–R07 reconciliation.
+Status: **BLOCKED**. Requirement: R07 and integrated R01–R07 reconciliation.
 
 Acceptance: validated read-only application connection + network-byte source;
 one real DNS/process/device joined export with honest provenance/confidence;
@@ -73,6 +73,32 @@ final checks and verified commits. No dashboard or broad telemetry framework.
 
 Satisfied: AppControl field availability was checked live; missing network fields
 are established, not assumed. Remaining: viable validated GlassWire source,
-actual data integration and joined-record proof. Next: read-only interface
-inventory, without opening its UI or modifying its policy/service/data.
+actual data integration and joined-record proof.
+
+External blocker B01: R07's real application connection/destination/network-byte
+acceptance criterion has no currently accessible validated source. Live AppControl
+MCP lacks those fields. GlassWire 3.10.1138 is running, but its service stats folders,
+both candidate databases opened in SQLite read-only mode, and ACL inspection deny
+access to the current process. No existing CSV/database was found in its scoped
+user-side Local/Roaming app folders. No supported live third-party API was found
+in the checked vendor guide; its documented Usage Table CSV export is a viable
+data source, but no sample has been supplied yet.
+
+Resolution: user supplies a Usage Table CSV with suitable application/host/byte
+and time-window information, or authorizes a read-only elevated inspection to
+establish whether local service data is usable. Elevated access is not assumed
+to guarantee a usable/compatible schema. No ACL changes, service stop/restart,
+firewall modification, private protocol bypass or UI operation was attempted.
+Pending user choice is recorded; no joiner/provider framework is implemented
+ahead of its actual source. DNS/process/byte joined export and full R01–R07
+completion remain unsatisfied. This is not a tracked deferral or a COMPLETE stage.
 Tracked deferrals: none.
+
+## Initial-increment reconciliation
+
+R01–R05: satisfied with live repository/settings and exact inherited-build proof.
+R06: satisfied with focused contracts plus actual authenticated inventory and
+the development command's real personal-account DNS-decision read. Candidate
+97d2c677c7ce1b1b0683834c3167db4f84bdedbe passed GitHub focused run 37592262745.
+R07: blocked by B01. Overall first joined-record increment is not complete.
+No TailD release/deployment occurred. No Control D write request was made.

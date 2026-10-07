@@ -16,6 +16,12 @@ still uses the TailDNS app/package identity. Existing TailDNS installations,
 update endpoints, signing keys and maintenance tasks are unchanged. The inherited
 status material below describes TailDNS, not verification of TailD analytics.
 
+The first read-only development command is implemented and verified against a
+real Control D account: device/profile inventory, analytics-region discovery and
+DNS-decision reads. Application connection/byte correlation remains blocked on
+an accessible, validated GlassWire telemetry input; AppControl's current MCP
+does not expose network-byte counters. See the staged plan for exact status.
+
 - [TailD authoritative specification](docs/taild/SPECIFICATION.md)
 - [TailD stages, acceptance evidence and blockers](docs/taild/IMPLEMENTATION-PLAN.md)
 - [Read-only Control D command and verified boundaries](docs/taild/CONTROL-D-READS.md)
