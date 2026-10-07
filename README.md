@@ -1,4 +1,50 @@
-# TailDNS
+# TailD
+
+TailD is the public analytics-development fork of [Darkaxt/TailDNS](https://github.com/Darkaxt/TailDNS).
+It retains TailDNS main history and automatically merges checked TailDNS updates,
+including Android DNS improvements and the pinned shared core containing the
+Windows tray/UI port. GitHub permits only one native fork in this account's
+upstream network, so this is a history-preserving Git fork rather than a second
+GitHub fork badge.
+
+The planned extension combines Control D policy/decision data with application
+identity and network-byte metrics. Control D and existing firewall products keep
+their enforcement roles. No new packet-filtering engine is being implemented.
+
+There is **no TailD release or installed analytics UI yet**. The inherited client
+still uses the TailDNS app/package identity. Existing TailDNS installations,
+update endpoints, signing keys and maintenance tasks are unchanged. The inherited
+status material below describes TailDNS, not verification of TailD analytics.
+
+- [TailD authoritative specification](docs/taild/SPECIFICATION.md)
+- [TailD stages, acceptance evidence and blockers](docs/taild/IMPLEMENTATION-PLAN.md)
+- [Original analytics capability record](https://github.com/Darkaxt/TailDNS/issues/9)
+
+## Inheritance and development
+
+The **Inherit TailDNS improvements** workflow runs daily at 04:25 UTC and can be
+run manually. It merges TailDNS main, checks the exact shared-core pin, verifies
+TailD and inherited contracts, builds Android/core when source changes, then
+promotes the checked Git commit to main. Conflicts or failed checks stop promotion
+with a failed GitHub run; passing updates are not left as unmerged candidates.
+Main is never force-pushed. Verification has no signing credentials and a separate
+write job only promotes the checked candidate. No release/deployment is automatic.
+
+Inherited TailDNS workflows are retained as source but disabled in TailD's GitHub
+settings. A newly inherited workflow requires review before promotion.
+
+```sh
+python -B -m unittest discover -s scripts/taild -p 'test_*.py' -v
+git remote add taildns https://github.com/Darkaxt/TailDNS.git  # if not already configured
+git fetch --no-tags taildns main:refs/remotes/taildns/main
+python -B scripts/taild/inherit.py
+```
+
+The last command prepares a merge in a **clean** checkout; it never pushes. The
+Windows UI code is not duplicated here: `go.mod` inherits TailDNS's exact
+`github.com/Darkaxt/tailscale` require/replace revision.
+
+## Inherited TailDNS documentation
 
 TailDNS is an independent community fork of [tailscale/tailscale-android](https://github.com/tailscale/tailscale-android), maintained by [Darkaxt](https://github.com/Darkaxt). This project is not an official Tailscale product or endorsed by Tailscale.
 

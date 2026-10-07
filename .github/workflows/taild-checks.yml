@@ -1,0 +1,27 @@
+name: TailD focused checks
+
+on:
+  push:
+    branches: [main, feature/controld-analytics]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    if: github.repository == 'Darkaxt/TailD'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Verify TailD contracts and inherited lightweight contracts
+        run: |
+          set -euo pipefail
+          python3 -B -m unittest discover -s scripts/taild -p 'test_*.py' -v
+          bash scripts/test-append-taildns-version.sh
+          bash scripts/test-taildns-branding.sh
+          bash scripts/test-thor-recents-resilience.sh
+          bash scripts/test-sync-core-toolchain-rev.sh
+          pwsh -NoProfile -File scripts/test-windows-inplace-upgrade.ps1

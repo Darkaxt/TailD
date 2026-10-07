@@ -16,7 +16,7 @@ assert_contains() {
   fi
 }
 
-assert_contains "$readme_file" '# TailDNS'
+assert_contains "$readme_file" '# TailD'
 assert_contains "$fork_strings_file" '    <string name="fork_app_name" translatable="false">TailDNS</string>'
 assert_contains "$strings_file" '    <string name="app_name" translatable="false">TailDNS</string>'
 assert_contains "$strings_file" '    <string name="tile_name" translatable="false">TailDNS</string>'
