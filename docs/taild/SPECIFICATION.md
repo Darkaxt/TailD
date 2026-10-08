@@ -1,6 +1,10 @@
 # TailD: inherited TailDNS client and Control D analytics
 
-Authoritative specification, 2026-10-07. Implementation is already authorized.
+Authoritative initial-increment specification, 2026-10-07. Initial implementation
+was authorized and is complete. The 2026-10-08
+[remaining-product specification](PRODUCT-SPECIFICATION.md) adds R08–R18 and
+Stages 4–10, using the pinned [Portmaster source design](PORTMASTER-DESIGN.md).
+Writing that extension does not authorize its implementation or delivery.
 
 ## Scope and lineage
 

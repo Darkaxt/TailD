@@ -1,8 +1,11 @@
 # TailD staged execution
 
-Source of truth: [SPECIFICATION.md](SPECIFICATION.md). Already authorized by the
-request to create the public TailD fork, inherit TailDNS and start Control D work.
-Only one stage may be ACTIVE. No release or deployment is authorized here.
+Sources of truth: [initial specification](SPECIFICATION.md) for R01–R07 and
+[remaining-product specification](PRODUCT-SPECIFICATION.md) for R08–R18.
+Stages 1–3 were authorized by the request to create the public TailD derivative,
+inherit TailDNS and start Control D work. The October 8 request authorizes the
+remaining specification, not implementation of Stages 4–10. Only one stage may
+be ACTIVE; currently none is. No release or deployment is authorized here.
 
 ## Stage 1 — Public TailDNS derivative with automatic inheritance
 
@@ -149,3 +152,183 @@ This is not completion of a full analytics product, API breadth, dashboard,
 native UI integration, IPv6 decode or continuous collection; those are not
 required acceptance criteria of this explicitly bounded initial increment.
 No TailD release/deployment occurred. No Control D write request was made.
+
+## Remaining-product stages — specification recorded 2026-10-08
+
+The following stages are planned work, not a claim of implemented components.
+Use the [Portmaster source map](PORTMASTER-DESIGN.md) for layout and metrics
+traceability. Do not begin a later stage while another stage is ACTIVE.
+At implementation start, record the actual candidate revision and focused
+verification evidence; do not reuse prototype proof for changed production code.
+
+### Stage 4 — Incremental ingestion, durable history and first local query
+
+Status: **NOT STARTED**. Requirements: R09a–c and R14a; preserve R01–R07.
+
+Objective: close the narrow real source -> persisted history -> filtered query
+workflow before building the broader analytics runtime or desktop.
+
+Acceptance criteria:
+
+- Verified GlassWire source discovery, one-second selection, database generations,
+  read-only WAL access, schema/IPv6 compatibility and unknown-family preservation.
+- Transactional facts/checkpoints; correction-aware traffic replay; Control D
+  bounded slices, equal-event multiset handling and honest completeness/gaps.
+- Versioned private SQLite history, exact byte integers, retention/deletion and
+  local query; no source writes, ACL relaxation or service operations.
+- Focused crash/replay/rotation/mutation/truncation/late-arrival/retention/migration
+  tests and a real persisted-read/restart/replay workflow with conserved totals.
+
+Satisfied: none of the new production criteria. Existing one-shot readers are
+inputs, not durable-ingestion completion evidence.
+Remaining: all criteria above. Blockers: none currently established.
+Tracked deferrals: none. Dependency: completed Stages 1–3.
+
+### Stage 5 — Context-aware correlation and metrics/query vertical slice
+
+Status: **NOT STARTED**. Requirements: R10, R11a–b, R08 metrics design.
+
+Objective: query correct, provenance-bearing summaries from actual stored facts.
+
+Acceptance criteria:
+
+- Versioned candidate links, historical context boundaries and endpoint/device
+  ambiguity; missing event/TTL/PID data remains explicitly unproven.
+- Every required metric dictionary entry, units, denominator, unknown/coverage
+  states, exact counters, UTC chart boundaries and byte-conserving drill-downs.
+- Allowlisted typed filtering/grouping/ordering/batching, stable pagination and
+  consistent revisions; no raw SQL exposure or joins multiplying byte counters.
+- Real stored traffic + Control D -> summary/chart/query result, plus focused
+  ambiguity/provider-change/gap/injection/large-counter/correction verification.
+
+Satisfied: none of the new production criteria. Prototype correlation exists,
+but historical context and the production query/metrics module do not.
+Remaining: all criteria above. Blockers: none currently established.
+Tracked deferrals: none. Dependency: Stage 4 COMPLETE, or a specifically recorded
+blocker permitting independent work without claiming dependent integration.
+
+### Stage 6 — Remaining Control D READ coverage and credentials
+
+Status: **NOT STARTED**. Requirements: R12 and R14b; maintain R14a safeguards.
+
+Objective: expose policy context and capabilities for the account without writes.
+
+Acceptance criteria:
+
+- Endpoint/client/profile associations and policy categories (filters, services,
+  rules/folders, restrictions), each with a verified read route or an evidence-
+  backed unavailable capability. No guessed routes or silent category omissions.
+- Timestamped policy snapshots, activity reason/answer metadata and a maintained
+  documentation/account/scope/pagination/rate-limit capability matrix.
+- Optional user-bound credential persistence, secure replacement/removal and
+  sanitized redirect/denial/rate-limit/malformed-response handling.
+- Actual account reads for every available category; fixtures and captured
+  provider evidence for unavailable categories; zero provider mutations.
+
+Satisfied: initial inventory/activity read only; no new acceptance criterion is
+claimed complete. Remaining: all criteria above. Blockers: none currently
+established. Unverified category APIs are investigation work, not automatic
+waivers or proof of provider denial. Tracked deferrals: none.
+Dependency: Stage 5 COMPLETE; history/context must be integrated into snapshots.
+
+### Stage 7 — Opt-in continuous runtime and privilege boundary
+
+Status: **NOT STARTED**. Requirements: R13 and remaining R14a–d.
+
+Objective: safely acquire and query data without manual developer commands.
+
+Acceptance criteria:
+
+- Unelevated owning-user collector/UI and minimally privileged read-only
+  GlassWire reader with authenticated allowlisted IPC; no source ACL changes.
+- Explicit opt-in, serialized/coalesced acquisition cadence, pause/resume/stop,
+  source incompatibility/staleness states and catch-up without timed cancellation.
+- Private history/credential isolation, authorized local query access, resource
+  bounds, backpressure, disk-full behavior and redacted diagnostics.
+- Authorized real lifecycle tests for window closure, restart, sleep/wake,
+  source/provider outage and recovery; unauthorized-account/IPC/origin tests;
+  unchanged VPN/DNS/firewall and no duplicate or visible-console helpers.
+
+Satisfied: none. Remaining: all criteria above.
+Blockers: none currently established. Tracked deferrals: none.
+Dependency: Stage 6 COMPLETE; stages 4–6 data contracts remain enforced.
+Installing a service for live validation requires applicable live-test authority;
+this documentation request does not install or schedule one.
+
+### Stage 8 — Portmaster-derived desktop analytics
+
+Status: **NOT STARTED**. Requirements: R08 layout, R15, R16; preserve R11/R14.
+
+Objective: close overview -> application -> activity -> evidence/export in a
+packaged local desktop surface, not a collection of disconnected mockups.
+
+Acceptance criteria:
+
+- Persistent navigation and shared device/time/filter scope; overview cards,
+  bandwidth charts/rankings, application list/details, typed activity explorer,
+  Control D policy/capability view, source health and settings.
+- Exact metric/query revision shared across cards, charts, pagination and exports;
+  ambiguity/unknowns/gaps visible, with no unsupported Portmaster firewall cards.
+- Saved local queries, compound filters, focused-row-preserving refresh and
+  evidence details; private JSON/CSV export, formula safety and exact integers.
+- Actual-source desktop drill-down/export and focused keyboard/accessibility/
+  scaling/security review; pinned source-map traceability and reuse notices.
+
+Satisfied: none. Remaining: all criteria above.
+Blockers: none currently established. Tracked deferrals: none.
+Dependency: Stage 7 COMPLETE; do not substitute mock-only UI for integration.
+
+### Stage 9 — Production packaging and local release-readiness
+
+Status: **NOT STARTED**. Requirements: R17 and R18 pre-delivery reconciliation.
+
+Objective: produce and verify an installable product with no developer toolchain
+requirement, while preserving the inherited in-place connectivity installation.
+
+Acceptance criteria:
+
+- Complete local desktop/analytics/reader payload, exact inherited core pin,
+  TailD-owned minimal integration, license inventory and reproducible provenance.
+- Installer/upgrade/uninstall/rollback tested in isolated Windows; service/node/
+  Tailnet Lock state preserved; no second VPN service or permanent versions tree.
+- Isolated credential-free checks and reviewed signing/release workflow design;
+  pinned-key manifest/tamper/replay/version contracts; truthful signature labels.
+- Current R01–R17 and pre-delivery R18 evidence reconciliation, clean production
+  build, offline launch and packaged-runtime/installer acceptance. No publication,
+  updater activation or personal-device rollout merely to close this stage.
+
+Satisfied: none. Remaining: all criteria above.
+Blockers: none currently established. Tracked deferrals: none.
+Dependency: Stage 8 COMPLETE. Release and live rollout belong to Stage 10 by
+explicit scope separation, not an unmet Stage 9 criterion hidden as a deferral.
+
+### Stage 10 — Authorized release, rollout and updater verification
+
+Status: **NOT STARTED**. Requirement: remaining R18, preserving R01–R17.
+
+Objective: deliver the verified Windows product and prove its independent update
+channel without redirecting existing TailDNS installations implicitly.
+
+Acceptance criteria:
+
+- Explicit delivery/migration authority, normal signed GitHub release and
+  independent download/source/hash/signature/version/architecture/payload proof.
+- Approved in-place rollout preserving authentication, addresses, Tailnet Lock
+  signing and DNS/GUI behavior; actual product collection/drill-down/export proof.
+- Authorized TailD updater activation and real update/rollback, with negative
+  replay/tamper/downgrade/interruption tests and no source/account data loss.
+- R01–R18 final reconciliation, no required blockers/deferrals, documented source
+  compatibility and upstream ownership; existing maintenance tasks unchanged.
+
+Satisfied: none. Remaining: all criteria above.
+Blockers: none currently established; delivery authority is a future activation
+prerequisite. If absent when this stage is due, record the exact external blocker
+and park it as BLOCKED, never COMPLETE. Tracked deferrals: none.
+Dependency: Stage 9 COMPLETE and explicit publication/deployment authorization.
+
+## Remaining-product reconciliation at specification creation
+
+Stages 1–3: COMPLETE for their initial scope. Stages 4–10: NOT STARTED.
+No ACTIVE implementation stage, no currently established implementation blocker
+and no tracked deferral. The remaining-product specification is documented;
+the remaining product is not implemented, integrated, packaged or delivered.

@@ -27,6 +27,8 @@ development data path, not an installed analytics UI or continuous collector.
 AppControl's current MCP does not expose network-byte counters.
 
 - [TailD authoritative specification](docs/taild/SPECIFICATION.md)
+- [Remaining-product specification: ingestion, metrics, desktop and delivery](docs/taild/PRODUCT-SPECIFICATION.md)
+- [Pinned Portmaster layout and metrics source-design map](docs/taild/PORTMASTER-DESIGN.md)
 - [TailD stages, acceptance evidence and blockers](docs/taild/IMPLEMENTATION-PLAN.md)
 - [Read-only Control D command and verified boundaries](docs/taild/CONTROL-D-READS.md)
 - [GlassWire read-only source evidence and limitations](docs/taild/GLASSWIRE-READS.md)
