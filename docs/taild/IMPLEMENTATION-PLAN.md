@@ -6,7 +6,9 @@ Stages 1–3 were authorized by the request to create the public TailD derivativ
 inherit TailDNS and start Control D work. The October 8 request authorizes the
 remaining specification. The subsequent instruction to start Stage 4 authorizes
 its implementation, verification and commit. Stage 4 is now COMPLETE; Stages 5–10
-remain NOT STARTED. No release or deployment is authorized here.
+remain NOT STARTED at Stage 4 closure. The subsequent explicit Stage 5 request
+authorizes its implementation, verification and commit; Stage 5 is now COMPLETE
+and Stages 6–10 remain NOT STARTED. No release or deployment is authorized here.
 
 ## Stage 1 — Public TailDNS derivative with automatic inheritance
 
@@ -222,7 +224,7 @@ Dependency: completed Stages 1–3.
 
 ### Stage 5 — Context-aware correlation and metrics/query vertical slice
 
-Status: **NOT STARTED**. Requirements: R10, R11a–b, R08 metrics design.
+Status: **COMPLETE**. Requirements: R10, R11a–b, R08 metrics design.
 
 Objective: query correct, provenance-bearing summaries from actual stored facts.
 
@@ -237,11 +239,39 @@ Acceptance criteria:
 - Real stored traffic + Control D -> summary/chart/query result, plus focused
   ambiguity/provider-change/gap/injection/large-counter/correction verification.
 
-Satisfied: none of the new production criteria. Prototype correlation exists,
-but historical context and the production query/metrics module do not.
-Remaining: all criteria above. Blockers: none currently established.
-Tracked deferrals: none. Dependency: Stage 4 COMPLETE, or a specifically recorded
-blocker permitting independent work without claiming dependent integration.
+Satisfied, criterion by criterion:
+
+1. Schema-v4 whitelisted observed snapshots and versioned virtual candidate links
+   enforce capture/change/gap boundaries, same-endpoint answer/IP/preceding-time
+   matching and explicit historical-binding uncertainty. Fixture verification
+   covers shared endpoints/IPs, duplicate/identical/out-of-order decisions,
+   provider/account/exit/portal changes, conflicting captures and missing context.
+   Real unelevated local READ capture verifies current configuration/identity;
+   old traffic remains unbound. TTL/PID/socket and resolver-event routes are not invented.
+2. All R11a entries have tested byte/count domains, versions, scope and coverage:
+   exact bytes, partial/null-rate UTC bins, observed application identities,
+   conserved rankings, canonical DNS counts/questions, unknown-safe outcome
+   denominator, correlation partitions/inferred domains, single-answer provider
+   geography/ASN and operational health. Numeric outcome meanings remain
+   unverified and therefore unknown, with a null block rate, not a fabricated one.
+3. Typed field/operator/value/group/order allowlists, literal search, fixed bound
+   SQL scopes, bounded batching and revision-bound pagination pass. A real
+   concurrent WAL commit cannot mix a batch's read revision. Stale/malformed
+   cursors fail explicitly. Compound DNS predicates require one candidate, and
+   never multiply traffic bytes. Context/policy snapshot query contracts pass;
+   actual policy acquisition belongs to Stage 6 and remains not-collected.
+4. The real private-history six-result summary/chart/group/detail/DNS/policy
+   batch conserves 2,550 buckets, 113 DNS events and 67,680,901 observed bytes.
+   A fresh process independently verifies its private export and shared revision.
+   Focused ambiguity/change/gap/injection/large-counter/correction/deletion and
+   migration checks plus all TailD local contracts pass. No current binding was
+   applied to historical traffic and no incomplete hourly bin became zero traffic.
+
+Portmaster source-to-query/chart traceability and exact evidence are recorded in
+[METRICS-QUERY.md](METRICS-QUERY.md). No Portmaster runtime or source was copied.
+Remaining: none for Stage 5. No mutating live resolver-change test was authorized;
+the specification explicitly makes that test conditional on live-change authority.
+Blockers: none. Tracked deferrals: none. Dependency: Stage 4 COMPLETE.
 
 ### Stage 6 — Remaining Control D READ coverage and credentials
 
@@ -362,6 +392,21 @@ prerequisite. If absent when this stage is due, record the exact external blocke
 and park it as BLOCKED, never COMPLETE. Tracked deferrals: none.
 Dependency: Stage 9 COMPLETE and explicit publication/deployment authorization.
 
+## Stage 5 execution — 2026-10-08
+
+Authorization: already_authorized by the explicit request to start Stage 5.
+Stage 5 was the single ACTIVE stage and is now COMPLETE. Execution sequence:
+observed context and revision-bound candidate links -> real stored-data summary,
+chart and filtered detail -> complete typed query/metrics contracts and focused
+edge-case checks -> real private-history reconciliation -> final verification/commit.
+Use [METRICS-QUERY.md](METRICS-QUERY.md) for the concrete contract and R08/R10/R11
+traceability. No later stage, elevated GlassWire read, provider write, installed
+client change or delivery is authorized or needed for this stored-data workflow.
+Final verification: all TailD Python contracts passed, including the actual
+SQLite concurrent-commit and migrated-history boundaries. Current local READ
+capture and private stored-data batch/export verification passed. No Gradle/native
+build was required: inherited app/core source, pin and workflows are unchanged.
+
 ## Remaining-product reconciliation at specification creation
 
 Stages 1–3: COMPLETE for their initial scope. Stages 4–10: NOT STARTED.
@@ -375,3 +420,12 @@ Stages 1–4 are COMPLETE for their assigned scope. B02 is resolved and every
 Stage 4 acceptance criterion above is verified. Stages 5–10 remain NOT STARTED.
 There is no ACTIVE stage, unresolved Stage 4 blocker or tracked deferral. This work has not been
 released, deployed or represented as a completed analytics product.
+
+## Stage 5 final reconciliation — 2026-10-08
+
+Stages 1–5 are COMPLETE for their assigned scope. Stage 5 has no remaining
+acceptance criterion, blocker or tracked deferral. Stages 6–10 remain NOT STARTED;
+there is no ACTIVE stage. R10/R11 and the R08 metrics boundary are reconciled
+above; the complete R01–R18 product is not declared complete. No provider policy
+acquisition, credential recovery, installed runtime/UI, release or deployment
+is claimed. Verified changes are committed locally, not pushed or published.

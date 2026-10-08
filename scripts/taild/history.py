@@ -1,4 +1,4 @@
-"""Stage 4 private, on-demand SQLite history. No collector service or network access."""
+"""Private on-demand SQLite facts and observed snapshots. No service or network access."""
 from collections import Counter
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
@@ -140,7 +140,7 @@ class History:
 
     def _migrate(self):
         version = self.db.execute('PRAGMA user_version').fetchone()[0]
-        if version not in (0, 1, 2, 3):
+        if version not in (0, 1, 2, 3, 4):
             raise HistoryError('Unsupported history schema; existing data preserved')
         with self.transaction():
             if version == 0:
@@ -165,6 +165,10 @@ class History:
                 self.db.execute('ALTER TABLE settings ADD COLUMN revision INTEGER NOT NULL DEFAULT 0')
                 self.db.execute('UPDATE settings SET revision=(SELECT coalesce(max(revision),0) FROM runs)')
                 self.db.execute('PRAGMA user_version=3')
+            if version < 4:
+                self.db.execute('CREATE TABLE snapshots(id TEXT PRIMARY KEY,kind TEXT NOT NULL,scope TEXT NOT NULL,time INTEGER NOT NULL,end INTEGER NOT NULL,data TEXT NOT NULL,revision INTEGER NOT NULL)')
+                self.db.execute('CREATE INDEX snapshots_scope_time ON snapshots(kind,scope,time,end)')
+                self.db.execute('PRAGMA user_version=4')
 
     def _bump(self):
         self.db.execute('UPDATE settings SET revision=revision+1')
@@ -181,6 +185,7 @@ class History:
         self.db.execute('DELETE FROM runs WHERE end<=?', (floor,))
         self.db.execute('UPDATE runs SET start=? WHERE start<?', (floor, floor))
         self.db.execute('DELETE FROM suppressions WHERE end<=?', (floor,))
+        self.db.execute('DELETE FROM snapshots WHERE end<=?', (floor,))
         self._orphan_apps()
         return floor
 

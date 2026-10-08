@@ -32,6 +32,12 @@ restart/replay with conserved byte totals. SQLite fixtures cover corrections,
 crashes, source generations and gaps; retained real Control D data also replays
 without duplication. No later-stage desktop/runtime or release is implied.
 
+Stage 5 now adds on-demand context-aware correlation, typed batched queries,
+exact metric summaries, UTC chart bins, rankings and private exports. Real stored
+traffic/DNS totals reconcile across these views; historical binding, source gaps
+and unverified outcome codes remain explicit. This is not an installed analytics
+desktop or continuous collector. See [metrics/query evidence](docs/taild/METRICS-QUERY.md).
+
 - [TailD authoritative specification](docs/taild/SPECIFICATION.md)
 - [Remaining-product specification: ingestion, metrics, desktop and delivery](docs/taild/PRODUCT-SPECIFICATION.md)
 - [Pinned Portmaster layout and metrics source-design map](docs/taild/PORTMASTER-DESIGN.md)

@@ -9,14 +9,15 @@ required Portmaster source as the layout and metrics-module design reference.
 The specification request authorized documents and their commit. The subsequent
 instruction to start Stage 4 authorizes that stage's implementation, verification
 and commit, including required bounded read-only live validation. It does not
-authorize later-stage implementation, releases, background installation or
-provider policy changes.
+authorize releases, background installation or provider policy changes. The
+subsequent explicit request to start Stage 5 authorizes its implementation,
+verification and local commit over retained facts and read-only local context.
 
 R01–R07 and Stages 1–3 remain the completed initial increment. This document
 adds R08–R18 and Stages 4–10; it does not reopen or inflate the earlier completion
 claim. The initial increment's no-background/no-UI/no-release constraints applied
 to that increment. The corresponding future capabilities are now specified,
-not implemented by the specification task. Stage 4 is now authorized; later
+not implemented by the specification task. Stages 4 and 5 are now authorized; later
 stages remain unstarted and require their applicable execution/delivery scope.
 
 The [stage ledger](IMPLEMENTATION-PLAN.md) maps every requirement to acceptance
@@ -499,7 +500,7 @@ authorization parks Stage 10; it does not make it COMPLETE.
 |---|---|---|
 | 1–3 | Initial inheritance, Control D reads, real joined slice (R01–R07) | COMPLETE; existing recorded evidence only |
 | 4 | Incremental source -> durable history -> local query; R09, R14a | COMPLETE |
-| 5 | Versioned correlation/context and metrics/query contracts; R10, R11, R08 metrics boundary | NOT STARTED |
+| 5 | Versioned correlation/context and metrics/query contracts; R10, R11, R08 metrics boundary | COMPLETE |
 | 6 | Remaining Control D READ/capability coverage; R12, R14b credential boundary | NOT STARTED |
 | 7 | Opt-in continuous lifecycle and secure runtime; R13, remaining R14 | NOT STARTED |
 | 8 | Portmaster-derived desktop layout/explorer/export; R08 layout, R15, R16 | NOT STARTED |

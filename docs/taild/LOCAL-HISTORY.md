@@ -62,17 +62,18 @@ provider-side omissions cannot be ruled out by an untruncated CSV response.
 ## Store and privacy
 
 Schema migrations are transactional: v1 facts/runs, v2 deletion suppression,
-v3 a monotonic data revision covering imports, expiry and deletion. Unknown future
-versions fail closed. Applications, traffic, DNS, runs and checkpoints are the
-only current logical data areas; later correlation/policy/context tables are not
-created speculatively. Facts and totals use Python/SQLite integers; totals avoid
+v3 a monotonic data revision covering imports, expiry and deletion. The subsequent
+[Stage 5 query module](METRICS-QUERY.md) adds v4 observed context/policy snapshots
+required by R10/R11, with no early policy acquisition. Unknown future versions
+fail closed. Facts and totals use Python/SQLite integers; totals avoid
 SQLite SUM overflow. JSON byte counters are decimal strings, including fact rows.
 
 Detailed retention defaults to seven days. `--retention-days` explicitly changes
 it; an expiry floor never moves backwards to resurrect expired history. Startup,
 ingest and cleanup enforce it. Deleting an interval/application/source adds minimal
 hashed application/scope suppression, so replay cannot restore those facts.
-Orphan application records are removed. No correlations or summaries exist yet.
+Orphan application records are removed. Stage 5 computes versioned correlations
+and summaries on demand, so no stale derived rows survive deletion or expiry.
 Retention/deletion never changes GlassWire or Control D records.
 
 History and query exports must stay outside Git. The selected new owned directory
@@ -109,8 +110,9 @@ are finalized. Existing endpoints can be ingested using `controld` with explicit
 `import-dns` accepts a previously authorized private bounded slice; it does not
 make a provider request. Query filters are allowlisted, parameter-bound equality
 filters (source/application/destination/port or source/endpoint/question), not
-arbitrary SQL. Production metrics, cursors, charts and compound queries remain
-Stage 5/8 work and are not claimed here.
+arbitrary SQL. The [Stage 5 analytics module](METRICS-QUERY.md) now supplies
+metrics, cursors, charts and compound queries over this history. The desktop
+presentation remains Stage 8 work and is not claimed here.
 
 ## Verification evidence
 
