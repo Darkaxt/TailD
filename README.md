@@ -26,6 +26,11 @@ GlassWire's time-bucket counters are not individual PID/socket bytes. This is a
 development data path, not an installed analytics UI or continuous collector.
 AppControl's current MCP does not expose network-byte counters.
 
+Stage 4 now has a durable private-history development candidate, verified with
+SQLite fixtures and retained real Control D data. It is **BLOCKED on fresh elevated
+GlassWire validation**, including IPv6 and actual traffic restart/replay; Stage 4
+is not complete. No later-stage desktop/runtime or release is implied.
+
 - [TailD authoritative specification](docs/taild/SPECIFICATION.md)
 - [Remaining-product specification: ingestion, metrics, desktop and delivery](docs/taild/PRODUCT-SPECIFICATION.md)
 - [Pinned Portmaster layout and metrics source-design map](docs/taild/PORTMASTER-DESIGN.md)
@@ -33,6 +38,7 @@ AppControl's current MCP does not expose network-byte counters.
 - [Read-only Control D command and verified boundaries](docs/taild/CONTROL-D-READS.md)
 - [GlassWire read-only source evidence and limitations](docs/taild/GLASSWIRE-READS.md)
 - [On-demand local reader and joined export](docs/taild/LOCAL-READER.md)
+- [Durable history candidate, commands and live-validation boundary](docs/taild/LOCAL-HISTORY.md)
 - [Original analytics capability record](https://github.com/Darkaxt/TailDNS/issues/9)
 
 ## Inheritance and development

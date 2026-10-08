@@ -4,8 +4,9 @@ Sources of truth: [initial specification](SPECIFICATION.md) for R01–R07 and
 [remaining-product specification](PRODUCT-SPECIFICATION.md) for R08–R18.
 Stages 1–3 were authorized by the request to create the public TailD derivative,
 inherit TailDNS and start Control D work. The October 8 request authorizes the
-remaining specification, not implementation of Stages 4–10. Only one stage may
-be ACTIVE; currently none is. No release or deployment is authorized here.
+remaining specification. The subsequent instruction to start Stage 4 authorizes
+its implementation, verification and commit. Stage 4 is now BLOCKED; Stages 5–10
+remain NOT STARTED. No release or deployment is authorized here.
 
 ## Stage 1 — Public TailDNS derivative with automatic inheritance
 
@@ -163,7 +164,7 @@ verification evidence; do not reuse prototype proof for changed production code.
 
 ### Stage 4 — Incremental ingestion, durable history and first local query
 
-Status: **NOT STARTED**. Requirements: R09a–c and R14a; preserve R01–R07.
+Status: **BLOCKED**. Requirements: R09a–c and R14a; preserve R01–R07.
 
 Objective: close the narrow real source -> persisted history -> filtered query
 workflow before building the broader analytics runtime or desktop.
@@ -179,10 +180,30 @@ Acceptance criteria:
 - Focused crash/replay/rotation/mutation/truncation/late-arrival/retention/migration
   tests and a real persisted-read/restart/replay workflow with conserved totals.
 
-Satisfied: none of the new production criteria. Existing one-shot readers are
-inputs, not durable-ingestion completion evidence.
-Remaining: all criteria above. Blockers: none currently established.
-Tracked deferrals: none. Dependency: completed Stages 1–3.
+Satisfied: versioned private SQLite, exact counters and JSON export, atomic
+facts/checkpoints, correction-aware replay, bounded multiset DNS reconciliation,
+retention/deletion suppression and filtered local queries are implemented and
+fixture-verified. Focused subprocess crashes, migration/rollback, WAL, synthetic
+rotation/reuse, mutations, truncation, late arrival and privacy checks pass.
+The retained authorized real Control D slice passes durable import/restart/replay
+with all 113 decisions and unchanged coverage. This is not a fresh API read.
+Candidate discovery/physical-identity contracts pass SQLite fixtures, not live
+GlassWire certification. See [LOCAL-HISTORY.md](LOCAL-HISTORY.md) for exact scope.
+
+Remaining: verify/finalize actual installed catalog/key/mutability/generation
+contract and IPv6 decode with independent Windows evidence; actual traffic read
+-> store -> filtered query -> restart/replay with conserved totals and source
+unchanged. The initial prototype's earlier proof does not close these criteria.
+
+Blocker B02 (external): R09a/R09b and the first/fourth Stage 4 criteria require
+fresh GlassWire source access. Unelevated SQLite read is denied. Both authorized
+one-shot RunAs attempts were canceled at UAC before the helper ran. Resolve with
+an approved one-shot read-only elevated inspection, then finalize the observed
+source contract and perform actual traffic persistence/replay verification.
+Until then Stage 4 integration/IPv6 and dependent Stage 5 product metrics cannot
+be COMPLETE. No source ACL/service/VPN changes were attempted. No ACTIVE stage
+remains; later stages were not started. Tracked deferrals: none.
+Dependency: completed Stages 1–3.
 
 ### Stage 5 — Context-aware correlation and metrics/query vertical slice
 
@@ -332,3 +353,10 @@ Stages 1–3: COMPLETE for their initial scope. Stages 4–10: NOT STARTED.
 No ACTIVE implementation stage, no currently established implementation blocker
 and no tracked deferral. The remaining-product specification is documented;
 the remaining product is not implemented, integrated, packaged or delivered.
+
+## Stage 4 execution reconciliation — 2026-10-08
+
+Stages 1–3 remain COMPLETE. Stage 4 is BLOCKED by B02, with implemented/verified
+scope and exact outstanding live criteria above. Stages 5–10 remain NOT STARTED.
+There is no ACTIVE stage and no tracked deferral. This candidate has not been
+released, deployed or represented as a completed analytics product.

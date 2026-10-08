@@ -7,6 +7,7 @@ import hashlib
 import ipaddress
 import math
 import ntpath
+import os
 from pathlib import Path
 import re
 import sqlite3
@@ -18,6 +19,66 @@ import controld
 
 class GlassWireError(RuntimeError):
     pass
+
+
+def physical_identity(path):
+    path = Path(path).resolve(strict=True)
+    info = path.stat()
+    if not info.st_ino:
+        raise GlassWireError('Source has no stable filesystem identity')
+    # A renamed/hard-linked filename is not a new physical generation. Paths
+    # belong to row provenance, not to the generation's identity.
+    return {'device': info.st_dev, 'file_id': str(info.st_ino),
+            'birth_ns': getattr(info, 'st_birthtime_ns', None)}
+
+
+def discover(directory=None):
+    """Use the observed catalog; never glob scales or follow catalog path escapes."""
+    version = 'explicit-override-version-unverified'
+    if directory is None:
+        if os.name != 'nt':
+            raise GlassWireError('Explicit GlassWire data directory required on this platform')
+        import winreg
+        try:
+            with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'SYSTEM\CurrentControlSet\Services\GlassWire') as key:
+                binary = winreg.QueryValueEx(key, 'ImagePath')[0].strip('"')
+            if Path(binary).name.lower() != 'gwctlsrv.exe' or not Path(binary).is_file():
+                raise GlassWireError('Unrecognized installed GlassWire service')
+            # Installation identity is verified first; the default observed data
+            # directory is accepted only if its read-only catalog also validates.
+            directory = Path(os.environ['ProgramData']) / 'GlassWire' / 'service-full'
+            with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall') as uninstall:
+                for i in range(winreg.QueryInfoKey(uninstall)[0]):
+                    with winreg.OpenKey(uninstall, winreg.EnumKey(uninstall, i)) as entry:
+                        try:
+                            if winreg.QueryValueEx(entry, 'DisplayName')[0].startswith('GlassWire '):
+                                version = winreg.QueryValueEx(entry, 'DisplayVersion')[0]
+                        except FileNotFoundError:
+                            continue
+        except (OSError, KeyError):
+            raise GlassWireError('Cannot verify installed GlassWire metadata') from None
+    root = Path(directory).resolve(strict=True)
+    main = root / 'glasswire.db'
+    try:
+        with closing(_connect(main)) as db:
+            _schema(db, 'stats_databases', {'filename': 'TEXT', 'timestamp': 'INTEGER', 'expire_time': 'INTEGER', 'scale': 'INTEGER'})
+            entries = list(db.execute('SELECT filename,timestamp,expire_time,scale FROM stats_databases ORDER BY timestamp,filename'))
+        databases = []
+        for filename, timestamp, expires, scale in entries:
+            if not isinstance(filename, str):
+                raise GlassWireError('Unsupported GlassWire catalog filename')
+            path = (root / filename).resolve()
+            if not path.is_relative_to(root):
+                raise GlassWireError('GlassWire catalog path leaves approved directory')
+            if not re.fullmatch(r'glasswire_stats_1sec_[0-9]+\.db', path.name):
+                continue
+            if scale != 1 or type(timestamp) is not int or type(expires) is not int:
+                raise GlassWireError('Incompatible GlassWire one-second catalog record')
+            databases.append({'path': str(path), 'timestamp': timestamp, 'expire_time': expires,
+                              'present': path.is_file()})
+        return {'directory': str(root), 'main_database': str(main), 'version': version, 'databases': databases}
+    except (sqlite3.Error, OSError):
+        raise GlassWireError('GlassWire catalog read failed') from None
 
 
 def _varint(blob, offset):
@@ -123,11 +184,15 @@ def read_traffic(stats_db, main_db, start, end, limit=1000):
         raise GlassWireError('Select one observed one-second GlassWire statistics database')
     rows, applications = [], {}
     try:
+        generation = {'traffic_database': physical_identity(stats_db),
+                      'application_database': physical_identity(main_db)}
         with closing(_connect(stats_db)) as stats, closing(_connect(main_db)) as apps:
             _schema(stats, 'traffic_stats', {name: 'INTEGER' for name in (
                 'timestamp', 'app_id', 'remote_port', 'protocol', 'flags',
                 'inbound_bytes', 'outbound_bytes', 'threat_level')} | {'remote_host': 'BLOB'})
             _schema(apps, 'applications', {'id': 'INTEGER', 'data': 'BLOB'})
+            schema = list(stats.execute("SELECT name,sql FROM sqlite_master WHERE type='table' ORDER BY name"))
+            schema_sha = hashlib.sha256(json.dumps(schema).encode()).hexdigest()
             raw_rows = stats.execute(
                 'SELECT rowid,timestamp,app_id,remote_host,remote_port,protocol,flags,inbound_bytes,outbound_bytes,threat_level '
                 'FROM traffic_stats WHERE timestamp>=? AND timestamp<? ORDER BY timestamp,rowid LIMIT ?',
@@ -157,10 +222,14 @@ def read_traffic(stats_db, main_db, start, end, limit=1000):
                              'provenance': {'database': str(stats_db), 'table': 'traffic_stats', 'rowid': rowid,
                                             'application_database': str(main_db), 'application_table': 'applications',
                                             'application_blob_sha256': digest,
-                                            'remote_host_blob_sha256': hashlib.sha256(address).hexdigest()}})
+                                            'remote_host_blob_sha256': hashlib.sha256(address).hexdigest(),
+                                            'raw_row_sha256': hashlib.sha256(json.dumps([v.hex() if isinstance(v,bytes) else v for v in raw]).encode()).hexdigest()}})
+        if generation != {'traffic_database': physical_identity(stats_db), 'application_database': physical_identity(main_db)}:
+            raise GlassWireError('GlassWire source replaced during read; slice discarded')
     except (sqlite3.Error, OSError, OverflowError, ValueError):
         raise GlassWireError('GlassWire read failed; verify read access and source compatibility') from None
     return {'source': 'glasswire-sqlite-observed-v1', 'collected_at_utc': controld.utc_now().isoformat(),
+            'generation': generation, 'schema_sha256': schema_sha,
             'query_window': {'start_inclusive': start, 'end_exclusive': end},
             'selected_scale_from_filename_seconds': 1,
             'byte_attribution': 'application-destination-time-bucket',

@@ -6,14 +6,18 @@ Version 1.0, 2026-10-08. Authoritative extension to [SPECIFICATION.md](SPECIFICA
 
 The user requested a specification for the remaining product areas and explicitly
 required Portmaster source as the layout and metrics-module design reference.
-This task authorizes documents and their commit, not product implementation,
-deployment, releases, background installation or provider policy changes.
+The specification request authorized documents and their commit. The subsequent
+instruction to start Stage 4 authorizes that stage's implementation, verification
+and commit, including required bounded read-only live validation. It does not
+authorize later-stage implementation, releases, background installation or
+provider policy changes.
 
 R01–R07 and Stages 1–3 remain the completed initial increment. This document
 adds R08–R18 and Stages 4–10; it does not reopen or inflate the earlier completion
 claim. The initial increment's no-background/no-UI/no-release constraints applied
 to that increment. The corresponding future capabilities are now specified,
-not implemented or presently authorized to run on the user's machine.
+not implemented by the specification task. Stage 4 is now authorized; later
+stages remain unstarted and require their applicable execution/delivery scope.
 
 The [stage ledger](IMPLEMENTATION-PLAN.md) maps every requirement to acceptance
 criteria. A plan cannot weaken this document. Only one implementation stage may
