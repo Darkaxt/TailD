@@ -58,7 +58,8 @@ message schema has been obtained.
   SQL application ID; use the SQL primary key for the traffic-table relation.
 - Observed address field 1 has values 1 and 2. The narrow IPv4 sample's field 2
   is a varint that yields its destination when its integer is converted to four
-  **little-endian** bytes. IPv6 encoding is not validated.
+  **little-endian** bytes. IPv6 was not validated in this initial inspection;
+  the subsequent Stage 4 validation below establishes the observed IPv6 layout.
 - The decoded executable path, IPv4 destination and unmodified remote port were
   independently matched together against Windows `Get-NetTCPConnection` and
   the owning process's executable path. Byte-swapping the remote port and using
@@ -114,4 +115,46 @@ its INTEGER declaration. The reader preserves that raw null; numeric identity,
 timestamp, port and network-counter checks remain strict. The real implemented
 reader and join command produced the private Control D/GlassWire/Windows-device
 joined export. Original inspection limits remain: this is not a stable vendor
-API, full binary schema, IPv6 decoder or per-socket counter interface.
+API, full binary schema or per-socket counter interface.
+
+## Stage 4 live validation — 2026-10-08
+
+Approved one-shot read-only helpers inspected GlassWire **3.10.1138** without
+changing its ACL, service, configuration or database contents. The actual catalog
+declares `filename BLOB`: each observed value is a UTF-8 leaf filename under
+`service-full/stats`. One-second records have scale 1; the observed thirty-second
+record has scale 2, not 30. Only verified one-second records are ingested.
+The two retained daily one-second databases have distinct Windows file/birth
+identities. Rowid is implicit, not a globally unique or immutable fact key.
+
+Family 2 addresses store 16 network-order IPv6 bytes in length-delimited field 3.
+A normal TCP DNS diagnostic to the current local resolver supplied a known peer;
+Windows `Get-NetTCPConnection` independently recorded its established IPv6/port53
+connection. GlassWire's raw field bytes, remote port and decoded executable path
+matched that exact diagnostic. Executable comparison resolved the Scoop junction
+to the installed executable. No synthetic address was substituted for live proof.
+Known malformed IPv6 fields reject the read; unknown families retain their bytes.
+
+The exact same completed five-minute source window was read twice: 2,098 rowids,
+zero bucket-identity changes and zero counter changes. This establishes bounded
+stability only, not universal finalization. Canonical counter replacement and
+retained-horizon reconciliation remain necessary; actual SQLite fixtures exercise
+mutable counters, replacement, midnight rotation and identity reuse. No destructive
+reset or forced source rotation was performed on the live installation.
+
+The subsequent real on-demand ingestion/query/restart/replay proof conserved
+2,550 buckets, 48,184,294 inbound bytes and 19,496,607 outbound bytes. It includes
+160 decoded IPv6 buckets and the independently matched diagnostic. A separate
+unelevated process queried the private durable store with conserved totals and
+complete selected-window coverage. See [LOCAL-HISTORY.md](LOCAL-HISTORY.md).
+The catalog retained only two daily one-second sources: earlier requested history
+is reported as an expired-source gap, not fabricated zero traffic. Source reads
+used `mode=ro`, `query_only=ON` and WAL-inclusive snapshots throughout; source
+physical identities remained unchanged, while its own writer continued normally.
+
+Compatibility is bounded to this observed internal schema/version, not a vendor
+API or a guarantee across upgrades. Application and traffic snapshots remain
+separate; PID/socket attribution, enum semantics and unseen source omissions are
+not established. No API token, private application path, DNS question or peer
+history is published here. Private durable history is retained outside Git;
+expendable diagnostic reports/helpers are transactionally removed.

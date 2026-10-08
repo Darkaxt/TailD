@@ -61,13 +61,19 @@ def discover(directory=None):
     main = root / 'glasswire.db'
     try:
         with closing(_connect(main)) as db:
-            _schema(db, 'stats_databases', {'filename': 'TEXT', 'timestamp': 'INTEGER', 'expire_time': 'INTEGER', 'scale': 'INTEGER'})
+            _schema(db, 'stats_databases', {'filename': 'BLOB', 'timestamp': 'INTEGER', 'expire_time': 'INTEGER', 'scale': 'INTEGER'})
             entries = list(db.execute('SELECT filename,timestamp,expire_time,scale FROM stats_databases ORDER BY timestamp,filename'))
         databases = []
-        for filename, timestamp, expires, scale in entries:
-            if not isinstance(filename, str):
+        for encoded, timestamp, expires, scale in entries:
+            if not isinstance(encoded, bytes):
                 raise GlassWireError('Unsupported GlassWire catalog filename')
-            path = (root / filename).resolve()
+            try:
+                filename = encoded.decode('utf-8')
+            except UnicodeError:
+                raise GlassWireError('Invalid GlassWire catalog filename encoding') from None
+            if '\x00' in filename or ntpath.basename(filename) != filename or Path(filename).name != filename:
+                raise GlassWireError('GlassWire catalog filename must be a leaf name')
+            path = (root / 'stats' / filename).resolve()
             if not path.is_relative_to(root):
                 raise GlassWireError('GlassWire catalog path leaves approved directory')
             if not re.fullmatch(r'glasswire_stats_1sec_[0-9]+\.db', path.name):
@@ -75,6 +81,7 @@ def discover(directory=None):
             if scale != 1 or type(timestamp) is not int or type(expires) is not int:
                 raise GlassWireError('Incompatible GlassWire one-second catalog record')
             databases.append({'path': str(path), 'timestamp': timestamp, 'expire_time': expires,
+                              'filename_blob_sha256': hashlib.sha256(encoded).hexdigest(),
                               'present': path.is_file()})
         return {'directory': str(root), 'main_database': str(main), 'version': version, 'databases': databases}
     except (sqlite3.Error, OSError):
@@ -133,6 +140,11 @@ def _single(fields, number, wire):
 def decode_address(blob):
     fields = _fields(blob)
     family = _single(fields, 1, 0)
+    if family == 2:
+        packed = _single(fields, 3, 2)
+        if len(packed) != 16:
+            raise GlassWireError('Invalid GlassWire IPv6 field')
+        return str(ipaddress.IPv6Address(packed)), 'observed-ipv6-network-order'
     if family != 1:
         return None, 'unsupported-address-family'
     value = _single(fields, 2, 0)

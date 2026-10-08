@@ -26,10 +26,11 @@ GlassWire's time-bucket counters are not individual PID/socket bytes. This is a
 development data path, not an installed analytics UI or continuous collector.
 AppControl's current MCP does not expose network-byte counters.
 
-Stage 4 now has a durable private-history development candidate, verified with
-SQLite fixtures and retained real Control D data. It is **BLOCKED on fresh elevated
-GlassWire validation**, including IPv6 and actual traffic restart/replay; Stage 4
-is not complete. No later-stage desktop/runtime or release is implied.
+Stage 4's on-demand durable private-history path is verified with live GlassWire
+3.10.1138, independently matched IPv6, persisted filtered queries and real
+restart/replay with conserved byte totals. SQLite fixtures cover corrections,
+crashes, source generations and gaps; retained real Control D data also replays
+without duplication. No later-stage desktop/runtime or release is implied.
 
 - [TailD authoritative specification](docs/taild/SPECIFICATION.md)
 - [Remaining-product specification: ingestion, metrics, desktop and delivery](docs/taild/PRODUCT-SPECIFICATION.md)

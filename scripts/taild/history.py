@@ -351,16 +351,21 @@ class History:
                     outgoing += row['outbound']
                 if len(rows) < limit:
                     rows.append({'source_id': row['source'], 'fact': json.loads(row['data'])})
-            coverage = self._coverage(kind, a, b, filters.get('source'))
+            coverage = self._coverage(kind, a, b, filters.get('source'),filters.get('endpoint'))
             return {'revision': revision, 'kind': kind, 'row_count': count, 'rows': rows,
                     'truncated': count > limit, 'inbound_bytes': incoming, 'outbound_bytes': outgoing,
                     'coverage': coverage}
         finally:
             self.db.execute('ROLLBACK')
 
-    def _coverage(self, kind, a, b, selected=None):
-        sources = [r[0] for r in self.db.execute('SELECT id FROM sources WHERE kind=?' + (' AND id=?' if selected else ''),
-                                                (kind, selected) if selected else (kind,))]
+    def _coverage(self, kind, a, b, selected=None, endpoint=None):
+        sql='SELECT DISTINCT s.id,s.metadata FROM sources s JOIN runs r ON r.source=s.id WHERE s.kind=? AND r.end>? AND r.start<?'
+        params=[kind,a,b]
+        if selected:
+            sql+=' AND s.id=?'
+            params.append(selected)
+        sources=[r[0] for r in self.db.execute(sql,params)
+                 if endpoint is None or json.loads(r[1]).get('endpoint')==endpoint]
         floor = self.db.execute('SELECT expiry_floor FROM settings').fetchone()[0]
         detail = []
         for source in sources:

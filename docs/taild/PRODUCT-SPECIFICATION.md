@@ -61,8 +61,14 @@ GlassWire SQLite reads including WAL yielded application paths, IPv4 peers and
 byte buckets; the real joined export retained ambiguity and nonzero bytes.
 These prove the initial slice, not a production ingestion or GUI capability.
 
-Still unverified: GlassWire bucket mutability/finalization, replacement/rotation
-identities, complete IPv6 layout, provider event IDs/late-arrival guarantees,
+Stage 4 subsequently verified the GlassWire 3.10.1138 catalog, two daily physical
+identities, independently matched observed IPv6 layout and the real durable
+traffic/filter/restart/replay path. Completed-window rows were stable across two
+bounded reads; correction-aware replay still assumes no finalization guarantee.
+See [LOCAL-HISTORY.md](LOCAL-HISTORY.md) for precise verification and limits.
+
+Still unverified: universal GlassWire bucket immutability/finalization, complete
+binary schema beyond the observed IPv4/IPv6 fields, provider event IDs/late-arrival guarantees,
 supported filter/rule/service read coverage, action-code semantics, stable
 third-party GlassWire compatibility, continuous runtime and packaged delivery.
 The owning stages must establish these facts or expose the specified unavailable
@@ -492,7 +498,7 @@ authorization parks Stage 10; it does not make it COMPLETE.
 | Stage | Required scope | Status at specification creation |
 |---|---|---|
 | 1–3 | Initial inheritance, Control D reads, real joined slice (R01–R07) | COMPLETE; existing recorded evidence only |
-| 4 | Incremental source -> durable history -> local query; R09, R14a | NOT STARTED |
+| 4 | Incremental source -> durable history -> local query; R09, R14a | COMPLETE |
 | 5 | Versioned correlation/context and metrics/query contracts; R10, R11, R08 metrics boundary | NOT STARTED |
 | 6 | Remaining Control D READ/capability coverage; R12, R14b credential boundary | NOT STARTED |
 | 7 | Opt-in continuous lifecycle and secure runtime; R13, remaining R14 | NOT STARTED |

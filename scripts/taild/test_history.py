@@ -87,15 +87,22 @@ class HistoryTest(unittest.TestCase):
         self.assertNotEqual(before, self.read()['generation'])
 
     def test_catalog_selection_rejects_escape_and_ignores_other_scales(self):
+        folder=self.root/'stats'
+        folder.mkdir()
+        self.writer.close()
+        self.stats.rename(folder/self.stats.name)
+        self.stats=folder/self.stats.name
+        self.writer=sqlite3.connect(self.stats)
+        self.addCleanup(self.writer.close)
         with closing(sqlite3.connect(self.main)) as db:
-            db.execute('CREATE TABLE stats_databases(id INTEGER,filename TEXT,timestamp INTEGER,expire_time INTEGER,scale INTEGER)')
-            db.execute('INSERT INTO stats_databases VALUES(1,?,1791331200,1791504000,1)', (self.stats.name,))
-            db.execute("INSERT INTO stats_databases VALUES(2,'glasswire_stats_30sec_1791331200.db',1791331200,1791504000,30)")
+            db.execute('CREATE TABLE stats_databases(id INTEGER,filename BLOB,timestamp INTEGER,expire_time INTEGER,scale INTEGER)')
+            db.execute('INSERT INTO stats_databases VALUES(1,?,1791331200,1791504000,1)', (self.stats.name.encode(),))
+            db.execute('INSERT INTO stats_databases VALUES(2,?,1791331200,1791504000,2)',(b'glasswire_stats_30sec_1791331200.db',))
             db.commit()
         catalog = glasswire.discover(self.root)
         self.assertEqual([x['path'] for x in catalog['databases']], [str(self.stats)])
         with closing(sqlite3.connect(self.main)) as db:
-            db.execute("UPDATE stats_databases SET filename='../glasswire_stats_1sec_1791331200.db' WHERE id=1")
+            db.execute('UPDATE stats_databases SET filename=? WHERE id=1',(b'../glasswire_stats_1sec_1791331200.db',))
             db.commit()
         with self.assertRaises(glasswire.GlassWireError):
             glasswire.discover(self.root)
@@ -312,9 +319,16 @@ store.import_traffic(payload['data'],'synthetic-host')
             history.History(self.home,now=NOW)
 
     def test_traffic_ingestion_subdivides_truncated_window(self):
+        folder=self.root/'stats'
+        folder.mkdir()
+        self.writer.close()
+        self.stats.rename(folder/self.stats.name)
+        self.stats=folder/self.stats.name
+        self.writer=sqlite3.connect(self.stats)
+        self.addCleanup(self.writer.close)
         with closing(sqlite3.connect(self.main)) as db:
-            db.execute('CREATE TABLE stats_databases(id INTEGER,filename TEXT,timestamp INTEGER,expire_time INTEGER,scale INTEGER)')
-            db.execute('INSERT INTO stats_databases VALUES(1,?,1791331200,1791504000,1)',(self.stats.name,))
+            db.execute('CREATE TABLE stats_databases(id INTEGER,filename BLOB,timestamp INTEGER,expire_time INTEGER,scale INTEGER)')
+            db.execute('INSERT INTO stats_databases VALUES(1,?,1791331200,1791504000,1)',(self.stats.name.encode(),))
             db.commit()
         self.add_row(1791391002,incoming=4)
         ingestion.traffic_window(self.store,'synthetic-host',START,END,self.root,limit=1)
@@ -332,6 +346,29 @@ store.import_traffic(payload['data'],'synthetic-host')
             history.History(self.home,now=NOW)
         self.assertEqual(self.store.db.execute('pragma user_version').fetchone()[0],1)
         self.assertEqual(self.store.db.execute('select inbound from traffic').fetchone()[0],100)
+
+    def test_source_retention_gap_does_not_poison_a_later_query(self):
+        folder=self.root/'stats'
+        folder.mkdir()
+        self.writer.close()
+        self.stats.rename(folder/self.stats.name)
+        self.stats=folder/self.stats.name
+        self.writer=sqlite3.connect(self.stats)
+        self.addCleanup(self.writer.close)
+        with closing(sqlite3.connect(self.main)) as db:
+            db.execute('CREATE TABLE stats_databases(id INTEGER,filename BLOB,timestamp INTEGER,expire_time INTEGER,scale INTEGER)')
+            db.execute('INSERT INTO stats_databases VALUES(1,?,1791331200,1791504000,1)',(self.stats.name.encode(),))
+            db.commit()
+        old='2026-10-06T00:00:00Z'
+        ingestion.traffic_window(self.store,'synthetic-host',old,END,self.root)
+        self.assertTrue(self.store.query('traffic',old,END)['coverage']['incomplete'])
+        self.assertFalse(self.query()['coverage']['incomplete'])
+
+    def test_unobserved_endpoint_cannot_inherit_another_endpoints_coverage(self):
+        self.store.import_dns(self.dns(),'account','synthetic')
+        result=self.store.query('dns',START,END,endpoint='unobserved-endpoint')
+        self.assertEqual(result['row_count'],0)
+        self.assertTrue(result['coverage']['incomplete'])
 
 
 if __name__ == '__main__':

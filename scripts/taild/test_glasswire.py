@@ -91,12 +91,23 @@ class GlassWireTest(unittest.TestCase):
         self.assertEqual(len(self.read()['rows']), 2)
 
     def test_unsupported_family_remains_explicit_in_output(self):
-        self.add_row(1791391002, address=integer(1, 2) + string(3, 'synthetic-ipv6'))
+        self.add_row(1791391002, address=integer(1, 99) + string(3, 'synthetic-unknown'))
         result = self.read()
         self.assertIsNone(result['rows'][1]['destination_ip'])
         self.assertEqual(result['rows'][1]['destination_status'], 'unsupported-address-family')
         self.assertEqual(result['unsupported_address_rows'], 1)
         self.assertEqual(result['rows'][1]['inbound_bytes'], 100)
+
+    def test_observed_ipv6_network_order_and_malformed_known_family(self):
+        packed=ipaddress.ip_address('2001:db8:1234:5678::9').packed
+        address=integer(1,2)+varint(3<<3|2)+varint(len(packed))+packed
+        self.add_row(1791391002,address=address)
+        row=self.read()['rows'][1]
+        self.assertEqual(row['destination_ip'],'2001:db8:1234:5678::9')
+        self.assertEqual(row['destination_status'],'observed-ipv6-network-order')
+        for malformed in (integer(1,2)+string(3,'short'), address+address[2:], integer(1,2)+integer(3,7)):
+            with self.subTest(blob=malformed.hex()),self.assertRaises(glasswire.GlassWireError):
+                glasswire.decode_address(malformed)
 
     def test_malformed_binary_rejected_without_partial_success(self):
         self.add_row(1791391002, address=b'\x08\x80')

@@ -56,10 +56,19 @@ def traffic_window(store, scope, start, end, directory=None, limit=10000):
         store.record_gap('traffic',scope,start,history.utc(min(b,floor)),
                          'source-expired',generation={'catalog':catalog['directory']})
         a = min(b,floor)
-    for entry in catalog['databases']:
+    present=[entry for entry in catalog['databases'] if entry['present']]
+    if present:
+        earliest=min(entry['timestamp'] for entry in present)*1000000
+        if a<min(b,earliest):
+            store.record_gap('traffic',scope,history.utc(a),history.utc(min(b,earliest)),
+                             'source-expired',generation={'catalog':catalog['directory']})
+    for index,entry in enumerate(catalog['databases']):
         if not entry['present']:
-            store.record_gap('traffic',scope,start,end,'source-expired',
-                             generation={'missing_catalog_path': entry['path']})
+            left=max(a,entry['timestamp']*1000000)
+            right=min(b,catalog['databases'][index+1]['timestamp']*1000000) if index+1<len(catalog['databases']) else b
+            if left<right:
+                store.record_gap('traffic',scope,history.utc(left),history.utc(right),'source-expired',
+                                 generation={'missing_catalog_path': entry['path']})
             continue
         pending,attempts = [(a,b)] if a<b else [],0
         generation = {'traffic_database':glasswire.physical_identity(entry['path']),
