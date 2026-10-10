@@ -34,6 +34,14 @@ branch or pull request.
 
 ## Failure containment and recovery
 
+The detector permits automatic Go toolchain selection only while tidying and
+inspecting the newly pinned, reviewed core module. This lets a core Go patch
+upgrade update the Android `go` directive before the trusted candidate and release
+jobs select their toolchain from `go.mod`. The exact module pin/replacement and
+fork Go revision synchronization remain checked. This fixes the 2026-10-10
+detector failure (run 38080590240): core required Go 1.27.2 while Android's base
+runner was Go 1.27.1 with `GOTOOLCHAIN=local`. No failing candidate was promoted.
+
 A merge conflict, module-resolution failure, test failure or build failure
 leaves the current `main`, persistent signing key and published release
 unchanged. Never bypass a failing check, expose signing secrets to the
