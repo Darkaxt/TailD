@@ -1,5 +1,12 @@
 # Local DNS override — authoritative specification
 
+2026-10-11 authorized amendment: ordinary transport outages now prioritize
+connectivity. The shared-core [encrypted outage recovery specification](https://github.com/Darkaxt/tailscale/blob/main/docs/dns-outage-recovery.md)
+supersedes R08's prior no-other-provider rule for eligible default-route queries
+only. Missing/unsupported Android settings, specific routes and management gates
+are unchanged. This is implementation authorization, not a claim that an APK has
+been released or installed.
+
 Version: 2.9. Date: 2026-09-23. Status: **Stage 12 COMPLETE**. Beacon now runs the independently implemented TailDNS Windows tray and matching current-core daemon/CLI/resolver set from the independently verified public `windows-v1.103.0+18` release. The signed TailDNS update provider is active through the tray's existing update preference; the real `+17` to `+18` unattended transition preserved the service path, machine identity, addresses, Tailnet Lock signer, resolver state, tray connectivity, public DNS and MagicDNS, and a replay correctly made no changes. The tray uses the exact preserved official multi-resolution icon resources, and the user's real taskbar confirmation shows the native transparent background without the former black pixelated tile. The existing task-attached promotion monitor was updated in place to require dependency-ordered core, signed Windows and Android releases plus independent verification. Stage 9 remains BLOCKED only on the target Fold's current ADB disconnection. Stages 3–8 and 10–12 are complete; Stages 1 and 2 remain parked only on the explicitly disclosed validation gaps.
 
 Revision 2.9 records completion of R22. Core PR [18](https://github.com/Darkaxt/tailscale/pull/18) fixed service-to-interactive-session tray launch at the owning Windows token boundary and produced independently verified release [windows-v1.103.0+17](https://github.com/Darkaxt/tailscale/releases/tag/windows-v1.103.0%2B17). Core PR [19](https://github.com/Darkaxt/tailscale/pull/19) embedded the exact connected, disconnected, exit-node-online and exit-node-offline icon groups extracted from Beacon's preserved official `tailscale-ipn.exe` SHA-256 `5CB12834487A18C7356995BE33AA12ED59D9F533B9DC134069C0DCA42D44B133`; release run [35795113173](https://github.com/Darkaxt/tailscale/actions/runs/35795113173) published and independently verified [windows-v1.103.0+18](https://github.com/Darkaxt/tailscale/releases/tag/windows-v1.103.0%2B18) from exact core `57351e8a9724e157cd1b2f2cdba0009717f1e8e7`. Beacon's updater consumed the signed manifest, replaced all four payloads transactionally, retained `C:\Program Files\Tailscale\tailscaled.exe` as the automatic service path, kept node `nCPRwrVksn11CNTRL`, addresses `100.97.195.70`/`fd7a:115c:a1e0::ca01:c347` and signer `tlpub:ff4a7450ab477743b42ebef7f9c84f706a4b7b76ac36714a176eae9a39f2f523`, and left the backend Running with public and MagicDNS resolution passing. `AutoUpdate.Check` and `AutoUpdate.Apply` are true; replay rejected the current manifest as not newer without changing the deployment record, service or tray processes. The existing heartbeat `monitor-taildns-upstream-updates`, daily at 08:30 UTC, now requires exact-head core promotion, a signed and independently verified Windows release, then exact-core Android promotion and signed release; it performs no device deployment and stays quiet while current.
@@ -72,7 +79,7 @@ After the user enables follow mode once, changes to `private_dns_specifier` prop
 
 Use lifecycle-owned settings observation, an initial read, and re-read on backend/service recreation. Serialize updates through backend ownership and reject stale profile/configuration generations. Register/read ordering must not miss a concurrent save. Do not use periodic polling, arbitrary debounce delays or sleeps. Observe only while the relevant service/follow state needs it and unregister on teardown.
 
-A missing, denied, invalid or unsupported current value is a visible follow error, not permission to revert to generic tailnet DNS or silently keep using an obsolete provider. Retain the last value for diagnostics only; ordinary default-domain queries must fail closed while follow remains selected and has no usable source. Preserve applicable specific routes. Manual mode or explicitly disabling follow remains the user's escape hatch. A transport outage uses R08 behavior, not a different provider.
+A missing, denied, invalid or unsupported current value is a visible follow error, not permission to revert to generic tailnet DNS or silently keep using an obsolete provider. Retain the last value for diagnostics only; ordinary default-domain queries must fail closed while follow remains selected and has no usable source. Preserve applicable specific routes. Manual mode or explicitly disabling follow remains the user's escape hatch. A transport outage uses R08 encrypted recovery; an unavailable settings source is not a transport outage.
 
 Acceptance: real system saves propagate while the fork UI is closed; successive edits converge on the latest value; restart, observer teardown, profile switches and invalid-to-valid recovery are tested. A saved provider is consumed in Default/Automatic even without an active Private DNS server name. Verify observer delivery on Thor; the successful one-shot Samsung read test does not establish notification delivery. Record the Thor OS build and target SDK and test permission/read failures without privileged app grants. The user performs Samsung testing of the full release.
 
@@ -134,7 +141,16 @@ Acceptance: transition tests and real restart/disconnect/reconnect/profile-chang
 
 Reuse Tailscale's existing DoH transport where supported, with certificate and hostname verification. The pinned core only accepts recognized DoH endpoints, including Control D and NextDNS; arbitrary HTTPS resolvers and `tls://` resolvers are explicitly rejected in its forwarder. Generic manual DoH support therefore requires an actual transport/bootstrap extension and tests, not merely accepting URLs in the editor. See the [pinned forwarder](https://github.com/tailscale/tailscale/blob/b5e07cbf538e2558eac3c5fe5c34be288819fff6/net/dns/resolver/forwarder.go) and [provider table](https://github.com/tailscale/tailscale/blob/b5e07cbf538e2558eac3c5fe5c34be288819fff6/net/dns/publicdns/publicdns.go).
 
-While custom mode is eligible, ordinary default-domain queries must not fall back to plaintext, another provider, or an exit-node DNS proxy when the endpoint fails. Return the resolver error and expose degraded health; retain more-specific route behavior.
+While custom mode is eligible, try the selected default endpoint first. On HTTP
+5xx or connection failure, automatically recover through Cloudflare DoH using
+the same TLS-verified, route-aware transport and maintained bootstrap addresses.
+This intentionally bypasses provider filtering during an outage, without
+changing saved settings; subsequent queries try the selected endpoint first.
+Negative/block answers and DNS SERVFAIL, HTTP 4xx, redirects, configuration errors
+and certificate rejection do not trigger recovery. Never fall back to plaintext
+or an exit-node DNS proxy. MagicDNS, authoritative/split routes, policy gates and
+exit-node egress remain unchanged. Expose recovery health, not permanent provider
+reachability. See the shared-core specification for exact acceptance criteria.
 
 The custom endpoint remains selected when an exit node is selected. Its traffic follows the intended exit-node route; it must not silently use a protected/direct socket to bypass the exit node. Audit actual transport behavior rather than assuming a `DefaultResolvers` assignment guarantees this. Preserve the user's existing exit-node configuration.
 
