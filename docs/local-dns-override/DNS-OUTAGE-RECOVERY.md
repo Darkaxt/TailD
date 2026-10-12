@@ -41,8 +41,10 @@ recovery; no arbitrary timeout or polling loop is introduced.
 ## Public delivery authorization, 2026-10-12
 
 The user authorized public Windows/Android releases and local Windows activation.
-Android release `v1.103.312+28` must pass the existing GitHub exact-source build,
+Android release `v1.103.312+29` must pass the existing GitHub exact-source build,
 test and isolated signing pipeline, followed by independent download verification
 of package/version/code, signer, SHA-256 and this exact public core provenance.
 Publication is not an Android device installation claim. Delivery stage status
 and final verification belong to the linked authoritative core specification.
+The unpublished +28 attempt was canceled after the separate dependency-tidy
+gate detected obsolete module checksums; its immutable tag is not reused.

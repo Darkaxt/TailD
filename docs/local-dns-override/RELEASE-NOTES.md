@@ -1,4 +1,4 @@
-# TailDNS 1.103.312+28
+# TailDNS 1.103.312+29
 
 This release automatically recovers default-resolver queries from provider HTTP
 5xx and connection failures through Cloudflare DNS over HTTPS. The saved provider
