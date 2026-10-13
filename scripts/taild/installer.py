@@ -114,7 +114,7 @@ def reader_start(directory,owner):
         try:
             service=win32service.CreateService(manager,SERVICE,'TailD read-only GlassWire reader',
                 win32service.SERVICE_ALL_ACCESS,win32service.SERVICE_WIN32_OWN_PROCESS,
-                win32service.SERVICE_AUTO_START,win32service.SERVICE_ERROR_NORMAL,command)
+                win32service.SERVICE_AUTO_START,win32service.SERVICE_ERROR_NORMAL,command,None,None,None,None,None)
         except pywintypes.error as error:
             if error.winerror!=1073:raise
             service=win32service.OpenService(manager,SERVICE,win32service.SERVICE_ALL_ACCESS)
