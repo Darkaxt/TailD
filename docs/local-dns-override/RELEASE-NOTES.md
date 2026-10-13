@@ -1,4 +1,23 @@
-# TailDNS 1.103.312+13
+# TailDNS 1.103.312+29
+
+This release automatically recovers default-resolver queries from provider HTTP
+5xx and connection failures through Cloudflare DNS over HTTPS. The saved provider
+is tried first on every query and remains unchanged; filtering may be temporarily
+bypassed during recovery. MagicDNS, split DNS, valid negative/block answers,
+certificate validation and managed policy remain authoritative. Complete network
+blackholes can still exhaust the existing request deadline before recovery.
+
+Android continues to follow the retained Android Private DNS provider without a
+new switch. The exact core revision and APK signing identity are recorded in the
+release provenance and signature assets. The package/signing identity is unchanged
+and the version code increases for in-place installation.
+
+For Windows, use the separately authenticated matching daemon/CLI/tray/native
+installer release [windows-v1.105.0+31](https://github.com/Darkaxt/tailscale/releases/tag/windows-v1.105.0%2B31).
+It updates the existing Tailscale directory in place; the legacy companion archive
+attached to the Android release is not the supported current Windows installer.
+
+## Historical release notes: 1.103.312+13
 
 This release fixes a Windows startup failure when the existing hosts file is
 explicitly read-only. TailDNS now treats that hosts projection as the optional
