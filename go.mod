@@ -5,7 +5,7 @@ go 1.27.2
 require (
 	github.com/tailscale/wireguard-go v0.0.0-20260928213353-e61b6b78110b
 	golang.org/x/mobile v0.0.0-20240806205939-81131f6468ab
-	tailscale.com v1.103.0-pre.0.20261012090911-a950a8448904
+	tailscale.com v1.103.0-pre.0.20261013063423-de6111f507ae
 )
 
 require (
@@ -94,4 +94,4 @@ require (
 	gvisor.dev/gvisor v0.0.0-20260915211658-a6f909f08a72 // indirect
 )
 
-replace tailscale.com => github.com/Darkaxt/tailscale v1.103.0-pre.0.20261012090911-a950a8448904
+replace tailscale.com => github.com/Darkaxt/tailscale v1.103.0-pre.0.20261013063423-de6111f507ae
