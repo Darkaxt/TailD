@@ -36,11 +36,11 @@ def run(package,output):
         subprocess.run([str(powershell),'-NoProfile','-ExecutionPolicy','Bypass','-File',str(screenshot),
             '-WindowHandle',str(rendered['window_handle']),'-Path',str(output/'release-window.png')],check=True,
             creationflags=subprocess.CREATE_NO_WINDOW)
-        client=reader.PipeClient(instance)
-        try:
-            state=client.request({'op':'state'})
-            assert state['state']=='disabled' and not state['settings']['traffic'] and not state['settings']['dns']
-        finally:client.close()
+        # The UI intentionally owns the single authenticated control pipe.
+        # Read the existing redacted diagnostics, not a competing connection.
+        state=json.loads((home/'runtime-status.json').read_text(encoding='utf-8'))
+        assert state['owner_pid']==collector.pid and state['state']=='disabled'
+        assert state['sources']['traffic']['state']=='disabled' and state['sources']['dns']['state']=='disabled'
         report={'ok':True,'debug_hooks':False,'frozen_collector':True,'offline_source':'deliberately unavailable',
             'collection_state':'disabled, no provider credential or source read',
             'fingerprints':{name:hashlib.sha256((package/name).read_bytes()).hexdigest()

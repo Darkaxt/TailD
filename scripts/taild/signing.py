@@ -41,11 +41,17 @@ def main():
         provenance=json.loads(args.provenance.read_text(encoding='utf-8'))
         if provenance['source_dirty']:raise RuntimeError('Commit the candidate before signing; no dirty-source release identity')
         upstream=args.core_version_file.read_text().strip()
+        if base64.b64encode(key.public_key().public_bytes_raw()).decode()!=contract.PUBLIC_KEY:
+            raise RuntimeError('Signing identity does not match the pinned production key')
+        members=contract.inventory(args.package)
+        if (provenance.get('fixture_trust') is not False or provenance.get('upstream_version')!=upstream
+            or provenance.get('subversion')!=args.subversion or sorted(provenance.get('files',[]),key=lambda row:row['path'])!=members):
+            raise RuntimeError('Build provenance does not match the production payload/version')
         data=contract.validate({'schema':'taild-package-v1','product':'TailD','upstream_version':upstream,
             'subversion':args.subversion,'version':upstream+'+'+str(args.subversion),
             'architecture':'windows-amd64','source_commit':provenance['source_commit'],
             'core_replace':provenance['core_replace'],'history_schema':4,
-            'authenticode':'not-signed','files':contract.inventory(args.package)})
+            'authenticode':'not-signed','files':members})
         raw=json.dumps(data,sort_keys=True,separators=(',',':')).encode()
         with (args.package/contract.MANIFEST).open('xb') as f:f.write(raw)
         with (args.package/contract.SIGNATURE).open('xb') as f:f.write(key.sign(raw))

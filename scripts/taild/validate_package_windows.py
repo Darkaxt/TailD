@@ -82,7 +82,7 @@ def acceptance(root,compiler,repo):
     service=win32service.CreateService(manager,'Tailscale','Synthetic Tailscale preservation fixture',
         win32service.SERVICE_ALL_ACCESS,win32service.SERVICE_WIN32_OWN_PROCESS,
         win32service.SERVICE_DEMAND_START,win32service.SERVICE_ERROR_NORMAL,
-        '"'+str(Path(os.environ['WINDIR'])/'System32'/'cmd.exe')+'" /c exit 0',None,None,None,None,None)
+        '"'+str(Path(os.environ['WINDIR'])/'System32'/'cmd.exe')+'" /c exit 0',None,0,None,None,None)
     service.Close();manager.Close()
     app.parent.mkdir(parents=True)
     sentinel=app.parent/'synthetic-node-tailnet-lock-provider.state'

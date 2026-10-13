@@ -12,6 +12,8 @@ import uuid
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 import package_manifest as manifest
 import installer
+import signing
+import sys
 
 
 class PackageManifestTest(unittest.TestCase):
@@ -20,6 +22,19 @@ class PackageManifestTest(unittest.TestCase):
             mask=installer.notification_mask(state)
             self.assertEqual(mask & (1 << (state-1)),0)
             self.assertEqual(mask | (1 << (state-1)),0x7f)
+
+    def test_production_signing_rejects_changed_build_provenance(self):
+        for name in (manifest.MANIFEST,manifest.SIGNATURE):(self.root/name).unlink()
+        provenance=self.root.with_name(self.root.name+'-provenance.json')
+        version=self.root.with_name(self.root.name+'-VERSION.txt');version.write_text('1.105.0')
+        provenance.write_text(json.dumps({'source_dirty':False,'fixture_trust':False,
+            'upstream_version':'1.105.0','subversion':1,'source_commit':'a'*40,
+            'core_replace':self.data['core_replace'],'files':[]}))
+        args=['signing.py','make','--package',str(self.root),'--provenance',str(provenance),
+            '--core-version-file',str(version),'--subversion','1']
+        with patch.object(signing,'private_key',return_value=self.key),patch.object(manifest,'PUBLIC_KEY',self.public),\
+             patch.object(sys,'argv',args),self.assertRaisesRegex(RuntimeError,'provenance'):
+            signing.main()
 
     def test_uninstall_confirmation_is_nondestructive(self):
         source=(Path(__file__).resolve().parents[2]/'desktop/installer.iss').read_text()

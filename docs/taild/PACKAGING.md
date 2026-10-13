@@ -53,3 +53,33 @@ not the elevated administrator's username. Uninstall confirmation/preflight is
 nondestructive; reader removal occurs only in the actual uninstall phase.
 Package callbacks write bounded, value-free error type/Win32/frame diagnostics
 into the installer log. Private values and exception text are not logged.
+
+## Signing and eventual delivery boundary
+
+The dedicated production Ed25519 public key is pinned in `package_manifest.py`;
+the matching private identity stays in the owning Windows vault at
+`Darkaxt/TailD/ReleaseManifest/Ed25519/v1`. It is not a Control D token, Tailnet
+Lock key, TailDNS secret or Authenticode certificate. Production signing refuses
+fixture trust, dirty builds, mismatched key, changed payload hashes or a version
+different from the actual pinned core's `VERSION.txt` plus the build subversion.
+The unsigned Windows executable/installer label remains explicit.
+
+The Stage 10 release arrangement is deliberately separated from candidate CI:
+
+1. A read-only pinned-source build job creates the toolchain-free payload,
+   complete hashes/notices and provenance. No signing credential is available.
+2. A dedicated protected signing job consumes that exact immutable inventory,
+   checks the selected commit/version/core/schema and monotonic sequence, and
+   signs only canonical manifest bytes using reviewed pinned signing tooling.
+   It does not import or execute downloaded application/candidate code.
+3. A credential-free packaging job combines the exact payload and detached
+   signature into the reviewed Inno installer. The protected signer then signs
+   a release envelope containing that installer digest and component identity.
+4. A separate publication job can upload only those checked immutable artifacts;
+   independent download verification precedes any explicitly selected migration
+   or updater activation. Branch checks/untrusted PRs never receive signing keys.
+
+No production signing secret, protected release environment, publication job or
+updater activation is created by Stage 9. Its real Windows workflow exercises the
+build/sign/package boundary with an explicitly disposable fixture key instead.
+Public source and pinned notices accompany any later GPL frontend distribution.
