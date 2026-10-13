@@ -26,6 +26,11 @@ def replace_once(source,before,after):
 
 def recovery_overlay(source):
     source=replace_once(source,
+        'func platformRollback() (installResult, error) {',
+        'func platformRollback() (installResult, error) { return rollbackDeployment(false) }\n\n'
+        'func platformUnmigrate() (installResult, error) { return rollbackDeployment(true) }\n\n'
+        'func rollbackDeployment(original bool) (installResult, error) {')
+    source=replace_once(source,
         '\tactivationStarted = true\n\tif err := terminateProcessesByPath(paths.Tray);',
         '\t// Durable immediate-predecessor recovery, written before activation.\n'
         '\tif err := writeRecord(paths.Record+".previous", active); err != nil { return result, err }\n'
@@ -34,10 +39,13 @@ def recovery_overlay(source):
     # Read the immediately preceding update snapshot, not the original
     # TailDNS-to-TailD migration snapshot. Both are needed for actual rollback.
     before='\trecord, err := readRecord(paths.Record)\n\tif err != nil {\n\t\treturn installResult{}, err\n\t}\n\tif config.BinaryPathName != record.ServicePath {'
-    after='\trecordPath := paths.Record\n\tvar previous *deploymentRecord\n'
-    after+='\tif _, err := os.Stat(paths.Record+".rollback"); err == nil {\n'
+    after='\t// An interrupted uninstall may have already restored the baseline. Never accept a TailD daemon with its recovery record missing.\n'
+    after+='\tif _, err := os.Stat(paths.Record); original && errors.Is(err, os.ErrNotExist) {\n'
+    after+='\t\tvar installed versionJSON; if err := commandJSON(paths.CLI, &installed, "version", "--json"); err != nil { return installResult{}, err }; if strings.Contains(installed.Long, "-taild.") { return installResult{}, errors.New("TailD recovery record missing") }; identity, err := readIdentity(paths.CLI); if err != nil { return installResult{}, err }; return installResult{Action:"alreadyUnmigrated", Identity:identity}, nil\n\t}\n'
+    after+='\trecordPath := paths.Record\n\tvar previous *deploymentRecord\n'
+    after+='\tif _, err := os.Stat(paths.Record+".rollback"); !original && err == nil {\n'
     after+='\t\told, readErr := readRecord(paths.Record+".previous"); if readErr != nil { return installResult{}, readErr }; previous = &old; recordPath += ".rollback"\n'
-    after+='\t} else if !errors.Is(err, os.ErrNotExist) { return installResult{}, err }\n'
+    after+='\t} else if err != nil && !errors.Is(err, os.ErrNotExist) { return installResult{}, err }\n'
     after+='\trecord, err := readRecord(recordPath)\n\tif err != nil { return installResult{}, err }\n'
     after+='\tif config.BinaryPathName != record.ServicePath {'
     source=replace_once(source,before,after)
@@ -45,7 +53,10 @@ def recovery_overlay(source):
     after='\tif previous != nil {\n\t\tif err := writeRecord(paths.Record, *previous); err != nil { return installResult{}, err }\n'
     after+='\t\t// A completed rollback remains idempotently recoverable if the parent installer exits before recording completion.\n'
     after+='\t\trecord.Version = previous.Version\n'
-    after+='\t} else if err := os.Remove(paths.Record); err != nil && !errors.Is(err, os.ErrNotExist) {\n\t\treturn installResult{}, err\n\t}'
+    after+='\t} else {\n'
+    after+='\t\t// Remove only the two fixed superseded metadata files before the active record, so an interrupted unmigration stays repeatable.\n'
+    after+='\t\tif original { for _, suffix := range []string{".rollback", ".previous"} { if err := os.Remove(paths.Record+suffix); err != nil && !errors.Is(err, os.ErrNotExist) { return installResult{}, err } } }\n'
+    after+='\t\tif err := os.Remove(paths.Record); err != nil && !errors.Is(err, os.ErrNotExist) { return installResult{}, err }\n\t}'
     source=replace_once(source,before,after)
     before='\tif record.OfficialGUIRunning {\n\t\tif err := winutil.StartProcessAsCurrentGUIUser(paths.GUI, nil);'
     after='\tif record.TailDRunValue.Existed && record.TailDRunValue.Value == tailDNSRunCommand(paths.Tray) {\n'
@@ -75,6 +86,7 @@ def create(core,output):
             if name=='cmd/taildns-installer/main.go':
                 sources[name]=replace_once(sources[name],
                     '\tcase "status":\n\t\tresult, err = platformStatus()',
+                    '\tcase "unmigrate":\n\t\tresult, err = platformUnmigrate()\n'
                     '\tcase "resume-analytics":\n\t\tresult, err = platformResumeAnalytics()\n\tcase "status":\n\t\tresult, err = platformStatus()')
             if name.endswith('install_windows.go'):
                 sources[name]=sources[name].replace('runValueName = "TailD"','runValueName = "TailDNS"')

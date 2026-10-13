@@ -25,6 +25,10 @@ class CoreOverlayTest(unittest.TestCase):
         tray=Path(replacements[str(Path(core)/'client/systray/systray.go')]).read_text()
         self.assertIn('About TailD ',tray)
         self.assertIn('https://github.com/Darkaxt/TailD',tray)
+        core_installer=Path(replacements[str(Path(core)/'cmd/taildns-installer/install_windows.go')]).read_text()
+        self.assertIn('func platformUnmigrate()',core_installer)
+        self.assertIn('!original && err == nil',core_installer)
+        self.assertIn('runValueName = "TailDNS"',core_installer)
         for name,value in before.items():self.assertEqual((Path(core)/name).read_bytes(),value)
 
     def test_changed_pin_fails_before_any_output(self):

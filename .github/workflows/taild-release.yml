@@ -139,6 +139,7 @@ jobs:
 
   sign-payload:
     needs: [contracts, installer-evidence, build]
+    if: always() && needs.contracts.result == 'success' && needs.installer-evidence.result == 'success' && needs.build.result == 'success'
     runs-on: ubuntu-latest
     environment: taild-release
     steps:
@@ -171,6 +172,7 @@ jobs:
 
   package:
     needs: sign-payload
+    if: always() && needs.sign-payload.result == 'success'
     runs-on: windows-2025
     env:
       SEQUENCE: ${{ inputs.sequence }}
@@ -211,6 +213,7 @@ jobs:
 
   sign-installer:
     needs: package
+    if: always() && needs.package.result == 'success'
     runs-on: ubuntu-latest
     environment: taild-release
     steps:
@@ -243,7 +246,7 @@ jobs:
 
   publish:
     needs: sign-installer
-    if: inputs.publish == true
+    if: always() && inputs.publish == true && needs.sign-installer.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write

@@ -280,7 +280,7 @@ def check_uninstall():
     if previous.exists():manifest.verify(previous,installed=True)
 
 
-def remove_history():
+def remove_history(dry_run=False):
     import history,reader
     config=json.loads((app_directory()/'installation.json').read_text())
     if config['owner_sid']!=reader.current_sid():raise manifest.PackageError('history-removal-requires-owning-account')
@@ -302,8 +302,23 @@ def remove_history():
                 pending.append(path)
             elif directory!=root or path.name in names:files.append(path)
             else:raise manifest.PackageError('unrecognized-history-member')
+    if dry_run:return
     for path in files:path.unlink()
     for directory in sorted(directories,key=lambda p:len(p.parts),reverse=True):directory.rmdir()
+
+
+def uninstall(delete_history=False):
+    check_uninstall()
+    if delete_history:remove_history(dry_run=True)
+    if manifest.verify(app_directory(),installed=True)['schema']=='taild-package-v2':
+        import delivery
+        # Return to the original migration baseline before Inno removes the
+        # helper. Failure leaves the reader, credentials and history untouched.
+        delivery.core_command(app_directory(),'unmigrate')
+    if delete_history:remove_history()
+    reader_stop(remove=True)
+    previous=app_directory().with_name('TailD.rollback')
+    if previous.exists():remove_verified(previous,manifest.verify(previous,installed=True))
 
 
 def main(argv=None):
@@ -367,11 +382,7 @@ def main(argv=None):
             delivery.recover(args.candidate)
         else:abort(args.candidate)
     elif args.operation=='uninstall':
-        check_uninstall()
-        if args.delete_history:remove_history()
-        reader_stop(remove=True)
-        previous=app_directory().with_name('TailD.rollback')
-        if previous.exists():remove_verified(previous,manifest.verify(previous,installed=True))
+        uninstall(args.delete_history)
     else:
         if integrated:
             import delivery,updater

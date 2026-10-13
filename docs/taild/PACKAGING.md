@@ -185,6 +185,9 @@ An interrupted extraction/activation is recovered from the journal and verified
 immediate-predecessor records, preserving the anti-replay floor. Manual core update
 rollback now restores the preceding update rather than silently returning to the
 original migration. Node keys and provider configuration are never copied or edited.
+Complete-product uninstall returns to the original pre-TailD connectivity baseline
+and original updater preference; it must not leave a TailD daemon whose signed
+updater helper was removed. Analytics-only v1 removal remains connectivity-neutral.
 
 The frozen collector exposes only an owner/instance-bound maintenance-stop event
 to its owner, SYSTEM and Administrators. Updating signals a graceful stop, closes

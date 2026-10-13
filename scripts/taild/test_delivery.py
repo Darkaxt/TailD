@@ -72,5 +72,20 @@ class DeliveryTest(unittest.TestCase):
         with self.assertRaises(manifest.PackageError):delivery.recover(new)
         self.assertEqual((self.app/'TailD.exe').read_bytes(),before)
 
+    def test_product_uninstall_returns_core_before_reader_removal(self):
+        source,_=self.candidate(1);self.installed(source);actions=[]
+        with patch.object(delivery,'core_command',side_effect=lambda _,action:actions.append(action)),\
+             patch.object(installer,'reader_stop',side_effect=lambda **kw:actions.append('reader-removed')):
+            installer.uninstall(False)
+        self.assertEqual(actions,['unmigrate','reader-removed'])
+
+    def test_failed_core_unmigration_leaves_reader_and_history_intact(self):
+        source,_=self.candidate(1);self.installed(source)
+        with patch.object(delivery,'core_command',side_effect=manifest.PackageError('synthetic-core-failure')),\
+             patch.object(installer,'remove_history') as delete,patch.object(installer,'reader_stop') as stop,\
+             self.assertRaisesRegex(manifest.PackageError,'synthetic-core-failure'):
+            installer.uninstall(True)
+        delete.assert_called_once_with(dry_run=True);stop.assert_not_called()
+
 
 if __name__=='__main__':unittest.main()
