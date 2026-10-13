@@ -1,12 +1,13 @@
 # Portmaster source design reference for TailD
 
-Inspected 2026-10-08. This is an engineering reference, not copied product code.
+Metrics reference inspected 2026-10-08; layout/widget retrieval refreshed 2026-10-13.
+This is an engineering and planned-reuse reference, not yet integrated product code.
 It supports the authoritative [remaining-product specification](PRODUCT-SPECIFICATION.md).
 
 ## Pinned evidence
 
 Repository: [safing/portmaster](https://github.com/safing/portmaster).
-Inspected development commit: `882d900dadb6df91150cf87f0a12706d29172586`.
+Earlier metrics-design commit: `882d900dadb6df91150cf87f0a12706d29172586`.
 The recursive GitHub source tree was complete, not truncated. Links below are
 immutable source references; a later upstream design must be reviewed explicitly.
 
@@ -76,8 +77,100 @@ Before any literal reuse, record each file's license/header, modifications,
 attribution and distribution/source obligations, and establish a compatible
 component boundary and notices. Do not represent copied code as independently
 implemented or assume a separate process automatically settles licensing.
-Direct reuse is not required to satisfy this design; an original implementation
-of the specified layout and query/metrics contracts is the default.
+The October 13 user instruction supersedes the original-implementation default:
+maximize practical reuse of the actual widgets, templates and styles. Complete the
+file-specific notice/source review before copying them; framework convenience is
+not sufficient reason to replace reusable components with generic cards or prose.
 
 No Portmaster packet interception, WFP driver, DNS interception, firewall,
 SPN, subscription backend or updater is part of TailD's analytics design.
+
+## Current layout and widget retrieval — 2026-10-13
+
+Current development head at retrieval: **`bb6c44468a5d66bddb13bf3c43fcb2625c326ca9`**,
+committed October 12. The entire `desktop/angular` tree and `assets/data` were
+retrieved in a clean read-only sparse clone, not just selected dashboard snippets.
+[The complete inventory](portmaster-source-inventory.json) records all 972 tree
+entries, modes and Git blob identities. The source clone is retained at
+`D:\Temp\taild-portmaster-layouts-20261013` while required for Stage 8 reuse;
+cleanup transaction `561026f6127b25194528437346bb22bb` owns that exact disposable
+clone. No npm installation, Portmaster service/driver or network configuration
+change occurred. Windows checks out upstream asset symlink modes as text pointers;
+the actual shared assets were therefore retrieved explicitly. Inventory completeness
+does not mean every file has been manually reviewed or approved for copying.
+
+All paths below are relative to `desktop/angular/`; abbreviated application
+paths such as `pages/`, `layout/` and `shared/` are under `src/app/`, at the immutable
+[source root](https://github.com/safing/portmaster/tree/bb6c44468a5d66bddb13bf3c43fcb2625c326ca9/desktop/angular).
+The table distinguishes reuse candidates from already integrated components.
+
+| Layout/widget family retrieved | Source files/directories | Required reuse/adaptation |
+|---|---|---|
+| Shell and rail/side panel | `src/app/app.component.{html,scss,ts}`, `layout/navigation/`, `layout/side-dash/`, `app-routing.module.ts` | Reuse shell/rail geometry and navigation treatment; TailD route labels and authenticated lifecycle. Remove SPN/subscription/pause-interception actions and Safing branding. |
+| Dashboard grid and panel chrome | `pages/dashboard/dashboard.component.{html,scss,ts}`, `dashboard-widget/` | Reuse panel chrome, responsive grid and dense summary/chart/ranking composition. Bind the existing typed TailD query revision, not upstream connection counters. No subscription/news filler. |
+| Time-series chart | `shared/netquery/line-chart/line-chart.ts` | Reuse D3 rendering/series/interaction where compatible. Replace AppComponent coupling with owned resize lifecycle; use exact-value tooltips and explicit partial/null bins. Upstream `fillEmptyTicks` fabricates zeros: do not enable it for missing TailD coverage. |
+| Ranked stacked consumers | `shared/netquery/circular-bar-chart/circular-bar-chart.component.ts` | Reuse circular stacked-bar rendering for sent/received application/destination rankings; accessible sorted table and consistent filter navigation. Plot scaled numeric coordinates, retain exact byte strings separately. |
+| Application catalogue and insights | `pages/app-view/overview.{html,scss,ts}`, `app-view.{html,scss,ts}`, `app-insights/`, `shared/app-icon/` | Reuse searchable application list, detail header/tabs and chart panels. Retain selected application scope on every query. Remove profile editing/firewall/SPN controls and unproven running/process claims. |
+| Activity explorer | `shared/netquery/netquery.component.{html,ts}`, `netquery.module.ts`, `searchbar/`, `search-overlay/`, `tag-bar/`, `add-to-filter/`, `textql/` | Reuse search/filter-chip/group/row interaction and layout. Translate only allowlisted TailD predicates, not raw SQL or upstream field semantics. Preserve compound predicates and revision-bound pagination. |
+| Rows and evidence | `shared/netquery/connection-row/`, `connection-details/`, `scope-label/`, `pipes/` | Reuse expandable rows and structured attribute sections. Distinct traffic/DNS/candidate facts; hide unsupported socket lifespan, TLS verdict, PID and enforcement actions rather than inventing them. |
+| UI primitives | `projects/safing/ui/src/lib/{accordion,dialog,dropdown,pagination,select,tabs,toggle-switch,tooltip,tipup,overlay-stepper}/` | Reuse required controls, focus/keyboard behavior and styles. Adapt paginator to revision-bound cursors; no unsupported arbitrary page jump. Do not include unrelated controls simply because retrieved. |
+| Settings and status | `pages/settings/`, `shared/config/`, `notification-list/`, `action-indicator/`, `loading/`, `count-indicator/` | Reuse searchable grouped settings and compact status treatment for collection, credentials, retention and capabilities. No provider-write controls. Missing/stale/error are interactive states, not walls of prose. |
+| Geographic display | `pages/spn/map-renderer/{map-renderer.ts,map-style.scss}`, `shared/country-flag/`, shared country/topology assets | Reuse the independent D3/topojson renderer only after dataset/license review; it accepts optional map handlers, so SPN network services are not needed. Label provider answer-country scope and retain unknowns; never imply traffic geolocation or route tracing. |
+| Theme and typography | `tailwind.config.js`, `src/styles.scss`, `src/theme/`, `projects/safing/ui/theming.scss`, `assets/data/fonts/` | Reuse restrained dark surfaces, spacing, table/input/pill tokens and licensed font assets; preserve original notices. Accessibility may require contrast/focus improvements, not a different generic visual language. |
+
+### Dependencies and reuse constraints observed
+
+The application manifest declares Angular/CDK 16, RxJS 7, D3 7, Tailwind 3,
+ng-zorro 16, Font Awesome and topojson. The local `@safing/ui` manifest still
+declares Angular 12 peers; do not assume that package metadata is ready for direct
+consumption. Stage 8 must use a compatible pinned build of the selected source
+subset and verify it, not install all upstream dependencies or network backends.
+The upstream lockfile is retrieved for exact dependency review. No framework
+selection has yet been implemented.
+
+Root GPL-3.0 applies to upstream source without a more specific notice. Initial
+checks found separate Apache-2.0 Roboto font notices and a Go Squared permissive
+flag notice. These checks do not license every geographic dataset or third-party
+icon. Before import, record exact copied paths/blob IDs, original notices,
+modifications, dependency licenses, corresponding source/build instructions and
+the combined frontend's applicable GPL obligations. Preserve inherited TailDNS
+copyrights; do not relabel copied GPL source as original BSD code. The frontend
+reuse boundary and complete notices must be established before integration, not
+postponed to release. No Portmaster source/assets are integrated by this research.
+
+### Concrete Stage 8 design and acceptance contract
+
+This is TailD's adaptation contract, not a claim that upstream was rendered or
+measured in a running Portmaster installation. Source-observed anchors: the
+dashboard uses a four-track grid with `gap-4`, a layout change at 1024px host
+width, 150px minimum small summary/ranking cells and 400px major chart panels;
+the shell uses a 64px navigation offset and a 419px optional side panel.
+
+- Verify the actual TailD served URL and current asset build at 1440×900,
+  1280×800 and 1024×768 CSS pixels, plus Windows 150% scaling and keyboard-only use.
+  Retain screenshot evidence for overview, application insights, activity with
+  expanded evidence, policy view and stale/empty/partial states.
+- Preserve a 64px rail; expanded labeled navigation may replace the upstream
+  notification side panel. Keep the shared device/time/filter header visible.
+  Use the source's 16px grid rhythm and dense aligned panel headers; at narrower
+  sizes stack major charts without horizontal page overflow. Tables may have
+  their own deliberate horizontal scrolling without clipping controls.
+- Overview must contain real sent/received time series, interactive ranked
+  consumers, DNS outcome distribution and explicit coverage/source state, not
+  only numerical cards. Major chart surfaces target 320–400px height at desktop
+  sizes and maintain readable axes/legends at 1024px. Map/geographic display is
+  optional only where the specified source supports it; a labeled unknown state
+  must not imply measured geography.
+- Every summary, series, ranked row and geographic selection opens the same
+  scoped explorer; app details retain app identity. Evidence uses structured
+  rows, source badges and explicit candidate/unknown labels, with raw JSON only
+  as a secondary inspection/export affordance.
+- Match source component structure and appearance with a before/adapted comparison
+  for each major reused family. Document replacements with concrete license,
+  security, semantic or dependency reasons. Review focus order, accessible names,
+  contrast, non-color-only status and chart/table equivalence on the real assets.
+- Formal acceptance is the complete connected UI/query/export feature, not a
+  screenshot of disconnected widgets or a series of component-only validations.
+
+Stage 7 remains ACTIVE. Stage 8 implementation and its acceptance are NOT STARTED;
+retrieval and this binding reuse contract are the explicitly requested research.

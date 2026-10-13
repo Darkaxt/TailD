@@ -345,7 +345,13 @@ Acceptance criteria:
   unchanged VPN/DNS/firewall and no duplicate or visible-console helpers.
 
 Satisfied: none. Remaining: all criteria above.
-Blockers: none currently established. Tracked deferrals: none.
+Advancement blocker B07 (internal): all four Stage 7 criteria remain unmet because
+the continuous owning-user runtime, authenticated privileged IPC/query boundary
+and their integrated lifecycle/security verification are not implemented. Resolve
+by implementing the specified complete acquisition/query lifecycle and inspecting
+the real Windows/security evidence. Stage 7 remains ACTIVE while these gaps are
+implementable; Stage 8 and dependent packaging cannot be complete before resolution.
+Tracked deferrals: none.
 Dependency: Stage 6 COMPLETE; stages 4–6 data contracts remain enforced.
 Installing a service for live validation requires applicable live-test authority;
 this documentation request does not install or schedule one.
@@ -368,6 +374,11 @@ Acceptance criteria:
   evidence details; private JSON/CSV export, formula safety and exact integers.
 - Actual-source desktop drill-down/export and focused keyboard/accessibility/
   scaling/security review; pinned source-map traceability and reuse notices.
+- Current Portmaster layout/widget retrieval before presentation work; maximum
+  practical literal reuse with per-component adaptation/replacement reasons and
+  license/source notices. Real charts, ranked consumers, filters and drill-downs
+  must not be replaced with text blocks or a generic card grid. Actual served
+  assets must satisfy the design map's responsive/screenshot contract.
 
 Satisfied: none. Remaining: all criteria above.
 Blockers: none currently established. Tracked deferrals: none.
@@ -484,3 +495,12 @@ and the required live lifecycle matrix. No permanent service/startup task, clien
 replacement, provider write, updater change or release is implied. A privileged
 reader exists only to satisfy the verified source ACL boundary; it receives no
 provider credential or arbitrary SQL/path/shell operation.
+
+The October 13 user instruction separately authorizes current Portmaster layout
+research now. The full Angular/shared-asset tree at bb6c444 is retrieved and its
+immutable inventory/design map recorded before Stage 8 presentation work. This
+research does not activate Stage 8 implementation or satisfy its UI criteria.
+Replacement standing instructions were reread along with the installed
+spec-gated-implementation, frontend-design and transactional-cleanup skills;
+advancement blockers are distinct from justified BLOCKED execution status, and
+component diagnostics are not feature acceptance validation.

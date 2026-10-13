@@ -1,0 +1,5845 @@
+{
+  "repository": "https://github.com/safing/portmaster",
+  "reference": "development",
+  "commit": "bb6c44468a5d66bddb13bf3c43fcb2625c326ca9",
+  "retrieved_utc_date": "2026-10-13",
+  "roots": [
+    "desktop/angular",
+    "assets/data"
+  ],
+  "scope": "Complete pinned Git tree inventory for retrieved Angular layouts/widgets/theme and shared assets. Inventory is not a claim that every file was manually reviewed or integrated. Symlink-mode files on this Windows checkout are text pointers, not live symlinks.",
+  "files": [
+    {
+      "path": "assets/data/favicons/android-icon-144x144.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "14025fcc552ab4312dc18f3980ca0aa1d26146fc"
+    },
+    {
+      "path": "assets/data/favicons/android-icon-192x192.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6a6e9223ddffd41eceaf4576f678d7306b8c7e0d"
+    },
+    {
+      "path": "assets/data/favicons/android-icon-36x36.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "97cb26c6df4690317b317b9090ab76401466ad40"
+    },
+    {
+      "path": "assets/data/favicons/android-icon-48x48.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0a41b5dcd49b15114f93a980494cb2f7d067a566"
+    },
+    {
+      "path": "assets/data/favicons/android-icon-72x72.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5ffd561b3c74fe0c5f4798618f1224fa8647eb29"
+    },
+    {
+      "path": "assets/data/favicons/android-icon-96x96.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "cfc92abf5739b34753d56d72c31404f851e85d43"
+    },
+    {
+      "path": "assets/data/favicons/apple-icon-114x114.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "68fa0ee57611d22f1addb46d0d86e9963425d1bf"
+    },
+    {
+      "path": "assets/data/favicons/apple-icon-120x120.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d2c8eb6acdb8e0608a26c53dfb3fac974ae307e8"
+    },
+    {
+      "path": "assets/data/favicons/apple-icon-144x144.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "14025fcc552ab4312dc18f3980ca0aa1d26146fc"
+    },
+    {
+      "path": "assets/data/favicons/apple-icon-152x152.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "9e23739e532d225bd1d808c78b405cc13851cf31"
+    },
+    {
+      "path": "assets/data/favicons/apple-icon-180x180.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c08a6587f500671a3b6682e73b79deaeb8724b64"
+    },
+    {
+      "path": "assets/data/favicons/apple-icon-57x57.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ffa06ca719e0351e1846e81d5da5592c154c4e8f"
+    },
+    {
+      "path": "assets/data/favicons/apple-icon-60x60.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "31dd80166ed9527f926857f624c08a54cac8262c"
+    },
+    {
+      "path": "assets/data/favicons/apple-icon-72x72.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5ffd561b3c74fe0c5f4798618f1224fa8647eb29"
+    },
+    {
+      "path": "assets/data/favicons/apple-icon-76x76.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f9c5e2ded3632246e98326b3fd6dddd2268b43b3"
+    },
+    {
+      "path": "assets/data/favicons/apple-icon-precomposed.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "33a16bae46adf0fb8aacd238d7a308f457bab5f2"
+    },
+    {
+      "path": "assets/data/favicons/apple-icon.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "33a16bae46adf0fb8aacd238d7a308f457bab5f2"
+    },
+    {
+      "path": "assets/data/favicons/browserconfig.xml",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "79cbf549176bc9273865351accbcfd3ae04c041a"
+    },
+    {
+      "path": "assets/data/favicons/favicon-16x16.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "bbc1455d07d23f5aefc01c856a987aefba2eeaf7"
+    },
+    {
+      "path": "assets/data/favicons/favicon-32x32.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6c611b6350b133180cd4830ca71279de93bc1e1e"
+    },
+    {
+      "path": "assets/data/favicons/favicon-96x96.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "cfc92abf5739b34753d56d72c31404f851e85d43"
+    },
+    {
+      "path": "assets/data/favicons/favicon.ico",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1344c5c64b6ecad26170bfb71ddce77bfffee394"
+    },
+    {
+      "path": "assets/data/favicons/head.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "9cb476c93222985ce7eaf897452935f355587db9"
+    },
+    {
+      "path": "assets/data/favicons/manifest.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c01e2a1de419afd93cfface9f9e73005d01ef258"
+    },
+    {
+      "path": "assets/data/favicons/ms-icon-144x144.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "14025fcc552ab4312dc18f3980ca0aa1d26146fc"
+    },
+    {
+      "path": "assets/data/favicons/ms-icon-150x150.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0287bbac1018d917f174377cf5c5a5db29f01b22"
+    },
+    {
+      "path": "assets/data/favicons/ms-icon-310x310.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "391084472f700b032f1d021571592c524d42c325"
+    },
+    {
+      "path": "assets/data/favicons/ms-icon-70x70.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "9fec1b3919baf762bb43fa85b4f0a5b438fec865"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-300/LICENSE.txt",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d645695673349e3947e8e5ae42332d0ac3164cd7"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-300/Roboto-300.eot",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "826acfda9102ca6aba858813c72fa34b6968da36"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-300/Roboto-300.svg",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "52b2832799b01d2da11a5932e0c54a4399e54345"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-300/Roboto-300.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "66bc5ab8e299e9948a6fce6b7867cc638bc703c7"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-300/Roboto-300.woff",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1bff3ec454e615b795218f1babebb15277170986"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-300/Roboto-300.woff2",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4411cbc8754cf7ec78501ba711efabe15b936675"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-300italic/LICENSE.txt",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d645695673349e3947e8e5ae42332d0ac3164cd7"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-300italic/Roboto-300italic.eot",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c47c43ecfe86130fbd78c8347d775ad9ea7d533a"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-300italic/Roboto-300italic.svg",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ea86b201f4f25027d9b5f8e0f7412b1d6639b54d"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-300italic/Roboto-300italic.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ef1d13ceee0fbcd9bf33ac437372a0abae2857f5"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-300italic/Roboto-300italic.woff",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fc4a8b5ae7d24b1fc390521113ee34c0e3a66b87"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-300italic/Roboto-300italic.woff2",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "05fdb0ae9302ffdfeb80498fffcf46ae3c0d371e"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-500/LICENSE.txt",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d645695673349e3947e8e5ae42332d0ac3164cd7"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-500/Roboto-500.eot",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8c06caa2d6b9e9da215c7c50b308b351044e1e5e"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-500/Roboto-500.svg",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2b989161ee8d215ca696f2df13139c13d8067954"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-500/Roboto-500.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8d6fa9240c90211e79fcad94e003c5d37ac23f02"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-500/Roboto-500.woff",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d3c82e18468c2cceb36a5a9c199e5ae2cd2ca379"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-500/Roboto-500.woff2",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6be92c71776f48e17d2b96a21cfa93b3ed1a7854"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-500italic/LICENSE.txt",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d645695673349e3947e8e5ae42332d0ac3164cd7"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-500italic/Roboto-500italic.eot",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2b253af0d391527560ac31879f3131e1a307d15b"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-500italic/Roboto-500italic.svg",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "43c3be61f780923d9d85bb1cc0c95dfe94e04b35"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-500italic/Roboto-500italic.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "28d03db9922938c39fb7b2dd5e2a9b3823151f4f"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-500italic/Roboto-500italic.woff",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "072ca9b236b39a18544e2b2e063de7f6ccf0fda8"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-500italic/Roboto-500italic.woff2",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "382866ae2b8a74f354d6af2d27350550a97d03e1"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-700/LICENSE.txt",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d645695673349e3947e8e5ae42332d0ac3164cd7"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-700/Roboto-700.eot",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f89cad7b7f9c64a64c33ff2d27d52be1c28131a9"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-700/Roboto-700.svg",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fc8d42f92fe6cc418bd47a13a96c55f39cca8992"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-700/Roboto-700.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "19090afb10e101b0524a4dbe1f5af074dcd2a1d3"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-700/Roboto-700.woff",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3143de2975add1e96477f65e1060d439b330c590"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-700/Roboto-700.woff2",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3b2dd4e2082859a8b0afbf8b5d92b90421e4aaf2"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-700italic/LICENSE.txt",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d645695673349e3947e8e5ae42332d0ac3164cd7"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-700italic/Roboto-700italic.eot",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b8bbdf2271a73401e565b0676b8dfb575d92226f"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-700italic/Roboto-700italic.svg",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c71c29ec41a3a73b54f38ea0091884105a109866"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-700italic/Roboto-700italic.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a20e38894c0bde3942fd06f1905b775e58fb62cc"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-700italic/Roboto-700italic.woff",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7a0ae05e17a6e8f1b76133875dded5ff6aae52cb"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-700italic/Roboto-700italic.woff2",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "91d2aa6aaec159df2976305a5f8edbf115173f1d"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-italic/LICENSE.txt",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d645695673349e3947e8e5ae42332d0ac3164cd7"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-italic/Roboto-italic.eot",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f2d020a8741fd850a1480bab13d0e11f6e914025"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-italic/Roboto-italic.svg",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "738b8295f090fdf3af19341b5c0c6b08a7c742e8"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-italic/Roboto-italic.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b0dd4a1e528f513a5261baa536e6a226200a2bb6"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-italic/Roboto-italic.woff",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "dcfeb0083663b3deb1dae10ac8817ff3cc745c6f"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-italic/Roboto-italic.woff2",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1bb77f9d11136c6490559d34ffc7d08c660ad5c4"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-regular/LICENSE.txt",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d645695673349e3947e8e5ae42332d0ac3164cd7"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-regular/Roboto-regular.eot",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d26bc8f519b5b90a0639f82a18bfef133599196a"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-regular/Roboto-regular.svg",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ed55c105d7a03c01fd251100a580bf0b05c077f0"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-regular/Roboto-regular.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7b25f3ce940cbba3001420d38b7d0f12fb7f2142"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-regular/Roboto-regular.woff",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5e353cf47a872d196e9894c8e86aa8a39afc8b5a"
+    },
+    {
+      "path": "assets/data/fonts/Roboto-regular/Roboto-regular.woff2",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d1035f9a104819cdd70d3694683c53ce8d9580ae"
+    },
+    {
+      "path": "assets/data/fonts/roboto-slimfix.css",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "61be5b6a2097b0e7c1573384a1a0bee72f88f8f1"
+    },
+    {
+      "path": "assets/data/fonts/roboto.css",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ab36f23ca97807d5903744f1ccfd2b501f3c1bc8"
+    },
+    {
+      "path": "assets/data/icons/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "bf72d16b03178250522ed2f5fcbce81b585d1d99"
+    },
+    {
+      "path": "assets/data/icons/generate_ico.sh",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "acfd61e2adc1dac4201e21335d736a2dec8743e4"
+    },
+    {
+      "path": "assets/data/icons/pm_dark.ico",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "41b7c4bfd63b4180b90f973bdd56724a7dab7fbf"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_128.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "99193f24b4398cea26a112b5fb0f90d1bed1b3b5"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_256.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fe9d6acba61b72c38f7c117952969a229f36e76f"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_512.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "05f504cb07ad76409bec94d303ebbb08d2e884d0"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_blue.ico",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f2663a806e0662e156a35b5498a3dde5853d6747"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_blue.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4b40e7ac8edafa599eb7e9bb9b6ca8a4b86a3a3e"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_blue_128.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e248b771597f53a87176a233d2f346f9bad3d339"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_blue_256.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f15379466db710c397264e1073c45685740a4452"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_blue_512.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "92a860cc1afe3508a2e89628f338671be5c5932d"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_blue_64.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "808ffb185d634a91affa65fce720e57eeb90bdf8"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_green.ico",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6c0b500a78c53757ddba2d0429ad93ceafd84673"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_green_128.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "179064cd2a9f56e24c47f12808afb612d67c1821"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_green_256.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3c2196974f39ce3f6559bc9c0504c0f47d3b0c3e"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_green_512.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "08e96d938d232fc22620a94715fdd06174c67a3f"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_green_64.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7f21cc72aeef3d923496cae34fe92bed9f26b9e1"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_red.ico",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "34cf046f87d2697dafdc2dda45d645f9947394f8"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_red.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "65a66ffe3bd8ad5ba14cdb946c9d795c3d8138b1"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_red_128.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7f7449a86eaaeef5a70d06644ffd78ada1e942b4"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_red_256.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f77a8f4c22ba05d8f21d317378861055fa94a112"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_red_512.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "77e05fc27e213a870022b1ae04e00ff51c7954ec"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_red_64.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "85ab38f062cd1d6804c1fd80eb1380df3310b705"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_yellow.ico",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f066b6088e9bb4b2d2c982286dc68e14f06ef66c"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_yellow.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "57c29eff2f62de50ac364b43af28a657e5d9f86a"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_yellow_128.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d16ff38e8ec6a5f9a1f7d06882ce1039354677cd"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_yellow_256.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "9c98b26f726f0e78341b4a4daae6df7efd878f58"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_yellow_512.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "dc5697a2e5b883341c610748f44e119d2adcbd2f"
+    },
+    {
+      "path": "assets/data/icons/pm_dark_yellow_64.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7b98f3a47b8ceae23175f27e02397cf6074744cb"
+    },
+    {
+      "path": "assets/data/icons/pm_light.ico",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "39c1486073121663c7ac65565820073ddcee0693"
+    },
+    {
+      "path": "assets/data/icons/pm_light_128.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "063948f1789284627332181127d006f59e99d9b3"
+    },
+    {
+      "path": "assets/data/icons/pm_light_256.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "681b0c0a198b2e49140095af8cd0ff705a5d6d63"
+    },
+    {
+      "path": "assets/data/icons/pm_light_512.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "357066732a521c730f0778c187972979c750cc4a"
+    },
+    {
+      "path": "assets/data/icons/pm_light_blue.ico",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "cbba2cec482d65eb11b3ce97e89b4b9eeaf6668a"
+    },
+    {
+      "path": "assets/data/icons/pm_light_blue.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ba607e5b7c83121536343147a7e646aa7f257372"
+    },
+    {
+      "path": "assets/data/icons/pm_light_blue_128.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c088b3cd6d4eb57dbd02694bc83d802e878a14ac"
+    },
+    {
+      "path": "assets/data/icons/pm_light_blue_256.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "616c93361b375d82ca13bec18104b82a4bde7469"
+    },
+    {
+      "path": "assets/data/icons/pm_light_blue_512.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d7eaa1fc991f3f13f657621e0e5abe4d4f6c0108"
+    },
+    {
+      "path": "assets/data/icons/pm_light_blue_64.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7dfce1d1bc8afc5c940d6551511b95a65f17af6e"
+    },
+    {
+      "path": "assets/data/icons/pm_light_contrast.ico",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7d06be076f08af339f1dba4715fb261e3cec3490"
+    },
+    {
+      "path": "assets/data/icons/pm_light_contrast.svg",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "daa98bf7f1252ab595c90395ef83281579ff3418"
+    },
+    {
+      "path": "assets/data/icons/pm_light_green.ico",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "52ac403946bbf54c1bc5ea1c8135492599004aa5"
+    },
+    {
+      "path": "assets/data/icons/pm_light_green.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f7333b34260d65bb39ae316bc571fdfc000fe806"
+    },
+    {
+      "path": "assets/data/icons/pm_light_green_128.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c499b717c4b41a2c11b30b6fd73975518f492684"
+    },
+    {
+      "path": "assets/data/icons/pm_light_green_256.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e78254bd3147808075dc987d5dd34785c209a844"
+    },
+    {
+      "path": "assets/data/icons/pm_light_green_512.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7377fb6dfc99d20027c89740ca9b35799129e183"
+    },
+    {
+      "path": "assets/data/icons/pm_light_green_64.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "710e6c0c48245a40372ac722eab95fcd4938386b"
+    },
+    {
+      "path": "assets/data/icons/pm_light_red.ico",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6eec056bfaca001f980b30f2c47d0209c8526bcb"
+    },
+    {
+      "path": "assets/data/icons/pm_light_red.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c31c5b2426a701c42ebbcb7fc2b5ce3011d4968d"
+    },
+    {
+      "path": "assets/data/icons/pm_light_red_128.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e2767f75d1f41e1e5cdc75a547f974779211007f"
+    },
+    {
+      "path": "assets/data/icons/pm_light_red_256.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "286e65fc8cb27010d27e3a44232c6671d3e69802"
+    },
+    {
+      "path": "assets/data/icons/pm_light_red_512.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "9eb318961c87bcedf0004899ab55a21aedb58934"
+    },
+    {
+      "path": "assets/data/icons/pm_light_red_64.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e6aa79359cc9881402c1a027ab464609a914e827"
+    },
+    {
+      "path": "assets/data/icons/pm_light_yellow.ico",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "9f30f5358123b97c841dd2904a5605af4c56211a"
+    },
+    {
+      "path": "assets/data/icons/pm_light_yellow.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f68d5126f1ceb530d746637f0d4e54ee7b405eda"
+    },
+    {
+      "path": "assets/data/icons/pm_light_yellow_128.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e0f89794e26c149fd27930f096b47c8dec577d12"
+    },
+    {
+      "path": "assets/data/icons/pm_light_yellow_256.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "eda4336fca8f97931b27185a55f09751d98901a0"
+    },
+    {
+      "path": "assets/data/icons/pm_light_yellow_512.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "be87851a6a9c1592390cf86503a01f827a0dafc0"
+    },
+    {
+      "path": "assets/data/icons/pm_light_yellow_64.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1e1c7e62faf5157cff6e41163ab9afd5e5c8d9bb"
+    },
+    {
+      "path": "assets/data/img/Mobile.svg",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a7b773b90555b25c6348177b9e80a6b519a6b282"
+    },
+    {
+      "path": "assets/data/img/flags/AD.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d965a794ee2d1a1d3ef87f873c7caee5de64a2df"
+    },
+    {
+      "path": "assets/data/img/flags/AE.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f429cc47a7ac7eeb00c2ab7f0ea91a138a7b179d"
+    },
+    {
+      "path": "assets/data/img/flags/AF.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "482779b5cc33e0983d2776849006039e8c934dbb"
+    },
+    {
+      "path": "assets/data/img/flags/AG.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6470e12b4ea6a3c2f8cec251814db59ef40fafa2"
+    },
+    {
+      "path": "assets/data/img/flags/AI.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6c8ce55032b66408ac8373e65cf842b7403c2a28"
+    },
+    {
+      "path": "assets/data/img/flags/AL.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "69ba464d8aa7d9dc071feb6c8ba49008d5a894e5"
+    },
+    {
+      "path": "assets/data/img/flags/AM.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5b222d90c7b7884c98e7012dd1f8a2908d70062e"
+    },
+    {
+      "path": "assets/data/img/flags/AN.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2c9e769ba8e26ab7979f262720e236b88b4b9e6e"
+    },
+    {
+      "path": "assets/data/img/flags/AO.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "129a2d9e7a49e00433d79e28e2559f0891ec18d2"
+    },
+    {
+      "path": "assets/data/img/flags/AQ.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "565eba0f20a796c113d25d83340cc5fe9ce44189"
+    },
+    {
+      "path": "assets/data/img/flags/AR.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "aa5049b30d8dc0ab80b35bfdd7e1f1d9c07b1dab"
+    },
+    {
+      "path": "assets/data/img/flags/AS.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f959e3ac2742a8d0b78f10725c61f082bea00568"
+    },
+    {
+      "path": "assets/data/img/flags/AT.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "aa8d102b6d8c7afa4cf15d612123fa260a82b744"
+    },
+    {
+      "path": "assets/data/img/flags/AU.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f2fc59c8350fd28b2424a73b9797f720d4ede68c"
+    },
+    {
+      "path": "assets/data/img/flags/AW.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6ef2467ba5e11cf4547d8521eb34b6ae1d7ec8c3"
+    },
+    {
+      "path": "assets/data/img/flags/AX.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "21a5e1c0cfa0b93f823d0094355d8c1e8c517d1c"
+    },
+    {
+      "path": "assets/data/img/flags/AZ.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b6ea7c714c50a86484667c59ec01aa4857005638"
+    },
+    {
+      "path": "assets/data/img/flags/BA.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "570594bb173c6ade3153b570588080b774553134"
+    },
+    {
+      "path": "assets/data/img/flags/BB.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3e86dbbba97f27c1435c6d6a64859432cae7265c"
+    },
+    {
+      "path": "assets/data/img/flags/BD.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fc7affbfa97168d30ebd7bfe795d733063a0bf64"
+    },
+    {
+      "path": "assets/data/img/flags/BE.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "182e9add54701c7a5af2c489292c3ae90fcb7b2f"
+    },
+    {
+      "path": "assets/data/img/flags/BF.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2a861b5fb1d7eb9804c7cb5dfb3f5f751eee4338"
+    },
+    {
+      "path": "assets/data/img/flags/BG.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "903ed4f0c7c7b89aa2d9015994b51a94e3de6849"
+    },
+    {
+      "path": "assets/data/img/flags/BH.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e2514bb98238a298f326a3bf77eba51ce84d03f0"
+    },
+    {
+      "path": "assets/data/img/flags/BI.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "82dc6c5b8253c4f760f231d1c94c140713df4442"
+    },
+    {
+      "path": "assets/data/img/flags/BJ.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e9f24b0b9dc3f169c040971a5e4dc7c9e25ae379"
+    },
+    {
+      "path": "assets/data/img/flags/BL.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "533cce919aeb52b42424efd8c67b73d94e95383c"
+    },
+    {
+      "path": "assets/data/img/flags/BM.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5b66e1f697622e7383ba3637b5a768f0ae556722"
+    },
+    {
+      "path": "assets/data/img/flags/BN.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "64cfbb9f596e63865e55b96b11ca3fda9d269f41"
+    },
+    {
+      "path": "assets/data/img/flags/BO.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3f0c41f7dc839190a522637e217fcf68a29ac631"
+    },
+    {
+      "path": "assets/data/img/flags/BR.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f97b96a2c8a7b10bb6b1719e50354402ad08d028"
+    },
+    {
+      "path": "assets/data/img/flags/BS.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "10a987f18b042765c71ce6715276b3a15b39dcd2"
+    },
+    {
+      "path": "assets/data/img/flags/BT.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fe52b87270e89ca53a2b0cf01846d8b97b786ba5"
+    },
+    {
+      "path": "assets/data/img/flags/BW.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8da822f159b909f9ec1f4d56bfdea63226781cea"
+    },
+    {
+      "path": "assets/data/img/flags/BY.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "772539f890823653455374e6eb6a66f683f45529"
+    },
+    {
+      "path": "assets/data/img/flags/BZ.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "9ae671554023ede8c490bcd758ffff43147df228"
+    },
+    {
+      "path": "assets/data/img/flags/CA.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3153c20f501891c85346dfbabc6bd01206b8fba1"
+    },
+    {
+      "path": "assets/data/img/flags/CC.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7e5d0df21c9abad0d15f31ad2f16650df9a0d52a"
+    },
+    {
+      "path": "assets/data/img/flags/CD.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "afebbaa7466fc24aee7bfafbd31503026a0d790b"
+    },
+    {
+      "path": "assets/data/img/flags/CF.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "60fadb290a454d87c91dfaee27eb539ea550db9e"
+    },
+    {
+      "path": "assets/data/img/flags/CG.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7a7dc51d4303d4512d0f9be9170a419d031850cc"
+    },
+    {
+      "path": "assets/data/img/flags/CH.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "dcdb068efa0f8f183f68195945455120e60f3956"
+    },
+    {
+      "path": "assets/data/img/flags/CI.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "25a99ef24f7365c96e8db61c0deec2e9e3b96d4a"
+    },
+    {
+      "path": "assets/data/img/flags/CK.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c8eba16903d0b7edea387df17cfc795b008b7e82"
+    },
+    {
+      "path": "assets/data/img/flags/CL.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1a7c983ff62e0688e66c13c94e8af21e33a690b6"
+    },
+    {
+      "path": "assets/data/img/flags/CM.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2b4cea9a6750b99faed8bab62297ecdb510267e9"
+    },
+    {
+      "path": "assets/data/img/flags/CN.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "edd5f1de864017f0edc1cab1b6f30f4670666d00"
+    },
+    {
+      "path": "assets/data/img/flags/CO.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ad276d074746127ecee334de5841326ec49c62ed"
+    },
+    {
+      "path": "assets/data/img/flags/CR.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a102ffa47828edfdc260e85b3e2e8e218c199570"
+    },
+    {
+      "path": "assets/data/img/flags/CT.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c9fafe74ba399ee72954d4ba8485b6857b38044f"
+    },
+    {
+      "path": "assets/data/img/flags/CU.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "99f7118e80d761483adc35a2bfd222352989eb65"
+    },
+    {
+      "path": "assets/data/img/flags/CV.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7736ea1f395791daccb4f346cc6c881b83e5b05b"
+    },
+    {
+      "path": "assets/data/img/flags/CW.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3f65fa783bb6ef171cebc4d893baff11c3544ab8"
+    },
+    {
+      "path": "assets/data/img/flags/CX.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0f383db4be5a896b726ac20d1d3fba39773f0c3f"
+    },
+    {
+      "path": "assets/data/img/flags/CY.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a1b08de3d550154e753874c00f284f9c707d39f2"
+    },
+    {
+      "path": "assets/data/img/flags/CZ.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "95ffbf6205ef9458508853e094ce1f392c347e69"
+    },
+    {
+      "path": "assets/data/img/flags/DE.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f2f6175a1fdc47e946ec70019dc983e8c49e8ad2"
+    },
+    {
+      "path": "assets/data/img/flags/DJ.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a08f8e112957b5d1f249d02c6487398e93fd900e"
+    },
+    {
+      "path": "assets/data/img/flags/DK.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "349cb415cf7b894b20dbf5919459bdf57f190134"
+    },
+    {
+      "path": "assets/data/img/flags/DM.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "117e74d383e18b782b76468679b30b5bf93125c9"
+    },
+    {
+      "path": "assets/data/img/flags/DO.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "892e2e2a6225f4a01512d935a77600939e816c74"
+    },
+    {
+      "path": "assets/data/img/flags/DZ.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5e97662f079dc4325e47d6474e52803d9303235f"
+    },
+    {
+      "path": "assets/data/img/flags/EC.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "57410880428222be223b9da784697dcd80376b1e"
+    },
+    {
+      "path": "assets/data/img/flags/EE.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1f11899216e6d59a5e857963bf9a3c26c82047d7"
+    },
+    {
+      "path": "assets/data/img/flags/EG.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0e873bebc1e3518637e3735ca2712a3034684175"
+    },
+    {
+      "path": "assets/data/img/flags/EH.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a5b3b1cc270ade890b972d0ccc7ad84bbc7fffa0"
+    },
+    {
+      "path": "assets/data/img/flags/ER.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "50781ce537d3be2753e87206f5280bd880b54c2e"
+    },
+    {
+      "path": "assets/data/img/flags/ES.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b89db6856c804333418c29409f06661018cdd0e4"
+    },
+    {
+      "path": "assets/data/img/flags/ET.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "aa14723529eae8af7a3ae84590d9ecb280becd48"
+    },
+    {
+      "path": "assets/data/img/flags/EU.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2bfaf108d0bf260c75ff9f240d0361c7c52df64a"
+    },
+    {
+      "path": "assets/data/img/flags/FI.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b5a380c54fc3a0ecf7619c236337711f22ca6fac"
+    },
+    {
+      "path": "assets/data/img/flags/FJ.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1cb520c5967502e38261aafbf608ace089f334ae"
+    },
+    {
+      "path": "assets/data/img/flags/FK.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a7cadb774e026dbe9bdf9c4c2787ea8d04a6a787"
+    },
+    {
+      "path": "assets/data/img/flags/FM.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5a9b85cc2c16d6d252f20b735127c8bfa8767a11"
+    },
+    {
+      "path": "assets/data/img/flags/FO.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4a49e30cb9e243c85d6f69790b9fdcae7c3ce451"
+    },
+    {
+      "path": "assets/data/img/flags/FR.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0706dcc0569404b481255d721df7348c5e0f5bc0"
+    },
+    {
+      "path": "assets/data/img/flags/GA.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "38899c4a415cc600d2815904493aa18ed998307e"
+    },
+    {
+      "path": "assets/data/img/flags/GB.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "43ebed3b090db12c71017d4e4c5277e6fd3b1a09"
+    },
+    {
+      "path": "assets/data/img/flags/GD.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2d33bbbdf0a3a9db9d90f3ca352b15e00a8d6296"
+    },
+    {
+      "path": "assets/data/img/flags/GE.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7aff2749cee4a3d0b195a504cd39ca483ca2c1e7"
+    },
+    {
+      "path": "assets/data/img/flags/GG.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c0c3a78fd0ce98aaf78b6930d9b6997df06329ae"
+    },
+    {
+      "path": "assets/data/img/flags/GH.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e9b79a6dde792af7fbee53bd8137b057f46dab94"
+    },
+    {
+      "path": "assets/data/img/flags/GI.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e14ebe5974950563aed43d04e65556f40fd71ef4"
+    },
+    {
+      "path": "assets/data/img/flags/GL.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6b995ff172146db584cfe4514e9d3e1a743477ed"
+    },
+    {
+      "path": "assets/data/img/flags/GM.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "72c170aa4ca8c876d8834eddb1cc632666678e11"
+    },
+    {
+      "path": "assets/data/img/flags/GN.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "99830391e20fc6ca0e708406fbab0ffb66823234"
+    },
+    {
+      "path": "assets/data/img/flags/GQ.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "9b020456c65e1c6f28f123281e8c5b94ab9954bb"
+    },
+    {
+      "path": "assets/data/img/flags/GR.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "dc34d1913e4db7a18e0a111b90574ed990fa92e0"
+    },
+    {
+      "path": "assets/data/img/flags/GS.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "55392f92f223c800af338a7e930e3bd4977e270a"
+    },
+    {
+      "path": "assets/data/img/flags/GT.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0b4b8b4fd6fc5225b96a8bfda113feb860fb8e5f"
+    },
+    {
+      "path": "assets/data/img/flags/GU.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "31e9cc578921be803e03c114345b1ab095799175"
+    },
+    {
+      "path": "assets/data/img/flags/GW.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "98c66331b63f791c553c1da4eeb99b4b45e11093"
+    },
+    {
+      "path": "assets/data/img/flags/GY.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8cc6d9cf168e55e2a00c98bcb1a9f2cd6b4c7655"
+    },
+    {
+      "path": "assets/data/img/flags/HK.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "89c38aa1a59b5ef95c22404360c5473efbe78c9e"
+    },
+    {
+      "path": "assets/data/img/flags/HN.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e794c437eade289f76608965796be32d5c8989d7"
+    },
+    {
+      "path": "assets/data/img/flags/HR.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6f845d5dd390abde214332c8c544f680f0f45d2b"
+    },
+    {
+      "path": "assets/data/img/flags/HT.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "da4dc3b117dd76e8adac30aa68e25b3c7f0564a5"
+    },
+    {
+      "path": "assets/data/img/flags/HU.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "98de28af8ecc6818d5654013bdbc7ea15d3b4803"
+    },
+    {
+      "path": "assets/data/img/flags/IC.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "500d9dbe2b0a944e4a05be8ca8b530b1eb74e309"
+    },
+    {
+      "path": "assets/data/img/flags/ID.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a14683d77b419d182b3647f9665d19e14406b164"
+    },
+    {
+      "path": "assets/data/img/flags/IE.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "105c26b8843cdb91675d89fa150e5da98b18ec26"
+    },
+    {
+      "path": "assets/data/img/flags/IL.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "9ad54c5d2194655569a33ebb4cf09e6e8b1b0b88"
+    },
+    {
+      "path": "assets/data/img/flags/IM.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f0ff4665997259038298af48a7ab7a674ab06ea3"
+    },
+    {
+      "path": "assets/data/img/flags/IN.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f1c32fac97b4d59b576b004ba7cbc33a1bea500e"
+    },
+    {
+      "path": "assets/data/img/flags/IQ.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8d5a32366b1abe807b03ef4369982ba1dffe18f0"
+    },
+    {
+      "path": "assets/data/img/flags/IR.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "354a3ac5aad684f87429af19a92188d4bbff4080"
+    },
+    {
+      "path": "assets/data/img/flags/IS.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "87253cdbad47a63318b2130c979a6d8888265b99"
+    },
+    {
+      "path": "assets/data/img/flags/IT.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ce11f1f8260ffaecba9badf044c914c532680d56"
+    },
+    {
+      "path": "assets/data/img/flags/JE.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "904b610107c140091768edf30175eb3fa104e417"
+    },
+    {
+      "path": "assets/data/img/flags/JM.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "378f70d08914e08e613d73bba69e2b276ba8a9c1"
+    },
+    {
+      "path": "assets/data/img/flags/JO.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "270e5248e40d2ccb119f59621be6f5a1a5ffa94c"
+    },
+    {
+      "path": "assets/data/img/flags/JP.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "78c159ac8a8d0ee1c9d8a544ab9dd4f2a97ec17b"
+    },
+    {
+      "path": "assets/data/img/flags/KE.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ecbeb5db8f5ca312ba63d53bb3ab5358ba03773f"
+    },
+    {
+      "path": "assets/data/img/flags/KG.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "12b0dadd36ace83b58a870df14d0ea1cd83216d9"
+    },
+    {
+      "path": "assets/data/img/flags/KH.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6fb7f578aea9503fac9e9247123ca7f00c4e6bda"
+    },
+    {
+      "path": "assets/data/img/flags/KI.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e2762a670a12fa986435ee95d60262117de56590"
+    },
+    {
+      "path": "assets/data/img/flags/KM.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "43d8a75ae7eae80f255461a47a1019fceea30f4b"
+    },
+    {
+      "path": "assets/data/img/flags/KN.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5decf8da731e608c42d16aa8ce60b30c22f7a482"
+    },
+    {
+      "path": "assets/data/img/flags/KP.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b303f8e7e5687a28854e9e5151ac3510772eeae8"
+    },
+    {
+      "path": "assets/data/img/flags/KR.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d21bef98a8ecd038aa65566dacff85b01fdf411a"
+    },
+    {
+      "path": "assets/data/img/flags/KW.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6f7010b860e6f7f0b1df6c7545f16d21573d0416"
+    },
+    {
+      "path": "assets/data/img/flags/KY.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c4bfbd99452cf887ac03bc61e2eb7a9a30e42c60"
+    },
+    {
+      "path": "assets/data/img/flags/KZ.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1a0ca4fda91cb0b52b3e8ac051b995fb28dd3fe2"
+    },
+    {
+      "path": "assets/data/img/flags/LA.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f78e67f6a3d5e97483d99f91202403ae9a5b191d"
+    },
+    {
+      "path": "assets/data/img/flags/LB.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a9643c34efec418dd4dbe5f9b98e4fbf07d13ebc"
+    },
+    {
+      "path": "assets/data/img/flags/LC.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ab5916ba4c2be1c9677d8b36677139df0332f548"
+    },
+    {
+      "path": "assets/data/img/flags/LI.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "cf7bbe4950610dd605c44437d0a09ac5be17fb49"
+    },
+    {
+      "path": "assets/data/img/flags/LICENSE.txt",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0836cb404158207ceb1354bfb9ad402ab16f0fd7"
+    },
+    {
+      "path": "assets/data/img/flags/LK.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a60c8edcd0c8baea304e7f004ba47246b941a716"
+    },
+    {
+      "path": "assets/data/img/flags/LR.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "dd3a57f763b70e0afdd586320c18bffa7f393ffb"
+    },
+    {
+      "path": "assets/data/img/flags/LS.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ad2aa4a2c1b1d58af5ccc2d731c575781a9b7a83"
+    },
+    {
+      "path": "assets/data/img/flags/LT.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f40f2e288250c4e1669dbd099921946a5e3ea770"
+    },
+    {
+      "path": "assets/data/img/flags/LU.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "92e72f9d187f45bb85252702aad10a87a42f57da"
+    },
+    {
+      "path": "assets/data/img/flags/LV.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3966acfc3acb926777f4d88516819fd98c4e64e0"
+    },
+    {
+      "path": "assets/data/img/flags/LY.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4db084539896c890d51af875dc3cea57db2ede69"
+    },
+    {
+      "path": "assets/data/img/flags/MA.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "69424d592a333bb2a784088715d7d64b7411600c"
+    },
+    {
+      "path": "assets/data/img/flags/MC.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a14683d77b419d182b3647f9665d19e14406b164"
+    },
+    {
+      "path": "assets/data/img/flags/MD.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "21fd6eca4641bec3992b88a7580dabd2899985f4"
+    },
+    {
+      "path": "assets/data/img/flags/ME.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0ca932d91bfe25b35535bebced358c3543737ab2"
+    },
+    {
+      "path": "assets/data/img/flags/MF.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "16692f7112bfe502c5cc6f9bfefc2e7a0ad318f5"
+    },
+    {
+      "path": "assets/data/img/flags/MG.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "09f2469a2096712bd3ab29833d8965068527eddb"
+    },
+    {
+      "path": "assets/data/img/flags/MH.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3ffcf0133b924ae4aa30bf28c700684a8ac0528e"
+    },
+    {
+      "path": "assets/data/img/flags/MK.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a67650957b85d3658f770fcc78b5b375ca4c07f2"
+    },
+    {
+      "path": "assets/data/img/flags/ML.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "bd2384186389116aa2285cc87138c313b711c54f"
+    },
+    {
+      "path": "assets/data/img/flags/MM.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1bf0d5bb4d7b863f58c24a33f3fc9ffe1f9a3958"
+    },
+    {
+      "path": "assets/data/img/flags/MN.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "67a53355d873f6f0d6426511d7be2509772f5a3c"
+    },
+    {
+      "path": "assets/data/img/flags/MO.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2dc29c861ac83335a711b98f39f3a9c611fd1597"
+    },
+    {
+      "path": "assets/data/img/flags/MP.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b50575402d5d70745024b3dafe65c4faa2759aa1"
+    },
+    {
+      "path": "assets/data/img/flags/MQ.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4e9f76b67cbc27356161a4ee78191be6237d43fb"
+    },
+    {
+      "path": "assets/data/img/flags/MR.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6bda861307ecc8981bcd7d28a76226ecfff5df9b"
+    },
+    {
+      "path": "assets/data/img/flags/MS.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a860c6fe44ddcb6ebc1b93d270e55aceae930c13"
+    },
+    {
+      "path": "assets/data/img/flags/MT.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "93d502bde51ed3a1a0e6892f8e4b70b338b16ca1"
+    },
+    {
+      "path": "assets/data/img/flags/MU.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6bf5235972bad2a32e00f740bd531b24c8ffb757"
+    },
+    {
+      "path": "assets/data/img/flags/MV.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b87bb2ec063d3cb49fde7c1e95abd3a406a63b0f"
+    },
+    {
+      "path": "assets/data/img/flags/MW.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d75a8d30b762f742377211e79acd9f003c8278d0"
+    },
+    {
+      "path": "assets/data/img/flags/MX.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8fa79193a92c30d6e36b934617c06d4f43d7c794"
+    },
+    {
+      "path": "assets/data/img/flags/MY.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a8e39961ddcf090c556e671d0ba6850be28fa61f"
+    },
+    {
+      "path": "assets/data/img/flags/MZ.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0fdc38c772c5d61bb2d826d1b19aade0ed26385c"
+    },
+    {
+      "path": "assets/data/img/flags/NA.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "52e2a792c117ef8c4a8fd813844fcdf771d8b4d0"
+    },
+    {
+      "path": "assets/data/img/flags/NC.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e3288acf0d285cbc2ef2ed7aac0d90deba40f49c"
+    },
+    {
+      "path": "assets/data/img/flags/NE.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "841e77fb59f97010c6601cdbf89463b6da01c0fa"
+    },
+    {
+      "path": "assets/data/img/flags/NF.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7c1af026a8e072ece38a918b3e3df20cd6f5adee"
+    },
+    {
+      "path": "assets/data/img/flags/NG.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "25fe78f02337ba82fd21ad188e5685116565535c"
+    },
+    {
+      "path": "assets/data/img/flags/NI.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0f66accb6f1b27fd2a4e30878b071a8233c299a2"
+    },
+    {
+      "path": "assets/data/img/flags/NL.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "036658e75a8073b92174a8cc45b33e2e197ef18d"
+    },
+    {
+      "path": "assets/data/img/flags/NO.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "38a13c4c2f703b293603a33f3dd9975333e54f42"
+    },
+    {
+      "path": "assets/data/img/flags/NP.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "eed654be442c77cb62b7f6a0eb24a482d3952789"
+    },
+    {
+      "path": "assets/data/img/flags/NR.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4b2d0806d6f76b1e8fbf64fa325fa86848b398b1"
+    },
+    {
+      "path": "assets/data/img/flags/NU.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d791c4af6421063b19830bd8795455f5974b1b20"
+    },
+    {
+      "path": "assets/data/img/flags/NZ.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "913b18af1005d4ccd61acc61e753bb5771535171"
+    },
+    {
+      "path": "assets/data/img/flags/OM.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b2a16c0300cc5e93e2e30854a06d068d2fedcae1"
+    },
+    {
+      "path": "assets/data/img/flags/PA.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fc0a34a37d4ce4aee782286e5b84d8efb5b2c717"
+    },
+    {
+      "path": "assets/data/img/flags/PE.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ce31457ebb20bddb68f6c4f53a06723378b802c3"
+    },
+    {
+      "path": "assets/data/img/flags/PF.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c932709619301fe143eccbaa57d944ad957667d7"
+    },
+    {
+      "path": "assets/data/img/flags/PG.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "68b758df2ed134fb7b782b569a82f76114161f16"
+    },
+    {
+      "path": "assets/data/img/flags/PH.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "dc75142c566ea2c08cb4a1f2bebb6242566bc26a"
+    },
+    {
+      "path": "assets/data/img/flags/PK.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "014af06529360eff84aab14c68af58f1e1ccaca0"
+    },
+    {
+      "path": "assets/data/img/flags/PL.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4d0fc51f7551bc0e3e27133b2b3d2d4f242eb8b5"
+    },
+    {
+      "path": "assets/data/img/flags/PN.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c046e9bcc7060fa6591c7b78b5c52d04191ed78f"
+    },
+    {
+      "path": "assets/data/img/flags/PR.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7d54f19aa93af2bbbe31fbb32af1ce38d4354748"
+    },
+    {
+      "path": "assets/data/img/flags/PS.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d4d85dcf4e35a8494fb73fa32fed5fe63fa5eed2"
+    },
+    {
+      "path": "assets/data/img/flags/PT.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "18e276e5343591869a03487d6900ad44c3301fea"
+    },
+    {
+      "path": "assets/data/img/flags/PW.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f9bcdc6edab3a19efeefb65de17448894665c007"
+    },
+    {
+      "path": "assets/data/img/flags/PY.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c289b6cf72d001867d7b204aec97e1248433c181"
+    },
+    {
+      "path": "assets/data/img/flags/QA.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "95c7485d574e4519866d3988985defbb09e76aa3"
+    },
+    {
+      "path": "assets/data/img/flags/RE.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2ff851c8460ed073cac981cf2ba0bfe74ee78f3f"
+    },
+    {
+      "path": "assets/data/img/flags/RO.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3d9c2a3ec39cf38179f44546d3d73470bdd8ad0d"
+    },
+    {
+      "path": "assets/data/img/flags/RS.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d95bcdfc23a91f6d7f601dc07b4a9e4f8de3da03"
+    },
+    {
+      "path": "assets/data/img/flags/RU.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a4318e7d5e357cb21f4c95c5e8d4678c9d753e10"
+    },
+    {
+      "path": "assets/data/img/flags/RW.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "00f5e1e012607486b8d95bccfb0c037315717110"
+    },
+    {
+      "path": "assets/data/img/flags/SA.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ba3f2de9174d7ec639c450f76578f859dfb5c77c"
+    },
+    {
+      "path": "assets/data/img/flags/SB.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1b6384a06b0d35d86989034e00f67db103015484"
+    },
+    {
+      "path": "assets/data/img/flags/SC.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2a49518339129e7df1bb6819edaa9cbb07c172ef"
+    },
+    {
+      "path": "assets/data/img/flags/SD.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5fc853b1043ee46790252721cd1b27a159eff22c"
+    },
+    {
+      "path": "assets/data/img/flags/SE.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ad7854b7a47f30f3c78274ec70e315f629f332d6"
+    },
+    {
+      "path": "assets/data/img/flags/SG.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8b1c5f03f1d5513c12e472f5227a1e73da5a70ea"
+    },
+    {
+      "path": "assets/data/img/flags/SH.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4b2961be86350128faffbcac6aa168f10cc80e16"
+    },
+    {
+      "path": "assets/data/img/flags/SI.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "08cc3f4e90b62eb28686add0bd82d39cc1c5fdca"
+    },
+    {
+      "path": "assets/data/img/flags/SK.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d622ef05f22578cfda8d40b76a3b9d3bfefe6f77"
+    },
+    {
+      "path": "assets/data/img/flags/SL.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e8a3530f665406e9965485b1eab1507ab9c787ac"
+    },
+    {
+      "path": "assets/data/img/flags/SM.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f0d657249df937cf23db517ec2db12286000f008"
+    },
+    {
+      "path": "assets/data/img/flags/SN.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a4fc08fde0781776ab15590fa3af7b903f82ac9f"
+    },
+    {
+      "path": "assets/data/img/flags/SO.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3f0f4163e4d794b034d65c1ea3141b74faee3f9f"
+    },
+    {
+      "path": "assets/data/img/flags/SR.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6a8eea245d459299bbaa2c14103becd23ca2e771"
+    },
+    {
+      "path": "assets/data/img/flags/SS.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c71cafaa177eff14c34e394c8779b0179685a01a"
+    },
+    {
+      "path": "assets/data/img/flags/ST.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "480886cac5a213891dd0c1fa37d8c4c12e975a1d"
+    },
+    {
+      "path": "assets/data/img/flags/SV.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b5f69fae826585990d347ca13eaa23a99be600bf"
+    },
+    {
+      "path": "assets/data/img/flags/SX.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "25f4f5599d5618b887f917192e5216cf0fb4241c"
+    },
+    {
+      "path": "assets/data/img/flags/SY.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "dd5927a6659e0587b21124e207a57a688128a0f6"
+    },
+    {
+      "path": "assets/data/img/flags/SZ.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b0615c36332d1dd98b1084bde212699e5483d0c5"
+    },
+    {
+      "path": "assets/data/img/flags/TC.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b17607b910733cedf84df9ec2bf73cb67142dd99"
+    },
+    {
+      "path": "assets/data/img/flags/TD.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "787eebb6b495642a16ef1a0ee1f2e79e887ca047"
+    },
+    {
+      "path": "assets/data/img/flags/TF.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8292904513b625ce2459aab319c92aa58a4a5aa8"
+    },
+    {
+      "path": "assets/data/img/flags/TG.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "be814c69455170f8f522bc82a50b9b3ac9eab429"
+    },
+    {
+      "path": "assets/data/img/flags/TH.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5ff77db9a9d5878ac7defbb620bc36525fa621ee"
+    },
+    {
+      "path": "assets/data/img/flags/TJ.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b0b546be22ad96260469e6d0477ea9b1acc5c0e3"
+    },
+    {
+      "path": "assets/data/img/flags/TK.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b70e8235cc28cabff0c78ef065e1359e88058460"
+    },
+    {
+      "path": "assets/data/img/flags/TL.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b7e77dce5ffdcf13cb592abf945a298a3072107b"
+    },
+    {
+      "path": "assets/data/img/flags/TM.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e6f69d734a596250dac16bdf290b9236d4c9f12d"
+    },
+    {
+      "path": "assets/data/img/flags/TN.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2548fd925cb971f62604f74c6df000a29f314a6f"
+    },
+    {
+      "path": "assets/data/img/flags/TO.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f96d99646cfcba13dc5a6d7f9522997808242881"
+    },
+    {
+      "path": "assets/data/img/flags/TR.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3af317d9f7c16cf61393e13fff1eb11a871fe335"
+    },
+    {
+      "path": "assets/data/img/flags/TT.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "890321abedd9316d582ed3e780d28cf169a619a0"
+    },
+    {
+      "path": "assets/data/img/flags/TV.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2ec3160533d3d03d529fa5f7a8f5707bfca8624b"
+    },
+    {
+      "path": "assets/data/img/flags/TW.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "26425e4bbbcfbed118bb78caab959285985f2707"
+    },
+    {
+      "path": "assets/data/img/flags/TZ.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c1671cf7332a06397fec1bdec882a010d837e876"
+    },
+    {
+      "path": "assets/data/img/flags/UA.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "74c2012216fb8298169f83d76118365819405c5f"
+    },
+    {
+      "path": "assets/data/img/flags/UG.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c8c244364b0cb7eccd8999da0d8d264d04057cca"
+    },
+    {
+      "path": "assets/data/img/flags/US.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "31aa3f1877f785f782961bae09e2f1712104dca7"
+    },
+    {
+      "path": "assets/data/img/flags/UY.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "9397cece5fcdc795061f08a59ee858c46189b624"
+    },
+    {
+      "path": "assets/data/img/flags/UZ.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1df6c8822e05802bc9eef10322e6b05e2e7a0a93"
+    },
+    {
+      "path": "assets/data/img/flags/VA.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "25a852e90b741c0a9dfa22fd0b2ec53f1b924eda"
+    },
+    {
+      "path": "assets/data/img/flags/VC.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e63a9c1d90c9fac4f784046d840e7e9b20d5db1d"
+    },
+    {
+      "path": "assets/data/img/flags/VE.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "875f7733f660bc32f490efce29191ef027c42214"
+    },
+    {
+      "path": "assets/data/img/flags/VG.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0bd002e4bb035d5083254d8a15d7c2dcf60480b7"
+    },
+    {
+      "path": "assets/data/img/flags/VI.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "69d667a5a2973553635ee0613ad93e58f5a6947a"
+    },
+    {
+      "path": "assets/data/img/flags/VN.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "69d87f90987e9518ea280d22a4c37d1244170a2e"
+    },
+    {
+      "path": "assets/data/img/flags/VU.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5401c2a6de5d0f7a48273b59b98efaa814fe0952"
+    },
+    {
+      "path": "assets/data/img/flags/WF.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "922b74e26de3a4eac456e0d7b4d617ad62b23d97"
+    },
+    {
+      "path": "assets/data/img/flags/WS.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d1f62df103e1d72aaa885db5fe5ceac77f2fb34f"
+    },
+    {
+      "path": "assets/data/img/flags/YE.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "bad5e1f427e2478ef83ee6a87cf76b815c42d39b"
+    },
+    {
+      "path": "assets/data/img/flags/YT.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "676e06ca7972846cf433a1d18fa87e645c848a65"
+    },
+    {
+      "path": "assets/data/img/flags/ZA.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "701e010610106d8ed2700da2a510820bd9c83cb0"
+    },
+    {
+      "path": "assets/data/img/flags/ZM.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e3d80780d26ff34d80254c427f3f0f8d4db6f774"
+    },
+    {
+      "path": "assets/data/img/flags/ZW.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "79864d469567a06133ca536e13453a408958bfba"
+    },
+    {
+      "path": "assets/data/img/flags/__.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "38232f4be33ddbb1ff060a0a2d343dcc69a83b21"
+    },
+    {
+      "path": "assets/data/img/flags/_abkhazia.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0abf686d5d037ea769570c3ff248435d3b5bb9a2"
+    },
+    {
+      "path": "assets/data/img/flags/_basque-country.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "bf2494d2c8a98e88cec5e79f13b0d3e632002350"
+    },
+    {
+      "path": "assets/data/img/flags/_british-antarctic-territory.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b29a7dc234a88ba47a17a1da4db72f1034109975"
+    },
+    {
+      "path": "assets/data/img/flags/_commonwealth.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8f08c8a01414f54a1e14bc435c33877876e8b1ba"
+    },
+    {
+      "path": "assets/data/img/flags/_england.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7acb112f0a8d30a47164ce7cf83998fc8e9473e7"
+    },
+    {
+      "path": "assets/data/img/flags/_gosquared.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "74f2eb525eb6f68bca05281a480c6276fe81abd2"
+    },
+    {
+      "path": "assets/data/img/flags/_kosovo.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "dfbb5f01f64320db18e1b3b226ce75b5b7143d9b"
+    },
+    {
+      "path": "assets/data/img/flags/_mars.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4f5980b7f498758e6b1645e544ea7e4eb57bd60d"
+    },
+    {
+      "path": "assets/data/img/flags/_nagorno-karabakh.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f5a8d2718e2a4e302ec36fba5240f4ff6ef207b7"
+    },
+    {
+      "path": "assets/data/img/flags/_nato.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fdb05410e34f14af3d7e8e5c9a1b4c0eade57f63"
+    },
+    {
+      "path": "assets/data/img/flags/_northern-cyprus.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f9bf8bd32e8f4901ac8a355073d73f873c3c755f"
+    },
+    {
+      "path": "assets/data/img/flags/_olympics.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "60452238615b5eff48ef1ae173e74e6a75e08770"
+    },
+    {
+      "path": "assets/data/img/flags/_red-cross.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "28636e964ac1eeaa2380a75e37de572a5666ca89"
+    },
+    {
+      "path": "assets/data/img/flags/_scotland.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "db580403dc74a5ded3d7f3fe35388fc1324745ce"
+    },
+    {
+      "path": "assets/data/img/flags/_somaliland.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a903a3b7335325525071dcffa8297e9eaa37239f"
+    },
+    {
+      "path": "assets/data/img/flags/_south-ossetia.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d616841b68587ce5643440e9fc51899759d0acee"
+    },
+    {
+      "path": "assets/data/img/flags/_united-nations.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8e45e999869e54dd784a136f3fad1c5600da818d"
+    },
+    {
+      "path": "assets/data/img/flags/_unknown.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "9d91c7f4b8c00b234e2d9663d7ee141f51e981a4"
+    },
+    {
+      "path": "assets/data/img/flags/_wales.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "51f13c2e9570d380fe129aca6b3bf7a8573915b0"
+    },
+    {
+      "path": "assets/data/img/linux.svg",
+      "mode": "100755",
+      "type": "blob",
+      "git_blob": "deed38741bb87abe09e504233a1c1969c715fb86"
+    },
+    {
+      "path": "assets/data/img/mac.svg",
+      "mode": "100755",
+      "type": "blob",
+      "git_blob": "6ea43ad84e2b1a1b85d9f81146f4a73b6dbf3b12"
+    },
+    {
+      "path": "assets/data/img/plants1-br.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7027c2fd37fde1c11e7cae55a4432f5b2e0bc818"
+    },
+    {
+      "path": "assets/data/img/plants1.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8e6af5ac7bd85b4bcd1ffb4670229e4ac6413897"
+    },
+    {
+      "path": "assets/data/img/spn-feature-carousel/access-regional-content-easily.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a90eba8e69ef79d4dcbb1396109a1455ff0f8574"
+    },
+    {
+      "path": "assets/data/img/spn-feature-carousel/built-from-the-ground-up.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "bb8c0d6aa7df477211fc382581856e17c35a687e"
+    },
+    {
+      "path": "assets/data/img/spn-feature-carousel/bye-bye-vpns.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e3bb65a6e5753c927634f8207871342f550955ca"
+    },
+    {
+      "path": "assets/data/img/spn-feature-carousel/easily-control-your-privacy.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0d386b5f1490d79fe79b99aa87544fc7ace1b6c1"
+    },
+    {
+      "path": "assets/data/img/spn-feature-carousel/multiple-identities-for-each-app.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b5082f73f85845502a506c5e1aa061fa007bd80e"
+    },
+    {
+      "path": "assets/data/img/spn-login.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4a5541fba8f1c5da6802307044453cd5337cce11"
+    },
+    {
+      "path": "assets/data/img/windows.svg",
+      "mode": "100755",
+      "type": "blob",
+      "git_blob": "e3e76225c9e46ff3340b2a702fba45cc67e25091"
+    },
+    {
+      "path": "assets/data/world-50m.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4e59231aa551697abd4ce85ed1ec7720fac2c3d2"
+    },
+    {
+      "path": "desktop/angular/.eslintrc.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8bcdf9d2dbe19c57c92a973bb0274492e4f52e1e"
+    },
+    {
+      "path": "desktop/angular/.gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d86cd691dd58856a05bcf561de910b73b78ec9ab"
+    },
+    {
+      "path": "desktop/angular/.vscode/launch.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "dbe72834e1ddd64623c2014ad388363f2da61943"
+    },
+    {
+      "path": "desktop/angular/.vscode/tasks.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c9339a3aaee0a75ebcf87beec47dac0437ae0eef"
+    },
+    {
+      "path": "desktop/angular/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "657f380858eb7a92cfefe955d6e06d4403df13b1"
+    },
+    {
+      "path": "desktop/angular/angular.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d99f44d0e759c8233a7967638ac53498b99ce81d"
+    },
+    {
+      "path": "desktop/angular/assets",
+      "mode": "120000",
+      "type": "blob",
+      "git_blob": "21dab8513a8cca57ac6c92457bbdd102469f66d1"
+    },
+    {
+      "path": "desktop/angular/browser-extension-dev.config.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a05dbcb16d13e06a65d559e0753552284097a78b"
+    },
+    {
+      "path": "desktop/angular/browser-extension.config.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "df5de5d3c7a3a9df7d9a763bf6a800eb42863195"
+    },
+    {
+      "path": "desktop/angular/docker.sh",
+      "mode": "100755",
+      "type": "blob",
+      "git_blob": "c0deab8cf2fbd628bd27ff961bdc5a80acbdd98b"
+    },
+    {
+      "path": "desktop/angular/e2e/protractor.conf.js",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f238c0bbebe93459d152a88a40da7aa0eeb8e91b"
+    },
+    {
+      "path": "desktop/angular/e2e/src/app.e2e-spec.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ada7d128e36e2dce2ef6ca9dc98d8c58b768f29f"
+    },
+    {
+      "path": "desktop/angular/e2e/src/app.po.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b68475e0fc0ce9d312147f19f0867a7aed41bcbc"
+    },
+    {
+      "path": "desktop/angular/e2e/tsconfig.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "426058ef0fbe764d66b4c48429e3ab988de21aee"
+    },
+    {
+      "path": "desktop/angular/karma.conf.js",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "344d4317fb32a3799e0e166b8eee7de49ea1f54a"
+    },
+    {
+      "path": "desktop/angular/package-lock.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "05453e48116015cec03424f1478ad7880a380b5a"
+    },
+    {
+      "path": "desktop/angular/package.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e76a37f053b28937e0bc73cb7b2ce2ee1a478d68"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/karma.conf.js",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "eaac9a494ddd6ef2a9e9e4108950f389cc4cddfe"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/app/app-routing.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "73a41af9456b9c05abcc5b66564783b6338ee9b6"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/app/app.component.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d1b1eb54bcf5125a00d57e8ee3e4eab45409dc94"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/app/app.component.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b25b9d2243f5793bbcb83159f2c82a026092a797"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/app/app.component.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e8d9a987ef050eaa8c363ed16b6aa6bccaa6d782"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/app/app.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "93c418a3c87a26a718db91c2d134b0b741bdaf95"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/app/domain-list/domain-list.component.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "44bc3f020d22235645f995bc37edae6408e2daee"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/app/domain-list/domain-list.component.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b0e78d45901e70eb5466870eb3dc44752ebad3e9"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/app/domain-list/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c0b4110c4dff12b0844211773c50907bd1130722"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/app/header/header.component.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e61fb0e78ee91584646a02325e112ae322653d86"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/app/header/header.component.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5c958f4e6fadb73c3bd35464b5f48ebd82f560d7"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/app/header/header.component.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3712f321799c63eac102f87d7066cb32b93bbb53"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/app/header/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "be62c26c7b1a1384efd4a40943f753e522285be4"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/app/interceptor.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a33e1d04f6b65deb26263bc19a45beb5de350395"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/app/request-interceptor.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "159a5ea5294a2f3354d6a6eaca9ba8b86a375cc1"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/app/welcome/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a695cb021e6fd0419f27d8a6c4dddc15be93514a"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/app/welcome/intro.component.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "017da6990675cdd4451f0a86e9e85898846d0c99"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/app/welcome/intro.component.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "45d6b3d91c3c4b6012451f13ecce52dbdb6e47ad"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/app/welcome/welcome.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a0de7207451a1b0979c8ce831b430741327955e3"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/assets/.gitkeep",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/assets/icon_128.png",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "063948f1789284627332181127d006f59e99d9b3"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/background.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e6a0986c8f2e799986260770231dbf545841fea3"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/background/commands.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6bfdcd881082c47dac1e6a60a856c2f4d929d124"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/background/tab-tracker.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f5a0628ec36eb380c844d48c9638c7323f2c1fc0"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/background/tab-utils.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "36635ca833613e2835b28bae5644a5744e11cbb5"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/environments/environment.prod.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ffe8aed76642585a382f5673e2c08e96de695788"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/environments/environment.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f56ff47022c7a46eac3aee615d6d9150338524dc"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/favicon.ico",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "997406ad22c29aae95893fb3d666c30258a09537"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/index.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "afb08c652bb9190bd3c8d2ddf0886e45b083049e"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/main.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c7b673cf44b388e9989fe908b78d7d73cd2e1409"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/manifest.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "db045a05ca1348aa2fc5ed9ff959735f571c62d9"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/polyfills.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "429bb9ef2d3400363c014fa434775b0f482f6bea"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/styles.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e41283cd05ee052357d23de61ef4cc10a1e268ea"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/src/test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "51bb0206a2eb50d513ce64e8c323bfc1abd6ed1e"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/tsconfig.app.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "28c281542c350d738bf6274548d6f75ce3bf3404"
+    },
+    {
+      "path": "desktop/angular/projects/portmaster-chrome-extension/tsconfig.spec.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b66a2f0b1c3a1d39965543fdfabad579f69f31a3"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fc4110d21b24d78759f0a69a37d87f4c96e67469"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/karma.conf.js",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6f9bd93513a8385c0e7bf7a7809fde7c255bd548"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/ng-package.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4ea94f9a76612bca4081e6ad0699c8530ca14f40"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/package-lock.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "848065cc81a98b923f4521c11e2dfeab2eca2c08"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/package.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "98483319d1333f52dd3bc8dbb64fa09939aef5d0"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/lib/app-profile.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5195d22cc0a42090d38f197e78bffd6a5516caba"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/lib/app-profile.types.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b73a92543540d0f0a1b232b3d78ca847d086ac2e"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/lib/config.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "58daeb284f456db1e9728f55d90c86af88d68d9a"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/lib/config.types.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "99fe5d8299159e3cd2d0f823d117c6f05d6d8b39"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/lib/core.types.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5e5e14174bc87af64c41f0d14dd167464fe1a59e"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/lib/debug-api.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "36d3cd4f3c0c1b05ccaf7386ca2d44590b19a962"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/lib/features.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "658f1c1b9fd1a96757eff529cdc3e67fd1961650"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/lib/meta-api.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "313ea12760f34fbc14bc2f315306190e22b4a9cc"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/lib/module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "13d5e048fd8f5f47fa9186b38ea42c1709f416c5"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/lib/netquery.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8824ff0d31b0f65a8426b1919ecb7e439ed38378"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/lib/network.types.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "bdc56dcfc416f8848c98c5c234f1a0755edf67b2"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/lib/platform-specific/tauri/tauri-http-interceptor.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "333769ab3720203d374f2eaa6feb479bbd908326"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/lib/platform-specific/tauri/tauri-websocket-subject.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "dfbc5d2a01448788afd8e0276f4a69ed28f84d2e"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/lib/platform-specific/utils.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e5eeb88c3524ac5ce8de47e9cfafc9fd0b5c747e"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/lib/portapi.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8c195e4fe291d5de7c0fb7b518461f726479129c"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/lib/portapi.types.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "349c7b9f348f0a70306d0bd2e31cdd6f10797001"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/lib/spn.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "eb4c5deafdb92d585544bab7d81c3ffe4b983fa3"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/lib/spn.types.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b2e7caaf42e23b94195e4e47ae6aea3e7ca00cc1"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/lib/utils.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "80b97573a1c2d0bfe546db9d0c5f239afabe4afd"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/lib/websocket.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4724687e03d3c77f5db4617d5158baf25b66702d"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/public-api.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "9097761eaa7d8f81c53487b3e94a982c75b3c648"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/src/test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "438083679acc11d91499b581bda72dda73aac778"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/tsconfig.lib.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c9f145893782e32f25c5815085a956968e2f6b78"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/tsconfig.lib.prod.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "71b135f64c185f663fcaa6985645e05942486f12"
+    },
+    {
+      "path": "desktop/angular/projects/safing/portmaster-api/tsconfig.spec.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "258250d2094dfe3ea1c5071836eb891ce5a667e6"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/.eslintrc.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "91e1f49666136cbd40c1cd0887f3d3f1a596c10d"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "cf11e371dae27fa552dba106748209666babfb15"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/karma.conf.js",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8975477bad0691420778481a7978e363a0678a76"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/ng-package.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4a890c440ee0294c263880d1765cfca8ce46824e"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/package.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "52fa541a9f85a20fc6b63d366d29e07dd622f6fb"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/accordion/accordion-group.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6dbc74306383aaa6efc4216ee6c449c3b38ceaa9"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/accordion/accordion-group.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3c152842393fa1d4870ea5e0bdd28008ac6b6393"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/accordion/accordion.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4d47b842f610bf25f4d16eaf61b00ab0b120d8c6"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/accordion/accordion.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7de494f92caeeef46633796baea94324e37fb689"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/accordion/accordion.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1c3f6ec51117b97bb1735e670dd55658c1cfcfc0"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/accordion/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c06e6707cd4960d6b35f2bed6b53cf677ac8c539"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/animations/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e1613052ba5751534a30808e0008603fbbfe0578"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/dialog/_confirm.dialog.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a0d459a8169c00209cc361dfc9122f5bab3137e6"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/dialog/_dialog.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "22300126d3e268e0cfbd56468f03442cdd158f01"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/dialog/confirm.dialog.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0bbcf27519a9b89c881adb2b154efe6b927b73a9"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/dialog/confirm.dialog.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c3c1f88810fa1f911677699d932feedcba420689"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/dialog/dialog.animations.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "14e0fe296eba9c7cbf7be2b010042dcc40864784"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/dialog/dialog.container.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d3565f47c82600f34ece1a6c211a96e03b5478fd"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/dialog/dialog.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d47195b9a3845c3a794677ceea4632cd376c57f6"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/dialog/dialog.ref.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "145c60ca1b3a658243cc0d128becfb34c1f654ff"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/dialog/dialog.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e7b80ffc655a20fc233b288318589c5f81d86c98"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/dialog/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "538cb3000e209780969ccfd6e8435764394a2873"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/dropdown/dropdown.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "33232ea093e2d2323625733c10699116eca5c6bb"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/dropdown/dropdown.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1bfb684639eb53c36a0cde92ce0ab717908e59ed"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/dropdown/dropdown.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3b50a8f58fbab332d8e43c4f35670f4855194859"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/dropdown/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ba7a9834e0b6135f78ec26d88e987624139bc391"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/overlay-stepper/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8c7974469c3991144896dd1b0597df28410db997"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/overlay-stepper/overlay-stepper-container.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5da1fb3e5855b641ff5fd43574ff89d09b6e7ade"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/overlay-stepper/overlay-stepper-container.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "18492f218519a7045328c132b9c7c2d989fea6c4"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/overlay-stepper/overlay-stepper.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6bf5fa6350e10364d6d57a37c21e4e0b5426ff25"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/overlay-stepper/overlay-stepper.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4795777a898d27ecbf9afabc62a44a8950a5ff10"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/overlay-stepper/refs.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c5ce44338d95fe4dc98724619eb296af4efec305"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/overlay-stepper/step-outlet.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "75bfab61605224f077353afa88c6b1cf8cebca53"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/overlay-stepper/step.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1611ff15ab871bc279b3c9f339126b867451424c"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/pagination/_pagination.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "46b8bdaf7130831935cb05d715738d341d97e7e0"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/pagination/dynamic-items-paginator.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b3f8a8336ea9705815f7f760b807751895363cff"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/pagination/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fb2f898c032bf3af816ca3149e6afa20c7ce4cfa"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/pagination/pagination.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "dec63df8a42e1a32ebe9193cb768622621ad2406"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/pagination/pagination.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "508454caf4c22af44a9f393c8089a612f0b11b89"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/pagination/pagination.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f3241cc97746c2cbbafe1d3df81ce0f2e52ef89b"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/pagination/snapshot-paginator.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7f01425435957ace85b41e3ffaf530e6e1aa5f1b"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/select/_select.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0d8cb34513ba18fa4c5cd3ea3b6bc401f085e7ad"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/select/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1342a2766767495a466df424582579dd452e6a69"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/select/item.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b2eb569620a54c2e2b41db1bd3a7ec757d5edf3e"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/select/select.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c3d144ebd0e4cc400f340c8ec4e0ad707ba8a2b6"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/select/select.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d33fce4df284ebbce8b6a3e94c8927bd785c26f2"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/select/select.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "9375f21f2a983bfb31c0cd00f9a597a13c8b2a0a"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tabs/_tab-group.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4d63b6709d8e0124ec08dda0f62602ced56c804d"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tabs/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4fd3296ae8f42b0c009ecac9e77f37e7251716b8"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tabs/tab-group.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f78ff7389e37e6eca03df6e519dab9c5ce1ec700"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tabs/tab-group.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e4a65f6e4665ce61ab87641acaefa5911fc9ac79"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tabs/tab.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "31f71226a6a23135140d654f2c4d4d5a2eec9376"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tabs/tabs.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e1540cb4d04cf508480190449d3bc83d1dfd4985"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tipup/_tipup.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b6b93040b1e2437344d23f508fe258a186c23e18"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tipup/anchor.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "986d037866b5a540e3fc7884948cdef1696a9662"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tipup/clone-node.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e05500608b685b49b440f5f776edad31ba142681"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tipup/css-utils.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8f58dff2a34c16468f0c5e0a2530475abd153f95"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tipup/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "bd600272054da6f2760ec114e7d3864097b9dc27"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tipup/safe.pipe.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0cbf28552e0caecd51a80c972ed28b6e3dc0a3d3"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tipup/tipup-component.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8747b0985c5f37e32733b71754ef2f106bbb622b"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tipup/tipup.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ac54fe8a20cdecc4d42fc276fbd9919057765ef6"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tipup/tipup.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "42378c6f3db89223081722f87eb666d895424a64"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tipup/tipup.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7f6fbd8541f361b7d5cc285a927bb1166c4c8ad1"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tipup/translations.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fdc0ecd5c3ca7cb5a12b0de944eae520692d2de5"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tipup/utils.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7ccffbd4eb3d75dc522d20654e77711f57525706"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/toggle-switch/_toggle-switch.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "246a7953117da619892ccc9c15062da82ea17536"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/toggle-switch/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fbc94093a6e599733136cbca450b2ce7ec2adb0d"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/toggle-switch/toggle-switch.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "69320c3af1d89d51410c736e0097e9d0f770a25a"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/toggle-switch/toggle-switch.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6b90f9610d5b34a1c0294e7181a2bc0213f04225"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/toggle-switch/toggle.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "db27249b126c0dc146a54c0cca700920aef0f9f6"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tooltip/_tooltip-component.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ff90d82a644afcf9ab350bc672f0792bbf9477b9"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tooltip/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fb071730d4fc2e5b1cc1007e9bc5e066139c3349"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tooltip/tooltip-component.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ad68d95c6a6cacd48329d3019c0a6342b1c90bfc"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tooltip/tooltip-component.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a206d5b35b49e627b212909d91e8389dde97c688"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tooltip/tooltip.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "49bd0a143002691f5697bfc0499a5ec62fe6217e"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/tooltip/tooltip.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "032e6bec7e485bff8bbec02414175f2a911c5efa"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/lib/ui.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e1f772aebb1c1e346b2664a432114228b2c7ee79"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/public-api.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e07d6adff53f2524e07fa4ae27fa4b9698dd7699"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/src/test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ceee7e40af3524edefd9c541d6fbfd3dab8fff05"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/theming.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "9c5bb3c9f85b1041b173255bbf52ccf20ca3404b"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/tsconfig.lib.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "703cd4fd463c99009f775ef5e78802982bf589c7"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/tsconfig.lib.prod.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "71b135f64c185f663fcaa6985645e05942486f12"
+    },
+    {
+      "path": "desktop/angular/projects/safing/ui/tsconfig.spec.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "85392ee8f8198058f1bb96fc8c8966fc8637134c"
+    },
+    {
+      "path": "desktop/angular/projects/tauri-builtin/src/app/app.component.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e1742d72b7af9502355e170dd6fd73ed70393a51"
+    },
+    {
+      "path": "desktop/angular/projects/tauri-builtin/src/app/app.component.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b39cd515fe38c652deb9a5be9e2570764720e2ce"
+    },
+    {
+      "path": "desktop/angular/projects/tauri-builtin/src/app/app.config.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2b4aa00c0210c068fc0e50027a454941d88ac0e4"
+    },
+    {
+      "path": "desktop/angular/projects/tauri-builtin/src/assets",
+      "mode": "120000",
+      "type": "blob",
+      "git_blob": "2978ef39396556c25c3193a0f5189d63b204ad64"
+    },
+    {
+      "path": "desktop/angular/projects/tauri-builtin/src/favicon.ico",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "997406ad22c29aae95893fb3d666c30258a09537"
+    },
+    {
+      "path": "desktop/angular/projects/tauri-builtin/src/index.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e99290a6bede965b91230ead9b5758b81ecc6595"
+    },
+    {
+      "path": "desktop/angular/projects/tauri-builtin/src/main.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "35b00f3463311f2afe0fd0d9d5f696dbb992dff5"
+    },
+    {
+      "path": "desktop/angular/projects/tauri-builtin/src/styles.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "66a2c66c1e43c8142a99d777f6403e404a2a27d3"
+    },
+    {
+      "path": "desktop/angular/projects/tauri-builtin/tsconfig.app.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f12c6239d49323545a8e91c985993d0d7c7d9206"
+    },
+    {
+      "path": "desktop/angular/proxy.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c60a2a4c70ce2a94f208442a93f88e07b91211af"
+    },
+    {
+      "path": "desktop/angular/src/app/app-routing.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2324ae8bdbd6fd0661c55512f722257153c4ca5f"
+    },
+    {
+      "path": "desktop/angular/src/app/app.component.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "401b4a49915152b959f7727484a09792d9b6f700"
+    },
+    {
+      "path": "desktop/angular/src/app/app.component.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "52cb3a92a7d700d16b32089d5492d4da9f9295be"
+    },
+    {
+      "path": "desktop/angular/src/app/app.component.spec.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "200892c0681e44f0fe0770713282a6e83cb7f6d1"
+    },
+    {
+      "path": "desktop/angular/src/app/app.component.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1ea813cd1be9f9c19821f9a9f5e25eb00bff1c41"
+    },
+    {
+      "path": "desktop/angular/src/app/app.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "12fab142844444c51bdda6fe4507af1f4509bd61"
+    },
+    {
+      "path": "desktop/angular/src/app/integration/browser.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3bfe8c7bf8ad0441b21cea206f587e22c34a1d84"
+    },
+    {
+      "path": "desktop/angular/src/app/integration/electron.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "316a3138083572ad9e455750c5897f6b2f64f6aa"
+    },
+    {
+      "path": "desktop/angular/src/app/integration/factory.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "419f3ea959244e66379ded8f0e5840a133260c28"
+    },
+    {
+      "path": "desktop/angular/src/app/integration/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "de9e81057efbb082c55cf71434245e8bc2795d6d"
+    },
+    {
+      "path": "desktop/angular/src/app/integration/integration.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fc1b79427ad30beb9bbb2ce43fe845cc1e635c63"
+    },
+    {
+      "path": "desktop/angular/src/app/integration/taur-app.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2cfe70533e941024f50bea4ca7085a78d9d8a4ed"
+    },
+    {
+      "path": "desktop/angular/src/app/intro/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b0328f4bd2414e482065879de8455f62fa14d34d"
+    },
+    {
+      "path": "desktop/angular/src/app/intro/intro.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8be0f36b81d62760bebca7a87ac2ff004475d25a"
+    },
+    {
+      "path": "desktop/angular/src/app/intro/step-1-welcome/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4261731e4b4d547d2867d02b788e368fbe16fb0b"
+    },
+    {
+      "path": "desktop/angular/src/app/intro/step-1-welcome/step-1-welcome.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2c8010c66382db7612cf1f7192e4dd6099cb74a0"
+    },
+    {
+      "path": "desktop/angular/src/app/intro/step-1-welcome/step-1-welcome.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e6af4a1538301ea6c93b3ace41d6599e58e7b387"
+    },
+    {
+      "path": "desktop/angular/src/app/intro/step-2-trackers/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "60b7451bd95d7d4ff34802b13e94cdf21bf9dbf9"
+    },
+    {
+      "path": "desktop/angular/src/app/intro/step-2-trackers/step-2-trackers.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "bfd16cd18b12149da86316297978b00b19ede7e8"
+    },
+    {
+      "path": "desktop/angular/src/app/intro/step-2-trackers/step-2-trackers.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "82d5be4d6f25e1a277fd81fffd893569362ca7ee"
+    },
+    {
+      "path": "desktop/angular/src/app/intro/step-3-dns/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "85ccdb1a616ab375c724f1924da939325ed0ad8f"
+    },
+    {
+      "path": "desktop/angular/src/app/intro/step-3-dns/step-3-dns.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "aa17288af5fbbda8fd67ede65ca0aa61de4aa814"
+    },
+    {
+      "path": "desktop/angular/src/app/intro/step-3-dns/step-3-dns.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a1dddae6ac464c10f49926f3b3941aa364cf41a5"
+    },
+    {
+      "path": "desktop/angular/src/app/intro/step-4-tipups/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "02886c50f0016d23413f05845fe4917d364d4d2c"
+    },
+    {
+      "path": "desktop/angular/src/app/intro/step-4-tipups/step-4-tipups.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f15afd3693f6a12ee3ca0a6dd89303fdb7cd8978"
+    },
+    {
+      "path": "desktop/angular/src/app/intro/step-4-tipups/step-4-tipups.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5b0463a1dfaf1ad01d92ea20696adb0fbd2e8ba9"
+    },
+    {
+      "path": "desktop/angular/src/app/intro/step.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1d17d9a2605957875d8bdcd9f8f4d2c2117c2efa"
+    },
+    {
+      "path": "desktop/angular/src/app/layout/navigation/navigation.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "27252191376de1cfa961fda2c4809291bfc0be4f"
+    },
+    {
+      "path": "desktop/angular/src/app/layout/navigation/navigation.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4683bec54862d4ec9af50aced9db663edf45eb8f"
+    },
+    {
+      "path": "desktop/angular/src/app/layout/navigation/navigation.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "65d2597b4d9531aebce5786faec48331d9b8c5a8"
+    },
+    {
+      "path": "desktop/angular/src/app/layout/side-dash/side-dash.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a4f8e073ec1f981ad54ae664c7d499fbe06d3d22"
+    },
+    {
+      "path": "desktop/angular/src/app/layout/side-dash/side-dash.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6862c2758793dced177b5c95aefc830bf97af8ae"
+    },
+    {
+      "path": "desktop/angular/src/app/layout/side-dash/side-dash.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c4836634630f5aebba2d1fc90967a8375481db50"
+    },
+    {
+      "path": "desktop/angular/src/app/package-lock.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4ef966ec41daa77e7afa4bc944abf12f98c1d659"
+    },
+    {
+      "path": "desktop/angular/src/app/package.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "119f6216c1a7715678b36ac7d65717d5f3770d64"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/app-fingerprint.pipe.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3af8dfe450c1c01e8837b0632ca061dde6473e1d"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/app-insights/app-insights.component.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "32ab491c7952601f8e30070b142d9aea84960986"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/app-insights/app-insights.component.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "264a561546adf7276fd25c5a00cd8d4727a8c062"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/app-view.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "96235c8ccf01e6a7435bdc226ca2cf175c54f0f8"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/app-view.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "977c3b7216ce7f30de4c0d334123c7943d6e2334"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/app-view.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4853636cac5e51eba76a04e9392e35ed45f652b3"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "54220c426311d9cbcee60a8076a888a16f84a253"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/merge-profile-dialog/merge-profile-dialog.component.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ef6d18292412793b15b1a3126d9a00f3f4b1c906"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/merge-profile-dialog/merge-profile-dialog.component.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d609afb1c4c7a8285ae0e5abe6a59efae08b9d47"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/overview.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4fbcdc501b39c9d6c73f27e30f1b66709151eb70"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/overview.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "87462ccbda9f9399a4852d67f7fb8c5283ca1437"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/overview.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "96d8d0e011d782c0d0fc3190c57ee91b72d648f5"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/qs-history/qs-history.component.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "77c341996a4111f858bf15f77003c90a2893573e"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/qs-history/qs-history.component.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/qs-history/qs-history.component.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "24e6296a89e09850076715c1b392f83faa4ce6be"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/qs-internet/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7fd0d0c41e3d39cb313adbfd6a1aa7091a40efc6"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/qs-internet/qs-internet.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "cf87f2546ae44614894a50d2c60f7fa5565d4449"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/qs-internet/qs-internet.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7b6066603c7bc014e07fb621376485eaa5335411"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/qs-select-exit/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "56c7267eab6e9ca6bc20693fe080a513232c3eca"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/qs-select-exit/qs-select-exit.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "66f9fa135c21000b8ea56aa8bae751c86d235477"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/qs-select-exit/qs-select-exit.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/qs-select-exit/qs-select-exit.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "698607b6094c8682e47e29be3b98f982be76c0ab"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/qs-use-splittun/qs-use-splittun.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a07a3736f455619f07389d7fc484706e2deeba1f"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/qs-use-splittun/qs-use-splittun.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "49ad402bb849b747cc80c4b2a15c99f6c5f46f18"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/qs-use-spn/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "aba9748a8c484a40b02f0af902ff64b1f88594ae"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/qs-use-spn/qs-use-spn.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "58ceb09ddf64191f02534a8eb56e466a6caa3aa4"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/app-view/qs-use-spn/qs-use-spn.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f4e5bb2ea5ef6176bd7fc0dd15391ade39eb53a6"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/dashboard/dashboard-widget/dashboard-widget.component.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "65fd80cf1b4902b18277b385975673a2bdd0c232"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/dashboard/dashboard-widget/dashboard-widget.component.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "35d2668a7560a31aae9d0e0c6f420534a025008b"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/dashboard/dashboard.component.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e145d8bc5e8e2bd91ae16b2adf36291e90371b18"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/dashboard/dashboard.component.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ba37e52754e3342a8f1e723b90bf141054e38cd1"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/dashboard/dashboard.component.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d6a6e97ea93e5a18118780e671a8f312c53e2234"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/dashboard/feature-card/feature-card.component.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0695555efe94677e4845ce45d52e15733456100d"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/dashboard/feature-card/feature-card.component.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "88f5fc61e7badb6605537dc9a78a427725a7aaeb"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/dashboard/feature-card/feature-card.component.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "41f56591b72089de8685da521dfed806b8a0f23b"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/monitor/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c21908c8b0f75e0f3a295ae79aaca05bd7c66673"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/monitor/monitor.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1d6fb177eb0e0fdbc237dc2b24b45840bf91467a"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/monitor/monitor.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "12345b5658bd973b47c0732c770a92b660484641"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/monitor/monitor.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d6ce3374c1e0cc81903fb60ce1f874df1ff3eaa8"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/page.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1977b0274e1aee30238c9f10510430da212eaae1"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/settings/settings.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f85c752b8c026b59f1d3f9e66f0ba6e548f0a77c"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/settings/settings.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "bc178ab8770db32ad402d8ca6884059ba6cb7cbf"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/settings/settings.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3f36f9bd7de217cda84f4333ad1e6f09eb2baee7"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/country-details/country-details.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f4e439637f9bbb851b0b126531b24100d0dd860e"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/country-details/country-details.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3fa34f1c71b836016134742964c22ac864aa5728"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/country-details/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3ff2c6850d9c24cf5444af116f6e6ad302ea0865"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/country-overlay/country-overlay.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6ea2166f01f016f92a973fc8ceeb59fa2a564569"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/country-overlay/country-overlay.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "be98030ceafc333a1b76d31b57aa99073b5c3d55"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/country-overlay/country-overlay.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2af05a2684132c83549bb973bd451ed09af46641"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/country-overlay/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2e61e978d0ea2d268261dec4a4af112f44ba04a0"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "cc24eeea330f04333be97adab68bbc201037f7fa"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/map-legend/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "111ec8c051cbc094b5257d9719feb9545e888e2e"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/map-legend/map-legend.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "07cf2a9b4528a4b0ded0374a026cdba9166c4cf4"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/map-legend/map-legend.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e561111e07a2a7f4097524b3dd4dbae697e71efc"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/map-renderer/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "60ff8a16bbba16598fedce2e34188caa6758273f"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/map-renderer/map-renderer.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b794a8cc977af19094b9fdfbe576f2cc3561e325"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/map-renderer/map-style.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0f319ba73b042590ffa3a8e15878e4e1ffe104de"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/map.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b8c0a65aee37dfac8bc3ce1f107b1eb6b3f8249f"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/node-icon/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "715f271dac952e0d627018687b5a90212f25ca32"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/node-icon/node-icon.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "faf8c68478e8e5f3927e4683bf1ed8eb29a24750"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/node-icon/node-icon.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b62c9bac55fc85395edd5ae846d94a70c9d2e3ae"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/node-icon/node-icon.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "daad9a153d8e25cfbadc6a2495d7f1d874b2eaec"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/pin-details/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "9a9851da5b8f27428357fcb610cec77b2b73a69c"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/pin-details/pin-details.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8e53befc6fae539476e783fa5ffeb2c0874166c9"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/pin-details/pin-details.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f7e83faeb601a369b83dc2e03e7933c794eec638"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/pin-list/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/pin-list/pin-list.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b21077e4e22887b34e9b83c6243058cc7e7a5f30"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/pin-list/pin-list.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6f3eeedfd2b0f823b8f74af3ba06bbc7c51fce8c"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/pin-overlay/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "620c76d30feb62629f33fbf1ad5894478284a67a"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/pin-overlay/pin-overlay.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4bcd2f4c9070c41e6a29078b8ae04b932f2b699f"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/pin-overlay/pin-overlay.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "68c4ea1fb4e6433c85fa4f469f84ce370ec8e8c2"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/pin-overlay/pin-overlay.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "00122703d9da792d0dab1758aed73edc83e091a4"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/pin-route/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f97ea758e9dbb35d502b535e833f6e8acfe888b0"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/pin-route/pin-route.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1927c5cdf898bef75374f1b6886460c53597c138"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/pin-route/pin-route.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2c66a8ee1b70e69d17f6fc6f3f6ba51be26e503c"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/pin-route/pin-route.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d862619deefb23d614d8c691562c0fa7e73ea6de"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/spn-feature-carousel/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d07cc9e10963256d086746e857bde196398c175f"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/spn-feature-carousel/spn-feature-carousel.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b73683f42fb215c79fabf05a76b66c09ab110ca6"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/spn-feature-carousel/spn-feature-carousel.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7ffa92a2b6bd9d4e925e8389e868f649e54565ef"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/spn-feature-carousel/spn-feature-carousel.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e68edbb3a2925c933b682d537f508a9e2329088c"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/spn-page.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "28a61450d81cc7c24b3e9c2514bc972e7844c435"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/spn-page.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "40441ef47a94204c4f9f9a1198bce6d16b29d237"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/spn-page.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "992dbe19250ea0faca27961546196987b78aeaa2"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/spn.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "737ae25f672574f11d9108f8d629a9becb353fa1"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/spn/utils.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "eaeefe4993e71cf98c23514325c4e9bb0b0f9102"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/support/form/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b28d7e2452b96d2ed59ba5bd3fb07f938b31fc2e"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/support/form/support-form.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "10685d99f4e4e70ac702120210706e3c77c2022a"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/support/form/support-form.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7555aa083e7c0b88a3a7897d06f62bd038d1c057"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/support/form/support-form.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fe9b86729a5a17db32d0f439388e21a5ae554ba3"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/support/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5f9360ade811949aa1627f9baa94b5d614c1097b"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/support/pages.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "97ca998382cae82b1202fd1dc08bc66fce63b986"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/support/progress-dialog/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0dfbf3666b55f0f0af8f4a262176a8444be411e3"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/support/progress-dialog/progress-dialog.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2504a56e7b5f7f9640711c508283974060c42449"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/support/progress-dialog/progress-dialog.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "32deb205c85ae28a75436c8462be39a071afc6ab"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/support/support.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2ad9eca2a18af4b6092e611e15a02586b4e8e975"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/support/support.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fd3ddd50a718e24c3d900e36660689bce3cd43d4"
+    },
+    {
+      "path": "desktop/angular/src/app/pages/support/support.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4bd899407feb14c6fdb30e6d99c250f194342234"
+    },
+    {
+      "path": "desktop/angular/src/app/prompt-entrypoint/prompt-entrypoint.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f16d3f55716748d48a81e4b42418abe2bf1b91ae"
+    },
+    {
+      "path": "desktop/angular/src/app/prompt-entrypoint/prompt.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8667398e682952260c9cb5e22f9c63b86193c62d"
+    },
+    {
+      "path": "desktop/angular/src/app/services/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d4b95f1d170bf8fb044a36c166ea8cc352726e0a"
+    },
+    {
+      "path": "desktop/angular/src/app/services/notifications.service.spec.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8789bf3270ccf901907899372f5ff52fbe650e12"
+    },
+    {
+      "path": "desktop/angular/src/app/services/notifications.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b15949f236fa696a02aa1cddda822609708bedda"
+    },
+    {
+      "path": "desktop/angular/src/app/services/notifications.types.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5f683dae6c5f767cbca9d6aec154af935f6a91b2"
+    },
+    {
+      "path": "desktop/angular/src/app/services/package.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a43829151e1423f0641beb1f114773f1c67fda72"
+    },
+    {
+      "path": "desktop/angular/src/app/services/session-data.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "cb88ea91be07b094b6ba3eb2a99007ff9c2cfd9f"
+    },
+    {
+      "path": "desktop/angular/src/app/services/status.service.spec.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "34ce8a6f84fd0379fbc0547c9c138b20ed0c13bd"
+    },
+    {
+      "path": "desktop/angular/src/app/services/status.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "863d85d2bb1711591930eb26a30932227c8ef763"
+    },
+    {
+      "path": "desktop/angular/src/app/services/status.types.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5dc96fc7f0beff45d54547f8e41116059f6aeb78"
+    },
+    {
+      "path": "desktop/angular/src/app/services/supporthub.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "9b8cfd7c871e0d4268f677d142cfac3b6bc1cc47"
+    },
+    {
+      "path": "desktop/angular/src/app/services/ui-state.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "25ad4d0926ec1a909dcee82e26232620bd672685"
+    },
+    {
+      "path": "desktop/angular/src/app/services/virtual-notification.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "592d886a8cd9fd2333769e14b3298df3e5c268c0"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/action-indicator/action-indicator.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2f5dafcd354f7463504e9fa85dc75a551e04f9ec"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/action-indicator/action-indicator.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "143168e10167619eb9f10b4a12af240aab16003b"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/action-indicator/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e243b7a0f6d7e5c2446f292b01f6ecd7a83bb9a6"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/action-indicator/indicator.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5691cd1e5a9369388a7d77ee435185f99f248e0c"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/action-indicator/indicator.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6189798c4848b0da874422e5fdb4e580f8fd554f"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/action-indicator/indicator.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2f41d2c63c4a39cfb5eed051358d3dea4388e249"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/animations.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "32989217ebe5564698bc90eaf4c19f51999b51b9"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/app-icon/app-icon-resolver.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0a7547ad2d23ccc34a54e785cd10e73d965abf49"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/app-icon/app-icon.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "bc81164d94eaffc9a330ecbbb317d345c0abe54c"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/app-icon/app-icon.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "939cac4326db44fcad9ceb46a52e3777034fc993"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/app-icon/app-icon.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "159cce023e459db89a0bfc188d20dcde05d322d9"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/app-icon/app-icon.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e9a32ce1813fea772b48268b5ded698a1da09079"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/app-icon/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "90675ee780eed54671960945f3f2af2ce325480a"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/basic-setting/basic-setting.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "11e864a8b0362afea5cdc16b441fa67befb10afb"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/basic-setting/basic-setting.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0bb87370e315a372874b47666a572c38c7263ed2"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/basic-setting/basic-setting.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "82433fb8e7ee7874357650e08b9f46d38b2e9199"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/basic-setting/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ec1ff492b15ee59a951512329413087f22fd7380"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/config-settings.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f6c9253eb55dfdb0bdaa52c42608b83d897089b1"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/config-settings.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f839c3414e53c974ec2afe802546a19b8534113e"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/config-settings.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "30bbdba7f285aa6dceac35c7988f9187656a39be"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/config.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "127032af087956bb3a3b2685212d3e9eb63a4b2e"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/export-dialog/export-dialog.component.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "da8a3cb15d14ea9851d9a93426b75c30db321710"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/export-dialog/export-dialog.component.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f451732ed4892d01db26e0b896d80596b017da05"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/filter-lists/filter-list.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a6a72a8722fc0ebacb4bb184de09e97e02626a9b"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/filter-lists/filter-list.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1b41d17958f5f5c11b3585a23ade55aab6286c9f"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/filter-lists/filter-list.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b39c45b44aa7437b3b938a0bcdf09b123cc15eb0"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/filter-lists/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "07932b7ef7bd8f70db77cfb6e18472400878650a"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/generic-setting/generic-setting.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7c2f9bd1b701fca68a4c8fa3154183905ad13ac9"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/generic-setting/generic-setting.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "14e2c9e5fba13de3aadb6e4b7db116069536ddf9"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/generic-setting/generic-setting.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "08d7923aea560e9ff53ee692c8d87b0eb2aebb20"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/generic-setting/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0fbe8492d0d46fe37bd0744d7bf57bce24fda45e"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/import-dialog/cursor.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1ab638ee457385129b64130eaffe422a6cc709b4"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/import-dialog/import-dialog.component.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c55709d4a0eef74c09728d3428526e4faa7173d9"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/import-dialog/import-dialog.component.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "57a5713c1ab53276ad1f4ba30fbf95cf4efe6dee"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/import-dialog/selection.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e701811558effc17fc7000176e278115b15cee84"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d71f02976bc88ffcfbd67bb3e41277f38d48c2e6"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/ordererd-list/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e8849b33d5d10106d39d1568d1ceedd1ea92ac5b"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/ordererd-list/item.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8550145b5d982c18a5ee6cdc4563fa039cfd3d6d"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/ordererd-list/item.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "169a61c500adfa25abd68126122564a958a155f9"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/ordererd-list/item.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "eefb4e3bdf78e912eb04e96864caa96f3c70c28e"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/ordererd-list/ordered-list.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fa043cb55d19f38ebf95f4fc63580d4d700838a2"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/ordererd-list/ordered-list.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d4c1c0866c3bb64cd01b0053e63caa183ee7dddc"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/ordererd-list/ordered-list.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0655ccb503a6cd6dae34601937634cabf031fd6b"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/rule-list/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a2d41fde781225c49cdf2385a7856b1b45aed7c9"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/rule-list/list-item.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "34eeae30e64609e936a831dfa8cb2e552ecdba12"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/rule-list/list-item.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "814d311b454b2b7d335b0ff2abbe69f41bf28e79"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/rule-list/list-item.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "09a6beafbe7f1c477676111cf9bce985b7d7e6c3"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/rule-list/rule-list.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "37a7837403ce2cb277441b434f7ce6a431a764a6"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/rule-list/rule-list.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "23bf703452df1b27cd29356001ba957fd566fcfe"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/rule-list/rule-list.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4a8c3bdcd569cb40288412c38e2f90bca9237398"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/safe.pipe.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0cbf28552e0caecd51a80c972ed28b6e3dc0a3d3"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/config/subsystems.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0b577e406712a216611093d1ec5d95ca50f83739"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/count-indicator/count-indicator.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fdbb0c227824e2bb0b34b0be8ec1123780d74803"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/count-indicator/count-indicator.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0961a129a438c8cc17b07f5a1e241fec58382ef0"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/count-indicator/count-indicator.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3d97d2c99939d8764ae5f3dae6a611961c066856"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/count-indicator/count-indicator.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8c49e098e7571daede51debdbe85193235f3d9a9"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/count-indicator/count.pipe.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "69140b3e1ded7ddbf92de42ce7dec573f50bb39f"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/count-indicator/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "be4276b7f1e768eb530b84bfa5f9776d47f40488"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/country-flag/country-flag.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "df91a3c5916982cfe081df1bb5259c7a5f210f87"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/country-flag/country.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2acdb3f8a145b488cd084ba8eb9f7d5e259baad4"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/country-flag/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "cc7d43069e88a274d1a8873ffc1f621462958454"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/edit-profile-dialog/edit-profile-dialog.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "838524395f0fbcaeb80fc65e562ee2034fa8047d"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/edit-profile-dialog/edit-profile-dialog.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "03e9cceac7a39a86683b977ffdd9683e831695db"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/edit-profile-dialog/edit-profile-dialog.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "961562da28295dd02c37e1592714b5001558474e"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/edit-profile-dialog/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0a4c617dfa442bb55da177a77e2a8f4abdb03a2e"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/exit-screen/exit-screen.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "cff2a9605ca2ce385437ebf7889f4a2b7fb64dec"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/exit-screen/exit-screen.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "65e5dc8b8f975a8e5f834fdeac10506514f25212"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/exit-screen/exit-screen.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3dbda6547371b77b92bde6b2934ddcc1d3105acd"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/exit-screen/exit.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c1da5b92b9471e8d5e9d9618bdb3d782769963f0"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/exit-screen/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8ea5634dc0e84c23cd2f73d9e422669d9df92d4a"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/expertise/expertise-directive.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "379466af53dae8a2888b770d7989165d36065a21"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/expertise/expertise-switch.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8ad8eca7da921743b8e39938bcdc00ffdb67562f"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/expertise/expertise-switch.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b795503de9e399e35e49ef3a6d7925f81dd3337d"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/expertise/expertise-switch.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1b822927c23541cc109cbc656d2622080ebc5dfb"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/expertise/expertise.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "7bf6a7fa2f21a429a34c8edc8d116123d57f13a0"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/expertise/expertise.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5b5d7a203b3db1388b89d259715594f33c7aaf7c"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/expertise/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6c41ae61d659f7050b8e1c2c367800b470cd5709"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/external-link.directive.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "47a16c284f4bc396bb69c63a9eada2e207488473"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/feature-scout/feature-scout.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f0ee7af710089f425b8e6a92b7ee587287c99d3f"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/feature-scout/feature-scout.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5ae271f6dd558529c294713f8834be2fe9336922"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/feature-scout/feature-scout.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "596edf1401bd6024427b7d28e6fb5bcd1c4b27fa"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/feature-scout/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6fc7f61026760ccb78d2c6874fc12f38343d1d42"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/focus/focus.directive.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "79b83f40d2226ba809aaa167a9c2464e07179f07"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/focus/focus.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "29593994c7dd7ba0ea7a40d3eb8479fcf848c5cd"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/focus/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f7f9cff0def9a25676c01eaf215171b13d415e00"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/fuzzySearch/fuse.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d7f3e1921abe8c1a3cfe3baa6966229ad205a9f3"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/fuzzySearch/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d119432165fd17ff30b2b18944976dfe1081b770"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/fuzzySearch/search-pipe.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4f6d7b1bacf26090198234b817cc39ce2a2f8e97"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/loading/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "68c5f49543634f94a6e0e9261bcbe801b957ab1d"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/loading/loading.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "bfa7d9b67104427ae4e91a103d1b571158999490"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/loading/loading.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fccdce9d0951be4b5f7de8ff593bb1e610efc302"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/loading/loading.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fb7f049db421d20c79d18920f5789b40c5ad31c0"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/menu/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "bb5dcd95f50f22935ca8e81b9077bef9264e31a6"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/menu/menu-group.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c2cd70636c251ef9209021f7af11809a4dccc46b"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/menu/menu-item.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fdba9c3218656245e44ad45501c3dadbd8169025"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/menu/menu-trigger.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "02642109dc3d8c24d17b80854b2dfe01c3252ebf"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/menu/menu-trigger.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "77cc16b0f580c1ea7c47976927f99960e54135c5"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/menu/menu.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d33da3d7002f4e58919e10a57f2fd8e8a712e265"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/menu/menu.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4f97a6c0b1db04a01114df63964d4b4ea6643526"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/menu/menu.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f546792141fe0df501d69135702aa273f650e130"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/multi-switch/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6009e482af08b4207b41b319003d0383c18a71c7"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/multi-switch/multi-switch.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6af6d004af2bc0de022cf5806dd6752b878cfa83"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/multi-switch/multi-switch.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a3404d5276d6e77c0e5e74619c86ee544956d1c5"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/multi-switch/multi-switch.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6b96e2f3057b6eb506f7e1f696912b2b46e0cc6f"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/multi-switch/multi-switch.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2726427c4cb2b4bab20d2d9aee9294cd78280c52"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/multi-switch/switch-item.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "da737c13422feeaffa284041546a3b3e3a073b42"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/multi-switch/switch-item.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f70f3a2f7513a181b902d6f73a6800a5c58b8e90"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/.eslintrc.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5ac41541fd48d8033184125620480c0f43762c7d"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/add-to-filter/add-to-filter.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f87d49109d56351172cd85747481180eef317a13"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/add-to-filter/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1dfab44f74b8895ecd638c363406b14dad7a7c9f"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/circular-bar-chart/circular-bar-chart.component.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f2b736d9ba728a1c24b9e5eeed3f7a6b234494ec"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/combined-menu.pipe.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "610e15a1837b3c05a854a9bf14895d7aaf68d949"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/connection-details/conn-details.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fcbe03cbda2269f8a9487117acbf6fd18de6adb7"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/connection-details/conn-details.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f850b0030fbb7e586c51dad6078be6d0b082f9fe"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/connection-details/conn-details.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "78dfecdaf6eb90213028ac5fb2814eaba439bf9c"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/connection-details/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1740e30837b6d3e6e2f4afab923e23765c4563f6"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/connection-helper.service.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "89b8ff0a3701af671c95e6f3aba33e9fb0c83c67"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/connection-row/conn-row.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ff09c532a4f62d92aa366db5c3eb2e834a647954"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/connection-row/conn-row.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0d737830e303d624706f8a5c33831bd592c9484c"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/connection-row/conn-row.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d5fee66346eb2602155759b041b84aa96d21c090"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/connection-row/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "adbe19338232ec797ec80f302201b8d620502704"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8466058707063fe2b9f2c91bd30e059877b965b4"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/line-chart/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/line-chart/line-chart.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "23a9007cf396a62059529c9e8168dfd31ec8b4ad"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/netquery.component.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "dac7211c2f688015b49ae84bdb3874c62e86f77c"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/netquery.component.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "170d850011e6562b2bca8a8b212e04adfb9e8124"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/netquery.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5a4336667305840a170e5ddb71d610897ad1d8bc"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/pipes/can-show.pipe.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "35f93628ef611ba81ce328c1c828044c809406c0"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/pipes/can-use-rules.pipe.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d4b5d4d355092c114a49cfdf8a1a836a0e904de5"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/pipes/country-name.pipe.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "93e6bc61d493091dd39bf73512d663d8c56b8e75"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/pipes/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "9b429e5977f9afa8cd1223475c417161d4fa7d4a"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/pipes/is-blocked.pipe.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fcb6dc0d0fd62d1b884bcc24af31464a277bfa36"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/pipes/location.pipe.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4b53f8fe334ff03f72b528248ed7780f5d3e8c37"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/scope-label/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8f48194027b67ea9937d3e3ce0da953b28734d23"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/scope-label/scope-label.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0df11b577b6bb4fd23cb9b61eb1121a30cfd8ff1"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/scope-label/scope-label.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8bb64c833905136e3d926870f6a32fe0d1bfc794"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/search-overlay/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ffad6a32449350d2077d293cc40262b18aca643e"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/search-overlay/search-overlay.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "49eaa84bb02b9cee90bccbfe409d1b3fe853f9b3"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/search-overlay/search-overlay.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "eaae1a08e28c033b5fe174f8f7b55231bdc6c6d5"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/searchbar/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2520d4d6f85c956bfe8efd100703a66738f4e6e0"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/searchbar/searchbar.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ef2dedf43423509a2d62ef98117c2a2bfa90adc9"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/searchbar/searchbar.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "044f861890261f79e44a5fe5a5bb18f18333cfc7"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/tag-bar/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3439acb3940cc091eb97954d7696f2a4ba848978"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/tag-bar/tag-bar.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f1161e58aabe1cf13cf730071e89be09de1d4240"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/tag-bar/tag-bar.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "bbff74178b131ec511b56a9fa7b22c24173e8835"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/textql/helper.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8f523aaaf1608783e20d8a40b1e6250d3958544e"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/textql/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "75aa8b9397aee69c7bcf10377f51e81f3c08fa4d"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/textql/input.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4180d1934dbb5b1e534da3819483f60800cb072e"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/textql/lexer.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a3f2fe93aa80f88c6bbceb9d52cb1f04f7cde65d"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/textql/parser.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5cf492f778a36687230262c17c4e1e3e87ea8eca"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/textql/token.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ae9039d7f5d4f3f7877057e08ea0ce65fe335a97"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/netquery/utils.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "95f1503463308a035447b043d3e565f925fd9b75"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/network-scout/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "fa8417eed48428a210dc04aa88984314110d8a4e"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/network-scout/network-scout.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b314d86b9f9aa332450a1ed93f051d55ea495e91"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/network-scout/network-scout.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "9f24cfefb7a1bce04129bb203c69cf5c9b2b920d"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/network-scout/network-scout.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8c3c7d88031de2f25e14c892c76718525a92d528"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/notification-list/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3fa640e32efe02561a1d36bd2f37ca257ca20f56"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/notification-list/notification-list.component.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e4f70667918a56c139c1c07604866cce23f6c91a"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/notification-list/notification-list.component.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e99c059e0a3cd571a821ff62a3a8f24e1c1dc858"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/notification-list/notification-list.component.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d54e2b98f296328faf168c11dfbcd984386fba78"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/notification/notification.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c3d7bcf658f98034188e9000bbfb8e097e942464"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/notification/notification.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5142a8c0c6726f64b51178e90b2acbe59c7247e1"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/notification/notification.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a50dcdee95d5eb49fffc0e4cb49309e430fe831b"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/pipes/bytes.pipe.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a0be5486ce6a8ce6bab39421194e5fdb49a60ecc"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/pipes/common-pipes.module.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c64df8a19af19a2dda7efd6ac56e4ceb1dc0e7bb"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/pipes/duration.pipe.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "df33c283b97dd8eae04a9d07e61f23ba16f4759d"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/pipes/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6eddfdd26fef6064fe8c87d0df27b5078344c39d"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/pipes/round.pipe.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "104ca0ac8f5fda10906c08633e04248437af4b0e"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/pipes/time-ago.pipe.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a0c2821e23868522eebb9e27657cc7af2fbefc3f"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/pipes/to-profile.pipe.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "217e3b35912b3e0f00c4c073054cf613a2203f5a"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/pipes/to-seconds.pipe.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "166fbf170be5a3df8badb927bcf75c18523a0a26"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/process-details-dialog/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "cceeb5f85d8e147dc92f8b9a56b54d009af4c2ee"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/process-details-dialog/process-details-dialog.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "85cfa1bb074c8674ff9b56d00120524c039937fa"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/process-details-dialog/process-details-dialog.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "609e4e1fce95541d14a1e5a4166d1a6f4856a412"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/process-details-dialog/process-details-dialog.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1f0daa0c54e11aec1a5140cf7d1c35b38aaa1c7a"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/prompt-list/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b76fae32176840cb819cdb4c670b764370fdb255"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/prompt-list/prompt-list.component.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4d32a21e37f147af9fc58490d2c14e71994bda23"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/prompt-list/prompt-list.component.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "90b34aadd34477fd8be9d02ccb9368d0b96b6eb8"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/prompt-list/prompt-list.component.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d6a3ca367ec55cdbb2cf391c230812a212798a36"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/security-lock/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "71561750b01a920c9e1aaa9f12e83d1214413587"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/security-lock/security-lock.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "146fb34a439cd28634aeb6c1d5a4ff41c8750ec2"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/security-lock/security-lock.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "12533ded1873ddacf24669d7131d2462422a625e"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/security-lock/security-lock.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "2172ebdb39bcd33acb6dd08747b6335bf174cca8"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/spn-account-details/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "623342d5f5b998adcc46fafb74806b38d9f30304"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/spn-account-details/spn-account-details.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "3b5940579d4040cd442540670e13595acf81b80f"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/spn-account-details/spn-account-details.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f1c7dc0d6b53d21c48b885dd04aafd3458815abd"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/spn-account-details/spn-account-details.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "512f6674b419826c2b73656326b8dad4713df86b"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/spn-login/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "25850856022653e02d208ca8a2fd59564a6c44e4"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/spn-login/spn-login.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8f59d86c231d2208b29b7e0808d92faed6fdeedc"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/spn-login/spn-login.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "232d51eee1861e59d16598f5fb63fa6df5d41e27"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/spn-login/spn-login.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a5ae4172146a06603663d01a9571de6ab6fc5f61"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/spn-network-status/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "bfa12d5d6849e58df1be1c6fe6a13ef7948f3152"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/spn-network-status/spn-network-status.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "83196071cb17199394039d9fbfe85d29c4f43891"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/spn-network-status/spn-network-status.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6c73c8bb02896eda7a09561c72771ab739502bf1"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/spn-network-status/spn-network-status.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "131c907fc0c4b337ac764d06f1e192eff88e8dfe"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/spn-status/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a996c3cf8d2a08372d5c2f8e2f30b14e024b8327"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/spn-status/spn-status.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "84006d465dc8bc4eab29cd101e5a5c7fc45ca3cc"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/spn-status/spn-status.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5cc264783f9d23d17552d3760444445adf33fc2a"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/text-placeholder/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8d04c94a07f1354348b877cfd24e8276e296986a"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/text-placeholder/placeholder.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "88140deb266a4acc3149f9e4be743a3f27dababe"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/text-placeholder/placeholder.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "0b9797a3f3d3a6712117a7583da42db75316558a"
+    },
+    {
+      "path": "desktop/angular/src/app/shared/utils.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c36caa078529be4280be57bfa526bdff771790f9"
+    },
+    {
+      "path": "desktop/angular/src/assets",
+      "mode": "120000",
+      "type": "blob",
+      "git_blob": "ec2e4be2f839d0372d9c88d9a8b826596a361e64"
+    },
+    {
+      "path": "desktop/angular/src/electron-app.d.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "febea42bc09d49273f0880caff4f37728bf8f236"
+    },
+    {
+      "path": "desktop/angular/src/environments/environment.prod.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ecca43425b1fc4d2dc21c38baabb7ef2dba9eccc"
+    },
+    {
+      "path": "desktop/angular/src/environments/environment.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5ef6df2514cd1246dbf081e5cbf28f29f867b5b1"
+    },
+    {
+      "path": "desktop/angular/src/i18n/helptexts.yaml",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "5a1e62de8af5ea90dda61004527239b5416c5182"
+    },
+    {
+      "path": "desktop/angular/src/i18n/helptexts.yaml.d.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "979498e367dd6ea5f465caada6e13066405df5b6"
+    },
+    {
+      "path": "desktop/angular/src/index.html",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "8912951bb4cbb0c58d81913f4d836fd826abd803"
+    },
+    {
+      "path": "desktop/angular/src/main.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a6d382ece178197fb41cb17039d523997d90b15f"
+    },
+    {
+      "path": "desktop/angular/src/polyfills.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "576bf9d7f7e26525a2c23b42d5cee0f44031df73"
+    },
+    {
+      "path": "desktop/angular/src/styles.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "52a477456eaa858c341f5185003998d27d46c252"
+    },
+    {
+      "path": "desktop/angular/src/test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "06aa8e41d9ce12d777b3ca7f19669829b42b4d22"
+    },
+    {
+      "path": "desktop/angular/src/theme.less",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "6415471641a67247fda250b196e3734b6d9eade8"
+    },
+    {
+      "path": "desktop/angular/src/theme/_breadcrumbs.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "42df118b97b957ed9eb3963d1163f8b6d6e41967"
+    },
+    {
+      "path": "desktop/angular/src/theme/_button.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "b1ac1976860ad608c1e3ccb83683b38cf493e4c9"
+    },
+    {
+      "path": "desktop/angular/src/theme/_card.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "284a4bbecd2c8ee1ac4dfd88e4f08899cfa315d9"
+    },
+    {
+      "path": "desktop/angular/src/theme/_colors.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "65310698037063179ef35ffb98a27a6d586b7b83"
+    },
+    {
+      "path": "desktop/angular/src/theme/_dialog.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "c4eaaabe70fe2ce6b826f9617b911e451ef8c93d"
+    },
+    {
+      "path": "desktop/angular/src/theme/_drag-n-drop.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e6c69adde2babfd8f5bea7b85f778f7889ecb5f8"
+    },
+    {
+      "path": "desktop/angular/src/theme/_inputs.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a7baf154ba824c1b35c36c623ca1f15b88db2c5b"
+    },
+    {
+      "path": "desktop/angular/src/theme/_markdown.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "4bf2fa09b3b62f7b8878b34c3caa4114ad9a9f1a"
+    },
+    {
+      "path": "desktop/angular/src/theme/_pill.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "e85d9ac38167b14158204c020aed213f54aee441"
+    },
+    {
+      "path": "desktop/angular/src/theme/_scroll.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "36ea80b0f7af241c838847700fdb21b9bd5dd4ac"
+    },
+    {
+      "path": "desktop/angular/src/theme/_search.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "d950cafddfe1bfb6b8b8c803acd477d422818783"
+    },
+    {
+      "path": "desktop/angular/src/theme/_table.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "035b5e1719f1bd27ffbb882695d77d137cfed8bb"
+    },
+    {
+      "path": "desktop/angular/src/theme/_tailwind.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "28ccd29f4cf94730848825212119f9f40cbde6db"
+    },
+    {
+      "path": "desktop/angular/src/theme/_trust-level.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "a4b00b519148107ad21a3ad2f76306533628c562"
+    },
+    {
+      "path": "desktop/angular/src/theme/_typography.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "1c8a6d01edd5fe88445c1816dcce7b9e08687750"
+    },
+    {
+      "path": "desktop/angular/src/theme/_verdict.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f5e480c14912db55ae98bca4b0fb4cd06cb35907"
+    },
+    {
+      "path": "desktop/angular/src/theme/mixins/_pill.scss",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "130f5519738076eeb96a1b753da09f59fd08fe75"
+    },
+    {
+      "path": "desktop/angular/tailwind.config.js",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "ba4e7f117e5d31c79f891811c99e44327a25cb34"
+    },
+    {
+      "path": "desktop/angular/tsconfig.app.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "f67c4660eb98ea27a4dfc81cefb60fce3982c494"
+    },
+    {
+      "path": "desktop/angular/tsconfig.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "281e9628a7604abe8e6528b6fc58874d9256b466"
+    },
+    {
+      "path": "desktop/angular/tsconfig.spec.json",
+      "mode": "100644",
+      "type": "blob",
+      "git_blob": "800c6e2f39e4dde6c844a8c2129f46c1f8d62413"
+    }
+  ]
+}

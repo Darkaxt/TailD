@@ -1,6 +1,6 @@
 # TailD remaining-product specification
 
-Version 1.1, 2026-10-13. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.2, 2026-10-13. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
 
 ## 1. Authority, authorization and completion boundary
 
@@ -20,14 +20,15 @@ to that increment. The corresponding future capabilities are now specified,
 not implemented by the specification task. The October 13 instruction to continue
 TailD authorizes remaining implementation, verification and commits through local
 release-readiness, preserving the explicit Stage 10 delivery boundary. Stage 6 is
-the single ACTIVE stage; Stages 7–9 remain NOT STARTED until their dependencies
-close. No public release, installed-client replacement or updater activation is
-authorized by this continuation. Stage 6 has since closed with the evidence in
-POLICY-READS.md; Stage 7 is now the single ACTIVE implementation stage.
+COMPLETE with the evidence in POLICY-READS.md; Stage 7 is the single ACTIVE
+implementation stage. Stages 8–9 are NOT STARTED. No public release,
+installed-client replacement or updater activation is authorized by this continuation.
 
 The [stage ledger](IMPLEMENTATION-PLAN.md) maps every requirement to acceptance
 criteria. A plan cannot weaken this document. Only one implementation stage may
-be ACTIVE. Ordinary unfinished work is not a blocker or an unnamed deferral.
+be ACTIVE. Unmet current-stage requirements are advancement blockers; implementable
+gaps keep the stage ACTIVE. Only a presently unresolvable impediment justifies parking
+it as BLOCKED. A tracked deferral must satisfy the named-later-stage contract.
 Stage 9 is local release-readiness; actual delivery requires Stage 10 and explicit
 delivery authorization. Neither a prototype nor Stage 9 means the product shipped.
 
@@ -83,9 +84,13 @@ capability. No field decoder, metric meaning or source guarantee may be guessed.
 ## 4. Portmaster design requirement — R08
 
 The pinned [Portmaster design map](PORTMASTER-DESIGN.md) is part of this specification.
-It records inspected source commit `882d900dadb6df91150cf87f0a12706d29172586`
-and maps actual navigation, templates, query contracts, database and chart modules.
-Marketing screenshots alone do not satisfy the source-design requirement.
+The October 13 user instruction requires comprehensive retrieval of current
+Portmaster layouts before further metrics/presentation implementation and maximum
+practical reuse of its actual widgets. The refreshed layout reference is development
+commit `bb6c44468a5d66bddb13bf3c43fcb2625c326ca9`; the earlier metrics-source review
+remains separately identified. The complete retrieved Angular/shared-asset tree is
+recorded in [the source inventory](portmaster-source-inventory.json). Marketing
+screenshots alone do not satisfy the source-design requirement.
 
 Implement the same functional hierarchy: overview -> application or filtered
 activity -> evidence detail. Separate ingestion/storage, typed query/aggregation,
@@ -96,9 +101,14 @@ raw SQL/debug interface, timing constants or unsupported connection semantics.
 
 **Acceptance:** implementation review traces layout and metrics components to the
 source map; a card, chart, filtered table and export reconcile on the same facts;
-there are no required Portmaster runtime processes. Original implementation is
-the default. Literal reuse must pass file-specific license/notice/source review
-before integration or distribution, without rewriting inherited copyright notices.
+there are no required Portmaster runtime processes. Reuse upstream widget code,
+templates and styles wherever compatible, rather than defaulting to a generic
+reimplementation. Record each reused component, adaptations and concrete reasons
+for any replacement. Literal reuse must pass file-specific license/notice/source
+review before integration or distribution, without rewriting inherited copyright
+notices. Do not replace charts, ranked consumers, filters or drill-downs with text
+blocks, placeholder counters or generic metric-card grids. Unknown/partial data
+must remain honest, visible states within functional widgets.
 
 ## 5. Incremental ingestion and history — R09
 
@@ -368,6 +378,14 @@ the inherited TailDNS connectivity tray behavior, not the proprietary official
 GUI. The exact application shell/framework is an implementation choice; selecting
 one must preserve the following layout, local security and packaged-runtime tests.
 Do not require installing Portmaster or copying its entire Angular application.
+
+Use the current retrieved dashboard, application insights, Netquery explorer,
+details, navigation, theme and `@safing/ui` controls as the concrete component
+reference. Prefer a compatible Angular subset to discarding reusable widgets for
+another framework without a demonstrated need. Adapt only the product bindings,
+unsupported semantics, security and exact-counter/gap behavior necessary for TailD.
+The design map defines representative viewport/layout and screenshot acceptance;
+verify the actual served assets, not only source or mock previews.
 
 Persistent sidebar: Overview, Applications, Activity, Control D, Sources & health,
 Settings. Shared header: device/endpoint, time range, source freshness/coverage and
