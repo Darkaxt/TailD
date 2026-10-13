@@ -492,13 +492,17 @@ analytics workflow and real updater/recovery verification, then final reconcilia
 Resolved B10 (external): the October 13 explicit "go ahead" authorizes public
 release, active Windows replacement and TailD updater activation. No synthetic
 Stage 9 result substitutes for the required real production checks.
-Advancement blocker B11 (internal): integrated v2 source now includes the matching
-core overlay, dedicated signed-installer channel and cross-component recovery,
-but full production packaging/isolated acceptance and the protected signing/release
-workflow remain unfinished. Focused diagnostics do not satisfy those criteria.
-Resolve through complete current-payload Windows verification and the credential-
-isolated production pipeline before publishing/migrating; release, migration and
-final completion depend on this work. Tracked deferrals: none.
+Advancement blocker B11 (internal): the complete build, isolated installer matrix
+and protected payload/installer signing passed run 38463490065. Current-source
+0472970 passed build/contracts/payload signing in run 38465087871, but the added
+fresh-host full-product migration-refusal check observed exit 0 without an
+authenticated baseline. The actual setup/helper log is required to distinguish
+framework exit reporting from an unexecuted/incorrect completion path. Local
+hook-free release observation also encountered an invalidated UIA element during
+rendering; diagnostic evidence is being added before changing that observer.
+Resolve these current-payload installer/recovery and release-observation criteria
+before publishing or migrating. Release, live migration, updater verification and
+final reconciliation still depend on this work. Tracked deferrals: none.
 Dependency: Stage 9 COMPLETE and explicit publication/deployment authorization.
 
 ## Stage 5 execution — 2026-10-08

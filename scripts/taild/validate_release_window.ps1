@@ -57,4 +57,12 @@ public static class TailDReleaseProbe {
   }
 }
 '@
-[TailDReleaseProbe]::Run($NativePid) | ConvertTo-Json -Depth 9 | Set-Content -LiteralPath $Output -Encoding UTF8
+try {
+  [TailDReleaseProbe]::Run($NativePid) | ConvertTo-Json -Depth 9 | Set-Content -LiteralPath $Output -Encoding UTF8
+} catch {
+  $cause=$_.Exception
+  while($cause.InnerException){$cause=$cause.InnerException}
+  [ordered]@{ok=$false;error_type=$cause.GetType().FullName;message=$cause.Message;stack=$cause.StackTrace} |
+    ConvertTo-Json | Set-Content -LiteralPath $Output -Encoding UTF8
+  throw
+}
