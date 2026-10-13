@@ -50,6 +50,14 @@ class PackageManifestTest(unittest.TestCase):
              self.assertRaisesRegex(manifest.PackageError,'detached'):
             installer.rollback()
 
+    def test_only_actual_uninstall_can_exempt_its_framework_bootstrap(self):
+        app=self.root
+        self.assertTrue(installer.blocks_installation(app/'unins000.exe',app))
+        self.assertFalse(installer.blocks_installation(app/'unins000.exe',app,True))
+        for name in ('TailD.exe','TailD.Setup.exe','unins001.exe','desktop/TailD.Desktop.exe'):
+            self.assertTrue(installer.blocks_installation(app/name,app,True))
+        self.assertFalse(installer.blocks_installation(app.parent/'other.exe',app,True))
+
     def setUp(self):
         if os.name=='nt':
             base=os.environ.get('TAILD_PACKAGE_TEST_OUTPUT')

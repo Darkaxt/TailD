@@ -171,7 +171,11 @@ def prepare(candidate,owner=None):
     return new
 
 
-def ensure_quiescent(app):
+def blocks_installation(path,app,allow_uninstaller=False):
+    return path.is_relative_to(app) and not (allow_uninstaller and path==app/'unins000.exe')
+
+
+def ensure_quiescent(app,allow_uninstaller=False):
     import pywintypes,win32api,win32process,win32service
     manager=win32service.OpenSCManager(None,None,win32service.SC_MANAGER_CONNECT)
     service_pid=0
@@ -194,7 +198,7 @@ def ensure_quiescent(app):
             buffer=ctypes.create_unicode_buffer(32768);size=wintypes.DWORD(len(buffer))
             if not kernel.QueryFullProcessImageNameW(int(process),0,buffer,ctypes.byref(size)):continue
             path=Path(buffer.value)
-            if path.is_relative_to(app):raise manifest.PackageError('close-taild-and-stop-collection-before-installing')
+            if blocks_installation(path,app,allow_uninstaller):raise manifest.PackageError('close-taild-and-stop-collection-before-installing')
         finally:process.Close()
 
 
@@ -260,7 +264,7 @@ def abort(candidate):
 
 
 def check_uninstall():
-    app=app_directory();ensure_quiescent(app);manifest.verify(app,installed=True)
+    app=app_directory();ensure_quiescent(app,allow_uninstaller=True);manifest.verify(app,installed=True)
     previous=app.with_name('TailD.rollback')
     if previous.exists():manifest.verify(previous,installed=True)
 
