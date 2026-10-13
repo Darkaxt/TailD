@@ -88,10 +88,13 @@ jobs:
             core_version="$(GOTOOLCHAIN=local go list -m -f '{{.Version}}' "github.com/Darkaxt/tailscale@$core_head")"
             GOTOOLCHAIN=local go mod edit -require="tailscale.com@$core_version"
             GOTOOLCHAIN=local go mod edit -replace="tailscale.com=github.com/Darkaxt/tailscale@$core_version"
-            GOTOOLCHAIN=local go mod tidy
-            versions="$(GOTOOLCHAIN=local go list -m -f '{{.Version}} {{.Replace.Version}} {{.Replace.Path}}' tailscale.com)"
+            # The reviewed core can require a newer Go patch than the current
+            # Android base. Let module tooling select that required toolchain;
+            # tidy records the new go directive for candidate/release setup-go.
+            GOTOOLCHAIN=auto go mod tidy
+            versions="$(GOTOOLCHAIN=auto go list -m -f '{{.Version}} {{.Replace.Version}} {{.Replace.Path}}' tailscale.com)"
             test "$versions" = "$core_version $core_version github.com/Darkaxt/tailscale"
-            core_dir="$(GOTOOLCHAIN=local go list -m -f '{{.Dir}}' tailscale.com)"
+            core_dir="$(GOTOOLCHAIN=auto go list -m -f '{{.Dir}}' tailscale.com)"
             bash scripts/sync-core-toolchain-rev.sh --write "$core_dir" "$PWD"
             bash scripts/sync-core-toolchain-rev.sh --check "$core_dir" "$PWD"
             git add go.mod go.sum go.toolchain.rev
