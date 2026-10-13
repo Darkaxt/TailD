@@ -38,6 +38,12 @@ traffic/DNS totals reconcile across these views; historical binding, source gaps
 and unverified outcome codes remain explicit. This is not an installed analytics
 desktop or continuous collector. See [metrics/query evidence](docs/taild/METRICS-QUERY.md).
 
+Stage 6 adds GET-only Control D policy/client coverage, timestamped private policy
+history and optional user-bound Windows credentials. Live category reads and
+persist/reopen/query passed; bounded DNS samples keep truncation and raw reasons
+explicit. No continuous runtime, installed analytics desktop or TailD release is
+implied. See [policy reads and credentials](docs/taild/POLICY-READS.md).
+
 - [TailD authoritative specification](docs/taild/SPECIFICATION.md)
 - [Remaining-product specification: ingestion, metrics, desktop and delivery](docs/taild/PRODUCT-SPECIFICATION.md)
 - [Pinned Portmaster layout and metrics source-design map](docs/taild/PORTMASTER-DESIGN.md)

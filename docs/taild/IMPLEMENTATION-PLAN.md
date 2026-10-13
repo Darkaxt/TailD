@@ -8,7 +8,10 @@ remaining specification. The subsequent instruction to start Stage 4 authorizes
 its implementation, verification and commit. Stage 4 is now COMPLETE; Stages 5–10
 remain NOT STARTED at Stage 4 closure. The subsequent explicit Stage 5 request
 authorizes its implementation, verification and commit; Stage 5 is now COMPLETE
-and Stages 6–10 remain NOT STARTED. No release or deployment is authorized here.
+and Stages 6–10 remained NOT STARTED at that checkpoint. The October 13 request
+to continue TailD authorizes remaining implementation through Stage 9. Stage 6
+is now COMPLETE and Stage 7 is the single ACTIVE stage. Stage 10 requires explicit delivery
+authority. No release or installed-client replacement is authorized here.
 
 ## Stage 1 — Public TailDNS derivative with automatic inheritance
 
@@ -275,7 +278,7 @@ Blockers: none. Tracked deferrals: none. Dependency: Stage 4 COMPLETE.
 
 ### Stage 6 — Remaining Control D READ coverage and credentials
 
-Status: **NOT STARTED**. Requirements: R12 and R14b; maintain R14a safeguards.
+Status: **COMPLETE**. Requirements: R12 and R14b; maintain R14a safeguards.
 
 Objective: expose policy context and capabilities for the account without writes.
 
@@ -291,15 +294,41 @@ Acceptance criteria:
 - Actual account reads for every available category; fixtures and captured
   provider evidence for unavailable categories; zero provider mutations.
 
-Satisfied: initial inventory/activity read only; no new acceptance criterion is
-claimed complete. Remaining: all criteria above. Blockers: none currently
-established. Unverified category APIs are investigation work, not automatic
-waivers or proof of provider denial. Tracked deferrals: none.
+Satisfied, criterion by criterion:
+
+1. Verified vendor-owned GET contracts and real selected endpoint/profile reads
+   cover native/external filters, services, rules, folders, options, restriction
+   catalog/enabled state and default rule. The dedicated regional client read
+   succeeds despite the legacy inventory field being absent; no guessed route
+   or artificial unavailable category is substituted.
+2. Private point snapshots persist/reopen/query through the existing schema-v4
+   typed policy surface. Every capability records source/route/scope/shape/time,
+   pagination and retention uncertainty and rate-limit behavior. Live account
+   CSV decisions retain reason/answer/profile/client/geography and unknown fields;
+   the bounded account sample is explicitly truncated and never host-attributed.
+3. Optional current-user Windows Credential Manager round-trip, replacement and
+   removal pass natively with synthetic credentials. Hidden/vault input integrates
+   with GET-only capture and private history. Echo fallback, secret exports,
+   redirects, malformed data, scope/path injection, denial and 429 handling pass.
+   The existing READ token was used only transiently for live validation, not
+   installed in the product vault; no new token/re-entry was needed.
+4. Live reads passed for all available categories. Real capture -> private store
+   -> close/reopen -> exact typed query passed. All current TailD Python contracts
+   passed (including Windows native credential and actual SQLite/HTTP boundaries).
+   No provider writes, installed-client operations or background installation.
+
+Evidence and commands: [POLICY-READS.md](POLICY-READS.md). Remaining: none for
+Stage 6. Blockers: none. Tracked deferrals: none. The inherited native source and
+core pin were not changed by this stage. A separate existing inheritance run's
+Go checksum-service HTTP/2 error was diagnosed, not hidden by a source patch;
+the normal trusted workflow was re-dispatched as run 38382663145 and is tracked
+through completion before dependent integration. It does not replace any failed
+candidate or change this stage's verified analytics source.
 Dependency: Stage 5 COMPLETE; history/context must be integrated into snapshots.
 
 ### Stage 7 — Opt-in continuous runtime and privilege boundary
 
-Status: **NOT STARTED**. Requirements: R13 and remaining R14a–d.
+Status: **ACTIVE**. Requirements: R13 and remaining R14a–d.
 
 Objective: safely acquire and query data without manual developer commands.
 
@@ -429,3 +458,29 @@ there is no ACTIVE stage. R10/R11 and the R08 metrics boundary are reconciled
 above; the complete R01–R18 product is not declared complete. No provider policy
 acquisition, credential recovery, installed runtime/UI, release or deployment
 is claimed. Verified changes are committed locally, not pushed or published.
+
+## Stage 6 execution — 2026-10-13
+
+Authorization: already_authorized by the request to continue TailD. Stage 6 was
+the single ACTIVE stage and is now COMPLETE. Reuse the GET-only HTTP boundary, private schema-v4
+snapshots and existing typed policy queries. First prove secure credential entry
+-> explicit endpoint/profile selection -> verified policy reads -> timestamped
+private snapshot -> existing query. Then close remaining capability/error/unknown
+contracts and real-account verification. Never recover a transcript credential
+for installation in the product vault. The user reminded us that the existing
+READ token is already supplied: bounded on-demand validation can reuse it solely
+in process memory, without persistence, argument/log exposure or scope changes.
+Provider policies, source services, installed clients and background tasks stay
+unchanged. Stage 7 does not start before Stage 6 closes or is genuinely parked.
+
+## Stage 7 execution — 2026-10-13
+
+Stage 7 is the single ACTIVE stage. First prove an unelevated owning-user
+collector -> authenticated, fixed-schema read-only GlassWire pipe -> private
+history -> existing query, with deterministic start/pause/resume/stop and no
+overlapping source reads. Then verify opt-in acquisition cadence, scoped source
+errors/catch-up, credentials and IPC ownership, interruption/disk-full behavior
+and the required live lifecycle matrix. No permanent service/startup task, client
+replacement, provider write, updater change or release is implied. A privileged
+reader exists only to satisfy the verified source ACL boundary; it receives no
+provider credential or arbitrary SQL/path/shell operation.

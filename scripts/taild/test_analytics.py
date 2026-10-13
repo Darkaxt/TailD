@@ -48,6 +48,36 @@ class AnalyticsTest(unittest.TestCase):
         return {'kind':'traffic','view':'summary','start':START,'end':END,
                 'scope':{'host':'host','account':'account','endpoint':'endpoint'},**changes}
 
+    def test_policy_point_snapshot_is_queryable_without_retroactive_rule_causality(self):
+        self.assertTrue(hasattr(self.engine,'record_policy'),'Stage 6 policy history integration missing')
+        data={'source':'controld-api-readonly','account_scope':'account','endpoint':'endpoint',
+              'profile':'profile','captured_at_utc':'2026-10-08T10:01:00Z',
+              'consistency':'separate-api-reads','historical_rule_causality':'not-established',
+              'resources':{'restrictions':{'state':'available','data':{'restrictions':['synthetic']}}}}
+        result=self.engine.record_policy(data)
+        page=self.query(kind='policy',view='facts')['data']['rows']
+        self.assertEqual(len(page),1)
+        self.assertEqual(page[0]['profile'],'profile')
+        self.assertEqual(page[0]['historical_rule_causality'],'not-established')
+        self.assertEqual(page[0]['observed_end']-page[0]['timestamp'],1)
+        self.assertEqual(self.query(kind='policy',view='facts',end='2026-10-08T10:00:59Z')['data']['rows'],[])
+        self.engine.record_policy(data)
+        self.assertEqual(len(self.query(kind='policy',view='facts')['data']['rows']),1)
+        self.engine.delete_snapshots('policy',START,END,scope='account')
+        self.assertTrue(self.engine.record_policy(data)['suppressed'])
+        self.assertEqual(self.query(kind='policy',view='facts')['data']['rows'],[])
+
+    def test_policy_rejects_unscoped_secret_or_invented_continuity(self):
+        self.assertTrue(hasattr(self.engine,'record_policy'),'Stage 6 policy history integration missing')
+        base={'source':'controld-api-readonly','account_scope':'account','endpoint':'endpoint',
+              'profile':'profile','captured_at_utc':START,'consistency':'separate-api-reads',
+              'historical_rule_causality':'not-established','resources':{}}
+        for changes in ({'api_token':'secret'},{'account_scope':''},
+                        {'historical_rule_causality':'proven'},{'observed_until_utc':END},
+                        {'resources':{'unknown-write-category':{'state':'available'}}}):
+            with self.assertRaises(analytics.QueryError):
+                self.engine.record_policy({**base,**changes})
+
     def query(self,**changes):
         return self.engine.batch([self.request(**changes)])['results'][0]
 

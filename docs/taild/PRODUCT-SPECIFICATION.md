@@ -1,6 +1,6 @@
 # TailD remaining-product specification
 
-Version 1.0, 2026-10-08. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.1, 2026-10-13. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
 
 ## 1. Authority, authorization and completion boundary
 
@@ -17,8 +17,13 @@ R01–R07 and Stages 1–3 remain the completed initial increment. This document
 adds R08–R18 and Stages 4–10; it does not reopen or inflate the earlier completion
 claim. The initial increment's no-background/no-UI/no-release constraints applied
 to that increment. The corresponding future capabilities are now specified,
-not implemented by the specification task. Stages 4 and 5 are now authorized; later
-stages remain unstarted and require their applicable execution/delivery scope.
+not implemented by the specification task. The October 13 instruction to continue
+TailD authorizes remaining implementation, verification and commits through local
+release-readiness, preserving the explicit Stage 10 delivery boundary. Stage 6 is
+the single ACTIVE stage; Stages 7–9 remain NOT STARTED until their dependencies
+close. No public release, installed-client replacement or updater activation is
+authorized by this continuation. Stage 6 has since closed with the evidence in
+POLICY-READS.md; Stage 7 is now the single ACTIVE implementation stage.
 
 The [stage ledger](IMPLEMENTATION-PLAN.md) maps every requirement to acceptance
 criteria. A plan cannot weaken this document. Only one implementation stage may
@@ -501,8 +506,8 @@ authorization parks Stage 10; it does not make it COMPLETE.
 | 1–3 | Initial inheritance, Control D reads, real joined slice (R01–R07) | COMPLETE; existing recorded evidence only |
 | 4 | Incremental source -> durable history -> local query; R09, R14a | COMPLETE |
 | 5 | Versioned correlation/context and metrics/query contracts; R10, R11, R08 metrics boundary | COMPLETE |
-| 6 | Remaining Control D READ/capability coverage; R12, R14b credential boundary | NOT STARTED |
-| 7 | Opt-in continuous lifecycle and secure runtime; R13, remaining R14 | NOT STARTED |
+| 6 | Remaining Control D READ/capability coverage; R12, R14b credential boundary | COMPLETE |
+| 7 | Opt-in continuous lifecycle and secure runtime; R13, remaining R14 | ACTIVE |
 | 8 | Portmaster-derived desktop layout/explorer/export; R08 layout, R15, R16 | NOT STARTED |
 | 9 | Production packaging and local release-readiness; R17, R18 pre-delivery reconciliation | NOT STARTED |
 | 10 | Authorized release, rollout, updater proof and final reconciliation; remaining R18 | NOT STARTED |

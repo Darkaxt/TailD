@@ -1,5 +1,9 @@
 # First Control D data slice
 
+Stage 6 extends this initial interface with verified policy/client reads, private
+point snapshots and optional Windows credentials. See [current READ coverage and
+commands](POLICY-READS.md). The original inventory/activity commands remain valid.
+
 Run from the TailD repository with Python 3.12 or newer. This is a development
 command, not an installed client feature or background collector.
 

@@ -32,6 +32,8 @@ class ControlDTest(unittest.TestCase):
                 self.send_response(status)
                 if status == 302:
                     self.send_header('Location', '/profiles')
+                if status == 429:
+                    self.send_header('Retry-After', '120')
                 self.end_headers()
                 self.wfile.write((json.dumps(body) if isinstance(body, dict) else body).encode())
 
@@ -75,6 +77,138 @@ class ControlDTest(unittest.TestCase):
         self.assertIn('403', str(raised.exception))
         self.assertNotIn('synthetic-token', str(raised.exception))
         self.assertNotIn('private-account', str(raised.exception))
+
+    def policy_responses(self):
+        self.responses['/devices?last_activity=1'] = (200, {'success': True, 'body': {'devices': [
+            {'PK': 'device', 'profile': {'PK': 'profile'}, 'clients': [{'PK': 'client'}]}]}})
+        self.responses['/profiles'] = (200, {'success': True, 'body': {'profiles': [{'PK': 'profile'}]}})
+        self.responses['/profiles/restrictions'] = (200, {'success': True, 'body': {'restrictions': []}})
+        for resource, controller in (('filters','filters'), ('filters/external','filters'),
+                                     ('services','services'), ('rules/all','rules'),
+                                     ('groups','groups'), ('options','options'),
+                                     ('restrictions','restrictions'), ('default','default')):
+            self.responses['/profiles/profile/'+resource] = (200, {'success': True, 'body': {
+                controller: [] if controller != 'default' else {'do': 999, 'status': 1}}})
+
+    def test_selected_endpoint_policy_reads_every_verified_category_without_writes(self):
+        self.assertTrue(hasattr(controld, 'policy_snapshot'), 'Stage 6 policy reader missing')
+        self.policy_responses()
+        self.responses['/profiles/profile/rules/all'][1]['body']['rules'] = [
+            {'PK':'example.invalid','do':999,'future_field':{'raw':True}}]
+        result = controld.policy_snapshot('synthetic-token', 'device', account_scope='synthetic-account')
+        self.assertEqual(result['endpoint'], 'device')
+        self.assertEqual(result['profile'], 'profile')
+        self.assertEqual(result['resources']['rules']['data']['rules'][0]['future_field'], {'raw':True})
+        self.assertEqual(result['resources']['restrictions']['state'], 'available')
+        self.assertEqual(result['consistency'], 'separate-api-reads')
+        self.assertTrue(all(r[1]=='Bearer synthetic-token' for r in self.requests))
+        self.assertNotIn('synthetic-token', json.dumps(result))
+        self.assertEqual(len(self.requests), 12)
+
+    def test_capabilities_preserve_denial_rate_limit_pagination_and_later_categories(self):
+        self.assertTrue(hasattr(controld, 'policy_snapshot'), 'Stage 6 policy reader missing')
+        self.policy_responses()
+        self.responses['/profiles/profile/filters'] = (403, 'private synthetic-token')
+        self.responses['/profiles/profile/services'] = (429, 'private synthetic-token')
+        self.responses['/profiles/profile/rules/all'][1]['body']['next_cursor'] = 'opaque-next'
+        result = controld.policy_snapshot('synthetic-token', 'device', account_scope='account')
+        self.assertEqual(result['resources']['filters']['state'], 'denied')
+        self.assertEqual(result['resources']['services']['state'], 'rate-limited')
+        self.assertEqual(result['resources']['services']['retry_after'], 120)
+        self.assertEqual(result['resources']['rules']['state'], 'incomplete')
+        self.assertEqual(result['resources']['restrictions']['state'], 'available')
+        self.assertEqual(len(self.requests), 12)  # No retry or guessed pagination route.
+        self.assertNotIn('synthetic-token', json.dumps(result))
+
+    def test_policy_unknown_endpoint_and_path_injection_fail_before_policy_reads(self):
+        self.assertTrue(hasattr(controld, 'policy_snapshot'), 'Stage 6 policy reader missing')
+        self.policy_responses()
+        for endpoint in ('../users', 'device?secret=yes', 'device/other'):
+            with self.assertRaises(controld.ControlDError):
+                controld.policy_snapshot('synthetic-token', endpoint, account_scope='account')
+        self.assertEqual(self.requests, [])
+        with self.assertRaises(controld.ControlDError):
+            controld.policy_snapshot('synthetic-token', 'missing', account_scope='account')
+        self.assertFalse(any('/profiles/profile/' in r[0] for r in self.requests))
+
+    def test_policy_malformed_known_category_and_credential_echo_are_not_available(self):
+        self.assertTrue(hasattr(controld, 'policy_snapshot'), 'Stage 6 policy reader missing')
+        self.policy_responses()
+        self.responses['/profiles/profile/services'] = (200, {'success': True, 'body': {'services':'bad'}})
+        self.responses['/profiles/profile/rules/all'] = (200, {'success': True, 'body': {
+            'rules':[{'value':'synthetic-token'}]}})
+        result=controld.policy_snapshot('synthetic-token','device',account_scope='account')
+        self.assertEqual(result['resources']['services']['state'],'incompatible')
+        self.assertEqual(result['resources']['rules']['state'],'incompatible')
+        self.assertNotIn('synthetic-token',json.dumps(result))
+
+    def test_http_429_keeps_sanitized_retry_metadata(self):
+        self.responses['/devices']=(429, 'synthetic-token')
+        with self.assertRaises(controld.ControlDError) as raised:
+            controld.inventory('synthetic-token')
+        self.assertEqual(getattr(raised.exception,'retry_after',None),120)
+        self.assertEqual(getattr(raised.exception,'status',None),429)
+
+    def test_missing_inventory_clients_use_verified_scoped_analytics_read(self):
+        self.policy_responses()
+        del self.responses['/devices?last_activity=1'][1]['body']['devices'][0]['clients']
+        original=controld._read
+        urls=[]
+        def read(url,token,organization=None):
+            if '.analytics.controld.com/v2/client?' in url:
+                urls.append(url)
+                return io.BytesIO(json.dumps({'success':True,'body':{'items':{
+                    'device':{'clients':{'synthetic-client':{'host':'synthetic-host','future':1}}},
+                    'other-device':{'clients':{'private-peer':{}}}}}}).encode())
+            return original(url,token,organization)
+        with patch.object(controld,'_read',side_effect=read):
+            result=controld.policy_snapshot('synthetic-token','device',account_scope='account')
+        self.assertEqual(result['resources']['clients']['state'],'available')
+        self.assertEqual(set(result['resources']['clients']['data']['items']),{'device'})
+        self.assertEqual(len(urls),1)
+        self.assertTrue(urls[0].endswith('/v2/client?endpointId=device'))
+        self.assertNotIn('private-peer',json.dumps(result['resources']['clients']))
+
+    def test_policy_cli_hidden_vault_token_to_private_history_and_summary(self):
+        import credentials
+        import analytics
+        import history
+        self.policy_responses()
+        class Vault:
+            def read(self): return 'synthetic-token'
+        with tempfile.TemporaryDirectory(prefix='taild-policy-cli-',dir='D:/Temp' if os.name=='nt' else None) as directory:
+            output=io.StringIO()
+            folder=Path(directory)/'history'
+            with patch.object(credentials,'CredentialStore',return_value=Vault()), \
+                 contextlib.redirect_stdout(output):
+                result=controld.main(['--token-vault','policy','--endpoint','device',
+                    '--account-scope','account','--history',str(folder)])
+            self.assertEqual(result,0)
+            self.assertNotIn('synthetic-token',output.getvalue())
+            self.assertNotIn('synthetic-device',output.getvalue())
+            store=history.History(folder,now='2026-10-07T08:01:00Z')
+            try:
+                page=analytics.Analytics(store).batch([{'kind':'policy','view':'facts',
+                    'start':'2026-10-07T07:59:00Z','end':'2026-10-07T08:01:00Z',
+                    'scope':{'account':'account','endpoint':'device'}}])['results'][0]['data']['rows']
+                self.assertEqual(len(page),1)
+                self.assertEqual(page[0]['profile'],'profile')
+            finally: store.close()
+
+    def test_logical_denial_and_network_failure_have_capability_states(self):
+        self.policy_responses()
+        self.responses['/profiles/profile/filters']=(200,{'success':False,'error':{'code':403001,'message':'private'}})
+        self.responses['/profiles/profile/services']=(200,{'success':False,'error':{'code':429001}})
+        result=controld.policy_snapshot('synthetic-token','device',account_scope='account')
+        self.assertEqual(result['resources']['filters']['state'],'denied')
+        self.assertEqual(result['resources']['services']['state'],'rate-limited')
+        from urllib.error import URLError
+        with patch.object(controld,'build_opener') as opener:
+            opener.return_value.open.side_effect=URLError('synthetic-token')
+            with self.assertRaises(controld.ControlDError) as raised:
+                controld.inventory('synthetic-token')
+        self.assertEqual(raised.exception.state,'stale')
+        self.assertNotIn('synthetic-token',str(raised.exception))
 
     def test_logical_error_even_with_http_200_is_rejected_without_echo(self):
         self.responses['/devices'] = (200, {'success': False, 'body': [],

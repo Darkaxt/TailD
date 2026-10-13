@@ -109,6 +109,39 @@ class Analytics:
     def __init__(self,store):
         self.store=store
 
+    def record_policy(self,data):
+        fields={'source','account_scope','endpoint','profile','captured_at_utc','consistency',
+                'historical_rule_causality','resources'}
+        if (not isinstance(data,dict) or set(data)!=fields or data['source']!='controld-api-readonly'
+                or data['consistency']!='separate-api-reads' or data['historical_rule_causality']!='not-established'):
+            raise QueryError('Expected a point-observed read-only Control D policy snapshot')
+        for field in ('account_scope','endpoint','profile'):
+            try: controld._identifier(data[field])
+            except controld.ControlDError:
+                raise QueryError('Explicit policy account/endpoint/profile scope required') from None
+        resources=data['resources']
+        allowed={r[0] for r in controld.POLICY_READS}|{'account','endpoints','profiles','clients','restriction_catalog'}
+        states={'available','unavailable','denied','rate-limited','stale','incompatible','incomplete'}
+        if (not isinstance(resources,dict) or set(resources)-allowed or
+                any(not isinstance(v,dict) or v.get('state') not in states for v in resources.values())):
+            raise QueryError('Unsupported policy resource or capability state')
+        a=history.instant(data['captured_at_utc'])
+        scope=data['account_scope']
+        key=history.digest(['policy',scope,a,data])
+        with self.store.transaction():
+            self.store._expire()
+            if a<self.store.db.execute('SELECT expiry_floor FROM settings').fetchone()[0]:
+                raise QueryError('Policy observation is outside retained history')
+            if self.store.db.execute("SELECT 1 FROM suppressions WHERE kind='policy' AND (source IS NULL OR source=?) AND end>? AND start<? LIMIT 1",(scope,a,a+1)).fetchone():
+                return {'suppressed':True}
+            existing=self.store.db.execute('SELECT revision FROM snapshots WHERE id=?',(key,)).fetchone()
+            if existing:
+                return {'id':key,'revision':existing[0]}
+            revision=self.store._bump()
+            self.store.db.execute('INSERT INTO snapshots VALUES(?,?,?,?,?,?,?)',
+                                  (key,'policy',scope,a,a+1,history.packed(data),revision))
+        return {'id':key,'revision':revision}
+
     def record_context(self,scope,data):
         if not isinstance(scope,str) or not scope or not isinstance(data,dict):
             raise QueryError('Explicit context host scope and object required')
