@@ -6,8 +6,8 @@ including Android DNS improvements and the pinned shared core containing the
 Windows tray/UI port. GitHub permits only one native fork in this account's
 upstream network, so this is a history-preserving Git fork rather than a second
 GitHub fork badge.
-Automatic promotion of updates that modify inherited workflow files is currently
-being repaired; the latest exact checked candidate was fast-forwarded manually.
+Automatic promotion uses a repository-scoped write identity, verified against
+GitHub's workflow-file boundary without changing main or publishing a release.
 
 The planned extension combines Control D policy/decision data with application
 identity and network-byte metrics. Control D and existing firewall products keep
@@ -78,14 +78,17 @@ promotes the checked Git commit to main. Conflicts or failed checks stop promoti
 with a failed GitHub run; passing updates are not left as unmerged candidates.
 Main is never force-pushed. Verification has no signing credentials and a separate
 write job only promotes the checked candidate. No release/deployment is automatic.
-The October 13 workflow-file permission regression is tracked in reopened Stage 1;
-do not interpret the intended promotion contract as current proof that the
-built-in workflow token can update inherited workflow files.
+The October 13 workflow-file permission regression is resolved; the built-in
+workflow token itself still cannot update inherited workflow files.
 
 Promotion is now configured with a write-enabled SSH deploy key scoped only to
 this repository, stored as `TAILD_INHERITANCE_SSH_KEY` and exposed only to the
 isolated promotion job. The built-in token stays read-only. No personal account,
-provider token or signing key is copied into it. External verification is pending.
+provider token or signing key is copied into it. [Run 38418991496](https://github.com/Darkaxt/TailD/actions/runs/38418991496)
+verified a real workflow-file write, readback and deletion on a temporary ref,
+with main unchanged and all inherited release workflows disabled. TailDNS was
+already synchronized, so this is not claimed as a new upstream merge. The local
+private-key copy was deleted after the check; the repository secret is retained.
 For an explicit credential/rotation smoke check, run the workflow manually with
 `inherited_checks=false` and `verify_write_identity=true`: it creates/verifies/
 deletes a unique temporary non-production workflow-comment ref and leaves main

@@ -159,6 +159,9 @@ workflow token cannot update an inherited workflow file. The checked candidate
 was subsequently promoted with the existing authorized workflow-capable Git
 credential, using an ordinary fast-forward; remote main was independently read
 back. No credential was copied into automation and inherited workflows remain
-disabled. Fully automatic promotion of future workflow-file changes remains an
-external R02 operational blocker requiring a TailD-scoped workflow-write identity;
-do not exclude upstream source or claim the built-in token acquired that scope.
+disabled. The R02 repair now uses a new single-repository write SSH deploy key,
+isolated to promotion; the built-in token remains read-only. Run 38418991496
+passed a real workflow-file write/readback/deletion probe with main unchanged.
+The temporary ref and local private-key copy were removed. TailDNS was already
+synchronized, so no new upstream merge is claimed. R02 has no remaining blocker;
+source exclusions or broad personal CI credentials were not used.

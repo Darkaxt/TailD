@@ -10,13 +10,13 @@ remain NOT STARTED at Stage 4 closure. The subsequent explicit Stage 5 request
 authorizes its implementation, verification and commit; Stage 5 is now COMPLETE
 and Stages 6–10 remained NOT STARTED at that checkpoint. The October 13 request
 to continue TailD authorizes remaining implementation through Stage 9. Stage 6
-and Stage 7 are now COMPLETE. Stage 1 is reopened as the single ACTIVE stage for
-the observed R02 promotion regression before Stage 8 implementation. Stage 10 requires explicit delivery
+and Stage 7 are now COMPLETE. The reopened Stage 1 R02 promotion regression is
+resolved and verified; Stage 8 is the single ACTIVE stage. Stage 10 requires explicit delivery
 authority. No release or installed-client replacement is authorized here.
 
 ## Stage 1 — Public TailDNS derivative with automatic inheritance
 
-Status: **ACTIVE**. Requirements: R01–R05.
+Status: **COMPLETE**. Requirements: R01–R05.
 
 Acceptance: public lineage/ancestry; isolated inherited workflows; tested real-Git
 merge behavior; live TailDNS boundary and CI verification; preserved exact core
@@ -44,10 +44,9 @@ disabled and default authority is read-only. No signing secrets or release exist
 October 13 regression: the first real candidate containing an inherited workflow
 passed run 38382663145 but GITHUB_TOKEN could not promote that workflow file.
 The exact checked candidate was manually fast-forwarded with the existing
-workflow-capable login; automatic promotion remains unmet. Stage 1 is reopened
-after Stage 7 closure to repair this existing R02 requirement, not to expand scope.
-Remaining: repository-scoped workflow-capable promotion and real verification.
-Advancement blocker B02 (internal): the built-in token cannot update workflow
+workflow-capable login. Stage 1 was reopened after Stage 7 closure to repair
+this existing R02 requirement, not to expand scope.
+Resolved advancement blocker B02 (internal): the built-in token cannot update workflow
 files. Existing authorized repository-admin access is available; resolve with
 scoped automation authentication, not a broad personal login copied into CI.
 Do not exclude inherited workflow source or create releases as a workaround.
@@ -64,7 +63,13 @@ gate remain. A manual, default-off identity check writes a static workflow-comme
 change to one unique temporary non-production ref, verifies it, deletes it and
 checks main stayed unchanged. This is credential-boundary verification, not a
 fabricated TailDNS update or release. Local real-Git and workflow-authority
-contracts pass. Real CI write/deletion proof remains required before Stage 1 closes.
+contracts pass. Run 38418991496 at repair commit 485e15693c41bf3458043a5ac9aa4bfc134b39f0
+passed the actual SSH workflow-file write/readback/deletion check. Temporary ref
+taild-auth-check-38418991496-1 was independently confirmed absent, main remained
+unchanged and inherited workflows remained disabled. TailDNS was already current
+at c2116d244b05bf0e85c03e70a42d03678950c442; no new upstream merge is claimed.
+The local private-key copy was deleted by reviewed cleanup after verification.
+Remaining: none. Blockers: none. Tracked deferrals: none.
 
 ## Stage 2 — First read-only Control D data
 
@@ -382,8 +387,8 @@ source-build launcher, actual other non-admin account and live Control D runtime
 are now verified. Actual served CSP, literal source text, native lifecycle and
 current runtime/history/query contracts pass. Every criterion above is satisfied
 under the explicit user waiver; no simulated physical test is claimed.
-Remaining: none. Blockers: none. Stage 8 remains NOT STARTED while the earlier
-R02 promotion regression is repaired in reopened Stage 1.
+Remaining: none. Blockers: none. The earlier R02 promotion regression is now
+resolved and Stage 8 is ACTIVE.
 Tracked deferrals: none.
 Dependency: Stage 6 COMPLETE; stages 4–6 data contracts remain enforced.
 Installing a service for live validation requires applicable live-test authority;
@@ -391,7 +396,7 @@ this documentation request does not install or schedule one.
 
 ### Stage 8 — Portmaster-derived desktop analytics
 
-Status: **NOT STARTED**. Requirements: R08 layout, R15, R16; preserve R11/R14.
+Status: **ACTIVE**. Requirements: R08 layout, R15, R16; preserve R11/R14.
 
 Objective: close overview -> application -> activity -> evidence/export in a
 packaged local desktop surface, not a collection of disconnected mockups.
@@ -414,7 +419,11 @@ Acceptance criteria:
   assets must satisfy the design map's responsive/screenshot contract.
 
 Satisfied: none. Remaining: all criteria above.
-Blockers: none currently established. Tracked deferrals: none.
+Advancement blockers (internal): all analytics UI criteria above remain to be
+implemented and verified. Resolve through the existing typed queries, real
+Portmaster widgets and actual-source native desktop drill-down/export. These
+block Stage 8 closure and dependent Stage 9 packaging, not continued execution.
+Tracked deferrals: none.
 Dependency: Stage 7 COMPLETE; do not substitute mock-only UI for integration.
 
 ### Stage 9 — Production packaging and local release-readiness
