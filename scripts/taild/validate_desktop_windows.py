@@ -55,7 +55,7 @@ def collection_controls(page):
     expect(page.locator('#traffic-toggle')).to_be_visible()
 
 
-def run(shell, output):
+def run(shell, output, packaged_launcher=None):
     import win32api,win32event
     from playwright.sync_api import sync_playwright,expect
     output.mkdir(parents=True,exist_ok=False)
@@ -185,7 +185,8 @@ def run(shell, output):
             event=win32event.CreateEvent(None,True,False,event_name)
             launcher=None
             try:
-                launcher=subprocess.Popen([sys.executable,'-B',str(Path(__file__).with_name('desktop.py')),
+                launcher=subprocess.Popen([*([str(packaged_launcher),'desktop'] if packaged_launcher else
+                    [sys.executable,'-B',str(Path(__file__).with_name('desktop.py'))]),
                     '--shell',str(shell),'--history',str(home),'--reader-instance',fixture.server.name.rsplit('.',1)[-1],
                     '--debug-port',str(port),'--validation-ready-event',event_name],creationflags=subprocess.CREATE_NO_WINDOW,
                     stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -212,6 +213,7 @@ def run(shell, output):
             'actual_user_event_path':True,'vpn_or_firewall_changed':False,'physical_sleep_wake':False,
             'actual_asset_csp':csp,'literal_source_text_injection_denied':True,'keyboard_focus':True,
             'source_build_launcher_start_stop':True,
+            'packaged_launcher_start_stop':packaged_launcher is not None,
             'build_sha256':{path.name:hashlib.sha256(path.read_bytes()).hexdigest() for path in
                 [shell,shell.with_suffix('.dll'),*(shell.parent/'ui').glob('*.js'),*(shell.parent/'ui').glob('*.css')]},
             'snapshots':reports}
@@ -228,8 +230,9 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--shell',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--packaged-launcher',type=Path)
     args=parser.parse_args()
-    run(args.shell.resolve(strict=True),args.output)
+    run(args.shell.resolve(strict=True),args.output,args.packaged_launcher.resolve(strict=True) if args.packaged_launcher else None)
 
 
 if __name__=='__main__':main()

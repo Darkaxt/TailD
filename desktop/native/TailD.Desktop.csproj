@@ -5,10 +5,17 @@
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <AssemblyName>TailD.Desktop</AssemblyName><RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <RuntimeFrameworkVersion>10.0.12</RuntimeFrameworkVersion>
     <EnableDefaultItems>true</EnableDefaultItems>
   </PropertyGroup>
   <ItemGroup><PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4258.31" /></ItemGroup>
   <ItemGroup><Content Include="../dist/browser/**" Link="ui/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+  <ItemGroup>
+    <Content Include="../dist/3rdpartylicenses.txt" Link="licenses/frontend-dependencies.txt" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../LICENSE" Link="licenses/frontend-GPL-3.0.txt" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../NOTICE.md" Link="licenses/frontend-NOTICE.md" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
   <!-- WebView2's managed targets also add WPF to WinForms projects. This host
        does not use WPF; remove that unused reference rather than suppress its
        WindowsBase version conflict. -->

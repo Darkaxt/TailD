@@ -218,9 +218,11 @@ internal sealed class CollectionWindow : Form
             };
             core.Navigate(Origin);
         }
-        catch(Exception error){
 #if DEBUG
+        catch(Exception error){
             Console.Error.WriteLine("TailD UI initialization: "+error.GetType().Name+" "+error.HResult);
+#else
+        catch(Exception){
 #endif
             await FailAndClose();}
     }

@@ -451,7 +451,14 @@ Acceptance criteria:
   updater activation or personal-device rollout merely to close this stage.
 
 Satisfied: none. Remaining: all criteria above.
-Blockers: none currently established. Tracked deferrals: none.
+Advancement blocker B09 (internal): R17's production payload, isolated installer/
+recovery and offline Release acceptance are not yet demonstrated. Frozen launcher
+diagnostics and package contract regressions are not acceptance of the complete
+installer. Resolve with the clean, pinned-source production package, actual
+isolated Windows installer/SCM upgrade/rollback/uninstall evidence, offline native
+launch and integrated provenance/license/signature reconciliation. Stage 9 remains
+ACTIVE while this implementable work is completed; Stage 10 cannot advance.
+Tracked deferrals: none.
 Dependency: Stage 8 COMPLETE. Release and live rollout belong to Stage 10 by
 explicit scope separation, not an unmet Stage 9 criterion hidden as a deferral.
 

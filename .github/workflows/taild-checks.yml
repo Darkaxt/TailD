@@ -19,6 +19,7 @@ jobs:
       - name: Verify TailD contracts and inherited lightweight contracts
         run: |
           set -euo pipefail
+          python3 -m pip install 'cryptography==50.0.2'
           python3 -B -m unittest discover -s scripts/taild -p 'test_*.py' -v
           bash scripts/test-append-taildns-version.sh
           bash scripts/test-taildns-branding.sh

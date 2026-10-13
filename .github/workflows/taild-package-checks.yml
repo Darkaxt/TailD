@@ -1,0 +1,68 @@
+name: TailD isolated Windows package checks
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    if: github.repository == 'Darkaxt/TailD'
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.14.7'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.13.0'
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: '10.0.401'
+      - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b
+        with:
+          go-version: '1.27.2'
+          cache: false
+      - name: Isolated build tools and ephemeral fixture trust
+        id: trust
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python -m venv "$env:RUNNER_TEMP/build-env"
+          & "$env:RUNNER_TEMP/build-env/Scripts/python.exe" -m pip install -r desktop/packaging-requirements.txt
+          if($LASTEXITCODE){throw 'Build dependency installation failed'}
+          & "$env:RUNNER_TEMP/build-env/Scripts/python.exe" -B scripts/taild/validate_package_windows.py provision
+          if($LASTEXITCODE){throw 'Fixture identity setup failed'}
+          $download="$env:RUNNER_TEMP/innosetup.exe"
+          Invoke-WebRequest 'https://github.com/jrsoftware/issrc/releases/download/is-7_1_0/innosetup-7.1.0-x64.exe' -OutFile $download
+          if((Get-FileHash $download -Algorithm SHA256).Hash.ToLowerInvariant() -ne '0362a383ed217d4c4239b5933866dd96d3eb2102737da92f80f6057a4b40df2f'){throw 'Compiler input digest mismatch'}
+          if((Get-AuthenticodeSignature $download).Status -ne 'Valid'){throw 'Compiler publisher signature invalid'}
+          $process=Start-Process -FilePath $download -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/CURRENTUSER',"/DIR=$env:RUNNER_TEMP/inno") -WindowStyle Hidden -Wait -PassThru
+          if($process.ExitCode){throw 'Isolated compiler setup failed'}
+      - name: Build both exact-source fixture packages
+        env:
+          TAILD_FIXTURE_PUBLIC_KEY: ${{ steps.trust.outputs.public_key }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          ./scripts/taild/build_package.ps1 -Output "$env:RUNNER_TEMP/acceptance/candidate-1" -Python "$env:RUNNER_TEMP/build-env/Scripts/python.exe" -Subversion 1 -FixturePublicKey $env:TAILD_FIXTURE_PUBLIC_KEY
+          ./scripts/taild/build_package.ps1 -Output "$env:RUNNER_TEMP/acceptance/candidate-2" -Python "$env:RUNNER_TEMP/build-env/Scripts/python.exe" -Subversion 2 -FixturePublicKey $env:TAILD_FIXTURE_PUBLIC_KEY -SkipFrontendBuild
+      - name: Actual isolated install upgrade rollback uninstall
+        shell: pwsh
+        run: |
+          & "$env:RUNNER_TEMP/build-env/Scripts/python.exe" -B scripts/taild/validate_package_windows.py acceptance --root "$env:RUNNER_TEMP/acceptance" --compiler "$env:RUNNER_TEMP/inno/ISCC.exe"
+          if($LASTEXITCODE){throw 'Installer acceptance failed'}
+      - name: Retain credential-free verification reports only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: taild-Windows-verification-only
+          path: |
+            ${{ runner.temp }}/acceptance/*.json
+            ${{ runner.temp }}/acceptance/*.log
+            ${{ runner.temp }}/acceptance/candidate-*/provenance.json
+          if-no-files-found: warn

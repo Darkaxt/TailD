@@ -39,7 +39,8 @@ def main(argv=None):
     home=history.private_directory(args.history)
     instance='owner-'+history.digest([reader.current_sid(),str(home).casefold()])[:32]
     shell=Path(args.shell).resolve(strict=True)
-    pythonw=Path(sys.executable).with_name('pythonw.exe').resolve(strict=True)
+    frozen=getattr(sys,'frozen',False)
+    pythonw=Path(sys.executable).resolve(strict=True) if frozen else Path(sys.executable).with_name('pythonw.exe').resolve(strict=True)
     worker=None
     try:
         pid=server_pid(instance)
@@ -49,7 +50,7 @@ def main(argv=None):
         ready_name='Local\\Darkaxt.TailD.Ready.'+instance
         ready=win32event.CreateEvent(None,True,False,ready_name)
         try:
-            command=[str(pythonw),'-B',str(Path(__file__).with_name('runtime.py')),'run',
+            command=[str(pythonw),*(['collector'] if frozen else ['-B',str(Path(__file__).with_name('runtime.py'))]),'run',
                 '--history',str(home),'--reader-instance',args.reader_instance,'--instance',instance,'--ready-event',ready_name]
             if args.cli:command+=['--cli',args.cli]
             worker=subprocess.Popen(command,creationflags=subprocess.CREATE_NO_WINDOW)
