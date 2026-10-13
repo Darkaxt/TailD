@@ -275,7 +275,16 @@ def abort(candidate,data=None):
 
 
 def check_uninstall():
-    app=app_directory();ensure_quiescent(app,allow_uninstaller=True);manifest.verify(app,installed=True)
+    import delivery
+    app=app_directory();ensure_quiescent(app,allow_uninstaller=True)
+    recovering=delivery.initial_recovery()
+    if recovering is None:manifest.verify(app,installed=True)
+    else:
+        # A normal uninstall interrupted after deleting some files can resume,
+        # but every retained payload member must still match the signed journal.
+        expected={row['path']:row for row in recovering['files']}
+        if any(row!=expected[row['path']] for row in manifest.inventory(app,installed=True,expected=expected)):
+            raise manifest.PackageError('changed-recovery-member-preserved')
     previous=app.with_name('TailD.rollback')
     if previous.exists():manifest.verify(previous,installed=True)
 
@@ -308,10 +317,12 @@ def remove_history(dry_run=False):
 
 
 def uninstall(delete_history=False):
+    import delivery
     check_uninstall()
+    recovering=delivery.initial_recovery()
+    if recovering is not None and delete_history:raise manifest.PackageError('recovery-retains-history')
     if delete_history:remove_history(dry_run=True)
-    if manifest.verify(app_directory(),installed=True)['schema']=='taild-package-v2':
-        import delivery
+    if recovering is None and manifest.verify(app_directory(),installed=True)['schema']=='taild-package-v2':
         # Return to the original migration baseline before Inno removes the
         # helper. Failure leaves the reader, credentials and history untouched.
         delivery.core_command(app_directory(),'unmigrate')

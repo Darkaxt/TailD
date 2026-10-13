@@ -496,11 +496,17 @@ Advancement blocker B11 (internal): the complete build, isolated installer matri
 and protected payload/installer signing passed run 38463490065. Current-source
 0472970 passed build/contracts/payload signing in run 38465087871, but the added
 fresh-host full-product migration-refusal check observed exit 0 without an
-authenticated baseline. The actual setup/helper log is required to distinguish
-framework exit reporting from an unexecuted/incorrect completion path. Local
-hook-free release observation also encountered an invalidated UIA element during
-rendering; diagnostic evidence is being added before changing that observer.
-Resolve these current-payload installer/recovery and release-observation criteria
+authenticated baseline. Run 38466700479 captured the cause: connectivity activation
+correctly failed; Inno had already committed its framework, ignored the post-install
+exception for exit reporting and retained uninstaller/registration after payload
+recovery. The correction binds success to full transaction completion and uses
+the normal uninstaller after confirmed first-migration core recovery. Signed
+retained-member checks support interrupted uninstall without deleting history or
+unmigrating twice. Reproducing recovery contracts pass; actual full-product Windows
+verification of this correction is pending. The current signed 0472970 payload
+also passed actual hook-free Overview -> Settings -> normal shutdown and reviewed
+rendering; an earlier invalidated UIA read remains a failed observation, not evidence
+of a production app defect. Resolve the current-payload installer/recovery criteria
 before publishing or migrating. Release, live migration, updater verification and
 final reconciliation still depend on this work. Tracked deferrals: none.
 Dependency: Stage 9 COMPLETE and explicit publication/deployment authorization.

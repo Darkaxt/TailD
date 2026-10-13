@@ -113,6 +113,13 @@ begin
   end;
 end;
 
+function GetCustomSetupExitCode: Integer;
+begin
+  { Inno reports ssPostInstall exceptions after committing its own framework.
+    Success must describe the full product transaction, not file extraction. }
+  if Finished then Result := 0 else Result := 1;
+end;
+
 function InitializeUninstall: Boolean;
 begin
   Result := Helper(ExpandConstant('{app}\TailD.Setup.exe'), 'check-uninstall');

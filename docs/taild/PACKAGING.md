@@ -193,6 +193,14 @@ the external recovery helper, retaining history and removing its installer
 registration. A later update rollback restores its immediate predecessor and
 retains the anti-replay floor instead. Recovery gracefully stops any resumed
 collector before restoring files, including an interrupted final journal commit.
+The actual fresh-host negative migration check exposed Inno's post-install
+exception boundary: extraction/registration had committed and setup returned 0
+after connectivity failed. Success now requires the complete product transaction;
+first-failure recovery uses Inno's own uninstaller for its framework/registration,
+only after core restoration. A signed, protected first-migration journal permits
+verified partial uninstall to resume without another unmigration or history loss.
+See the [Inno event contract](https://jrsoftware.org/ishelp/topic_scriptevents.htm).
+This correction still requires actual fresh-host verification before delivery.
 
 The frozen collector exposes only an owner/instance-bound maintenance-stop event
 to its owner, SYSTEM and Administrators. Updating signals a graceful stop, closes

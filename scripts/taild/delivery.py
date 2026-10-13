@@ -106,6 +106,27 @@ def discard_partial_backup(old):
     root.rmdir()
 
 
+def initial_recovery():
+    """Only a signed first-migration journal after confirmed core recovery."""
+    journal=read_journal()
+    if journal is None or journal['phase']!='core_restored' or journal.get('old_manifest'):return None
+    return journal_manifest(journal,'new')
+
+
+def initial_framework_remaining():
+    app=installer.app_directory()
+    if any((app/name).exists() for name in ('unins000.exe','unins000.dat','unins000.msg')):return True
+    if os.name=='nt':
+        import winreg
+        try:
+            key=winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
+                r'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{04905050-B54D-4D29-9880-39F10B3BCA7E}_is1',
+                0,winreg.KEY_READ|winreg.KEY_WOW64_64KEY)
+        except FileNotFoundError:return False
+        else:key.Close();return True
+    return False
+
+
 def recover(candidate):
     manifest.verify(candidate)
     journal=read_journal()
@@ -123,6 +144,19 @@ def recover(candidate):
     elif old is not None:
         installer.rollback(data=new)
     else:
+        # ssPostInstall exceptions do not roll back Inno's committed framework.
+        # Keep the signed payload available until its normal uninstaller has
+        # removed registration/shortcut/framework. Its fixed helper recognizes
+        # only this protected, signed first-migration recovery state; it does not
+        # unmigrate an already-restored core or delete any retained history.
+        journal['phase']='core_restored';write_journal(journal)
+        executable=app/'unins000.exe'
+        if executable.exists():
+            manifest.ordinary(executable)
+            result=subprocess.run([str(executable),'/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART'],
+                creationflags=subprocess.CREATE_NO_WINDOW)
+            if result.returncode:raise manifest.PackageError('initial-recovery-uninstall-failed')
+        if initial_framework_remaining():raise manifest.PackageError('initial-recovery-framework-remains')
         installer.abort(candidate,data=new)
     journal['phase']='recovered';write_journal(journal)
 

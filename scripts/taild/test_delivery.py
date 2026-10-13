@@ -100,5 +100,36 @@ class DeliveryTest(unittest.TestCase):
         self.assertNotIn('--delete-history',command)
         self.assertEqual(delivery.read_journal()['phase'],'recovered')
 
+    def test_failed_first_migration_removes_framework_with_normal_uninstaller(self):
+        new,_=self.candidate(1)
+        delivery.prepare(new,self.owner,str(self.local))
+        shutil.copytree(new,self.app,dirs_exist_ok=True)
+        framework=self.app/'unins000.exe';framework.write_bytes(b'synthetic framework')
+        journal=delivery.read_journal();journal['phase']='core_started';delivery.write_journal(journal)
+        actions=[]
+        def uninstall(command,**options):
+            self.assertEqual(delivery.read_journal()['phase'],'core_restored')
+            self.assertEqual(command[0],str(framework));actions.append('framework-uninstall')
+            framework.unlink()
+            return SimpleNamespace(returncode=0)
+        with patch.object(delivery,'rollback_core',side_effect=lambda *a:actions.append('core-restored')),\
+             patch.object(delivery.subprocess,'run',side_effect=uninstall),\
+             patch.object(delivery.subprocess,'CREATE_NO_WINDOW',0,create=True):
+            delivery.recover(new)
+        self.assertEqual(actions,['core-restored','framework-uninstall'])
+        self.assertFalse(self.app.exists())
+        self.assertEqual(delivery.read_journal()['phase'],'recovered')
+
+    def test_first_recovery_uninstall_accepts_verified_partial_files_without_unmigrating_again(self):
+        new,data=self.candidate(1);self.installed(new)
+        journal={'schema':'taild-setup-transaction-v1','phase':'core_restored','owner_sid':self.owner,'local_data':str(self.local)}
+        delivery.record_manifest(journal,'new',new);delivery.write_journal(journal)
+        (self.app/'TailD.exe').unlink() # Interrupted normal uninstall; retained members must still verify.
+        with patch.object(delivery,'core_command') as core,patch.object(installer,'reader_stop') as stop:
+            installer.uninstall(False)
+        core.assert_not_called();stop.assert_called_once_with(remove=True)
+        (self.app/'TailD.Background.exe').write_bytes(b'tampered')
+        with self.assertRaises(manifest.PackageError):installer.uninstall(False)
+
 
 if __name__=='__main__':unittest.main()
