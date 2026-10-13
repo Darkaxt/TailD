@@ -133,6 +133,27 @@ class History:
     def close(self):
         self.db.close()
 
+    def read_view(self, *, now=None):
+        """A caller-owned, physically read-only view of this validated history.
+
+        Never create/migrate/expire data here. Ingestion retains its one writer;
+        dashboard reads use their own connection and committed SQLite revision.
+        """
+        if self.path.is_symlink() or not self.path.is_file() or self.path.stat().st_nlink!=1:
+            raise HistoryError('History database must be an owned regular file')
+        view=object.__new__(History)
+        view.directory=self.directory;view.path=self.path
+        view.now=instant(now) if now is not None else self.now
+        view.db=sqlite3.connect(self.path.as_uri()+'?mode=ro',uri=True,isolation_level=None)
+        view.db.row_factory=sqlite3.Row
+        try:
+            view.db.execute('PRAGMA query_only=ON')
+            if view.db.execute('PRAGMA user_version').fetchone()[0]!=4:
+                raise HistoryError('Unsupported history schema; existing data preserved')
+        except BaseException:
+            view.close();raise
+        return view
+
     @contextmanager
     def transaction(self):
         self.db.execute('BEGIN IMMEDIATE')

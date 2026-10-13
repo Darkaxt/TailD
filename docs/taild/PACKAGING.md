@@ -246,3 +246,15 @@ still stop safely. Later core updates also preserve the current auto-update choi
 rather than reapplying the immutable pre-migration preference; only the first
 migration restores the temporarily disabled choice. Current production verification
 of these corrections is required before the next public update.
+
+October 14 native regression correction: dashboard `state`, catalog, query/export
+and window lifecycle reads no longer queue behind source acquisition. Queries use
+physically read-only SQLite connections to the already-validated owner store;
+the one writer and explicit native close receipt remain. The native gated-source
+workflow verifies navigation, ingestion notice, close, retained opt-in/reopen and
+explicit stop. The diagnostic notice reports real intervals and committed reads,
+not percentages or coverage inferred from events. It observes only while visible
+and does not alter filters, graph revisions or acquisition. The dashboard PE and
+window icon use the unmodified inherited ICO with original resource/hash notice.
+Local production frontend/native verification passes; the prior +2 candidate is
+superseded. This is not yet proof of an installed/published corrected update.

@@ -543,6 +543,21 @@ Implement this narrow Windows launch/focus integration in Stage 10 and verify
 actual tray event -> owning-user desktop, minimized restore and repeated focus,
 plus preserved right-click controls. Existing Start menu launch remains available.
 
+October 14 ingestion/window clarification: show a persistent themed in-app notice
+while history is being read, with the actual source interval and committed read
+count when available, plus latest stored traffic/DNS observations. Explain when
+the selected period has no imported observations; do not infer complete coverage
+from the latest event, fabricate a percentage/ETA or emit repeated OS popups.
+Refresh this diagnostic notice only while the dashboard is visible, without
+starting source reads, changing the selected range or invalidating its revision.
+Read-only dashboard queries and ordinary window closure must not wait behind an
+unrelated source acquisition. Keep source reads and SQLite writes serialized and
+retain revision-consistent queries/exports and explicit lifecycle acknowledgments.
+Use the inherited unmodified Tailscale icon for the dashboard executable and
+window/taskbar, with source provenance. These are Stage 10 acceptance requirements;
+the user chose ingestion visibility, not a change to retention or the 15-minute
+default. No ingestion-order optimization is required by this clarification.
+
 Stage 10 requires separate explicit publication/deployment authority. Publish one
 normal signed release only after Stage 9 closure; independently download and
 verify exact source/asset hashes, version/architecture, signatures against the

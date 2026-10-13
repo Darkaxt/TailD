@@ -103,3 +103,10 @@ caption{text-align:left;font-size:11px;color:var(--text-tertiary);padding:8px}.i
   .analytics-shell{padding:16px}.shared-scope{position:static}.utc-range label{min-width:150px}.fact-header,.fact-row{grid-template-columns:minmax(150px,2fr) minmax(100px,1fr)}
   .fact-header>span:nth-child(2),.fact-row>span:nth-child(2){display:none}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+.ingestion-notice{padding:14px 16px;margin:0 0 16px;background:var(--cards-secondary);border-left:3px solid var(--info-blue);border-radius:4px}
+.ingestion-heading{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12px}.ingestion-heading strong{font-weight:500}
+.ingestion-dot{width:7px;height:7px;border-radius:50%;background:var(--text-tertiary)}.ingestion-dot.active{background:var(--info-blue)}
+.ingestion-sources{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px;margin-top:10px}
+.ingestion-sources>div{display:flex;align-items:start;flex-direction:column;gap:5px;min-width:0}
+.ingestion-activity{font-size:11px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.ingestion-sources small{font-size:10px;color:var(--text-tertiary);overflow-wrap:anywhere}
+.ingestion-sources .ingestion-gap{color:var(--text-secondary)}

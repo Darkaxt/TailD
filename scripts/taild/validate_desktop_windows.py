@@ -159,9 +159,47 @@ def run(shell, output, packaged_launcher=None):
             expect(page.locator('#traffic-status')).to_have_text('collecting')
             reports.append(snapshot(page))
             page.screenshot(path=str(output/'controls-enabled.png'),full_page=True)
-            # Real OS window-close action, not a backend invocation disguised as a click.
-            close_window(native)
-            assert native.wait()==0
+            # Hold the actual source read (not a query mock). Native page reads,
+            # observed ingestion notice and ordinary Close must remain usable.
+            entered,release=threading.Event(),threading.Event();original_source=fixture.server.source
+            class GatedSource:
+                def dispatch(source,request):
+                    if request.get('op')=='traffic':entered.set();release.wait()
+                    return original_source.dispatch(request)
+            fixture.server.source=GatedSource()
+            pending=fixture.collector.submit('refresh')
+            try:
+                assert entered.wait(15),'Diagnostic: acquisition did not enter'
+                page.locator('#nav-0').click()
+                expect(page.locator('main')).to_have_attribute('aria-busy','false')
+                expect(page.locator('#ingestion-status')).to_have_text('Reading history')
+                expect(page.locator('#ingestion-traffic')).to_contain_text('source reads committed')
+                expect(page.locator('#ingestion-traffic')).to_contain_text('empty graph does not prove zero activity')
+                for route in (1,2,4,0):
+                    page.locator('#nav-'+str(route)).click()
+                    expect(page.locator('main')).to_have_attribute('aria-busy','false')
+                reports.append(snapshot(page));page.screenshot(path=str(output/'ingestion-active.png'),full_page=True)
+                import win32gui,win32con,win32process
+                windows=[]
+                win32gui.EnumWindows(lambda w,_:windows.append(w) if win32process.GetWindowThreadProcessId(w)[1]==native.pid and win32gui.IsWindowVisible(w) else None,None)
+                assert len(windows)==1
+                assert win32gui.SendMessage(windows[0],win32con.WM_GETICON,win32con.ICON_SMALL,0),'Dashboard window icon unavailable'
+                # Diagnostic observation only: never terminate an operation on expiry.
+                close_window(native)
+                assert win32event.WaitForSingleObject(int(native._handle),15000)==win32event.WAIT_OBJECT_0,'Window close waited for unrelated ingestion'
+                assert native.wait()==0
+                browser.close()
+                browser,page=open_ui(playwright,3)
+                expect(page.locator('#traffic-toggle')).to_be_checked()
+                page.locator('#nav-0').click()
+                expect(page.locator('main')).to_have_attribute('aria-busy','false')
+                expect(page.locator('#ingestion-status')).to_have_text('Reading history')
+                close_window(native)
+                assert win32event.WaitForSingleObject(int(native._handle),15000)==win32event.WAIT_OBJECT_0,'Reopened window close waited for ingestion'
+                assert native.wait()==0
+            finally:
+                release.set();fixture.server.source=original_source
+            pending.result()
             browser.close()
             assert not fixture.collector.closing
             assert fixture.query()[1]['results'][0]['data']['total_count']==1
@@ -213,6 +251,7 @@ def run(shell, output, packaged_launcher=None):
             'actual_user_event_path':True,'vpn_or_firewall_changed':False,'physical_sleep_wake':False,
             'actual_asset_csp':csp,'literal_source_text_injection_denied':True,'keyboard_focus':True,
             'source_build_launcher_start_stop':True,
+            'navigation_and_close_during_source_read':True,'actual_ingestion_notice':True,'native_window_icon_present':True,
             'packaged_launcher_start_stop':packaged_launcher is not None,
             'build_sha256':{path.name:hashlib.sha256(path.read_bytes()).hexdigest() for path in
                 [shell,shell.with_suffix('.dll'),*(shell.parent/'ui').glob('*.js'),*(shell.parent/'ui').glob('*.css')]},

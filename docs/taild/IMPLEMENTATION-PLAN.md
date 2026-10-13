@@ -529,6 +529,37 @@ updates; a reproducing contract verifies current preference ownership. These
 corrections require the current signed payload and live workflow verification.
 Dependency: Stage 9 COMPLETE and explicit publication/deployment authorization.
 
+October 14 B12 update: native drill-down and saved JSON now reconcile the same
+203 production facts / 20,684,627 bytes at revision 137 (different display ordering
+and equivalent UTC bounds are retained in the export). Installed restart retained
+opt-ins/history. The empty recent view is verified against retained traffic ending
+October 12, not a plotting failure. The user requests an ingestion notice and the
+inherited application icon. A separate real navigation/close stall traced to the
+shared source/query queue: after pausing at a committed boundary, catalog took
+0.164 s and recent summary 0.009 s. Resolve read-only query/lifecycle isolation,
+actual progress notice and icon in this single ACTIVE stage; revalidate their
+integrated native workflow before the next signed release. Ingestion is temporarily
+paused for diagnosis; VPN/source services and saved opt-in remain unchanged.
+
+The integrated correction now passes the actual native WebView2 workflow: a held
+GlassWire source read does not block Overview/Applications/Activity/Health navigation
+or ordinary OS Close, enabled collection survives Close and reopening retains its
+opt-in. The served themed notice displays its real read interval/committed-read
+count and the empty-scope explanation. Revision-bound read-only SQLite views cannot
+write and see committed facts during an uncommitted writer transaction. Native
+window icon presence and extracted executable pixels match the inherited original.
+Type checking, production Angular build and native Debug build pass. Current-task
+Windows runtime contracts pass except one combined-run HTTP denial observation
+aborted with 10053; the unchanged denial test passes individually. Do not describe
+the combined run as a zero-failure result. Physical lifecycle waivers are unchanged.
+These are local native/SQLite proofs, not an installed correction or Stage 10 closure.
+The earlier signed +2 candidate at 02b6825 is superseded and must not be published.
+Next: sign the current coherent correction, independently verify its complete
+release payload, and prove installed update/tray/recovery and real collection
+continuity. Refactoring assessment: no optional consolidation; the native pipe
+serializes read callers, the collector remains the sole SQLite/source writer,
+and diagnostic monitoring never acquires data or changes the displayed revision.
+
 ## Stage 5 execution — 2026-10-08
 
 Authorization: already_authorized by the explicit request to start Stage 5.

@@ -154,16 +154,16 @@ def run(shell,output,real_history,policy_history):
         # Hold one real queued query at its worker boundary. The UI must not
         # mutate scope/navigation under an outstanding revision. Event based,
         # with no sleep, guessed duration, cancellation or mocked query result.
-        held=threading.Event();release=threading.Event();original=session.collector._execute
-        def pending_query(store,op,body):
-            if op=='view-query':held.set();release.wait()
-            return original(store,op,body)
+        held=threading.Event();release=threading.Event();original=session.collector.dispatch
+        def pending_query(request):
+            if request.get('op')=='view-query':held.set();release.wait()
+            return original(request)
         try:
-            session.collector._execute=pending_query
+            session.collector.dispatch=pending_query
             page.locator('#view-refresh').click();held.wait()
             expect(page.locator('#scope-host')).to_be_disabled();expect(page.locator('#nav-1')).to_be_disabled()
             expect(page.locator('.analytics-results')).to_have_attribute('inert','')
-        finally:release.set();session.collector._execute=original
+        finally:release.set();session.collector.dispatch=original
         settled(page)
         expect(page.locator('#coverage-state')).to_have_text('partial traffic')
         page.locator('#scope-device').select_option('synthetic-node');settled(page)

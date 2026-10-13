@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "ng build --configuration production",
+    "test:notice": "node --experimental-strip-types --test tests/ingestion-notice.test.mjs",
     "check": "tsc --noEmit"
   },
   "dependencies": {

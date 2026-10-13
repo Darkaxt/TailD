@@ -144,6 +144,7 @@ internal sealed class CollectionWindow : Form
     {
         bridge=new OwnerBridge(instance,pid);userData=data;options=supplied;this.instance=instance;
         Text="TailD · Network analytics";Width=1440;Height=900;MinimumSize=new Size(800,600);
+        Icon=System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath);
         StartPosition=FormStartPosition.CenterScreen;BackColor=Color.FromArgb(31,30,30);
         Controls.Add(view);Shown+=Initialize;FormClosing+=ClosingWindow;
     }

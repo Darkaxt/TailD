@@ -60,6 +60,7 @@ class DesktopAPI:
             sources=[{'id':r['id'],'kind':r['kind'],**{k:v for k,v in json.loads(r['metadata']).items()
                      if k in ('scope','endpoint')}} for r in self.store.db.execute('SELECT * FROM sources ORDER BY kind,id')]
             intervals={kind:{'start':history.utc(row[0]) if row[0] is not None else None,
+                             'latest_observation':history.utc(row[1]) if row[1] is not None else None,
                              'end':history.utc(row[1]+(1000000 if kind=='traffic' else 1)) if row[1] is not None else None}
                        for kind,table in (('traffic','traffic'),('dns','dns'),('snapshots','snapshots'))
                        for row in [self.store.db.execute('SELECT min(time),max(time) FROM '+table).fetchone()]}

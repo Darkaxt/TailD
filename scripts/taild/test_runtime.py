@@ -244,6 +244,44 @@ class RuntimeTest(unittest.TestCase):
         finally:
             release.set()
 
+    def test_desktop_reads_and_close_do_not_wait_for_an_unrelated_source_read(self):
+        entered,release,finished=threading.Event(),threading.Event(),threading.Event()
+        original=self.server.source;errors=[];observed={}
+        class GatedSource:
+            def dispatch(source,request):
+                if request.get('op')=='traffic':entered.set();release.wait()
+                return original.dispatch(request)
+        self.server.source=GatedSource()
+        def desktop():
+            try:
+                observed['state']=self.collector.dispatch({'op':'state'})
+                observed['catalog']=self.collector.dispatch({'op':'view-catalog','body':{}})
+                observed['saved']=self.collector.dispatch({'op':'saved-query','body':{'action':'list'}})
+                observed['batch']=self.collector.dispatch({'op':'view-query','body':{'queries':[{
+                    'kind':'traffic','view':'facts','start':'2026-10-07T16:36:40Z',
+                    'end':'2026-10-07T16:36:43Z','scope':{}}]}})
+                self.collector.dispatch({'op':'window-opened'})
+                observed['closed']=self.collector.dispatch({'op':'window-closed'})
+            except BaseException as error:errors.append(error)
+            finally:finished.set()
+        worker=threading.Thread(target=desktop)
+        try:
+            self.collector.command('configure',{'traffic':True})
+            self.assertTrue(entered.wait(10),'Diagnostic: acquisition did not enter')
+            worker.start()
+            self.assertTrue(finished.wait(10),'Dashboard/close waited for the gated source read')
+            self.assertFalse(errors,errors)
+            self.assertTrue(observed['closed']['collector_continues'])
+            self.assertEqual(observed['batch']['results'][0]['data']['total_count'],0)
+            progress=observed['state']['sources']['traffic']['progress']
+            self.assertEqual(progress['phase'],'reading')
+            self.assertEqual(progress['committed_reads'],0)
+            self.assertLess(history.instant(progress['start']),history.instant(progress['end']))
+            self.assertNotIn('percent',progress)
+        finally:
+            release.set()
+            if worker.ident is not None:worker.join()
+
     def test_real_sqlite_full_rolls_back_then_restart_recovers(self):
         self.collector.close()
         large_app = test_glasswire.string(6, 'C:\\Synthetic\\'+('a'*16000)+'.exe')

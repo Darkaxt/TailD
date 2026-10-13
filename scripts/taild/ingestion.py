@@ -11,7 +11,7 @@ import history
 
 
 def dns_windows(store, scope, endpoint, start, end, fetch, *, max_slices=1024, checkpoint=None,
-                defer_budget=False, resume_pending=None):
+                defer_budget=False, resume_pending=None, progress=None):
     """Deterministic UTC subdivision; a capped one-second slice stays incomplete.
 
     fetch is the existing GET-only boundary in the CLI. Each returned slice owns
@@ -57,6 +57,7 @@ def dns_windows(store, scope, endpoint, start, end, fetch, *, max_slices=1024, c
             store.record_gap('dns',scope,left,right,'irreducibly-capped',endpoint=endpoint)
             continue
         attempts += 1
+        if progress is not None:progress('reading',left,right)
         try:
             data = fetch(left,right)
         except controld.ControlDError:
@@ -65,6 +66,7 @@ def dns_windows(store, scope, endpoint, start, end, fetch, *, max_slices=1024, c
         if data['query_window']['start_inclusive'] != left or history.instant(data['query_window'].get('end_exclusive') or data['query_window']['end_inclusive']) != y:
             raise history.HistoryError('Provider returned mismatched query bounds')
         result = store.import_dns(data,scope,endpoint)
+        if progress is not None:progress('committed',left,right)
         if result['state'] == 'truncated':
             midpoint = ((x+y)//2000000)*1000000
             if x < midpoint < y and y-x > 1000000:
@@ -74,7 +76,7 @@ def dns_windows(store, scope, endpoint, start, end, fetch, *, max_slices=1024, c
     return finish()
 
 
-def traffic_window(store, scope, start, end, directory=None, limit=10000, *, reader=None, checkpoint=None):
+def traffic_window(store, scope, start, end, directory=None, limit=10000, *, reader=None, checkpoint=None, progress=None):
     source = reader or glasswire
     catalog = source.discover(directory)
     results = []
@@ -119,12 +121,14 @@ def traffic_window(store, scope, start, end, directory=None, limit=10000, *, rea
                 store.record_gap('traffic',scope,left,right,'irreducibly-capped',generation=generation)
                 continue
             attempts += 1
+            if progress is not None:progress('reading',left,right)
             try:
                 data = source.read_traffic(entry['path'],catalog['main_database'],left,right,limit)
                 data['source_version'] = catalog['version']
                 data['catalog_record'] = entry
                 generation = data['generation']
                 result = store.import_traffic(data,scope)
+                if progress is not None:progress('committed',left,right)
                 results.append(result)
                 if result['state'] == 'truncated':
                     midpoint = ((x+y)//2000000)*1000000

@@ -40,7 +40,7 @@ try {
         Invoke-Checked $Python @('-B',(Join-Path $PSScriptRoot 'fixture_build.py'),'--source',$PSScriptRoot,
             '--output',$env:TAILD_RUNTIME_SOURCE,'--public-key',$FixturePublicKey)
     } else {$env:TAILD_RUNTIME_SOURCE=$PSScriptRoot}
-    if(-not $SkipFrontendBuild){Invoke-Checked 'npm.cmd' @('ci','--ignore-scripts');Invoke-Checked 'npm.cmd' @('run','build')}
+    if(-not $SkipFrontendBuild){Invoke-Checked 'npm.cmd' @('ci','--ignore-scripts');Invoke-Checked 'npm.cmd' @('run','test:notice');Invoke-Checked 'npm.cmd' @('run','build')}
     $payload=Join-Path $out 'payload'
     Invoke-Checked $Python @('-B','-m','PyInstaller','--distpath',$payload,
         '--workpath',(Join-Path $out 'freeze-work'),(Join-Path $repo 'desktop/TailD.spec'))

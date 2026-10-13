@@ -1,7 +1,8 @@
 """Opt-in owning-user collector and authenticated local query lifecycle.
 
 Run explicitly; no startup registration, installation, elevation, or VPN writes.
-One worker owns SQLite and serializes all source acquisition and local commands.
+One worker owns SQLite writes and source acquisition. Native dashboard reads use
+separate read-only connections and never wait for an unrelated source operation.
 """
 import argparse
 import asyncio
@@ -244,6 +245,7 @@ class Collector:
         self.ready = threading.Event()
         self.closed = threading.Event()
         self.thread = None
+        self.store = None
         self.api = None
         self.mutex = None
         self.start_error = None
@@ -339,11 +341,31 @@ class Collector:
         if request['op'] not in ('state','configure','pause','resume','refresh','query','delete','cleanup','credential','credential-remove','window-opened','window-closed',*desktop_api.OPERATIONS):
             raise RuntimeError('invalid-command')
         try:
+            op=request['op'];body=request.get('body') or {}
+            if not isinstance(body,dict):raise RuntimeError('invalid-command')
+            # The native pipe already serializes its caller. Read-only views do
+            # not belong behind an unrelated source acquisition or write batch.
+            # Lifecycle flags need no SQLite access; preserve explicit receipts.
+            if op in ('state','window-opened','window-closed') and not body:
+                with self.condition:
+                    if self.closing:raise RuntimeError('stopping')
+                    return self._execute(None,op,body)
+            if op in ('view-query','view-catalog','export-query') or op=='saved-query' and body=={'action':'list'}:
+                with self.condition:
+                    if self.closing or self.store is None:raise RuntimeError('stopping')
+                    store=self.store
+                view=store.read_view(now=self.now())
+                try:
+                    if op=='view-catalog':view.db.execute('BEGIN')
+                    return desktop_api.DesktopAPI(view).dispatch(op,body)
+                finally:view.close()
             return self.command(request['op'], request.get('body'))
         except analytics.QueryError as error:
             # Typed-query validation failures are public protocol errors, not
             # fatal pipe-server exceptions or private exception messages.
             raise RuntimeError(error.code) from None
+        except (sqlite3.Error,history.HistoryError):
+            raise RuntimeError('unavailable') from None
 
     def after_receipt(self, request):
         if request == {'op':'shutdown'} or (request == {'op':'window-closed'} and self.stop_after_window_receipt):
@@ -464,7 +486,13 @@ class Collector:
         raise RuntimeError('invalid-command')
 
     def _acquire(self, store, kind, *, policy=False):
-        self.sources[kind] = {'state':'collecting'}
+        committed_reads=0
+        self.sources[kind] = {'state':'collecting','progress':{'phase':'discovering','committed_reads':0}}
+        def report_progress(phase,left,right):
+            nonlocal committed_reads
+            if phase=='committed':committed_reads+=1
+            self.sources[kind]={'state':'collecting','progress':{
+                'phase':phase,'start':left,'end':right,'committed_reads':committed_reads}}
         retry = None
         revision = self.config_revision
         def checkpoint():
@@ -496,7 +524,7 @@ class Collector:
             start = store.health()['expiry_floor']
             if kind == 'traffic':
                 result = ingestion.traffic_window(store, self.config['host_scope'],start,end,
-                                                  reader=self.reader,checkpoint=checkpoint)
+                                                  reader=self.reader,checkpoint=checkpoint,progress=report_progress)
             else:
                 provider = self.config['provider']
                 token = self._transient_token or credentials.CredentialStore().read()
@@ -511,13 +539,13 @@ class Collector:
                     # backfill. These are resource budgets, not retries/timeouts.
                     recent_start = history.utc(max(history.instant(start),history.instant(end)-120*1000000))
                     recent = ingestion.dns_windows(store,provider['account_scope'],provider['endpoint'],
-                        recent_start,end,fetch,max_slices=8,defer_budget=True,checkpoint=checkpoint)
+                        recent_start,end,fetch,max_slices=8,defer_budget=True,checkpoint=checkpoint,progress=report_progress)
                     progress = self._dns_progress(provider,start,end)
                     backfill = ({'slices_read':0,'pending_windows':progress['pending_windows'],'interrupted':True}
                                 if recent.get('interrupted') else
                         ingestion.dns_windows(store,provider['account_scope'],provider['endpoint'],
                             progress['start'],progress['end'],fetch,max_slices=8,defer_budget=True,
-                            resume_pending=progress['pending_windows'],checkpoint=checkpoint))
+                            resume_pending=progress['pending_windows'],checkpoint=checkpoint,progress=report_progress))
                     progress['pending_windows'] = backfill['pending_windows']
                     if not self.write_error:
                         self._save_dns_progress(progress)
@@ -684,6 +712,7 @@ class Collector:
         self.due = {'traffic':0, 'dns':0}
         try:
             store = history.History(self.directory, now=self.now())
+            self.store = store
             saved = self.directory/'runtime.json'
             if saved.exists():
                 if saved.is_symlink() or saved.stat().st_nlink != 1 or saved.stat().st_size > reader.REQUEST_BYTES:

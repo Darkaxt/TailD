@@ -5,6 +5,7 @@ import {Component,computed,signal,provideZonelessChangeDetection} from '@angular
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {command} from './bridge';
+import {IngestionNotice} from './ingestion-notice';
 import {Collection,State} from './collection';
 import {DashboardWidgetComponent} from './portmaster/panel';
 import {Bin,Consumer,CircularBarChartComponent,SfngNetqueryLineChartComponent,bytes,exact} from './portmaster/charts';
@@ -29,7 +30,7 @@ const fields:Record<Kind,string[]>={
   dns:['question','type','endpoint','profile','client','action','outcome','reason','reason_value','protocol','source','id','timestamp']};
 
 @Component({selector:'taild-app',standalone:true,
-  imports:[CommonModule,FormsModule,Collection,DashboardWidgetComponent,CircularBarChartComponent,SfngNetqueryLineChartComponent,Evidence],
+  imports:[CommonModule,FormsModule,Collection,DashboardWidgetComponent,CircularBarChartComponent,SfngNetqueryLineChartComponent,Evidence,IngestionNotice],
   template:`
   <button class="skip-link" (click)="skipContent()">Skip to analytics content</button>
   <nav class="rail" aria-label="TailD navigation"><span class="brand" title="TailD · independent fork">TD</span>
@@ -42,6 +43,7 @@ const fields:Record<Kind,string[]>={
       <p>{{page()==='Applications'&&application()!==undefined?appName(application()):'Observed facts. Honest gaps. Your network stays unchanged.'}}</p></div>
       <div class="heading-status"><span class="badge" [class.good]="runtime()?.state==='collecting'">{{runtime()?.state||'Connecting'}}</span>
       <span class="revision" *ngIf="batch() as b">Revision {{b.revision}}</span></div></header>
+    <taild-ingestion-notice *ngIf="page()!=='Settings'" [state]="runtime()" [catalog]="catalog()" [start]="start" [end]="end" />
     <fieldset class="shared-scope" aria-label="Shared analytics scope" [disabled]="busy()" *ngIf="catalog() as c">
       <label>Host scope<select id="scope-host" [(ngModel)]="host" (change)="scopeChanged()"><option value="">All recorded hosts</option>
         <option *ngFor="let value of hosts()" [value]="value">{{value}}</option></select></label>

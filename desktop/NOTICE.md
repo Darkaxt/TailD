@@ -6,8 +6,13 @@ TailD contributors. The inherited TailDNS/core BSD notices remain unchanged.
 This component's license is not a claim that process separation eliminates
 distribution obligations. Any distribution must include this notice, GPL text,
 all applicable dependency notices, and the complete corresponding source and
-build instructions for the covered desktop work. No distribution is authorized
-or performed by the current implementation stage.
+build instructions for the covered desktop work. Windows distribution is explicitly
+authorized in Stage 10; TailD remains an independent fork, not an official product.
+
+The dashboard application/window icon is the unmodified Tailscale Windows GUI
+resource inherited from the exact TailDNS core. Copyright Tailscale Inc. and
+Contributors; original executable/resource/hash provenance is recorded in
+`native/assets/README.md`. It is not a new TailD logo or a connection-state claim.
 
 Portmaster source: https://github.com/safing/portmaster at
 `bb6c44468a5d66bddb13bf3c43fcb2625c326ca9` (retrieved 2026-10-13).

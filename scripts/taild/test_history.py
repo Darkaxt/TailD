@@ -67,6 +67,20 @@ class HistoryTest(unittest.TestCase):
         self.assertEqual(self.query(application_path='other')['row_count'], 0)
         self.assertEqual(self.store.health()['sources'][0]['complete_through'], END)
 
+    def test_read_view_is_read_only_and_sees_committed_facts_during_writer_transaction(self):
+        self.ingest()
+        self.store.db.execute('BEGIN IMMEDIATE')
+        try:
+            self.store.db.execute('UPDATE traffic SET inbound=999')
+            view=self.store.read_view()
+            try:
+                self.assertEqual(view.query('traffic',START,END)['inbound_bytes'],100)
+                with self.assertRaises(sqlite3.OperationalError):
+                    view.db.execute('DELETE FROM traffic')
+                self.assertEqual(view.path,self.store.path)
+            finally:view.close()
+        finally:self.store.db.execute('ROLLBACK')
+
     def test_mutation_replaces_not_adds_cumulative_bytes(self):
         self.ingest()
         self.writer.execute('update traffic_stats set inbound_bytes=135,outbound_bytes=2')

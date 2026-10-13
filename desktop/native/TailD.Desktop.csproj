@@ -4,6 +4,7 @@
     <UseWindowsForms>true</UseWindowsForms><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <AssemblyName>TailD.Desktop</AssemblyName><RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <ApplicationIcon>assets/tailscale.ico</ApplicationIcon>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <RuntimeFrameworkVersion>10.0.12</RuntimeFrameworkVersion>
@@ -15,6 +16,7 @@
     <Content Include="../dist/3rdpartylicenses.txt" Link="licenses/frontend-dependencies.txt" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../LICENSE" Link="licenses/frontend-GPL-3.0.txt" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../NOTICE.md" Link="licenses/frontend-NOTICE.md" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="assets/README.md" Link="licenses/tailscale-icon-provenance.md" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <!-- WebView2's managed targets also add WPF to WinForms projects. This host
        does not use WPF; remove that unused reference rather than suppress its
