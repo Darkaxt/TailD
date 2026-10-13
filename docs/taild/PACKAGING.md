@@ -236,3 +236,13 @@ left-click analytics open/focus and unchanged right-click connectivity controls.
 The narrow tray integration reuses Windows window/process/owner identity and the
 existing desktop/collector ownership; it adds no alternate UI, RPC or background
 schedule. These remaining workflows are Stage 10 advancement blockers.
+
+Live collection exposed an actual Windows status-observer sharing conflict:
+atomic diagnostic JSON replacement failed and incorrectly set the source/history
+write-error flag. Reproduction holds the real file without delete sharing.
+Diagnostic publication now reports its own sanitized health over the authenticated
+state API; it does not disable ingestion. Genuine facts/checkpoint write failures
+still stop safely. Later core updates also preserve the current auto-update choice
+rather than reapplying the immutable pre-migration preference; only the first
+migration restores the temporarily disabled choice. Current production verification
+of these corrections is required before the next public update.

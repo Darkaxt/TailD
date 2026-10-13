@@ -517,6 +517,16 @@ Advancement blocker B12 (internal): live installed collection/restart/correction
 reconciled desktop drill-down/export, clarified tray activation and actual signed
 channel update/rollback still require their complete workflows. Resolve them and
 the final R01–R18 reconciliation before Stage 10 completion. Tracked deferrals: none.
+The tray candidate 691e4f2 passed full production/signing run 38472355738 but was
+not published: installed collection exposed a separate diagnostic-file sharing
+conflict incorrectly disabling ingestion. An actual Windows deny-delete observer
+reproduces it; status publication now has separate API-visible health and cannot
+set the facts/checkpoint write-error state. Focused regression and source acquisition
+pass; the other native runtime checks apply, with the HTTP negative check passing
+individually after a host TCP abort in the combined diagnostic run. Current update
+finish also stops reapplying the immutable migration's update preference to later
+updates; a reproducing contract verifies current preference ownership. These
+corrections require the current signed payload and live workflow verification.
 Dependency: Stage 9 COMPLETE and explicit publication/deployment authorization.
 
 ## Stage 5 execution — 2026-10-08

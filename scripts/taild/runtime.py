@@ -250,6 +250,7 @@ class Collector:
         self.closing = False
         self.paused = False
         self.write_error = False
+        self.diagnostics = {'state':'not-published'}
         self.config = dict(DEFAULTS)
         self.sources = {'traffic':{'state':'disabled'}, 'dns':{'state':'disabled'},
                         'context':{'state':'not-configured' if cli is None else 'not-collected'}}
@@ -379,7 +380,8 @@ class Collector:
         return {'state':state,'sources':json.loads(json.dumps(self.sources)),
                 'queue_depth':len(self.queue),'settings':self.config,
                 'lifecycle':self.lifecycle.status() if self.lifecycle is not None else {'state':'starting'},
-                'credentials':'current-user-vault-optional','network_changes':False}
+                'credentials':'current-user-vault-optional','network_changes':False,
+                'diagnostics':dict(self.diagnostics)}
 
     def _execute(self, store, op, body):
         if not isinstance(body,dict):
@@ -649,8 +651,6 @@ class Collector:
             raise
 
     def _diagnostic_status(self):
-        if self.write_error:
-            return
         source_status = {kind:{key:value for key,value in data.items()
                             if key in ('state','status','last_success_utc')}
                          for kind,data in self.sources.items()}
@@ -667,6 +667,18 @@ class Collector:
             os.fsync(output.fileno())
         pending.replace(target)
 
+    def _publish_status(self):
+        # Status is an observation channel, not the facts/checkpoint store. A
+        # reader holding this JSON file must not turn an atomic rename conflict
+        # into a history write failure or disable otherwise healthy acquisition.
+        try:
+            self._diagnostic_status()
+        except OSError as error:
+            self.diagnostics={'state':'unavailable','error_type':type(error).__name__,
+                              'winerror':getattr(error,'winerror',None),'errno':error.errno}
+        else:
+            self.diagnostics={'state':'available'}
+
     def _run(self):
         store = None
         self.due = {'traffic':0, 'dns':0}
@@ -681,7 +693,7 @@ class Collector:
                 if self.config[kind]:
                     self.sources[kind]['state'] = 'starting'
             self._restore_provider_limit()
-            self._diagnostic_status()
+            self._publish_status()
             self.ready.set()
             while True:
                 with self.condition:
@@ -705,10 +717,7 @@ class Collector:
                     self._deliver(store,command)
                 else:
                     self._acquire(store,due[0])
-                try:
-                    self._diagnostic_status()
-                except (sqlite3.Error,OSError):
-                    self.write_error = True
+                self._publish_status()
         except BaseException as error:
             self.start_error = type(error).__name__
         finally:

@@ -90,6 +90,30 @@ class RuntimeTest(unittest.TestCase):
         self.assertEqual(self.query()[1]['results'][0]['data']['total_count'], 1)
         self.assertNotIn(self.collector.session()['token'], (self.home/'runtime.json').read_text())
 
+    def test_status_observer_sharing_conflict_does_not_stop_source_collection(self):
+        import win32con,win32file,win32api
+        attempted=threading.Event();errors=[];replace=Path.replace
+        target=self.home/'runtime-status.json'
+        # This is an actual Windows observer handle that denies delete sharing,
+        # not a mocked source/disk failure. Atomic status replacement must fail.
+        handle=win32file.CreateFile(str(target),win32con.GENERIC_READ,
+            win32con.FILE_SHARE_READ|win32con.FILE_SHARE_WRITE,None,win32con.OPEN_EXISTING,0,None)
+        def observed(path,destination):
+            try:return replace(path,destination)
+            except OSError as error:
+                if path.name=='runtime-status.pending.json':errors.append(error.winerror);attempted.set()
+                raise
+        try:
+            with patch.object(Path,'replace',observed):
+                self.collector.command('configure',{'traffic':True})
+                attempted.wait()
+                state=self.collector.command('state')
+                self.assertTrue(errors and set(errors)<={5,32},errors)
+                self.assertNotEqual(state['state'],'write-error','Diagnostic sharing conflict stopped data acquisition')
+                self.collector.command('refresh')
+                self.assertEqual(self.query()[1]['results'][0]['data']['total_count'],1)
+        finally:win32api.CloseHandle(handle)
+
     def test_actual_window_detach_preserves_opt_in_but_stops_disabled_collector(self):
         self.collector.dispatch({'op':'window-opened'})
         self.collector.command('configure', {'traffic':True})

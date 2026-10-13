@@ -114,6 +114,7 @@ class DeliveryTest(unittest.TestCase):
             return SimpleNamespace(returncode=0)
         with patch.object(delivery,'rollback_core',side_effect=lambda *a:actions.append('core-restored')),\
              patch.object(delivery.subprocess,'run',side_effect=uninstall),\
+             patch.object(delivery,'initial_framework_remaining',side_effect=lambda:framework.exists()),\
              patch.object(delivery.subprocess,'CREATE_NO_WINDOW',0,create=True):
             delivery.recover(new)
         self.assertEqual(actions,['core-restored','framework-uninstall'])
@@ -130,6 +131,18 @@ class DeliveryTest(unittest.TestCase):
         core.assert_not_called();stop.assert_called_once_with(remove=True)
         (self.app/'TailD.Background.exe').write_bytes(b'tampered')
         with self.assertRaises(manifest.PackageError):installer.uninstall(False)
+
+    def test_update_does_not_reapply_original_migration_update_preference(self):
+        new,_=self.candidate(2);self.installed(new)
+        journal={'schema':'taild-setup-transaction-v1','phase':'prepared','owner_sid':self.owner,'local_data':str(self.local)}
+        delivery.record_manifest(journal,'new',new);delivery.write_journal(journal)
+        (self.state/'deployment-v4.json').write_text(json.dumps({'originalAutoUpdateApply':False}))
+        with patch.object(delivery,'core_command',return_value={}) as core,\
+             patch.object(delivery.subprocess,'run',return_value=SimpleNamespace(returncode=0)) as process,\
+             patch.object(delivery.subprocess,'CREATE_NO_WINDOW',0,create=True):
+            delivery.finish(new)
+        self.assertEqual([call.args[1] for call in core.call_args_list],['update','resume-analytics'])
+        process.assert_not_called() # Core update preserves the current preference itself.
 
 
 if __name__=='__main__':unittest.main()

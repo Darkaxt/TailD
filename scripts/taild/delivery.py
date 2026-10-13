@@ -188,7 +188,8 @@ def finish(candidate):
         raise manifest.PackageError('installation-journal-mismatch')
     journal['phase']='core_started';write_journal(journal)
     active=state_directory()/'deployment-v4.json'
-    core_command(candidate,'update' if active.exists() else 'install')
+    initial=not active.exists()
+    core_command(candidate,'install' if initial else 'update')
     journal['phase']='core_complete';write_journal(journal)
     config=app/'installation.json'
     if config.exists():metadata=json.loads(config.read_bytes())
@@ -199,11 +200,14 @@ def finish(candidate):
     # Restore the user's existing update preference after the initial core
     # migration temporarily disables update application. This installation's
     # explicitly selected channel is now TailD, not TailDNS or official MSI.
-    record=json.loads(active.read_bytes())
-    cli=app.parent/'tailscale.exe'
-    result=subprocess.run([str(cli),'set','--auto-update='+str(bool(record['originalAutoUpdateApply'])).lower()],
-        stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,creationflags=subprocess.CREATE_NO_WINDOW)
-    if result.returncode:raise manifest.PackageError('update-preference-restore-failed')
+    if initial:
+        record=json.loads(active.read_bytes())
+        cli=app.parent/'tailscale.exe'
+        result=subprocess.run([str(cli),'set','--auto-update='+str(bool(record['originalAutoUpdateApply'])).lower()],
+            stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,creationflags=subprocess.CREATE_NO_WINDOW)
+        if result.returncode:raise manifest.PackageError('update-preference-restore-failed')
+    # Later updates preserve the current daemon preference; the immutable
+    # migration baseline is solely for an explicit uninstall/unmigration.
     core_command(candidate,'resume-analytics')
     journal['phase']='complete';write_journal(journal)
 

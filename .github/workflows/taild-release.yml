@@ -118,7 +118,7 @@ jobs:
         shell: pwsh
         run: |
           $env:TAILD_PACKAGE_TEST_OUTPUT="$env:RUNNER_TEMP/contracts"
-          foreach($pattern in 'test_package*.py','test_delivery.py','test_release_channel.py','test_release_signer.py','test_maintenance.py','test_core_overlay.py'){
+          foreach($pattern in 'test_package*.py','test_delivery.py','test_runtime.py','test_release_channel.py','test_release_signer.py','test_maintenance.py','test_core_overlay.py'){
             & "$env:RUNNER_TEMP/build-env/Scripts/python.exe" -B -m unittest discover -s scripts/taild -p $pattern -v
             if($LASTEXITCODE){throw 'Windows product contracts failed'}
           }
