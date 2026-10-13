@@ -9,14 +9,21 @@ GitHub fork badge.
 Automatic promotion uses a repository-scoped write identity, verified against
 GitHub's workflow-file boundary without changing main or publishing a release.
 
-The planned extension combines Control D policy/decision data with application
+The extension combines Control D policy/decision data with application
 identity and network-byte metrics. Control D and existing firewall products keep
 their enforcement roles. No new packet-filtering engine is being implemented.
 
-There is **no TailD release or installed analytics UI yet**. The inherited client
-still uses the TailDNS app/package identity. Existing TailDNS installations,
-update endpoints, signing keys and maintenance tasks are unchanged. The inherited
-status material below describes TailDNS, not verification of TailD analytics.
+[TailD 1.105.0+1 for Windows](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B1)
+is published and independently verified. Its complete connectivity/analytics
+installer has migrated the authorized Beacon installation in place, preserving
+authentication, addresses, Tailnet Lock signing and DNS settings. Open **TailD**
+from the Start menu. The analytics UI uses Portmaster-derived widgets with the
+Tailscale dark theme; collection remains opt-in. Payload and installer digests
+are Ed25519-signed; executables/installer are **not Authenticode-signed**.
+Stage 10 remains ACTIVE for live analytics, tray launch/focus integration and real
+updater/rollback verification. Other TailDNS installations, signing keys and
+maintenance tasks remain unchanged. The inherited status material below describes
+TailDNS, not independent acceptance of every TailD analytics requirement.
 
 The first read-only development command is implemented and verified against a
 real Control D account: device/profile inventory, analytics-region discovery and
@@ -68,8 +75,9 @@ Stage 9 local packaging/readiness is COMPLETE: a production-key manifest-signed
 Windows candidate, actual isolated installer/reader upgrade/rollback/uninstall,
 offline Release launch and independent installer-payload verification pass.
 The executables/installer are not Authenticode-signed. Stage 10 is ACTIVE with
-explicit public-release/Windows-migration/updater authority; no TailD release or
-installed replacement is claimed. See [packaging evidence and delivery boundaries](docs/taild/PACKAGING.md).
+explicit public-release/Windows-migration/updater authority. The first normal
+release and authorized in-place migration are verified; live analytics and updater
+acceptance remain. See [packaging evidence and delivery boundaries](docs/taild/PACKAGING.md).
 
 - [TailD authoritative specification](docs/taild/SPECIFICATION.md)
 - [Remaining-product specification: ingestion, metrics, desktop and delivery](docs/taild/PRODUCT-SPECIFICATION.md)

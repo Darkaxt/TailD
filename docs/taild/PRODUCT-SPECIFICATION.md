@@ -25,8 +25,10 @@ COMPLETE with the evidence in POLICY-READS.md; Stage 7 is COMPLETE under its
 recorded live-test waiver. The reopened Stage 1 R02 repair is verified and COMPLETE;
 Stages 8–9 are COMPLETE. The subsequent October 13 "go ahead", replying to the
 explicit Stage 10 release/in-place Windows migration/updater question, authorizes
-those live actions. Stage 10 is ACTIVE; publication, migration and updater
-acceptance remain unverified until their actual workflows pass.
+those live actions. Stage 10 is ACTIVE. Normal release 1.105.0+1 is published and
+independently verified; authenticated Beacon migration preserves node, addresses,
+Tailnet Lock signer, service path and DNS preferences, with public/MagicDNS reads
+passing. Live analytics and updater/rollback acceptance still remain.
 
 The [stage ledger](IMPLEMENTATION-PLAN.md) maps every requirement to acceptance
 criteria. A plan cannot weaken this document. Only one implementation stage may
@@ -533,6 +535,13 @@ cross-layer verification appropriate to ingestion, security, DNS compatibility a
 packaging. Required real workflow: enabled collection -> restart/resume and
 correction -> reconciled metrics -> desktop drill-down -> private export.
 Historical October 7 samples do not substitute for the new production workflow.
+
+October 14 tray-interaction clarification: left-click opens or focuses the TailD
+analytics interface; right-click retains the inherited connectivity menu and its
+features. Repeated activation must not create a second desktop or collector.
+Implement this narrow Windows launch/focus integration in Stage 10 and verify
+actual tray event -> owning-user desktop, minimized restore and repeated focus,
+plus preserved right-click controls. Existing Start menu launch remains available.
 
 Stage 10 requires separate explicit publication/deployment authority. Publish one
 normal signed release only after Stage 9 closure; independently download and

@@ -228,7 +228,7 @@ jobs:
           }
           $registration='HKLM:/SOFTWARE/Microsoft/Windows/CurrentVersion/Uninstall/{04905050-B54D-4D29-9880-39F10B3BCA7E}_is1'
           if(Test-Path -LiteralPath $registration){throw 'Failed first migration left installation registration'}
-          [ordered]@{complete_product=True;authenticated_baseline_absent=True;refused=True;installer_exit_code=$process.ExitCode;reader_absent=True;installed_binaries_absent=True;registration_absent=True;not_a_tailnet_migration_test=True} | ConvertTo-Json | Set-Content -LiteralPath release/fresh-migration-refusal.json -Encoding utf8NoBOM
+          [ordered]@{complete_product=$true;authenticated_baseline_absent=$true;refused=$true;installer_exit_code=$process.ExitCode;reader_absent=$true;installed_binaries_absent=$true;registration_absent=$true;not_a_tailnet_migration_test=$true} | ConvertTo-Json | Set-Content -LiteralPath release/fresh-migration-refusal.json -Encoding utf8NoBOM
       - name: Preserve isolated failure diagnostics
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

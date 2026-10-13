@@ -200,7 +200,7 @@ first-failure recovery uses Inno's own uninstaller for its framework/registratio
 only after core restoration. A signed, protected first-migration journal permits
 verified partial uninstall to resume without another unmigration or history loss.
 See the [Inno event contract](https://jrsoftware.org/ishelp/topic_scriptevents.htm).
-This correction still requires actual fresh-host verification before delivery.
+This correction passed actual fresh-host verification in run 38468405916.
 
 The frozen collector exposes only an owner/instance-bound maintenance-stop event
 to its owner, SYSTEM and Administrators. Updating signals a graceful stop, closes
@@ -216,11 +216,23 @@ source/core identities and complete package-manifest hash. A partial download is
 never executable; replay, upstream downgrade, tamper and wrong-repository assets
 are refused. HTTP inactivity limits stay at the transport boundary only.
 
-Focused local diagnostics currently verify these signature/path/version contracts,
-journal recovery with the SCM boundary isolated, actual Windows stop-event isolation,
-unchanged runtime lifecycle contracts and the overlaid native tray/update/installer
-contracts. These are not yet acceptance of the full production installer or real
-authenticated migration. The protected signing/publication workflow, complete
-current-payload Windows checks, public download, live production analytics and
-real update/rollback remain Stage 10 advancement blockers. No release or installation
-has occurred during this implementation checkpoint.
+Run 38468405916 at bde37693a2575b7bd3d5708d18a161a798cffe32 passed complete Windows
+build, isolated installer matrix, full-product failed-first-migration recovery and
+dedicated protected signing. The exact 1.105.0+1 installer is published normally,
+independently downloaded, envelope/hash verified and extracted: all 414 signed
+members, source/core/version/architecture and notices match. Installer SHA-256:
+`dcfdfde7c5d2f717ef34ea55377c2d8da52d2f54f037f5dcda1910476011fdce`.
+Current hook-free Release/frozen-collector Overview -> Settings -> normal close
+and reviewed screenshot pass. The serialized CI diagnostic's boolean fields were
+null from bare PowerShell literals; the executed assertions/job pass are the proof,
+that report is not published, and subsequent source uses real `$true` values.
+
+Authorized Beacon installation passed the elevation gate, full signed installed-
+payload matching, node/address/public-signer/service/DNS preference continuity,
+and actual public/MagicDNS resolution. Private baseline, installer log and retained
+external recovery payload stay outside GitHub. Live installed analytics and real
+update/rollback are still required. The October 14 clarification also requires
+left-click analytics open/focus and unchanged right-click connectivity controls.
+The narrow tray integration reuses Windows window/process/owner identity and the
+existing desktop/collector ownership; it adds no alternate UI, RPC or background
+schedule. These remaining workflows are Stage 10 advancement blockers.

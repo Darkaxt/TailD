@@ -1,7 +1,8 @@
 """Reviewed TailD build overlay against the inherited exact core, never a fork copy.
 
-Only distribution identity/update dispatch changes. DNS, protocol identifiers,
-tray controls/icons and service identity continue to come from the pinned source.
+Only distribution identity/update dispatch/recovery and desktop activation change.
+DNS, protocol identifiers, right-click controls/icons and service identity continue
+to come from the pinned source.
 """
 import argparse
 import json
@@ -78,6 +79,9 @@ def create(core,output):
         elif name=='cmd/taildns-ipn/main_windows.go':
             if source.count('ProductName: "TailDNS"')!=1:raise ValueError('Tray identity drift')
             sources[name]=source.replace('ProductName: "TailDNS"','ProductName: "TailD"')
+            sources[name]=replace_once(sources[name],
+                '\t\t(&systray.Menu{ProductName: "TailD"}).Run(&local.Client{})',
+                '\t\tconfigureDesktopAction()\n\t\t(&systray.Menu{ProductName: "TailD"}).Run(&local.Client{})')
         elif name.startswith('cmd/taildns-installer/'):
             # Keep executable/LocalAPI/run-value names for in-place compatibility.
             # Dedicated ProgramData records and manifest product isolate TailD
@@ -103,6 +107,8 @@ def create(core,output):
     output.mkdir(parents=True,exist_ok=False)
     replacements={}
     sources['cmd/taildns-installer/taild_resume_windows.go']=(Path(__file__).parent/'core-overlay/resume_windows.go').read_text()
+    for name in ('desktop_windows.go','desktop_windows_test.go'):
+        sources['cmd/taildns-ipn/taild_'+name]=(Path(__file__).parent/'core-overlay'/name).read_text()
     for name,source in sources.items():
         target=output/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_text(source,encoding='utf-8')
         replacements[str(core/name)]=str(target.resolve())

@@ -486,13 +486,17 @@ Acceptance criteria:
 - R01–R18 final reconciliation, no required blockers/deferrals, documented source
   compatibility and upstream ownership; existing maintenance tasks unchanged.
 
-Satisfied: explicit delivery/migration/updater authority. Remaining: release,
-independent download verification, authenticated in-place migration, production
-analytics workflow and real updater/recovery verification, then final reconciliation.
+Satisfied: explicit delivery/migration/updater authority; normal signed public
+release 1.105.0+1 at bde37693a2575b7bd3d5708d18a161a798cffe32; independent public
+download and full extracted-payload verification; actual authorized Beacon migration
+with node/addresses/signer/service/DNS continuity and public/MagicDNS resolution.
+Remaining: production analytics workflow, real updater/recovery verification,
+the October 14 left-click desktop/focus and preserved right-click-menu clarification,
+then final reconciliation. These remain internal advancement blockers, not deferrals.
 Resolved B10 (external): the October 13 explicit "go ahead" authorizes public
 release, active Windows replacement and TailD updater activation. No synthetic
 Stage 9 result substitutes for the required real production checks.
-Advancement blocker B11 (internal): the complete build, isolated installer matrix
+Resolved B11 (internal): the complete build, isolated installer matrix
 and protected payload/installer signing passed run 38463490065. Current-source
 0472970 passed build/contracts/payload signing in run 38465087871, but the added
 fresh-host full-product migration-refusal check observed exit 0 without an
@@ -502,13 +506,17 @@ exception for exit reporting and retained uninstaller/registration after payload
 recovery. The correction binds success to full transaction completion and uses
 the normal uninstaller after confirmed first-migration core recovery. Signed
 retained-member checks support interrupted uninstall without deleting history or
-unmigrating twice. Reproducing recovery contracts pass; actual full-product Windows
-verification of this correction is pending. The current signed 0472970 payload
-also passed actual hook-free Overview -> Settings -> normal shutdown and reviewed
+unmigrating twice. Reproducing recovery contracts and the actual full-product
+fresh-host correction pass run 38468405916 at bde3769. The same signed candidate
+passed actual hook-free Overview -> Settings -> normal shutdown and reviewed
 rendering; an earlier invalidated UIA read remains a failed observation, not evidence
-of a production app defect. Resolve the current-payload installer/recovery criteria
-before publishing or migrating. Release, live migration, updater verification and
-final reconciliation still depend on this work. Tracked deferrals: none.
+of a production app defect. The public normal release was independently downloaded,
+its installer digest and all 414 extracted signed members verified, and Beacon
+migrated through the elevation gate with fresh private continuity evidence.
+Advancement blocker B12 (internal): live installed collection/restart/correction,
+reconciled desktop drill-down/export, clarified tray activation and actual signed
+channel update/rollback still require their complete workflows. Resolve them and
+the final R01–R18 reconciliation before Stage 10 completion. Tracked deferrals: none.
 Dependency: Stage 9 COMPLETE and explicit publication/deployment authorization.
 
 ## Stage 5 execution — 2026-10-08

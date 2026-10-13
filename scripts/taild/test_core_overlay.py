@@ -15,7 +15,7 @@ class CoreOverlayTest(unittest.TestCase):
         before={name:(Path(core)/name).read_bytes() for name in core_overlay.SOURCE_FILES}
         overlay=core_overlay.create(Path(core),root)
         replacements=json.loads(overlay.read_text())['Replace']
-        self.assertEqual(len(replacements),len(core_overlay.SOURCE_FILES)+1)
+        self.assertEqual(len(replacements),len(core_overlay.SOURCE_FILES)+3)
         updater=Path(replacements[str(Path(core)/'clientupdate/taildnsupdate/start_windows.go')]).read_text()
         self.assertIn('TailD.Setup.exe',updater)
         self.assertNotIn('Darkaxt/tailscale/releases',updater)
@@ -25,6 +25,11 @@ class CoreOverlayTest(unittest.TestCase):
         tray=Path(replacements[str(Path(core)/'client/systray/systray.go')]).read_text()
         self.assertIn('About TailD ',tray)
         self.assertIn('https://github.com/Darkaxt/TailD',tray)
+        main=Path(replacements[str(Path(core)/'cmd/taildns-ipn/main_windows.go')]).read_text()
+        self.assertIn('configureDesktopAction()',main)
+        desktop=Path(replacements[str(Path(core)/'cmd/taildns-ipn/taild_desktop_windows.go')]).read_text()
+        self.assertIn('systray.SetOnTapped(',desktop)
+        self.assertNotIn('systray.SetOnSecondaryTapped(',desktop)
         core_installer=Path(replacements[str(Path(core)/'cmd/taildns-installer/install_windows.go')]).read_text()
         self.assertIn('func platformUnmigrate()',core_installer)
         self.assertIn('!original && err == nil',core_installer)
