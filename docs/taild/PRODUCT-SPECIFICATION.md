@@ -386,6 +386,13 @@ input does not echo. Show account scope without revealing the token. Revocation/
 replacement removes the prior local credential reference. Do not recover a token
 from chat/transcript to install it; obtain it through the secure product entry flow.
 
+One-time authorized credential-setup amendment (2026-10-13): when asked to enter
+the already-supplied READ token, the owner explicitly instructed the assistant to
+use that token and run setup itself. This authorizes saving only that owner-supplied
+Control D READ token through the hidden local credential-entry flow for Stage 10.
+Do not repeat it in command-line arguments, diagnostics, source, CI or public output;
+no other credential recovery, permission upgrade or provider write is authorized.
+
 R14c (runtime/UI): use an ACL-restricted authenticated named pipe for privileged
 reads with an allowlisted command/schema/path surface. No shell command, arbitrary
 file access or general SQL execution. Authenticate user ownership, not just PID

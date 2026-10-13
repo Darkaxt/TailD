@@ -11,6 +11,10 @@ on:
         description: Publish the verified normal release (false builds a private release candidate)
         type: boolean
         default: false
+      installer_evidence_run:
+        description: Optional prior successful isolated-installer job; exact unchanged product/workflow trees are verified before reuse
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -20,9 +24,55 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  isolated-installer:
+  contracts:
     if: github.repository == 'Darkaxt/TailD' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Full backend contracts in an unprivileged runtime environment
+        env:
+          TAILD_PACKAGE_TEST_OUTPUT: ${{ runner.temp }}/taild-contract-fixtures
+        run: |
+          set -euo pipefail
+          python3 -m pip install 'cryptography==50.0.2'
+          python3 -B -m unittest discover -s scripts/taild -p 'test_*.py' -v
+
+  isolated-installer:
+    if: github.repository == 'Darkaxt/TailD' && github.ref == 'refs/heads/main' && inputs.installer_evidence_run == ''
     uses: ./.github/workflows/taild-package-checks.yml
+
+  installer-evidence:
+    needs: isolated-installer
+    if: always() && github.repository == 'Darkaxt/TailD' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Reconcile actual isolated acceptance evidence without repeating unchanged checks
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVIDENCE_RUN: ${{ inputs.installer_evidence_run }}
+          CURRENT_RESULT: ${{ needs.isolated-installer.result }}
+        run: |
+          set -euo pipefail
+          if test -z "$EVIDENCE_RUN"; then
+            test "$CURRENT_RESULT" = success
+            exit 0
+          fi
+          [[ "$EVIDENCE_RUN" =~ ^[0-9]+$ ]]
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$EVIDENCE_RUN" > evidence-run.json
+          test "$(jq -r .head_branch evidence-run.json)" = main
+          test "$(jq -r .path evidence-run.json)" = .github/workflows/taild-release.yml
+          old=$(jq -r .head_sha evidence-run.json)
+          [[ "$old" =~ ^[0-9a-f]{40}$ ]]
+          gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs/$EVIDENCE_RUN/jobs?per_page=100" --jq '.jobs[] | select(.name == "isolated-installer / package") | .conclusion' > evidence-result.txt
+          test "$(cat evidence-result.txt)" = success
+          git diff --exit-code "$old" "$GITHUB_SHA" -- scripts/taild desktop go.mod go.sum .github/workflows/taild-package-checks.yml
+          printf 'Reused actual unchanged installer acceptance from run %s at %s\n' "$EVIDENCE_RUN" "$old"
 
   build:
     if: github.repository == 'Darkaxt/TailD' && github.ref == 'refs/heads/main'
@@ -64,12 +114,14 @@ jobs:
           python -m venv "$env:RUNNER_TEMP/build-env"
           & "$env:RUNNER_TEMP/build-env/Scripts/python.exe" -m pip install -r desktop/packaging-requirements.txt
           if($LASTEXITCODE){throw 'Build dependencies failed'}
-      - name: Verify complete backend and delivery contracts
+      - name: Verify Windows-native package and delivery contracts
         shell: pwsh
         run: |
           $env:TAILD_PACKAGE_TEST_OUTPUT="$env:RUNNER_TEMP/contracts"
-          & "$env:RUNNER_TEMP/build-env/Scripts/python.exe" -B -m unittest discover -s scripts/taild -p 'test_*.py' -v
-          if($LASTEXITCODE){throw 'Product contracts failed'}
+          foreach($pattern in 'test_package*.py','test_delivery.py','test_release_channel.py','test_release_signer.py','test_maintenance.py','test_core_overlay.py'){
+            & "$env:RUNNER_TEMP/build-env/Scripts/python.exe" -B -m unittest discover -s scripts/taild -p $pattern -v
+            if($LASTEXITCODE){throw 'Windows product contracts failed'}
+          }
       - name: Build the complete clean production payload without signing credentials
         shell: pwsh
         run: |
@@ -86,7 +138,7 @@ jobs:
           if-no-files-found: error
 
   sign-payload:
-    needs: [isolated-installer, build]
+    needs: [contracts, installer-evidence, build]
     runs-on: ubuntu-latest
     environment: taild-release
     steps:
