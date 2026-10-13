@@ -1,7 +1,9 @@
 # Portmaster source design reference for TailD
 
 Metrics reference inspected 2026-10-08; layout/widget retrieval refreshed 2026-10-13.
-This is an engineering and planned-reuse reference, not yet integrated product code.
+This is an engineering/reuse reference. The Stage 7 panel and switch primitives
+are integrated with notices in `desktop/NOTICE.md`; analytics families below
+remain Stage 8 work, not already integrated product views.
 It supports the authoritative [remaining-product specification](PRODUCT-SPECIFICATION.md).
 
 ## Pinned evidence
@@ -71,7 +73,9 @@ The inspected [Portmaster LICENSE](https://github.com/safing/portmaster/blob/882
 is GPL version 3; the inherited TailDNS root license has different terms.
 This specification uses source architecture and functional organization as design
 input. It does not import Portmaster code, styles, icons, assets or dependencies,
-and it does not change the repository's license.
+and it did not change the repository's license. Current literal Stage 7 imports
+are separately GPL-labelled in `desktop/` with exact source identities/notices;
+inherited TailDNS BSD notices remain unchanged.
 
 Before any literal reuse, record each file's license/header, modifications,
 attribution and distribution/source obligations, and establish a compatible
@@ -85,6 +89,22 @@ The user's subsequent clarification permits improvements here and there while
 keeping the same themed widgets. Treat the upstream theme as the design system,
 not a pixel-perfect restriction: improve clarity, accessibility, interaction and
 data accuracy without substituting unrelated widgets or generic dashboard styling.
+
+The subsequent October 13 instruction explicitly changes the colour target to
+Tailscale while retaining these widgets. Palette evidence: live official
+`https://tailscale.com/`, CSS asset
+`https://wwwv2.tailscale.com/_next/static/immutable/chunks/2xughz4knwr2k.css`
+(read October 13), and upstream Android `ui/theme/Color.kt` (#4b70cc).
+Use warm neutrals #1f1e1e / #232222 / #2e2d2d, near-white #f9f7f6,
+secondary #dad6d5, muted #afacab, Tailscale blue #4b70cc with #85aaf5 focus/
+selection accents; retain green only for evidenced healthy states. These are
+selected reference tokens, not copied website CSS. Native caption should be dark,
+not the default blue-grey WinForms title bar. Existing geometry, widget reuse,
+responsive, accessibility and screenshot criteria remain unchanged.
+The user supplied a current dark Tailscale admin-console screenshot as the visual
+reference: charcoal canvas/panels, quiet separators, compact rows, blue actions
+and restrained green connection indicators. This confirms the dark variant;
+do not copy its private account/device content or marketing banner into TailD.
 
 No Portmaster packet interception, WFP driver, DNS interception, firewall,
 SPN, subscription backend or updater is part of TailD's analytics design.

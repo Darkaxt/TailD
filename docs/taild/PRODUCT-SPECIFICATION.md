@@ -1,6 +1,6 @@
 # TailD remaining-product specification
 
-Version 1.2, 2026-10-13. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.3, 2026-10-13. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
 
 ## 1. Authority, authorization and completion boundary
 
@@ -13,15 +13,17 @@ authorize releases, background installation or provider policy changes. The
 subsequent explicit request to start Stage 5 authorizes its implementation,
 verification and local commit over retained facts and read-only local context.
 
-R01–R07 and Stages 1–3 remain the completed initial increment. This document
-adds R08–R18 and Stages 4–10; it does not reopen or inflate the earlier completion
-claim. The initial increment's no-background/no-UI/no-release constraints applied
+R01–R07 and Stages 1–3 were accepted at the initial increment checkpoint. The
+October 13 real workflow-file promotion regression reopens Stage 1/R02 for repair;
+its historical verification is not proof the later boundary succeeded. This
+document adds R08–R18 and Stages 4–10. The initial increment's no-background/no-UI/no-release constraints applied
 to that increment. The corresponding future capabilities are now specified,
 not implemented by the specification task. The October 13 instruction to continue
 TailD authorizes remaining implementation, verification and commits through local
 release-readiness, preserving the explicit Stage 10 delivery boundary. Stage 6 is
-COMPLETE with the evidence in POLICY-READS.md; Stage 7 is the single ACTIVE
-implementation stage. Stages 8–9 are NOT STARTED. No public release,
+COMPLETE with the evidence in POLICY-READS.md; Stage 7 is COMPLETE under its
+recorded live-test waiver. Stage 1 is reopened as the single ACTIVE stage for R02;
+Stages 8–9 are NOT STARTED. No public release,
 installed-client replacement or updater activation is authorized by this continuation.
 
 The [stage ledger](IMPLEMENTATION-PLAN.md) maps every requirement to acceptance
@@ -113,6 +115,14 @@ The user additionally permits targeted improvements while retaining the same
 themed widgets and overall visual language. Pixel-identical reproduction is not
 required; readability, accessibility, interaction and truthful data-state changes
 are allowed without replacing the design system or weakening required workflows.
+
+Authorized visual amendment (2026-10-13): retain Portmaster's actual widget
+structure, layout and interactions, but shift colour tokens toward Tailscale's
+official palette. This supersedes a literal Portmaster colour match, not widget
+reuse. Use restrained warm-neutral surfaces and Tailscale blue (#4b70cc), with
+accessible semantic status colours rather than neon-green selection chrome.
+Keep native window chrome visually coherent with the content. TailD remains
+identified as the fork; visual familiarity does not assert official endorsement.
 
 ## 5. Incremental ingestion and history — R09
 
@@ -341,6 +351,18 @@ sleep/wake, network loss, provider denial and GlassWire stop/update produce corr
 states and conserved history. No duplicate collectors; no visible helper consoles;
 no changes to the VPN, firewall, GlassWire service or other installed clients.
 
+**Authorized acceptance amendment, 2026-10-13:** the user has no isolated Windows
+test host and explicitly waived forced live sleep/wake, network-loss and GlassWire
+stop/update tests on the active laptop. Do not disrupt that laptop to manufacture
+evidence. Their handling requirements remain in scope; verify native event wiring,
+bounded source unavailability/generation recovery and conserved history through
+the available isolated contracts. Physical/live disruptive scenarios are expressly
+untested, not passed, and are no longer Stage 7 advancement blockers. The user
+will report problems if these events naturally expose defects. This is a user
+waiver of those acceptance tests, not a claim that simulated events prove them
+or an unnamed required-work deferral. Live provider READ, denied/throttled-provider
+contracts, actual window lifecycle, ownership and other R14 checks remain required.
+
 ## 10. Security, privacy and resource boundaries — R14
 
 R14a (first persistence): user-owned analytics storage and exports have restrictive
@@ -529,7 +551,7 @@ authorization parks Stage 10; it does not make it COMPLETE.
 | 4 | Incremental source -> durable history -> local query; R09, R14a | COMPLETE |
 | 5 | Versioned correlation/context and metrics/query contracts; R10, R11, R08 metrics boundary | COMPLETE |
 | 6 | Remaining Control D READ/capability coverage; R12, R14b credential boundary | COMPLETE |
-| 7 | Opt-in continuous lifecycle and secure runtime; R13, remaining R14 | ACTIVE |
+| 7 | Opt-in continuous lifecycle and secure runtime; R13, remaining R14 | COMPLETE |
 | 8 | Portmaster-derived desktop layout/explorer/export; R08 layout, R15, R16 | NOT STARTED |
 | 9 | Production packaging and local release-readiness; R17, R18 pre-delivery reconciliation | NOT STARTED |
 | 10 | Authorized release, rollout, updater proof and final reconciliation; remaining R18 | NOT STARTED |

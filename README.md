@@ -1,11 +1,13 @@
 # TailD
 
 TailD is the public analytics-development fork of [Darkaxt/TailDNS](https://github.com/Darkaxt/TailDNS).
-It retains TailDNS main history and automatically merges checked TailDNS updates,
+It retains TailDNS main history and has a checked TailDNS inheritance workflow,
 including Android DNS improvements and the pinned shared core containing the
 Windows tray/UI port. GitHub permits only one native fork in this account's
 upstream network, so this is a history-preserving Git fork rather than a second
 GitHub fork badge.
+Automatic promotion of updates that modify inherited workflow files is currently
+being repaired; the latest exact checked candidate was fast-forwarded manually.
 
 The planned extension combines Control D policy/decision data with application
 identity and network-byte metrics. Control D and existing firewall products keep
@@ -44,6 +46,19 @@ persist/reopen/query passed; bounded DNS samples keep truncation and raw reasons
 explicit. No continuous runtime, installed analytics desktop or TailD release is
 implied. See [policy reads and credentials](docs/taild/POLICY-READS.md).
 
+Stage 7 now provides the verified opt-in owning-user collector, restricted
+read-only GlassWire pipe, authenticated local queries and actual collection
+control window. The window reuses Portmaster's Angular panel/toggle widgets with
+the user-requested Tailscale dark palette; WebView2/WinForms is only its native
+host. Autosave, pause/resume, window close/reopen and explicit stop are connected
+to the real runtime. Actual non-admin history/pipe/vault denial, served CSP,
+source-text escaping, disk-full recovery and live Control D READ are verified.
+Forced sleep/wake/network/GlassWire stop-update tests were explicitly waived on
+the active laptop, not reported as passing. This is source-build functionality,
+not an installed or released analytics client. See [runtime evidence and boundaries](docs/taild/CONTINUOUS-RUNTIME.md)
+and [desktop source/license notices](desktop/NOTICE.md). Analytics views remain
+Stage 8; packaging/readiness and delivery remain separate stages.
+
 - [TailD authoritative specification](docs/taild/SPECIFICATION.md)
 - [Remaining-product specification: ingestion, metrics, desktop and delivery](docs/taild/PRODUCT-SPECIFICATION.md)
 - [Pinned Portmaster layout and metrics source-design map](docs/taild/PORTMASTER-DESIGN.md)
@@ -63,6 +78,9 @@ promotes the checked Git commit to main. Conflicts or failed checks stop promoti
 with a failed GitHub run; passing updates are not left as unmerged candidates.
 Main is never force-pushed. Verification has no signing credentials and a separate
 write job only promotes the checked candidate. No release/deployment is automatic.
+The October 13 workflow-file permission regression is tracked in reopened Stage 1;
+do not interpret the intended promotion contract as current proof that the
+built-in workflow token can update inherited workflow files.
 
 Inherited TailDNS workflows are retained as source but disabled in TailD's GitHub
 settings. A newly inherited workflow requires review before promotion.

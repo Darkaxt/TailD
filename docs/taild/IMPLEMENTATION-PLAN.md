@@ -10,12 +10,13 @@ remain NOT STARTED at Stage 4 closure. The subsequent explicit Stage 5 request
 authorizes its implementation, verification and commit; Stage 5 is now COMPLETE
 and Stages 6–10 remained NOT STARTED at that checkpoint. The October 13 request
 to continue TailD authorizes remaining implementation through Stage 9. Stage 6
-is now COMPLETE and Stage 7 is the single ACTIVE stage. Stage 10 requires explicit delivery
+and Stage 7 are now COMPLETE. Stage 1 is reopened as the single ACTIVE stage for
+the observed R02 promotion regression before Stage 8 implementation. Stage 10 requires explicit delivery
 authority. No release or installed-client replacement is authorized here.
 
 ## Stage 1 — Public TailDNS derivative with automatic inheritance
 
-Status: **COMPLETE**. Requirements: R01–R05.
+Status: **ACTIVE**. Requirements: R01–R05.
 
 Acceptance: public lineage/ancestry; isolated inherited workflows; tested real-Git
 merge behavior; live TailDNS boundary and CI verification; preserved exact core
@@ -40,8 +41,17 @@ verified with real Git repositories, not a fabricated upstream commit.
 Remote main contains complete TailDNS ancestry and no other heads/release tags.
 Only taild-checks and taild-inherit are active; inherited workflows are explicitly
 disabled and default authority is read-only. No signing secrets or release exists.
-Remaining: none for this stage. No device/deployment verification is claimed.
-Blockers: none. Tracked deferrals: none.
+October 13 regression: the first real candidate containing an inherited workflow
+passed run 38382663145 but GITHUB_TOKEN could not promote that workflow file.
+The exact checked candidate was manually fast-forwarded with the existing
+workflow-capable login; automatic promotion remains unmet. Stage 1 is reopened
+after Stage 7 closure to repair this existing R02 requirement, not to expand scope.
+Remaining: repository-scoped workflow-capable promotion and real verification.
+Advancement blocker B02 (internal): the built-in token cannot update workflow
+files. Existing authorized repository-admin access is available; resolve with
+scoped automation authentication, not a broad personal login copied into CI.
+Do not exclude inherited workflow source or create releases as a workaround.
+No device/deployment verification is claimed. Tracked deferrals: none.
 
 ## Stage 2 — First read-only Control D data
 
@@ -328,7 +338,7 @@ Dependency: Stage 5 COMPLETE; history/context must be integrated into snapshots.
 
 ### Stage 7 — Opt-in continuous runtime and privilege boundary
 
-Status: **ACTIVE**. Requirements: R13 and remaining R14a–d.
+Status: **COMPLETE**. Requirements: R13 and remaining R14a–d.
 
 Objective: safely acquire and query data without manual developer commands.
 
@@ -340,17 +350,27 @@ Acceptance criteria:
   source incompatibility/staleness states and catch-up without timed cancellation.
 - Private history/credential isolation, authorized local query access, resource
   bounds, backpressure, disk-full behavior and redacted diagnostics.
-- Authorized real lifecycle tests for window closure, restart, sleep/wake,
-  source/provider outage and recovery; unauthorized-account/IPC/origin tests;
+- Authorized real lifecycle tests for window closure and restart; live provider
+  READ plus source/provider outage/recovery contracts; unauthorized-account/IPC/origin tests;
   unchanged VPN/DNS/firewall and no duplicate or visible-console helpers.
 
-Satisfied: none. Remaining: all criteria above.
-Advancement blocker B07 (internal): all four Stage 7 criteria remain unmet because
-the continuous owning-user runtime, authenticated privileged IPC/query boundary
-and their integrated lifecycle/security verification are not implemented. Resolve
-by implementing the specified complete acquisition/query lifecycle and inspecting
-the real Windows/security evidence. Stage 7 remains ACTIVE while these gaps are
-implementable; Stage 8 and dependent packaging cannot be complete before resolution.
+User-authorized October 13 amendment: skip forced live sleep/wake, network loss
+and GlassWire stop/update tests because no isolated Windows host is available.
+Native wiring and deterministic availability/generation contracts remain required;
+the waived physical/live scenarios stay explicitly untested. Natural user reports
+may trigger later bug fixes. This is not a required-work deferral or simulated pass.
+
+Verified integrated evidence and final criterion reconciliation are in
+[CONTINUOUS-RUNTIME.md](CONTINUOUS-RUNTIME.md). The protected real-source ->
+unelevated collector -> authenticated local query/restart workflow passes; native
+ownership, bounded lifecycle, HTTP authorization, deletion replay and SQLite FULL
+contracts pass. The actual Portmaster-derived/Tailscale-coloured control window,
+source-build launcher, actual other non-admin account and live Control D runtime
+are now verified. Actual served CSP, literal source text, native lifecycle and
+current runtime/history/query contracts pass. Every criterion above is satisfied
+under the explicit user waiver; no simulated physical test is claimed.
+Remaining: none. Blockers: none. Stage 8 remains NOT STARTED while the earlier
+R02 promotion regression is repaired in reopened Stage 1.
 Tracked deferrals: none.
 Dependency: Stage 6 COMPLETE; stages 4–6 data contracts remain enforced.
 Installing a service for live validation requires applicable live-test authority;
@@ -495,6 +515,12 @@ and the required live lifecycle matrix. No permanent service/startup task, clien
 replacement, provider write, updater change or release is implied. A privileged
 reader exists only to satisfy the verified source ACL boundary; it receives no
 provider credential or arbitrary SQL/path/shell operation.
+
+The actual R13 control window belongs to Stage 7 because window closure is an
+existing acceptance criterion. It may reuse the retrieved Portmaster themed panel
+and control primitives, with license/source notices before import. This is not
+Stage 8 analytics implementation: overview metrics, explorer, charts and exports
+remain NOT STARTED until Stage 7 closes. No criterion is moved merely to close it.
 
 The October 13 user instruction separately authorizes current Portmaster layout
 research now. The full Angular/shared-asset tree at bb6c444 is retrieved and its

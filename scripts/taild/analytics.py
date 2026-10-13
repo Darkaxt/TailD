@@ -35,7 +35,9 @@ SNAPSHOT_FIELDS={'node_id':str,'user_id':str,'resolver_endpoint':str,'backend_st
 
 
 class QueryError(RuntimeError):
-    pass
+    def __init__(self, message, *, code='invalid-query'):
+        self.code = code
+        super().__init__(message)
 
 
 def answer_metadata(raw):
@@ -202,7 +204,7 @@ class Analytics:
                 clause+=' AND scope=?'
                 params.append(scope[field])
             rows=self.store.db.execute('SELECT * FROM snapshots WHERE '+clause+' ORDER BY time,id LIMIT 100001', params).fetchall()
-            if len(rows)>100000: raise QueryError('Snapshot budget exceeded; narrow the selected scope')
+            if len(rows)>100000: raise QueryError('Snapshot budget exceeded; narrow the selected scope',code='resource-limit')
             result=[dict(json.loads(r['data']),id=r['id'],timestamp=r['time'],scope=r['scope'],observed_end=r['end']) for r in rows]
             return [r for r in result if (not scope.get('device') or r.get('node_id')==scope['device'])
                     and (not scope.get('endpoint') or r.get('resolver_endpoint' if kind=='context' else 'endpoint')==scope['endpoint'])]
@@ -219,7 +221,7 @@ class Analytics:
             (' LEFT JOIN applications app ON app.id=f.application' if kind=='traffic' else '')+
             ' WHERE '+clause+' ORDER BY f.time,f.source,f.identity'+(',f.ordinal' if kind=='dns' else '')+' LIMIT 100001', params).fetchall()
         if len(rows)>100000:
-            raise QueryError('Fact budget exceeded; narrow the UTC interval or source scope')
+            raise QueryError('Fact budget exceeded; narrow the UTC interval or source scope',code='resource-limit')
         facts=[]
         for row in rows:
             metadata=json.loads(row['metadata'])

@@ -10,20 +10,47 @@ import glasswire
 import history
 
 
-def dns_windows(store, scope, endpoint, start, end, fetch, *, max_slices=1024):
+def dns_windows(store, scope, endpoint, start, end, fetch, *, max_slices=1024, checkpoint=None,
+                defer_budget=False, resume_pending=None):
     """Deterministic UTC subdivision; a capped one-second slice stays incomplete.
 
     fetch is the existing GET-only boundary in the CLI. Each returned slice owns
     its entire multiset, not an append offset. No provider call holds a store tx.
     """
     a, b = history.bounds(start, end)
+    original_a = a
     floor = store.db.execute('SELECT expiry_floor FROM settings').fetchone()[0]
     if a < floor:
         store.record_gap('dns',scope,history.utc(a),history.utc(min(b,floor)),
                          'source-expired',endpoint=endpoint)
         a = min(b,floor)
-    pending, attempts = [(a,b)] if a<b else [], 0
+    if resume_pending is None:
+        pending = [(a,b)] if a<b else []
+    else:
+        if not defer_budget or not isinstance(resume_pending,list) or len(resume_pending)>1024:
+            raise history.HistoryError('Invalid bounded DNS continuation')
+        pending = []
+        for interval in resume_pending:
+            if not isinstance(interval,list) or len(interval)!=2:
+                raise history.HistoryError('Invalid bounded DNS continuation')
+            x,y = history.bounds(*interval)
+            if x<original_a or y>b:
+                raise history.HistoryError('DNS continuation leaves its captured root window')
+            if max(x,a)<y:
+                pending.append((max(x,a),y))
+    attempts = 0
+    def finish(interrupted=False):
+        value = {'slices_read':attempts}
+        if defer_budget:
+            value['pending_windows'] = [[history.utc(x),history.utc(y)] for x,y in pending]
+        if interrupted:
+            value['interrupted'] = True
+        return value
     while pending:
+        if checkpoint is not None and not checkpoint():
+            return finish(True)
+        if defer_budget and attempts >= max_slices:
+            break  # Scheduling budget is not a claim of an irreducible source cap.
         x,y = pending.pop()
         left,right = history.utc(x),history.utc(y)
         if attempts >= max_slices:
@@ -44,11 +71,12 @@ def dns_windows(store, scope, endpoint, start, end, fetch, *, max_slices=1024):
                 pending.extend([(midpoint,y),(x,midpoint)])
             else:
                 store.record_gap('dns',scope,left,right,'irreducibly-capped',endpoint=endpoint)
-    return {'slices_read': attempts}
+    return finish()
 
 
-def traffic_window(store, scope, start, end, directory=None, limit=10000):
-    catalog = glasswire.discover(directory)
+def traffic_window(store, scope, start, end, directory=None, limit=10000, *, reader=None, checkpoint=None):
+    source = reader or glasswire
+    catalog = source.discover(directory)
     results = []
     a,b = history.bounds(start,end)
     floor = store.db.execute('SELECT expiry_floor FROM settings').fetchone()[0]
@@ -63,6 +91,8 @@ def traffic_window(store, scope, start, end, directory=None, limit=10000):
             store.record_gap('traffic',scope,history.utc(a),history.utc(min(b,earliest)),
                              'source-expired',generation={'catalog':catalog['directory']})
     for index,entry in enumerate(catalog['databases']):
+        if checkpoint is not None and not checkpoint():
+            return {'slice_attempts':len(results),'interrupted':True}
         if not entry['present']:
             left=max(a,entry['timestamp']*1000000)
             right=min(b,catalog['databases'][index+1]['timestamp']*1000000) if index+1<len(catalog['databases']) else b
@@ -70,10 +100,19 @@ def traffic_window(store, scope, start, end, directory=None, limit=10000):
                 store.record_gap('traffic',scope,history.utc(left),history.utc(right),'source-expired',
                                  generation={'missing_catalog_path': entry['path']})
             continue
-        pending,attempts = [(a,b)] if a<b else [],0
-        generation = {'traffic_database':glasswire.physical_identity(entry['path']),
-                      'application_database':glasswire.physical_identity(catalog['main_database'])}
+        # The authenticated reader admits at most a day per request. Split the
+        # retained horizon deterministically; never use a deadline or a guessed
+        # immutable cutoff to avoid reconciling mutable source history.
+        if reader is not None:
+            pending = [(x,min(b,x+86400*1000000)) for x in range(a,b,86400*1000000)][::-1]
+        else:
+            pending = [(a,b)] if a<b else []
+        attempts = 0
+        generation = {'traffic_database':source.physical_identity(entry['path']),
+                      'application_database':source.physical_identity(catalog['main_database'])}
         while pending:
+            if checkpoint is not None and not checkpoint():
+                return {'slice_attempts':len(results),'interrupted':True}
             x,y = pending.pop()
             left,right = history.utc(x),history.utc(y)
             if attempts >= 1024:
@@ -81,7 +120,7 @@ def traffic_window(store, scope, start, end, directory=None, limit=10000):
                 continue
             attempts += 1
             try:
-                data = glasswire.read_traffic(entry['path'],catalog['main_database'],left,right,limit)
+                data = source.read_traffic(entry['path'],catalog['main_database'],left,right,limit)
                 data['source_version'] = catalog['version']
                 data['catalog_record'] = entry
                 generation = data['generation']

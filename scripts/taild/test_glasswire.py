@@ -36,10 +36,16 @@ def string(field, value):
 class GlassWireTest(unittest.TestCase):
     def setUp(self):
         self.assertIsNotNone(glasswire, 'Read-only GlassWire reader is not implemented')
-        self.tmp = tempfile.TemporaryDirectory(prefix='taild-reader-test-',
-                                              dir='D:/Temp' if Path('D:/Temp').is_dir() else None)
-        self.addCleanup(self.tmp.cleanup)
-        self.root = Path(self.tmp.name)
+        if hasattr(self,'fixture_root'):
+            # Explicit integration evidence is retained for transactional cleanup,
+            # not deleted by TemporaryDirectory behind the verifier's manifest.
+            self.root = Path(self.fixture_root)
+            self.root.mkdir(parents=True,exist_ok=False)
+        else:
+            self.tmp = tempfile.TemporaryDirectory(prefix='taild-reader-test-',
+                                                  dir='D:/Temp' if Path('D:/Temp').is_dir() else None)
+            self.addCleanup(self.tmp.cleanup)
+            self.root = Path(self.tmp.name)
         self.main = self.root / 'glasswire.db'
         self.stats = self.root / 'glasswire_stats_1sec_1791331200.db'
         self.address = integer(1, 1) + integer(2, int.from_bytes(ipaddress.ip_address('198.51.100.12').packed, 'little'))

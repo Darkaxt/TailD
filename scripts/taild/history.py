@@ -78,7 +78,11 @@ def private_directory(path):
                       'allow=@($a.Access | Where-Object AccessControlType -eq Allow | '
                       'ForEach-Object { $_.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value })} '
                       '| ConvertTo-Json -Compress')
-            targets = [path] + [path / name for name in ('history.sqlite3','history.sqlite3-journal','history.sqlite3-wal','history.sqlite3-shm') if (path/name).exists()]
+            private_names = ('history.sqlite3','history.sqlite3-journal','history.sqlite3-wal','history.sqlite3-shm',
+                'runtime.json','runtime.pending.json','runtime-status.json','runtime-status.pending.json',
+                'runtime-dns-progress.json','runtime-dns-progress.pending.json',
+                'runtime-provider-limit.json','runtime-provider-limit.pending.json')
+            targets = [path] + [path / name for name in private_names if (path/name).exists()]
             for target in targets:
                 if target.is_symlink() or target.stat().st_nlink > 1:
                     raise HistoryError('History cannot use linked files')

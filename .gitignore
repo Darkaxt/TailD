@@ -57,3 +57,10 @@ tailscale.version
 
 # local tmp folder
 .tmp/
+
+# TailD desktop generated dependencies and local builds
+/desktop/node_modules/
+/desktop/.angular/
+/desktop/dist/
+/desktop/native/bin/
+/desktop/native/obj/
