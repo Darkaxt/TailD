@@ -209,6 +209,8 @@ def update_registration(data):
 
 def rollback(candidate=None):
     app=app_directory();previous=app.with_name('TailD.rollback')
+    if Path(sys.executable).resolve().is_relative_to(app):
+        raise manifest.PackageError('rollback-requires-detached-installer-helper')
     ensure_quiescent(app)
     old=manifest.verify(previous,installed=True)
     current=manifest.verify(candidate) if candidate else manifest.verify(app,installed=True)

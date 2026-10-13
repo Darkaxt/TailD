@@ -44,6 +44,12 @@ class PackageManifestTest(unittest.TestCase):
         self.assertIn("'check-uninstall'",initialize)
         self.assertIn('CurUninstallStep = usUninstall',source)
 
+    def test_rollback_refuses_to_overwrite_its_own_loaded_helper(self):
+        with patch.object(installer,'app_directory',return_value=self.root),\
+             patch.object(sys,'executable',str(self.root/'TailD.Setup.exe')),\
+             self.assertRaisesRegex(manifest.PackageError,'detached'):
+            installer.rollback()
+
     def setUp(self):
         if os.name=='nt':
             base=os.environ.get('TAILD_PACKAGE_TEST_OUTPUT')

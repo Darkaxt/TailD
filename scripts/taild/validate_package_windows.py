@@ -66,7 +66,7 @@ def service_snapshot():
 
 
 def acceptance(root,compiler,repo):
-    import pywintypes,win32api,win32cred,win32security,win32service
+    import pywintypes,win32api,win32cred,win32security,win32service,win32con
     import history,reader,packaged
     hosted_only()
     app=installer.app_directory()
@@ -97,11 +97,13 @@ def acceptance(root,compiler,repo):
         report['checks'].append(name)
         report_path.write_text(json.dumps(report,indent=2),encoding='utf-8')
         print('Verified: '+name,flush=True)
-    def helper(operation,*arguments,expected=0):
+    def helper(operation,*arguments,expected=0,detached=False):
         diagnostic=root/('helper-'+str(len(list(root.glob('helper-*.json'))))+'.json')
-        command=[app/'TailD.Setup.exe',operation,*arguments,'--result',diagnostic]
-        code=run(command,expected)
+        executable=root/'candidate-2'/'payload'/'TailD'/'TailD.Setup.exe' if detached else app/'TailD.Setup.exe'
+        command=[executable,operation,*arguments,'--result',diagnostic]
+        code=subprocess.run([str(value) for value in command],check=False).returncode
         if diagnostic.exists():print(diagnostic.read_text(encoding='utf-8'),flush=True)
+        if expected==0 and code!=0 or expected!=0 and code==0:raise AssertionError('Unexpected helper result '+str(code))
         return code
     setups=[]
     try:
@@ -146,7 +148,9 @@ def acceptance(root,compiler,repo):
         helper('prepare','--candidate',root/'candidate-1'/'payload'/'TailD',expected=1)
         assert manifest.verify(app,public,True)['subversion']==2
         check('replay-rejected-without-installed-mutation')
-        helper('rollback')
+        helper('rollback',expected=1)
+        assert manifest.verify(app,public,True)['subversion']==2
+        helper('rollback',detached=True)
         assert manifest.verify(app,public,True)['subversion']==1
         assert json.loads((app/'installation.json').read_text())['highest_subversion']==2
         helper('prepare','--candidate',root/'candidate-2'/'payload'/'TailD',expected=1)
@@ -173,7 +177,7 @@ def acceptance(root,compiler,repo):
         win32cred.CredDelete(signing.TARGET,win32cred.CRED_TYPE_GENERIC)
         manager=win32service.OpenSCManager(None,None,win32service.SC_MANAGER_CONNECT)
         try:
-            service=win32service.OpenService(manager,'Tailscale',win32service.DELETE)
+            service=win32service.OpenService(manager,'Tailscale',win32con.DELETE)
             try:win32service.DeleteService(service)
             finally:service.Close()
         finally:manager.Close()

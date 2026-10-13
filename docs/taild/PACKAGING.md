@@ -83,3 +83,10 @@ No production signing secret, protected release environment, publication job or
 updater activation is created by Stage 9. Its real Windows workflow exercises the
 build/sign/package boundary with an explicitly disposable fixture key instead.
 Public source and pinned notices accompany any later GPL frontend distribution.
+
+Recovery runs the verified helper from the external package's payload directory,
+never from the installation it will restore. Its frozen libraries must also be
+outside the installed directory. The normal installer already extracts this
+complete external helper before making changes; manual rollback follows the same
+rule. Installed-helper rollback is refused before service/file changes, rather
+than trying to replace its own loaded executable or weakening Windows file locks.
