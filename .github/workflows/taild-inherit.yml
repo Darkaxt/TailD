@@ -45,6 +45,8 @@ jobs:
           git fetch --no-tags taildns main:refs/remotes/taildns/main
           python3 -B scripts/taild/inherit.py --output "$GITHUB_OUTPUT"
       - name: Check merged TailD and inherited contracts
+        env:
+          TAILD_PACKAGE_TEST_OUTPUT: ${{ runner.temp }}/taild-contract-fixtures
         run: |
           set -euo pipefail
           python3 -m pip install 'cryptography==50.0.2'

@@ -1,0 +1,212 @@
+name: TailD signed Windows release
+
+on:
+  workflow_dispatch:
+    inputs:
+      sequence:
+        description: Monotonic TailD subversion appended to the actual inherited upstream version
+        type: string
+        required: true
+      publish:
+        description: Publish the verified normal release (false builds a private release candidate)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: taild-signed-windows-release
+  cancel-in-progress: false
+
+jobs:
+  isolated-installer:
+    if: github.repository == 'Darkaxt/TailD' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/taild-package-checks.yml
+
+  build:
+    if: github.repository == 'Darkaxt/TailD' && github.ref == 'refs/heads/main'
+    runs-on: windows-2025
+    env:
+      SEQUENCE: ${{ inputs.sequence }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Validate new immutable release identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          if($env:SEQUENCE -notmatch '^[1-9][0-9]*$' -or [uint64]$env:SEQUENCE -gt 65535){throw 'Invalid TailD subversion'}
+          $refs=gh api 'repos/Darkaxt/TailD/git/matching-refs/tags/windows-v' | ConvertFrom-Json
+          if($LASTEXITCODE){throw 'Cannot verify existing release sequences'}
+          foreach($ref in $refs){
+            if($ref.ref -match '^refs/tags/windows-v[0-9]+\.[0-9]+\.[0-9]+\+([1-9][0-9]*)$' -and [uint64]$Matches[1] -ge [uint64]$env:SEQUENCE){throw 'Subversion is already reserved or older than a release'}
+          }
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.14.7'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.13.0'
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: '10.0.401'
+      - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b
+        with:
+          go-version: '1.27.2'
+          cache: false
+      - name: Install locked build-only dependencies
+        shell: pwsh
+        run: |
+          python -m venv "$env:RUNNER_TEMP/build-env"
+          & "$env:RUNNER_TEMP/build-env/Scripts/python.exe" -m pip install -r desktop/packaging-requirements.txt
+          if($LASTEXITCODE){throw 'Build dependencies failed'}
+      - name: Verify complete backend and delivery contracts
+        shell: pwsh
+        run: |
+          $env:TAILD_PACKAGE_TEST_OUTPUT="$env:RUNNER_TEMP/contracts"
+          & "$env:RUNNER_TEMP/build-env/Scripts/python.exe" -B -m unittest discover -s scripts/taild -p 'test_*.py' -v
+          if($LASTEXITCODE){throw 'Product contracts failed'}
+      - name: Build the complete clean production payload without signing credentials
+        shell: pwsh
+        run: |
+          ./scripts/taild/build_package.ps1 -Output "$env:RUNNER_TEMP/build" -Python "$env:RUNNER_TEMP/build-env/Scripts/python.exe" -Subversion ([int]$env:SEQUENCE) -IncludeConnectivity
+          if(-not $?){throw 'Production build failed'}
+          $provenance=Get-Content -Raw "$env:RUNNER_TEMP/build/provenance.json" | ConvertFrom-Json
+          if($provenance.source_dirty -or $provenance.fixture_trust -or -not $provenance.connectivity -or $provenance.source_commit -ne $env:GITHUB_SHA){throw 'Production provenance invalid'}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: taild-unsigned-build
+          path: |
+            ${{ runner.temp }}/build/payload/
+            ${{ runner.temp }}/build/provenance.json
+          if-no-files-found: error
+
+  sign-payload:
+    needs: [isolated-installer, build]
+    runs-on: ubuntu-latest
+    environment: taild-release
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          # Reviewed signer tooling is independently immutable. Never import or
+          # execute application/candidate files downloaded from build artifacts.
+          ref: 27b58cf83f40e4788f18a5c6a96940dc1ae45ead
+          path: trusted
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: taild-unsigned-build
+          path: candidate
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.14.7'
+      - run: python -m pip install 'cryptography==50.0.2'
+      - name: Sign exact complete source/core/payload inventories
+        env:
+          TAILD_MANIFEST_SIGNING_SEED_BASE64: ${{ secrets.TAILD_MANIFEST_SIGNING_SEED_BASE64 }}
+          SOURCE: ${{ github.sha }}
+          SEQUENCE: ${{ inputs.sequence }}
+        run: python -B trusted/scripts/taild/release_signer.py package --root candidate --source "$SOURCE" --sequence "$SEQUENCE"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: taild-signed-payload
+          path: candidate/
+          if-no-files-found: error
+
+  package:
+    needs: sign-payload
+    runs-on: windows-2025
+    env:
+      SEQUENCE: ${{ inputs.sequence }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: taild-signed-payload
+          path: candidate
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.14.7'
+      - name: Verify signed payload and compile the ordinary installer without secrets
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          python -m pip install 'cryptography==50.0.2'
+          if($LASTEXITCODE){throw 'Verification dependency failed'}
+          python -B -c "import sys; from pathlib import Path; sys.path.insert(0,'scripts/taild'); import package_manifest; package_manifest.verify(Path('candidate/payload/TailD'))"
+          if($LASTEXITCODE){throw 'Signed payload verification failed'}
+          $download="$env:RUNNER_TEMP/innosetup.exe"
+          Invoke-WebRequest 'https://github.com/jrsoftware/issrc/releases/download/is-7_1_0/innosetup-7.1.0-x64.exe' -OutFile $download
+          if((Get-FileHash $download -Algorithm SHA256).Hash.ToLowerInvariant() -ne '0362a383ed217d4c4239b5933866dd96d3eb2102737da92f80f6057a4b40df2f'){throw 'Compiler digest invalid'}
+          if((Get-AuthenticodeSignature $download).Status -ne 'Valid'){throw 'Compiler signature invalid'}
+          $process=Start-Process -FilePath $download -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/CURRENTUSER',"/DIR=$env:RUNNER_TEMP/inno") -WindowStyle Hidden -Wait -PassThru
+          if($process.ExitCode){throw 'Compiler installation failed'}
+          $data=Get-Content -Raw candidate/payload/TailD/taild-package.json | ConvertFrom-Json
+          & "$env:RUNNER_TEMP/inno/ISCC.exe" /Q "/DPayload=$PWD/candidate/payload/TailD" "/DProductVersion=$($data.version)" "/DOutputPath=$PWD/release" desktop/installer.iss
+          if($LASTEXITCODE){throw 'Installer compilation failed'}
+          Copy-Item -LiteralPath candidate/payload/TailD/taild-package.json,candidate/payload/TailD/taild-package.json.sig,candidate/provenance.json -Destination release
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: taild-installer
+          path: release/
+          if-no-files-found: error
+
+  sign-installer:
+    needs: package
+    runs-on: ubuntu-latest
+    environment: taild-release
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 27b58cf83f40e4788f18a5c6a96940dc1ae45ead
+          path: trusted
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: taild-installer
+          path: release
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.14.7'
+      - run: python -m pip install 'cryptography==50.0.2'
+      - name: Sign installer digest and exact component identity, not candidate code
+        env:
+          TAILD_MANIFEST_SIGNING_SEED_BASE64: ${{ secrets.TAILD_MANIFEST_SIGNING_SEED_BASE64 }}
+          SOURCE: ${{ github.sha }}
+          SEQUENCE: ${{ inputs.sequence }}
+        run: python -B trusted/scripts/taild/release_signer.py installer --root release --source "$SOURCE" --sequence "$SEQUENCE"
+      - name: Public checksums
+        run: (cd release && sha256sum * > SHA256SUMS)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: taild-release
+          path: release/
+          if-no-files-found: error
+
+  publish:
+    needs: sign-installer
+    if: inputs.publish == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: taild-release
+          path: release
+      - name: Publish only this verified immutable normal release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version=$(jq -r .version release/taild-release.json)
+          test "$(jq -r .source_commit release/taild-release.json)" = "$GITHUB_SHA"
+          tag="windows-v$version"
+          gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" -f "ref=refs/tags/$tag" -f "sha=$GITHUB_SHA" >/dev/null
+          gh release create "$tag" release/* --repo "$GITHUB_REPOSITORY" --verify-tag --title "TailD $version for Windows" --notes "Complete TailD Windows installer: inherited TailDNS connectivity and Portmaster-derived local analytics with read-only Control D/GlassWire integration. In-place migration preserves the Tailscale service and authenticated node. Ed25519-signed payload and installer digest; executables and installer are not Authenticode-signed. Windows x64 and Evergreen WebView2 required. GlassWire compatibility verified against 3.10.1138. Source: $GITHUB_SHA. Independent download verification precedes deployment."
