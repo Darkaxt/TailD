@@ -34,6 +34,8 @@ def launch_arguments(directory,local_data,sid,cli):
 
 def main(argv=None):
     arguments=list(sys.argv[1:] if argv is None else argv)
+    if not arguments and getattr(sys,'frozen',False) and Path(sys.executable).name=='TailD.Background.exe':
+        arguments=['background']
     if arguments and arguments[0]=='collector':
         return runtime.main(arguments[1:])
     if arguments and arguments[0]=='reader':
@@ -41,6 +43,21 @@ def main(argv=None):
     if arguments==['reader-service']:
         import reader_service
         return reader_service.main()
+    if arguments==['background']:
+        directory=installation_directory()
+        metadata=json.loads((directory/'installation.json').read_bytes())
+        if metadata['owner_sid']!=reader.current_sid():return
+        home=Path(os.environ['LOCALAPPDATA'])/'TailD'/'history'
+        saved=home/'runtime.json'
+        if not saved.exists():return
+        config=runtime.settings(reader.decode_message(saved.read_bytes()))
+        if not config['traffic'] and not config['dns']:return
+        sid=reader.current_sid();instance='owner-'+history.digest([sid,str(home).casefold()])[:32]
+        cli=directory.parent/'tailscale.exe'
+        # Runtime's owning-user mutex refuses a duplicate collector. Retained
+        # opt-in settings are read unchanged; no UI or new startup task appears.
+        return runtime.main(['run','--history',str(home),'--reader-instance',reader_instance(sid),
+            '--instance',instance,'--cli',str(cli)])
     if arguments and arguments[0]=='desktop':
         # Explicit arguments support isolated package verification; the normal
         # shortcut below uses only installed deterministic paths.
@@ -58,7 +75,8 @@ if __name__=='__main__':
     except Exception:
         # Windowed bootloaders have no stdout/stderr. No exception traceback,
         # source paths, account content or credential is exposed in a dialog.
-        ctypes.windll.user32.MessageBoxW(None,
-            'TailD could not start. Check the owning-user installation and reopen TailD.',
-            'TailD',0x10)
+        if Path(sys.executable).name!='TailD.Background.exe':
+            ctypes.windll.user32.MessageBoxW(None,
+                'TailD could not start. Check the owning-user installation and reopen TailD.',
+                'TailD',0x10)
         raise SystemExit(1)

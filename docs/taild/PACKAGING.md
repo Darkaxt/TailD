@@ -1,7 +1,8 @@
 # Stage 9 local packaging contract
 
-Stage 9 is COMPLETE for local release-readiness; no public release exists. It has no authority to
-replace the active client or activate an updater. Stage 8's native UI acceptance
+Stage 9 is COMPLETE for local release-readiness; no public release exists. Its
+original scope did not authorize replacing the active client or activating an
+updater. Stage 10 is now explicitly authorized and ACTIVE. Stage 8's native UI acceptance
 is recorded separately in [DESKTOP-ANALYTICS.md](DESKTOP-ANALYTICS.md).
 
 The first required packaging path reuses the verified Python implementation,
@@ -156,3 +157,54 @@ Private local installer/payload and verification evidence are retained outside
 GitHub. Superseded outputs are removed through reviewed exact-file cleanup. No
 signing identity, requested deliverable, source history or installed client is
 part of that cleanup.
+
+## Stage 10 integrated delivery contract — ACTIVE
+
+The October 13 explicit "go ahead" authorizes publication, in-place Windows
+migration and updater activation. The Stage 9 analytics-only installer is not
+the deliverable for that migration. A v2 package additionally binds the matching
+inherited daemon, CLI, resolver, tray, core installer, core provenance/notices and
+dedicated signed core manifest in its complete signed inventory.
+
+`core_overlay.py` owns a narrowly reviewed build overlay against exact inherited
+core `de6111f507aea869fbf6d4c7b8f2419a79150496`. Its distribution labels, dedicated
+ProgramData ownership and fixed signed-installer dispatcher change; DNS, LocalAPI,
+connectivity controls, icons and the existing Tailscale service/executable paths
+remain inherited. The existing TailDNS run-value name is retained so the migration
+does not create competing startup entries. A changed core pin deliberately requires
+overlay review rather than applying unchecked string edits to new source.
+Go forbids overlays within GOMODCACHE, and its linker reads COFF resources from
+the physical source path. Build tooling therefore exports the verified module ZIP
+into exact task-owned scratch and generates the installer resource there; it never
+edits the shared module cache or maintained TailDNS/core repositories.
+
+`delivery.py` journals signed old/new package identities before mutation, then
+coordinates analytics backup/extraction, inherited connectivity activation, reader
+setup and user preference restoration. The external verified helper owns recovery.
+An interrupted extraction/activation is recovered from the journal and verified
+immediate-predecessor records, preserving the anti-replay floor. Manual core update
+rollback now restores the preceding update rather than silently returning to the
+original migration. Node keys and provider configuration are never copied or edited.
+
+The frozen collector exposes only an owner/instance-bound maintenance-stop event
+to its owner, SYSTEM and Administrators. Updating signals a graceful stop, closes
+the owned analytics window and waits for exact process exits; no forced collector
+kill, arbitrary sleep or deadline substitutes for transaction completion. The
+installer waits for the exact downloading helper PID/start identity to exit before
+replacing loaded libraries. A windowless background entry resumes only the recorded
+owning user's already-enabled collection; it neither opts in nor opens a window.
+
+The channel accepts only a normal release from Darkaxt/TailD, its exact versioned
+asset URL and a pinned-key envelope binding installer size/hash, architecture,
+source/core identities and complete package-manifest hash. A partial download is
+never executable; replay, upstream downgrade, tamper and wrong-repository assets
+are refused. HTTP inactivity limits stay at the transport boundary only.
+
+Focused local diagnostics currently verify these signature/path/version contracts,
+journal recovery with the SCM boundary isolated, actual Windows stop-event isolation,
+unchanged runtime lifecycle contracts and the overlaid native tray/update/installer
+contracts. These are not yet acceptance of the full production installer or real
+authenticated migration. The protected signing/publication workflow, complete
+current-payload Windows checks, public download, live production analytics and
+real update/rollback remain Stage 10 advancement blockers. No release or installation
+has occurred during this implementation checkpoint.

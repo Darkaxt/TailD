@@ -10,6 +10,8 @@ owner_pyz=PYZ(owner.pure)
 setup_pyz=PYZ(setup.pure)
 app=EXE(owner_pyz,owner.scripts,[],exclude_binaries=True,name='TailD',console=False,
     disable_windowed_traceback=True,upx=False,version=os.environ['TAILD_VERSION_RESOURCE'])
+background=EXE(owner_pyz,owner.scripts,[],exclude_binaries=True,name='TailD.Background',console=False,
+    disable_windowed_traceback=True,upx=False,version=os.environ['TAILD_VERSION_RESOURCE'])
 helper=EXE(setup_pyz,setup.scripts,[],exclude_binaries=True,name='TailD.Setup',console=False,
     disable_windowed_traceback=True,upx=False,version=os.environ['TAILD_VERSION_RESOURCE'])
-COLLECT(app,helper,owner.binaries,setup.binaries,owner.datas,setup.datas,name='TailD',upx=False)
+COLLECT(app,background,helper,owner.binaries,setup.binaries,owner.datas,setup.datas,name='TailD',upx=False)

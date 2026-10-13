@@ -23,7 +23,7 @@ PrivilegesRequired=admin
 CloseApplications=no
 RestartApplications=no
 AllowCancelDuringInstall=no
-SetupMutex=Darkaxt.TailD.Setup
+SetupMutex=Global\Darkaxt.TailD.Setup
 WizardStyle=modern dynamic
 OutputDir={#OutputPath}
 OutputBaseFilename=TailD-{#ProductVersion}-windows-amd64-setup
@@ -58,7 +58,7 @@ begin
 end;
 
 function PrepareToInstall(var NeedsRestart: Boolean): String;
-var OwnerExitCode: Integer;
+var OwnerExitCode: Integer; ParentPID, ParentStart: String;
 begin
   Result := '';
   if CompareText(ExpandConstant('{app}'), ExpandConstant('{commonpf64}\Tailscale\TailD')) <> 0 then begin
@@ -67,9 +67,18 @@ begin
   end;
   ExtractTemporaryFiles('{app}\*');
   Candidate := ExpandConstant('{tmp}\') + '{app}';
+  ParentPID := ExpandConstant('{param:TAILDPARENTPID|}');
+  ParentStart := ExpandConstant('{param:TAILDPARENTSTART|}');
+  if (ParentPID <> '') or (ParentStart <> '') then
+    if not Helper(Candidate + '\TailD.Setup.exe', 'wait-parent --parent-pid ' + ParentPID + ' --parent-start ' + ParentStart) then begin
+      Result := 'Could not verify that the previous updater has exited.';
+      exit;
+    end;
   if OwnerFile = '' then begin
     OwnerFile := ExpandConstant('{tmp}\taild-original-owner.txt');
-    if not ExecAsOriginalUser(Candidate + '\TailD.Setup.exe', 'owner --owner-file "' + OwnerFile + '"', '', SW_HIDE, ewWaitUntilTerminated, OwnerExitCode) then begin
+    if ExpandConstant('{param:TAILDAUTO|0}') = '1' then begin
+      if Helper(Candidate + '\TailD.Setup.exe', 'owner-installed --owner-file "' + OwnerFile + '"') then OwnerExitCode := 0 else OwnerExitCode := 1;
+    end else if not ExecAsOriginalUser(Candidate + '\TailD.Setup.exe', 'owner --owner-file "' + OwnerFile + '"', '', SW_HIDE, ewWaitUntilTerminated, OwnerExitCode) then begin
       OwnerFile := '';
       Result := 'Could not identify the original owning account.';
       exit;
@@ -81,7 +90,7 @@ begin
     end;
   end;
   if not Helper(Candidate + '\TailD.Setup.exe', 'prepare --candidate "' + Candidate + '" --owner-file "' + OwnerFile + '"') then begin
-    Result := 'Package validation or preparation failed. Close TailD and explicitly stop collection before upgrading. Existing Tailscale connectivity is unchanged.';
+    Result := 'Package validation or preparation failed. Retain the installer log and verified recovery payload; no successful migration is claimed.';
     exit;
   end;
   Prepared := True;
@@ -90,8 +99,8 @@ end;
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if CurStep = ssPostInstall then begin
-    if not Helper(Candidate + '\TailD.Setup.exe', 'finish --owner-file "' + OwnerFile + '"') then
-      RaiseException('TailD reader setup failed; previous analytics binaries will be restored where available.');
+    if not Helper(Candidate + '\TailD.Setup.exe', 'finish --candidate "' + Candidate + '" --owner-file "' + OwnerFile + '"') then
+      RaiseException('TailD setup failed; the verified external helper will recover the prior connectivity and analytics installation.');
     Finished := True;
   end;
 end;

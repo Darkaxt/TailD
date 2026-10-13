@@ -218,13 +218,13 @@ def update_registration(data):
         winreg.SetValueEx(key,'DisplayName',0,winreg.REG_SZ,'TailD version '+data['version'])
 
 
-def rollback(candidate=None):
+def rollback(candidate=None,data=None):
     app=app_directory();previous=app.with_name('TailD.rollback')
     if Path(sys.executable).resolve().is_relative_to(app):
         raise manifest.PackageError('rollback-requires-detached-installer-helper')
     ensure_quiescent(app)
     old=manifest.verify(previous,installed=True)
-    current=manifest.verify(candidate) if candidate else manifest.verify(app,installed=True)
+    current=data if data is not None else manifest.verify(candidate) if candidate else manifest.verify(app,installed=True)
     metadata=json.loads(((app/'installation.json') if (app/'installation.json').exists() else previous/'installation.json').read_text())
     highest=max(metadata.get('highest_subversion',0),current['subversion'])
     reader_stop()
@@ -250,10 +250,10 @@ def rollback(candidate=None):
     reader_start(app,json.loads((app/'installation.json').read_text())['owner_sid'])
 
 
-def abort(candidate):
+def abort(candidate,data=None):
     app=app_directory()
-    if app.with_name('TailD.rollback').exists():return rollback(candidate)
-    data=manifest.verify(candidate);ensure_quiescent(app);reader_stop(remove=True)
+    if app.with_name('TailD.rollback').exists():return rollback(candidate,data)
+    data=data if data is not None else manifest.verify(candidate);ensure_quiescent(app);reader_stop(remove=True)
     # Fresh failed extraction: only remove candidate members whose current
     # bytes still match the signed input. Unknown or changed files survive.
     for row in data['files']:
@@ -268,6 +268,10 @@ def abort(candidate):
     for name in (manifest.MANIFEST,manifest.SIGNATURE,'installation.json','installation.pending.json'):
         path=app/name
         if path.exists():manifest.ordinary(path);path.unlink()
+    for directory in sorted((p for p in app.rglob('*') if p.is_dir()),key=lambda p:len(p.parts),reverse=True):
+        manifest.ordinary(directory)
+        if not any(directory.iterdir()):directory.rmdir()
+    if app.exists() and not any(app.iterdir()):app.rmdir()
 
 
 def check_uninstall():
@@ -304,22 +308,52 @@ def remove_history():
 
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('operation',choices=('owner','verify','prepare','finish','stop','remove-reader','rollback','abort','remove-history','check-uninstall','uninstall'))
+    parser.add_argument('operation',choices=('owner','owner-installed','verify','prepare','finish','stop','remove-reader','rollback','abort','remove-history','check-uninstall','uninstall','update','wait-parent','recover'))
     parser.add_argument('--candidate',type=Path);parser.add_argument('--owner');parser.add_argument('--owner-file',type=Path)
     parser.add_argument('--delete-history',action='store_true')
+    parser.add_argument('--parent-pid',type=int);parser.add_argument('--parent-start',type=int)
     args=parser.parse_args(argv)
     if args.operation=='owner':
         import reader
-        with args.owner_file.open('x',encoding='utf-8') as f:f.write(reader.current_sid())
+        with args.owner_file.open('x',encoding='utf-8') as f:json.dump({'owner_sid':reader.current_sid(),'local_data':str(known_folder(0x1c))},f)
         return
     if args.operation=='verify':manifest.verify(args.candidate);return
     import win32security
     if not ctypes.windll.shell32.IsUserAnAdmin():raise manifest.PackageError('administrator-required')
+    if args.operation=='owner-installed':
+        import updater
+        data=updater.owner()
+        with args.owner_file.open('x',encoding='utf-8') as f:json.dump({'owner_sid':data['owner_sid'],'local_data':data['local_data']},f)
+        return
+    if args.operation=='wait-parent':
+        import updater
+        updater.wait_parent(args.parent_pid,args.parent_start);return
+    if args.operation=='update':
+        import updater
+        updater.dispatch();return
+    local_data=None
     if args.owner_file:
-        args.owner=args.owner_file.read_text(encoding='utf-8')
+        original=json.loads(args.owner_file.read_bytes());args.owner=original['owner_sid'];local_data=original['local_data']
         win32security.ConvertStringSidToSid(args.owner)
-    if args.operation=='prepare':prepare(args.candidate,args.owner)
+        if not isinstance(local_data,str) or not Path(local_data).is_absolute():raise manifest.PackageError('invalid-owner-location')
+    integrated=args.candidate is not None and manifest.verify(args.candidate)['schema']=='taild-package-v2'
+    if args.operation=='rollback' and args.candidate is None and manifest.verify(app_directory(),installed=True)['schema']=='taild-package-v2':
+        raise manifest.PackageError('complete-detached-recovery-package-required')
+    if args.operation=='prepare':
+        if integrated:
+            import delivery,updater
+            if app_directory().exists():
+                journal=delivery.read_journal()
+                if journal is not None and journal['phase'] not in ('complete','recovered'):
+                    delivery.journal_manifest(journal,'new')
+                    updater.graceful_stop({'owner_sid':journal['owner_sid'],'local_data':journal['local_data']})
+                else:updater.graceful_stop(updater.owner())
+            delivery.prepare(args.candidate,args.owner,local_data)
+        else:prepare(args.candidate,args.owner)
     elif args.operation=='finish':
+        if integrated:
+            import delivery
+            delivery.finish(args.candidate);return
         app=app_directory();manifest.verify(app,installed=True)
         sid=win32security.ConvertSidToStringSid(win32security.ConvertStringSidToSid(args.owner))
         reader_start(app,sid)
@@ -327,14 +361,22 @@ def main(argv=None):
     elif args.operation=='remove-reader':reader_stop(remove=True)
     elif args.operation=='remove-history':remove_history()
     elif args.operation=='check-uninstall':check_uninstall()
-    elif args.operation=='abort':abort(args.candidate)
+    elif args.operation in ('abort','recover'):
+        if integrated:
+            import delivery
+            delivery.recover(args.candidate)
+        else:abort(args.candidate)
     elif args.operation=='uninstall':
         check_uninstall()
         if args.delete_history:remove_history()
         reader_stop(remove=True)
         previous=app_directory().with_name('TailD.rollback')
         if previous.exists():remove_verified(previous,manifest.verify(previous,installed=True))
-    else:rollback(args.candidate)
+    else:
+        if integrated:
+            import delivery,updater
+            updater.graceful_stop(updater.owner());delivery.rollback(args.candidate)
+        else:rollback(args.candidate)
 
 
 if __name__=='__main__':

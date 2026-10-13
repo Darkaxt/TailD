@@ -29,11 +29,30 @@ def private_key(create=False):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('operation',choices=('provision','public','sign','make'))
+    parser.add_argument('operation',choices=('provision','public','sign','make','core','release'))
     parser.add_argument('--manifest',type=Path)
     parser.add_argument('--package',type=Path);parser.add_argument('--provenance',type=Path)
     parser.add_argument('--core-version-file',type=Path);parser.add_argument('--subversion',type=int)
     args=parser.parse_args();key=private_key(args.operation=='provision')
+    if args.operation in ('core','release'):
+        import package_manifest as contract
+        if base64.b64encode(key.public_key().public_bytes_raw()).decode()!=contract.PUBLIC_KEY:
+            raise RuntimeError('Signing identity does not match the pinned production key')
+        if args.operation=='core':
+            import core_manifest
+            raw=core_manifest.make(args.package,args.provenance,args.subversion)
+            existing=args.package/'taildns-windows-update.json'
+            if existing.exists():
+                if existing.read_bytes()!=raw:raise RuntimeError('Connectivity manifest mismatch')
+            else:
+                with existing.open('xb') as f:f.write(raw)
+            with (args.package/'taildns-windows-update.json.sig').open('xb') as f:f.write(base64.b64encode(key.sign(raw)))
+        else:
+            import release_channel
+            data=release_channel.validate(json.loads(args.manifest.read_bytes()))
+            with args.manifest.with_suffix('.json.sig').open('xb') as f:f.write(key.sign(args.manifest.read_bytes()))
+        print(json.dumps({'state':'signed-'+args.operation,'authenticode':False}))
+        return
     if args.operation=='make':
         import package_manifest as contract
         if not all((args.package,args.provenance,args.core_version_file,args.subversion)):
@@ -44,10 +63,15 @@ def main():
         if base64.b64encode(key.public_key().public_bytes_raw()).decode()!=contract.PUBLIC_KEY:
             raise RuntimeError('Signing identity does not match the pinned production key')
         members=contract.inventory(args.package)
+        builder_members=members
+        if provenance.get('connectivity'):
+            import core_manifest
+            core_manifest.verify(args.package/'connectivity',contract.PUBLIC_KEY)
+            builder_members=[row for row in members if row['path']!='connectivity/taildns-windows-update.json.sig']
         if (provenance.get('fixture_trust') is not False or provenance.get('upstream_version')!=upstream
-            or provenance.get('subversion')!=args.subversion or sorted(provenance.get('files',[]),key=lambda row:row['path'])!=members):
+            or provenance.get('subversion')!=args.subversion or sorted(provenance.get('files',[]),key=lambda row:row['path'])!=builder_members):
             raise RuntimeError('Build provenance does not match the production payload/version')
-        data=contract.validate({'schema':'taild-package-v1','product':'TailD','upstream_version':upstream,
+        data=contract.validate({'schema':'taild-package-v2' if provenance.get('connectivity') else 'taild-package-v1','product':'TailD','upstream_version':upstream,
             'subversion':args.subversion,'version':upstream+'+'+str(args.subversion),
             'architecture':'windows-amd64','source_commit':provenance['source_commit'],
             'core_replace':provenance['core_replace'],'history_schema':4,

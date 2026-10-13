@@ -17,6 +17,8 @@ jobs:
         with:
           persist-credentials: false
       - name: Verify TailD contracts and inherited lightweight contracts
+        env:
+          TAILD_PACKAGE_TEST_OUTPUT: ${{ runner.temp }}/taild-contract-fixtures
         run: |
           set -euo pipefail
           python3 -m pip install 'cryptography==50.0.2'

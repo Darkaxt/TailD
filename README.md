@@ -67,7 +67,7 @@ display scaling and installed clients are unchanged. See [desktop evidence](docs
 Stage 9 local packaging/readiness is COMPLETE: a production-key manifest-signed
 Windows candidate, actual isolated installer/reader upgrade/rollback/uninstall,
 offline Release launch and independent installer-payload verification pass.
-The executables/installer are not Authenticode-signed. Stage 10 is BLOCKED on
+The executables/installer are not Authenticode-signed. Stage 10 is ACTIVE with
 explicit public-release/Windows-migration/updater authority; no TailD release or
 installed replacement is claimed. See [packaging evidence and delivery boundaries](docs/taild/PACKAGING.md).
 

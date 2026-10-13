@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 import secrets
 import sqlite3
+import sys
 import threading
 import time
 
@@ -768,7 +769,11 @@ def main(argv=None):
     collector = Collector(args.history, client, instance=args.instance, cli=args.cli)
     control = None
     thread = None
+    update_stop = None
     try:
+        if getattr(sys,'frozen',False):
+            import maintenance
+            update_stop=maintenance.StopEvent(collector,reader.current_sid(),args.instance)
         collector.start()
         ready_handle = None
         if args.ready_event:
@@ -793,6 +798,8 @@ def main(argv=None):
         if control is not None:
             control.stop()
         collector.close()
+        if update_stop is not None:
+            update_stop.close()
         if thread is not None:
             thread.join()
         client.close()

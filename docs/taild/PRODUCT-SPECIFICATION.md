@@ -23,8 +23,10 @@ TailD authorizes remaining implementation, verification and commits through loca
 release-readiness, preserving the explicit Stage 10 delivery boundary. Stage 6 is
 COMPLETE with the evidence in POLICY-READS.md; Stage 7 is COMPLETE under its
 recorded live-test waiver. The reopened Stage 1 R02 repair is verified and COMPLETE;
-Stages 8–9 are COMPLETE; Stage 10 is BLOCKED on explicit delivery authority. No public release,
-installed-client replacement or updater activation is authorized by this continuation.
+Stages 8–9 are COMPLETE. The subsequent October 13 "go ahead", replying to the
+explicit Stage 10 release/in-place Windows migration/updater question, authorizes
+those live actions. Stage 10 is ACTIVE; publication, migration and updater
+acceptance remain unverified until their actual workflows pass.
 
 The [stage ledger](IMPLEMENTATION-PLAN.md) maps every requirement to acceptance
 criteria. A plan cannot weaken this document. Only one implementation stage may
@@ -561,7 +563,7 @@ authorization parks Stage 10; it does not make it COMPLETE.
 | 7 | Opt-in continuous lifecycle and secure runtime; R13, remaining R14 | COMPLETE |
 | 8 | Portmaster-derived desktop layout/explorer/export; R08 layout, R15, R16 | COMPLETE |
 | 9 | Production packaging and local release-readiness; R17, R18 pre-delivery reconciliation | COMPLETE |
-| 10 | Authorized release, rollout, updater proof and final reconciliation; remaining R18 | BLOCKED on delivery/migration authority |
+| 10 | Authorized release, rollout, updater proof and final reconciliation; remaining R18 | ACTIVE; delivery/migration/updater authority granted |
 
 Each stage's detailed acceptance obligations are in the ledger. Verification
 of an earlier implementation remains valid only for unchanged relevant code and

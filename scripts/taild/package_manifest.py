@@ -52,7 +52,7 @@ def inventory(root,installed=False,expected=None):
 def validate(data):
     required={'schema','product','upstream_version','subversion','version','architecture','source_commit','core_replace','history_schema','files','authenticode'}
     if not isinstance(data,dict) or set(data)!=required:raise PackageError('invalid-package-manifest')
-    if data['schema']!='taild-package-v1' or data['product']!='TailD' or data['architecture']!='windows-amd64' or data['history_schema']!=4:
+    if data['schema'] not in ('taild-package-v1','taild-package-v2') or data['product']!='TailD' or data['architecture']!='windows-amd64' or data['history_schema']!=4:
         raise PackageError('incompatible-package')
     if not isinstance(data['upstream_version'],str) or not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+',data['upstream_version']):
         raise PackageError('invalid-upstream-version')
@@ -73,19 +73,19 @@ def validate(data):
     essentials={'taild.exe','taild.setup.exe','desktop/taild.desktop.exe','desktop/ui/index.html','_internal/python314.dll',
         'desktop/licenses/frontend-gpl-3.0.txt','desktop/licenses/frontend-dependencies.txt','licenses/runtime-license-inventory.json'}
     if not essentials<=names:raise PackageError('incomplete-package')
+    if data['schema']=='taild-package-v2':
+        if 'taild.background.exe' not in names:raise PackageError('incomplete-background-package')
+        connectivity={'connectivity/'+name for name in ('taildnsd.exe','tailscale.exe','taildns.exe',
+            'taildns-ipn.exe','taildns-installer.exe','taildns-windows-update.json','taildns-windows-update.json.sig',
+            'inherited-core-license.txt','core-provenance.json')}
+        if not connectivity<=names:raise PackageError('incomplete-connectivity-package')
     return data
 
 
-def verify(root,public_key=PUBLIC_KEY,installed=False):
+def verify_bytes(raw,signature,public_key=None):
     from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
-    root=Path(root).absolute()
-    for parent in (root,*root.parents):
-        if parent.exists():ordinary(parent)
-    manifest=root/MANIFEST;signature=root/SIGNATURE
-    ordinary(manifest);ordinary(signature)
-    if manifest.stat().st_size>2*1024*1024 or signature.stat().st_size!=64:raise PackageError('invalid-package-signature')
-    raw=manifest.read_bytes()
-    try:Ed25519PublicKey.from_public_bytes(base64.b64decode(public_key,validate=True)).verify(signature.read_bytes(),raw)
+    if len(raw)>2*1024*1024 or len(signature)!=64:raise PackageError('invalid-package-signature')
+    try:Ed25519PublicKey.from_public_bytes(base64.b64decode(public_key or PUBLIC_KEY,validate=True)).verify(signature,raw)
     except Exception:raise PackageError('invalid-package-signature') from None
     def unique(pairs):
         result={}
@@ -93,7 +93,17 @@ def verify(root,public_key=PUBLIC_KEY,installed=False):
             if key in result:raise PackageError('duplicate-manifest-field')
             result[key]=value
         return result
-    data=validate(json.loads(raw,object_pairs_hook=unique))
+    return validate(json.loads(raw,object_pairs_hook=unique))
+
+
+def verify(root,public_key=None,installed=False):
+    root=Path(root).absolute()
+    for parent in (root,*root.parents):
+        if parent.exists():ordinary(parent)
+    manifest=root/MANIFEST;signature=root/SIGNATURE
+    ordinary(manifest);ordinary(signature)
+    if manifest.stat().st_size>2*1024*1024 or signature.stat().st_size!=64:raise PackageError('invalid-package-signature')
+    data=verify_bytes(manifest.read_bytes(),signature.read_bytes(),public_key)
     if inventory(root,installed,{r['path'] for r in data['files']})!=data['files']:raise PackageError('package-content-mismatch')
     if not installed and any((root/name).exists() for name in ('installation.json','installation.pending.json')):
         raise PackageError('unexpected-installed-metadata')

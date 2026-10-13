@@ -3,7 +3,8 @@ param(
     [Parameter(Mandatory=$true)][string]$Python,
     [Parameter(Mandatory=$true)][ValidateRange(1,65535)][int]$Subversion,
     [switch]$SkipFrontendBuild,
-    [string]$FixturePublicKey
+    [string]$FixturePublicKey,
+    [switch]$IncludeConnectivity
 )
 $ErrorActionPreference='Stop'
 $repo=(Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
@@ -44,6 +45,14 @@ try {
     Invoke-Checked $Python @('-B','-m','PyInstaller','--distpath',$payload,
         '--workpath',(Join-Path $out 'freeze-work'),(Join-Path $repo 'desktop/TailD.spec'))
     $package=Join-Path $payload 'TailD'
+    if($IncludeConnectivity){
+        $connectivityBuild=Join-Path $out 'connectivity-build'
+        & (Join-Path $PSScriptRoot 'build_connectivity.ps1') -Output $connectivityBuild -Python $Python -Subversion $Subversion -PublicKey $(if($FixturePublicKey){$FixturePublicKey}else{'Vq5UrOc4cj4reJmuVdRJ9YFiSRuax9qua/F/WpyW+bE='})
+        if(-not $?){throw 'Connectivity build failed'}
+        Copy-Item -LiteralPath (Join-Path $connectivityBuild 'payload') -Destination (Join-Path $package 'connectivity') -Recurse
+        Invoke-Checked $Python @('-B',(Join-Path $PSScriptRoot 'core_manifest.py'),'--package',(Join-Path $package 'connectivity'),
+            '--provenance',(Join-Path $package 'connectivity/core-provenance.json'),'--subversion',"$Subversion")
+    }
     Invoke-Checked 'dotnet' @('publish','native/TailD.Desktop.csproj','--configuration','Release',
         '--runtime','win-x64','--self-contained','true','-p:RestoreLockedMode=true',
         "-p:Version=$version","-p:FileVersion=$upstream.$Subversion",'-p:IncludeSourceRevisionInInformationalVersion=false',
@@ -65,7 +74,7 @@ try {
         [ordered]@{path=[IO.Path]::GetRelativePath($package,$_.FullName).Replace('\','/');size=$_.Length;sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}
     })
     [ordered]@{schema='taild-local-package-v1';source_commit=$source;source_dirty=$dirty;core_replace=$core;upstream_version=$upstream;subversion=$Subversion;
-        architecture='windows-amd64';authenticode='not-signed';delivery='local-verification-only';fixture_trust=[bool]$FixturePublicKey;files=$files} |
+        architecture='windows-amd64';authenticode='not-signed';delivery='local-verification-only';fixture_trust=[bool]$FixturePublicKey;connectivity=[bool]$IncludeConnectivity;files=$files} |
         ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $out 'provenance.json') -Encoding utf8NoBOM
     Write-Output "Local candidate: $package"
 } finally {Pop-Location}
