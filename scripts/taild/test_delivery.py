@@ -6,6 +6,7 @@ from pathlib import Path
 import shutil
 import unittest
 import uuid
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
@@ -86,6 +87,18 @@ class DeliveryTest(unittest.TestCase):
              self.assertRaisesRegex(manifest.PackageError,'synthetic-core-failure'):
             installer.uninstall(True)
         delete.assert_called_once_with(dry_run=True);stop.assert_not_called()
+
+    def test_initial_migration_rollback_uses_normal_uninstall_and_keeps_history(self):
+        new,_=self.candidate(1);self.installed(new)
+        journal={'schema':'taild-setup-transaction-v1','phase':'complete','owner_sid':self.owner,'local_data':str(self.local)}
+        delivery.record_manifest(journal,'new',new);delivery.write_journal(journal)
+        with patch.object(delivery.subprocess,'run',return_value=SimpleNamespace(returncode=0)) as process,\
+             patch.object(delivery.subprocess,'CREATE_NO_WINDOW',0,create=True):
+            delivery.rollback(new)
+        command=process.call_args.args[0]
+        self.assertEqual(command[0],str(self.app/'unins000.exe'))
+        self.assertNotIn('--delete-history',command)
+        self.assertEqual(delivery.read_journal()['phase'],'recovered')
 
 
 if __name__=='__main__':unittest.main()

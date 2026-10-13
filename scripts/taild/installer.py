@@ -378,7 +378,11 @@ def main(argv=None):
     elif args.operation=='check-uninstall':check_uninstall()
     elif args.operation in ('abort','recover'):
         if integrated:
-            import delivery
+            import delivery,updater
+            journal=delivery.read_journal()
+            if journal is not None and journal['phase'] not in ('complete','recovered'):
+                delivery.journal_manifest(journal,'new')
+                updater.graceful_stop({'owner_sid':journal['owner_sid'],'local_data':journal['local_data']})
             delivery.recover(args.candidate)
         else:abort(args.candidate)
     elif args.operation=='uninstall':

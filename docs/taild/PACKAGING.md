@@ -188,6 +188,11 @@ original migration. Node keys and provider configuration are never copied or edi
 Complete-product uninstall returns to the original pre-TailD connectivity baseline
 and original updater preference; it must not leave a TailD daemon whose signed
 updater helper was removed. Analytics-only v1 removal remains connectivity-neutral.
+Explicit rollback of the first migration invokes the ordinary uninstaller from
+the external recovery helper, retaining history and removing its installer
+registration. A later update rollback restores its immediate predecessor and
+retains the anti-replay floor instead. Recovery gracefully stops any resumed
+collector before restoring files, including an interrupted final journal commit.
 
 The frozen collector exposes only an owner/instance-bound maintenance-stop event
 to its owner, SYSTEM and Administrators. Updating signals a graceful stop, closes

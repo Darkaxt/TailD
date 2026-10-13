@@ -177,5 +177,15 @@ def finish(candidate):
 def rollback(candidate):
     manifest.verify(candidate);journal=read_journal()
     if journal is None or journal['phase']!='complete':raise manifest.PackageError('completed-installation-required')
+    if not journal.get('old_manifest'):
+        # Undoing the first migration must also remove the ordinary installer
+        # registration/framework. Let Inno perform its own uninstall while the
+        # verified detached recovery helper remains outside the mapped files.
+        executable=installer.app_directory()/'unins000.exe';manifest.ordinary(executable)
+        result=subprocess.run([str(executable),'/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART'],
+            creationflags=subprocess.CREATE_NO_WINDOW)
+        if result.returncode:raise manifest.PackageError('initial-migration-uninstall-failed')
+        journal['phase']='recovered';write_journal(journal)
+        return
     journal['phase']='core_complete';write_journal(journal)
     recover(candidate)
