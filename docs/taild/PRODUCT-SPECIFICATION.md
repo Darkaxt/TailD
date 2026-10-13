@@ -109,6 +109,10 @@ review before integration or distribution, without rewriting inherited copyright
 notices. Do not replace charts, ranked consumers, filters or drill-downs with text
 blocks, placeholder counters or generic metric-card grids. Unknown/partial data
 must remain honest, visible states within functional widgets.
+The user additionally permits targeted improvements while retaining the same
+themed widgets and overall visual language. Pixel-identical reproduction is not
+required; readability, accessibility, interaction and truthful data-state changes
+are allowed without replacing the design system or weakening required workflows.
 
 ## 5. Incremental ingestion and history — R09
 

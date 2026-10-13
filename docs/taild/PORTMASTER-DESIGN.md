@@ -81,6 +81,10 @@ The October 13 user instruction supersedes the original-implementation default:
 maximize practical reuse of the actual widgets, templates and styles. Complete the
 file-specific notice/source review before copying them; framework convenience is
 not sufficient reason to replace reusable components with generic cards or prose.
+The user's subsequent clarification permits improvements here and there while
+keeping the same themed widgets. Treat the upstream theme as the design system,
+not a pixel-perfect restriction: improve clarity, accessibility, interaction and
+data accuracy without substituting unrelated widgets or generic dashboard styling.
 
 No Portmaster packet interception, WFP driver, DNS interception, firewall,
 SPN, subscription backend or updater is part of TailD's analytics design.
