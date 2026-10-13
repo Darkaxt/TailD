@@ -171,7 +171,10 @@ width, 150px minimum small summary/ranking cells and 400px major chart panels;
 the shell uses a 64px navigation offset and a 419px optional side panel.
 
 - Verify the actual TailD served URL and current asset build at 1440×900,
-  1280×800 and 1024×768 CSS pixels, plus Windows 150% scaling and keyboard-only use.
+  1280×800 and 1024×768 CSS pixels, plus app-local 150% zoom and keyboard-only use.
+  The October 13 user amendment accepts actual native WebView2 zoom instead of
+  changing Windows display scaling; record measured viewport/DPR and leave
+  Windows at 100%. Physical Windows 150% scaling is not claimed.
   Retain screenshot evidence for overview, application insights, activity with
   expanded evidence, policy view and stale/empty/partial states.
 - Preserve a 64px rail; expanded labeled navigation may replace the upstream
@@ -196,5 +199,7 @@ the shell uses a 64px navigation offset and a 419px optional side panel.
 - Formal acceptance is the complete connected UI/query/export feature, not a
   screenshot of disconnected widgets or a series of component-only validations.
 
-Stage 7 remains ACTIVE. Stage 8 implementation and its acceptance are NOT STARTED;
-retrieval and this binding reuse contract are the explicitly requested research.
+Stage 8 is now COMPLETE. The source-observed/adapted comparison and current native
+workflow/viewport/zoom evidence are reconciled in [DESKTOP-ANALYTICS.md](DESKTOP-ANALYTICS.md).
+The research-state statements above describe the retrieval checkpoint; component
+integration and notices are now recorded there and in desktop/NOTICE.md.

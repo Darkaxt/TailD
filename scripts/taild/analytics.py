@@ -30,6 +30,7 @@ DNS_FIELDS={'endpoint':str,'question':str,'type':str,'action':str,'reason':str,'
 TRAFFIC_FIELDS={'application':str,'application_path':str,'destination_ip':str,'destination_port':int,
                 'protocol_raw':int,'inbound_bytes':int,'outbound_bytes':int,'total_bytes':int,
                 'correlation_state':str,'context_state':str}
+TRAFFIC_FIELDS.update({'destination_country':str,'destination_asn':str})
 SNAPSHOT_FIELDS={'node_id':str,'user_id':str,'resolver_endpoint':str,'backend_state':str,'exit_node_id':str,
                  'dns_accepted':bool,'local_override':bool,'portal_mode':bool,'observed_end':int}
 
@@ -287,7 +288,7 @@ class Analytics:
             result.append(row)
         return result
 
-    def batch(self,requests):
+    def batch(self,requests,*,expected_revision=None):
         if not isinstance(requests,list) or not 1<=len(requests)<=16:
             raise QueryError('Expected 1 to 16 typed queries')
         for request in requests:
@@ -295,6 +296,8 @@ class Analytics:
         self.store.db.execute('BEGIN')
         try:
             revision=self.store.db.execute('SELECT revision FROM settings').fetchone()[0]
+            if expected_revision is not None and (type(expected_revision) is not int or revision!=expected_revision):
+                raise QueryError('History changed; explicitly refresh the view',code='stale-revision')
             results=[self._query(request,revision) for request in requests]
             return {'revision':revision,'aggregation_version':VERSION,'correlation_version':CORRELATION_VERSION,'results':results}
         finally:
@@ -306,7 +309,7 @@ class Analytics:
             if kind in ('traffic','correlations') else SNAPSHOT_FIELDS if kind=='context' else {'profile':str,'endpoint':str})
 
     def _validate(self,request):
-        allowed={'kind','view','start','end','scope','max_age_seconds','where','search','group_by','order_by','limit','cursor','bin_seconds'}
+        allowed={'kind','view','start','end','scope','max_age_seconds','where','search','group_by','order_by','limit','cursor','bin_seconds','anchor_id'}
         if not isinstance(request,dict) or set(request)-allowed or not {'kind','view','start','end'}<=request.keys():
             raise QueryError('Expected an allowlisted typed query object')
         kind=request['kind']
@@ -356,6 +359,9 @@ class Analytics:
         cursor=request.get('cursor')
         if cursor is not None and (not isinstance(cursor,str) or len(cursor)>4096 or request['view']!='facts'):
             raise QueryError('Invalid cursor')
+        if 'anchor_id' in request and (request['view']!='facts' or request.get('cursor') or
+                not isinstance(request['anchor_id'],str) or not re.fullmatch('[a-f0-9]{64}',request['anchor_id'])):
+            raise QueryError('Invalid refresh anchor')
         self._validate_predicate(request.get('where'),fields)
 
     def _validate_predicate(self,node,fields,depth=0,budget=None):
@@ -415,10 +421,10 @@ class Analytics:
         a,b=history.bounds(request['start'],request['end'])
         scope=request.get('scope',{})
         age=request.get('max_age_seconds',300)
-        traffic=self._load('traffic',a,b,scope) if kind in ('traffic','correlations') else []
-        dns=self._load('dns',a-age*1000000,b,scope) if kind in ('traffic','correlations','dns') else []
-        contexts=self._load('context',a-age*1000000,b,{'host':scope['host']} if scope.get('host') else {})
-        rows=self._correlations(traffic,dns,contexts,age,scope) if kind in ('traffic','correlations') else (
+        traffic=self._load('traffic',a,b,scope) if view!='health' and kind in ('traffic','correlations') else []
+        dns=self._load('dns',a-age*1000000,b,scope) if view!='health' and kind in ('traffic','correlations','dns') else []
+        contexts=self._load('context',a-age*1000000,b,{'host':scope['host']} if scope.get('host') else {}) if view!='health' else []
+        rows=[] if view=='health' else self._correlations(traffic,dns,contexts,age,scope) if kind in ('traffic','correlations') else (
              [d for d in dns if d['timestamp']>=a] if kind=='dns' else self._load(kind,a,b,scope))
         unknown_device_buckets=sum(r.get('device') is None for r in rows) if kind in ('traffic','correlations') else 0
         if kind in ('traffic','correlations') and scope.get('device'):
@@ -452,7 +458,12 @@ class Analytics:
         elif view=='facts':
             limit=request.get('limit',100)
             offset=0
-            query_hash=history.digest({k:v for k,v in request.items() if k!='cursor'})
+            query_hash=history.digest({k:v for k,v in request.items() if k not in ('cursor','anchor_id')})
+            anchor_present=None
+            if request.get('anchor_id'):
+                anchored=next((i for i,r in enumerate(rows) if r['id']==request['anchor_id']),None)
+                anchor_present=anchored is not None
+                offset=anchored//limit*limit if anchored is not None else 0
             if request.get('cursor'):
                 try:
                     cursor=json.loads(base64.b64decode(request['cursor'],altchars=b'-_',validate=True))
@@ -464,14 +475,23 @@ class Analytics:
                     raise QueryError('Stale or mismatched cursor; restart the view')
                 offset=cursor['offset']
             next_offset=offset+limit
-            cursor=base64.urlsafe_b64encode(history.packed({'revision':revision,'query':query_hash,'offset':next_offset}).encode()).decode() if next_offset<len(rows) else None
-            data={'rows':rows[offset:next_offset],'total_count':len(rows),'next_cursor':cursor}
+            def page_cursor(at):
+                return base64.urlsafe_b64encode(history.packed({'revision':revision,'query':query_hash,'offset':at}).encode()).decode()
+            cursor=page_cursor(next_offset) if next_offset<len(rows) else None
+            data={'rows':rows[offset:next_offset],'total_count':len(rows),'next_cursor':cursor,
+                  'current_cursor':page_cursor(offset) if offset else None,
+                  'previous_cursor':page_cursor(max(0,offset-limit)) if offset else None,
+                  'page_offset':offset,'anchor_present':anchor_present}
         elif view=='groups':
             fields=request.get('group_by',[])
             groups=defaultdict(list)
             for row in rows:
                 groups[tuple(row.get(f) for f in fields)].append(row)
-            grouped=[{'keys':dict(zip(fields,key)),**self._totals(values),'count':len(values)} for key,values in groups.items()]
+            grouped=[{'keys':dict(zip(fields,key)),**self._totals(values),'count':len(values),
+                      'last_observed_utc':history.utc(max(r['timestamp'] for r in values)),
+                      'correlation_counts':{state:sum(r.get('correlation_state')==state for r in values)
+                                            for state in ('unmatched','unique-candidate','ambiguous','unusable')}}
+                     for key,values in groups.items()]
             for order in reversed(request.get('order_by',[])):
                 if order['field'] not in fields and order['field'] not in ('inbound_bytes','outbound_bytes','total_bytes','count'):
                     raise QueryError('Grouped ordering requires a group key or byte aggregate')
@@ -573,9 +593,9 @@ class Analytics:
                 'age_since_last_success_microseconds':max(0,self.store.now-last) if last else None,
                 'as_of_utc':history.utc(self.store.now),
                 'unsupported_rows':sum(json.loads(r['data']).get('destination_status')=='unsupported-address-family'
-                                       for r in self.store.db.execute('SELECT data FROM traffic WHERE source=? AND time>=? AND time<?',(item['id'],a,b))) if item['kind']=='traffic' else
+                                       for r in self.store.db.execute('SELECT data FROM traffic INDEXED BY traffic_time WHERE source=? AND time>=? AND time<?',(item['id'],a,b))) if item['kind']=='traffic' else
                                    sum(unsupported_answer(json.loads(r['data'])['raw'])
-                                       for r in self.store.db.execute('SELECT data FROM dns WHERE source=? AND time>=? AND time<?',(item['id'],a,b))),
+                                       for r in self.store.db.execute('SELECT data FROM dns INDEXED BY dns_time WHERE source=? AND time>=? AND time<?',(item['id'],a,b))),
                 'unsupported_rows_definition':'unsupported-address-family' if item['kind']=='traffic' else 'unsupported-answer-encoding'})
         total=self._totals(rows)
         return {'data':{**total,'unit':'bytes','denominator':'canonical-traffic-buckets'},

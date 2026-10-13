@@ -56,8 +56,16 @@ source-text escaping, disk-full recovery and live Control D READ are verified.
 Forced sleep/wake/network/GlassWire stop-update tests were explicitly waived on
 the active laptop, not reported as passing. This is source-build functionality,
 not an installed or released analytics client. See [runtime evidence and boundaries](docs/taild/CONTINUOUS-RUNTIME.md)
-and [desktop source/license notices](desktop/NOTICE.md). Analytics views remain
-Stage 8; packaging/readiness and delivery remain separate stages.
+and [desktop source/license notices](desktop/NOTICE.md).
+
+Stage 8 adds the verified Portmaster-derived analytics desktop: real charts and
+ranked consumers, applications, typed activity filters, structured evidence,
+Control D capabilities and private native JSON/CSV exports. Actual stored-data
+drill-down/export, exact counters/revisions, saved queries, keyboard navigation,
+responsive sizes and user-accepted native 150% app-local zoom pass. Windows
+display scaling and installed clients are unchanged. See [desktop evidence](docs/taild/DESKTOP-ANALYTICS.md).
+Stage 9 packaging/readiness is ACTIVE; no TailD release or installed replacement
+is claimed.
 
 - [TailD authoritative specification](docs/taild/SPECIFICATION.md)
 - [Remaining-product specification: ingestion, metrics, desktop and delivery](docs/taild/PRODUCT-SPECIFICATION.md)

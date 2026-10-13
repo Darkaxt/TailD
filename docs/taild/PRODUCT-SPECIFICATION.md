@@ -22,8 +22,8 @@ not implemented by the specification task. The October 13 instruction to continu
 TailD authorizes remaining implementation, verification and commits through local
 release-readiness, preserving the explicit Stage 10 delivery boundary. Stage 6 is
 COMPLETE with the evidence in POLICY-READS.md; Stage 7 is COMPLETE under its
-recorded live-test waiver. Stage 1 is reopened as the single ACTIVE stage for R02;
-Stages 8–9 are NOT STARTED. No public release,
+recorded live-test waiver. The reopened Stage 1 R02 repair is verified and COMPLETE;
+Stage 8 is COMPLETE and Stage 9 is the single ACTIVE stage. No public release,
 installed-client replacement or updater activation is authorized by this continuation.
 
 The [stage ledger](IMPLEMENTATION-PLAN.md) maps every requirement to acceptance
@@ -123,6 +123,13 @@ reuse. Use restrained warm-neutral surfaces and Tailscale blue (#4b70cc), with
 accessible semantic status colours rather than neon-green selection chrome.
 Keep native window chrome visually coherent with the content. TailD remains
 identified as the fork; visual familiarity does not assert official endorsement.
+
+Authorized scaling-test amendment (2026-10-13): the user accepts app-local 150%
+WebView2 zoom instead of changing Windows display scaling. Verify the actual
+native window at that zoom, its measured CSS viewport/device-pixel ratio,
+keyboard access, layout and screenshots. Windows itself stays at 100%; do not
+claim a physical Windows 150% test. This replaces only that Stage 8 design-map
+acceptance check, not its other viewport, accessibility or workflow criteria.
 
 ## 5. Incremental ingestion and history — R09
 
@@ -552,8 +559,8 @@ authorization parks Stage 10; it does not make it COMPLETE.
 | 5 | Versioned correlation/context and metrics/query contracts; R10, R11, R08 metrics boundary | COMPLETE |
 | 6 | Remaining Control D READ/capability coverage; R12, R14b credential boundary | COMPLETE |
 | 7 | Opt-in continuous lifecycle and secure runtime; R13, remaining R14 | COMPLETE |
-| 8 | Portmaster-derived desktop layout/explorer/export; R08 layout, R15, R16 | NOT STARTED |
-| 9 | Production packaging and local release-readiness; R17, R18 pre-delivery reconciliation | NOT STARTED |
+| 8 | Portmaster-derived desktop layout/explorer/export; R08 layout, R15, R16 | COMPLETE |
+| 9 | Production packaging and local release-readiness; R17, R18 pre-delivery reconciliation | ACTIVE |
 | 10 | Authorized release, rollout, updater proof and final reconciliation; remaining R18 | NOT STARTED |
 
 Each stage's detailed acceptance obligations are in the ledger. Verification

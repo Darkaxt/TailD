@@ -20,6 +20,7 @@ import time
 import analytics
 import controld
 import credentials
+import desktop_api
 import glasswire
 import history
 import ingestion
@@ -333,7 +334,7 @@ class Collector:
             return self.session()
         if request == {'op':'shutdown'}:
             return {'state':'stopping'}
-        if request['op'] not in ('state','configure','pause','resume','refresh','query','delete','cleanup','credential','window-opened','window-closed'):
+        if request['op'] not in ('state','configure','pause','resume','refresh','query','delete','cleanup','credential','credential-remove','window-opened','window-closed',*desktop_api.OPERATIONS):
             raise RuntimeError('invalid-command')
         try:
             return self.command(request['op'], request.get('body'))
@@ -384,6 +385,15 @@ class Collector:
             raise RuntimeError('invalid-command')
         if op == 'state' and not body:
             return self._state()
+        if op in desktop_api.OPERATIONS:
+            if self.write_error and op in ('retention','saved-query','delete-snapshots') and body.get('action')!='list':
+                raise RuntimeError('write-error')
+            return desktop_api.DesktopAPI(store).dispatch(op,body)
+        if op == 'credential-remove' and not body:
+            credentials.CredentialStore().remove()
+            self._transient_token=None
+            self.config_revision+=1
+            return {'removed':True,'provider_revocation':'not-performed'}
         if op == 'window-opened' and not body:
             self.window_attached = True
             self.stop_after_window_receipt = False

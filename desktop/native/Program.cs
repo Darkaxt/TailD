@@ -3,6 +3,7 @@
 using System.IO.Pipes;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using System.Security.AccessControl;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Web.WebView2.Core;
@@ -12,7 +13,7 @@ namespace TailD;
 
 internal sealed class BridgeError(string state) : Exception
 {
-    public string State {get;}=state is "invalid-query" or "resource-limit" or "invalid-settings" or
+    public string State {get;}=state is "invalid-query" or "stale-revision" or "invalid-export-destination" or "resource-limit" or "invalid-settings" or
         "explicit-provider-required" or "backpressure" or "write-error" or "credential-not-accepted" or
         "read-only-confirmation-required" or "invalid-command" or "stopping" ? state:"unavailable";
 }
@@ -67,8 +68,9 @@ internal sealed class OwnerBridge : IDisposable
     public async Task<JsonElement> Request(string op,JsonElement body)
     {
         // Native allowlist: renderer cannot request a session token, arbitrary
-        // query, path, SQL, shell command, source access or filesystem operation.
-        if(op is not ("state" or "configure" or "pause" or "resume" or "refresh" or "credential" or "shutdown" or "window-closed"))
+        // SQL, path, shell command, source access or arbitrary filesystem operation.
+        if(op is not ("state" or "configure" or "pause" or "resume" or "refresh" or "credential" or "shutdown" or "window-closed" or
+            "credential-remove" or "view-query" or "view-catalog" or "saved-query" or "export-query" or "retention" or "delete" or "delete-snapshots" or "cleanup"))
             throw new InvalidDataException();
         await serial.WaitAsync();
         try
@@ -141,7 +143,7 @@ internal sealed class CollectionWindow : Form
     public CollectionWindow(string instance,uint pid,string data,Dictionary<string,string> supplied)
     {
         bridge=new OwnerBridge(instance,pid);userData=data;options=supplied;this.instance=instance;
-        Text="TailD · Collection";Width=1200;Height=860;MinimumSize=new Size(800,600);
+        Text="TailD · Network analytics";Width=1440;Height=900;MinimumSize=new Size(800,600);
         StartPosition=FormStartPosition.CenterScreen;BackColor=Color.FromArgb(31,30,30);
         Controls.Add(view);Shown+=Initialize;FormClosing+=ClosingWindow;
     }
@@ -165,6 +167,13 @@ internal sealed class CollectionWindow : Form
             core.Settings.IsPasswordAutosaveEnabled=false;
             core.Settings.IsGeneralAutofillEnabled=false;
             core.Profile.PreferredColorScheme=CoreWebView2PreferredColorScheme.Dark;
+#if DEBUG
+            if(options.TryGetValue("--validation-zoom",out var zoom))
+            {
+                if(zoom!="150")throw new InvalidDataException();
+                view.ZoomFactor=1.5; // User-authorized app-local scaling test, not system DPI mutation.
+            }
+#endif
 #if !DEBUG
             core.Settings.AreDevToolsEnabled=false;
 #endif
@@ -230,13 +239,47 @@ internal sealed class CollectionWindow : Form
                 throw new InvalidDataException();
             id=root.GetProperty("id").GetInt64();var op=root.GetProperty("op").GetString()!;
             var body=root.GetProperty("body");if(body.ValueKind!=JsonValueKind.Object)throw new InvalidDataException();
-            var data=await bridge.Request(op,body);
+            var data=op=="export-query"?await Export(body):await bridge.Request(op,body);
             view.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(new{id,ok=true,data}));
             if(op=="shutdown"){disposingWindow=true;Close();}
         }
         catch(Exception error){if(!view.IsDisposed)view.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(new{
             id,ok=false,state=error is BridgeError known?known.State:error is InvalidDataException?"invalid-command":"unavailable"}));}
         finally{Interlocked.Decrement(ref active);}
+    }
+    private async Task<JsonElement> Export(JsonElement body)
+    {
+        var format=body.GetProperty("format").GetString();
+        if(format is not ("json" or "csv"))throw new InvalidDataException();
+        using var dialog=new SaveFileDialog{Title="Export private TailD evidence",DefaultExt=format,
+            AddExtension=true,OverwritePrompt=false,CheckPathExists=true,FileName="TailD-evidence."+format,
+            Filter=format=="json"?"JSON evidence (*.json)|*.json":"CSV analytics (*.csv)|*.csv"};
+        if(dialog.ShowDialog(this)!=DialogResult.OK)return JsonSerializer.SerializeToElement(new{cancelled=true});
+        var path=Path.GetFullPath(dialog.FileName);
+        if(File.Exists(path)||Directory.Exists(path))throw new BridgeError("invalid-export-destination");
+        for(var directory=new DirectoryInfo(Path.GetDirectoryName(path)!);directory!=null;directory=directory.Parent)
+            if((directory.Attributes&FileAttributes.ReparsePoint)!=0)throw new BridgeError("invalid-export-destination");
+        // Fetch after explicit destination selection; a changed revision fails
+        // before creating a file. Renderer never supplies or receives a path.
+        var result=await bridge.Request("export-query",body);
+        var bytes=Encoding.UTF8.GetBytes(result.GetProperty("content").GetString()!);
+        if(bytes.Length>6*1024*1024)throw new InvalidDataException();
+        var sid=WindowsIdentity.GetCurrent().User!;
+        var security=new FileSecurity();security.SetAccessRuleProtection(true,false);security.SetOwner(sid);
+        foreach(var identity in new[]{sid,new SecurityIdentifier(WellKnownSidType.LocalSystemSid,null),
+            new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid,null)})
+            security.AddAccessRule(new FileSystemAccessRule(identity,FileSystemRights.FullControl,AccessControlType.Allow));
+        bool created=false;
+        try
+        {
+            using(var file=FileSystemAclExtensions.Create(new FileInfo(path),FileMode.CreateNew,FileSystemRights.Write,
+                FileShare.None,4096,FileOptions.WriteThrough,security))
+            {created=true;file.Write(bytes);file.Flush(true);}
+        }
+        catch{if(created)File.Delete(path);throw;}
+        return JsonSerializer.SerializeToElement(new{saved=true,name=Path.GetFileName(path),
+            revision=result.GetProperty("revision").GetInt64(),row_count=result.GetProperty("row_count").GetInt64(),
+            coverage_incomplete=result.GetProperty("coverage_incomplete").GetBoolean()});
     }
     private async void ClosingWindow(object? sender,FormClosingEventArgs e)
     {

@@ -23,6 +23,15 @@ Paths below are relative to that repository. Imports are reviewed before copying
 | Same directory `_toggle-switch.scss` | `246a7953117da619892ccc9c15062da82ea17536` | Equivalent explicit CSS replacing Tailwind directives |
 | `desktop/angular/src/theme/_colors.scss` | `65310698037063179ef35ffb98a27a6d586b7b83` | Upstream variables retained as reference; active tokens overridden with user-requested Tailscale palette in styles.css |
 | `desktop/angular/tailwind.config.js` | `ba4e7f117e5d31c79f891811c99e44327a25cb34` | Relevant panel/gray/green/spacing values resolved into component CSS; no Tailwind runtime |
+| `desktop/angular/src/app/shared/netquery/line-chart/line-chart.ts` | `23a9007cf396a62059529c9e8168dfd31ec8b4ad` | D3 SVG/axes/line/area/point lifecycle adapted to standalone Angular; no zero-fill, null rate gaps and exact tooltips; owned ResizeObserver instead of upstream root coupling |
+| `desktop/angular/src/app/shared/netquery/circular-bar-chart/circular-bar-chart.component.ts` | `f2b736d9ba728a1c24b9e5eeed3f7a6b234494ec` | Actual indexed D3 stacked radial bars, ticks and legend; bounded top consumers plus conserved remainder, exact values, accessible companion rows |
+| `desktop/angular/src/app/pages/dashboard/dashboard.component.scss` | `ba37e52754e3342a8f1e723b90bf141054e38cd1` | Four-track / 16px / 150px dense responsive panel geometry; remove SPN/news |
+| `desktop/angular/src/app/layout/navigation/navigation.scss` | `4683bec54862d4ec9af50aced9db663edf45eb8f` | 64px vertical rail with actual active/hover treatment; named native buttons instead of inaccessible clickable divs |
+| `desktop/angular/src/app/shared/netquery/tag-bar/tag-bar.html` | `f1161e58aabe1cf13cf730071e89be09de1d4240` | Field/value removable filter pills; native keyboard-focusable removal button |
+| `desktop/angular/src/app/shared/netquery/connection-row/conn-row.{html,scss}` | `ff09c532a4f62d92aa366db5c3eb2e834a647954`, `0d737830e303d624706f8a5c33831bd592c9484c` | Dense responsive aligned fact row; source/candidate badges replace unsupported firewall verdicts |
+| `desktop/angular/src/app/shared/netquery/connection-details/conn-details.{html,scss}` | `fcbe03cbda2269f8a9487117acbf6fd18de6adb7`, `f850b0030fbb7e586c51dad6078be6d0b082f9fe` | Structured expandable evidence sections / 250px columns; observed fields and uncertainty, no invented socket/TLS/lifetime |
+| `desktop/angular/projects/safing/ui/src/lib/accordion/accordion.html` | `4d47b842f610bf25f4d16eaf61b00ab0b120d8c6` | Active header/content projection replaced with native details/summary for browser keyboard and accessibility semantics |
+| `desktop/angular/projects/safing/ui/src/lib/pagination/pagination.html` | `dec63df8a42e1a32ebe9193cb768622621ad2406` | Previous/Next paginator and current-page treatment, cursor history rather than unsupported arbitrary page jumps |
 
 The native shell is an original minimal WebView2/WinForms host, not a copy of
 Portmaster's service controller. The Angular application does not import upstream network,

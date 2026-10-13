@@ -82,6 +82,7 @@ def private_directory(path):
                 'runtime.json','runtime.pending.json','runtime-status.json','runtime-status.pending.json',
                 'runtime-dns-progress.json','runtime-dns-progress.pending.json',
                 'runtime-provider-limit.json','runtime-provider-limit.pending.json')
+            private_names += ('desktop-queries.json','desktop-queries.pending.json')
             targets = [path] + [path / name for name in private_names if (path/name).exists()]
             for target in targets:
                 if target.is_symlink() or target.stat().st_nlink > 1:

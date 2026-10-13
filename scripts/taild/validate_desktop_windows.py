@@ -48,6 +48,13 @@ def snapshot(page):
       limitations:['Native frame presentation not measured','Off-screen controls need scrolling','No physical sleep/wake evidence']})''')
 
 
+def collection_controls(page):
+    from playwright.sync_api import expect
+    expect(page.locator('main')).to_have_attribute('aria-busy','false')
+    page.locator('#nav-5').click()
+    expect(page.locator('#traffic-toggle')).to_be_visible()
+
+
 def run(shell, output):
     import win32api,win32event
     from playwright.sync_api import sync_playwright,expect
@@ -103,7 +110,7 @@ def run(shell, output):
             context=browser.contexts[0]
             page=context.pages[0]
             page.set_default_timeout(15000) # Diagnostic boundary only; never kills underlying operation.
-            expect(page.locator('#traffic-toggle')).to_be_visible()
+            collection_controls(page)
             assert page.url=='https://taild.local/index.html','Actual packaged page did not load'
             return browser,page
         with sync_playwright() as playwright:
@@ -114,7 +121,7 @@ def run(shell, output):
             csp=response.headers.get('content-security-policy','')
             assert "script-src 'self'" in csp and "connect-src 'none'" in csp
             assert 'unsafe-eval' not in csp and "script-src 'self' 'unsafe-inline'" not in csp
-            expect(page.locator('#traffic-toggle')).to_be_visible()
+            collection_controls(page)
             expect(page.locator('#traffic-toggle')).not_to_be_checked()
             for width,height in ((1440,900),(1280,800),(1024,768)):
                 page.set_viewport_size({'width':width,'height':height})
@@ -130,12 +137,13 @@ def run(shell, output):
             unsafe='<img src=x onerror="window.__taildInjection=1">'
             fixture.collector.sources['context']={'state':unsafe}
             page.reload()
+            collection_controls(page)
             expect(page.locator('#context-status')).to_have_text(unsafe)
             assert page.locator('#context-status img').count()==0
             assert page.evaluate('window.__taildInjection===undefined')
             fixture.collector.sources['context']={'state':'not-configured'}
             page.reload()
-            expect(page.locator('#traffic-toggle')).to_be_visible()
+            collection_controls(page)
             # Real event path: checkbox -> Angular CVA -> native allowlist -> owner pipe -> SQLite acquisition.
             page.locator('#traffic-toggle').check()
             expect(page.locator('#traffic-toggle')).to_be_checked()
@@ -187,6 +195,7 @@ def run(shell, output):
                     raise AssertionError('Desktop launcher exited before readiness: '+stderr.decode(errors='replace'))
                 browser=playwright.chromium.connect_over_cdp('http://127.0.0.1:'+str(port))
                 page=browser.contexts[0].pages[0]
+                collection_controls(page)
                 expect(page.locator('#collector-status')).to_have_text('Disabled',ignore_case=True)
                 page.locator('#stop-collector').click()
                 assert launcher.wait()==0

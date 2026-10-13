@@ -11,7 +11,7 @@ authorizes its implementation, verification and commit; Stage 5 is now COMPLETE
 and Stages 6–10 remained NOT STARTED at that checkpoint. The October 13 request
 to continue TailD authorizes remaining implementation through Stage 9. Stage 6
 and Stage 7 are now COMPLETE. The reopened Stage 1 R02 promotion regression is
-resolved and verified; Stage 8 is the single ACTIVE stage. Stage 10 requires explicit delivery
+resolved and verified; Stage 8 is COMPLETE and Stage 9 is the single ACTIVE stage. Stage 10 requires explicit delivery
 authority. No release or installed-client replacement is authorized here.
 
 ## Stage 1 — Public TailDNS derivative with automatic inheritance
@@ -396,7 +396,7 @@ this documentation request does not install or schedule one.
 
 ### Stage 8 — Portmaster-derived desktop analytics
 
-Status: **ACTIVE**. Requirements: R08 layout, R15, R16; preserve R11/R14.
+Status: **COMPLETE**. Requirements: R08 layout, R15, R16; preserve R11/R14.
 
 Objective: close overview -> application -> activity -> evidence/export in a
 packaged local desktop surface, not a collection of disconnected mockups.
@@ -418,17 +418,22 @@ Acceptance criteria:
   must not be replaced with text blocks or a generic card grid. Actual served
   assets must satisfy the design map's responsive/screenshot contract.
 
-Satisfied: none. Remaining: all criteria above.
-Advancement blockers (internal): all analytics UI criteria above remain to be
-implemented and verified. Resolve through the existing typed queries, real
-Portmaster widgets and actual-source native desktop drill-down/export. These
-block Stage 8 closure and dependent Stage 9 packaging, not continued execution.
+Satisfied: every criterion above, reconciled in [DESKTOP-ANALYTICS.md](DESKTOP-ANALYTICS.md).
+Actual-source drill-down and private export reconcile 1,773 facts/20,378,798 bytes.
+Typed compound filters, saved scoped/grouped queries after restart, stale-revision
+rejection, anchored selected-row/focus refresh, exact >2^53 bytes and private native
+JSON/CSV save pass. Current Portmaster-derived charts/rankings/explorer meet the
+responsive/Tailscale-theme contract. User-accepted app-local 150% zoom measures
+949×574 CSS px/DPR 1.5, keyboard/overflow verified and Windows unchanged. Existing
+collection lifecycle and source-build launcher pass on the same served assets.
+Physical outage tests remain untested under the explicit earlier waiver.
+Remaining: none. Blockers: none.
 Tracked deferrals: none.
 Dependency: Stage 7 COMPLETE; do not substitute mock-only UI for integration.
 
 ### Stage 9 — Production packaging and local release-readiness
 
-Status: **NOT STARTED**. Requirements: R17 and R18 pre-delivery reconciliation.
+Status: **ACTIVE**. Requirements: R17 and R18 pre-delivery reconciliation.
 
 Objective: produce and verify an installable product with no developer toolchain
 requirement, while preserving the inherited in-place connectivity installation.
