@@ -9,6 +9,10 @@ on:
         description: Also build inherited Android and shared core when already synchronized
         type: boolean
         default: true
+      verify_write_identity:
+        description: Verify workflow-file write authority on a temporary non-production ref
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -92,22 +96,65 @@ jobs:
 
   promote:
     needs: verify
-    if: needs.verify.outputs.changed == 'true'
+    if: needs.verify.outputs.changed == 'true' || inputs.verify_write_identity == true
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       actions: read
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: main
           fetch-depth: 0
+          # Single-repository deploy key, not a broad personal OAuth credential.
+          # Only this job receives it; no candidate scripts/build tools run here.
+          ssh-key: ${{ secrets.TAILD_INHERITANCE_SSH_KEY }}
+      - name: Confirm inherited workflows remain disabled
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/actions/workflows" --paginate --jq '.workflows[] | select(.path | startswith(".github/workflows/taild-") | not) | .state' | while read -r state; do
+            [[ "$state" == disabled_* ]]
+          done
+      - name: Verify actual workflow-file write authority without changing main
+        if: inputs.verify_write_identity == true
+        env:
+          BASE: ${{ needs.verify.outputs.base }}
+        run: |
+          set -euo pipefail
+          [[ "$BASE" =~ ^[0-9a-f]{40}$ ]]
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "$BASE"
+          git config user.name 'TailD inheritance authority check'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          ref="refs/heads/taild-auth-check-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          test -z "$(git ls-remote origin "$ref")"
+          export GIT_INDEX_FILE="$RUNNER_TEMP/taild-auth-check.index"
+          git read-tree "$BASE"
+          blob="$( { git show "$BASE:.github/workflows/upstream-candidate.yml"; printf '\n# Temporary TailD write-authority verification; never promoted to main.\n'; } | git hash-object -w --stdin )"
+          git update-index --add --cacheinfo "100644,$blob,.github/workflows/upstream-candidate.yml"
+          tree="$(git write-tree)"
+          probe="$(printf 'Verify TailD scoped workflow write authority\n' | git commit-tree "$tree" -p "$BASE")"
+          cleanup_probe() {
+            current="$(git ls-remote origin "$ref" | cut -f1)"
+            if [[ "$current" == "$probe" ]]; then git push origin ":$ref"; fi
+          }
+          trap cleanup_probe EXIT
+          git push origin "$probe:$ref"
+          test "$(git ls-remote origin "$ref" | cut -f1)" = "$probe"
+          cleanup_probe
+          test -z "$(git ls-remote origin "$ref")"
+          trap - EXIT
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$BASE"
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        if: needs.verify.outputs.changed == 'true'
         with:
           name: checked-candidate
           path: ${{ runner.temp }}/checked
       # No candidate repository scripts or build tools execute in this write job.
       - name: Promote only the verified merge with ordinary fast-forward semantics
+        if: needs.verify.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           BASE: ${{ needs.verify.outputs.base }}
@@ -116,9 +163,6 @@ jobs:
         run: |
           set -euo pipefail
           [[ "$BASE" =~ ^[0-9a-f]{40}$ && "$UPSTREAM" =~ ^[0-9a-f]{40}$ && "$CANDIDATE" =~ ^[0-9a-f]{40}$ ]]
-          gh api "repos/$GITHUB_REPOSITORY/actions/workflows" --paginate --jq '.workflows[] | select(.path | startswith(".github/workflows/taild-") | not) | .state' | while read -r state; do
-            [[ "$state" == disabled_* ]]
-          done
           git fetch origin main
           test "$(git rev-parse origin/main)" = "$BASE"
           git bundle verify "$RUNNER_TEMP/checked/candidate.bundle"

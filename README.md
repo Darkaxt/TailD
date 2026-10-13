@@ -82,6 +82,18 @@ The October 13 workflow-file permission regression is tracked in reopened Stage 
 do not interpret the intended promotion contract as current proof that the
 built-in workflow token can update inherited workflow files.
 
+Promotion is now configured with a write-enabled SSH deploy key scoped only to
+this repository, stored as `TAILD_INHERITANCE_SSH_KEY` and exposed only to the
+isolated promotion job. The built-in token stays read-only. No personal account,
+provider token or signing key is copied into it. External verification is pending.
+For an explicit credential/rotation smoke check, run the workflow manually with
+`inherited_checks=false` and `verify_write_identity=true`: it creates/verifies/
+deletes a unique temporary non-production workflow-comment ref and leaves main
+unchanged. The probe is not a fake upstream merge. Normal daily runs do not create
+probe refs. To revoke this authority, remove the matching repository deploy key
+and repository secret; deploy keys have no automatic expiry. Rotate by installing
+a fresh single-repository key, verifying the boundary and revoking the old key.
+
 Inherited TailDNS workflows are retained as source but disabled in TailD's GitHub
 settings. A newly inherited workflow requires review before promotion.
 

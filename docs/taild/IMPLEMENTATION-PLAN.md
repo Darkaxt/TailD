@@ -53,6 +53,19 @@ scoped automation authentication, not a broad personal login copied into CI.
 Do not exclude inherited workflow source or create releases as a workaround.
 No device/deployment verification is claimed. Tracked deferrals: none.
 
+Repair implementation: a new write-enabled SSH deploy key is scoped only to
+`Darkaxt/TailD` (key ID 166323174, public fingerprint
+`SHA256:/g8EyVu+b7zAcrKynihwBTmivO+ytsFErKi5ecZNZ/g`). Its private part is in the
+repository secret `TAILD_INHERITANCE_SSH_KEY`, only consumed by the isolated
+promotion job; GITHUB_TOKEN is reduced to contents/actions read there. No personal
+OAuth, Control D token, signing identity or another repository's key is copied.
+The exact-bundle/parent/base/fast-forward checks and disabled-inherited-workflow
+gate remain. A manual, default-off identity check writes a static workflow-comment
+change to one unique temporary non-production ref, verifies it, deletes it and
+checks main stayed unchanged. This is credential-boundary verification, not a
+fabricated TailDNS update or release. Local real-Git and workflow-authority
+contracts pass. Real CI write/deletion proof remains required before Stage 1 closes.
+
 ## Stage 2 — First read-only Control D data
 
 Status: **COMPLETE**. Requirement: R06.
