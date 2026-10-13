@@ -1,6 +1,6 @@
 # Stage 9 local packaging contract
 
-Stage 9 is ACTIVE; no installer or release is accepted yet. It has no authority to
+Stage 9 is COMPLETE for local release-readiness; no public release exists. It has no authority to
 replace the active client or activate an updater. Stage 8's native UI acceptance
 is recorded separately in [DESKTOP-ANALYTICS.md](DESKTOP-ANALYTICS.md).
 
@@ -29,13 +29,9 @@ now corrected at the conditional declaration. The first publish also produced a
 narrow generated `desktop/native/bin/Release` output; subsequent builds route it
 explicitly to the task output and the expendable first copy is cleanup-owned.
 
-Remaining acceptance work: hook-free Release offline launch, complete collected
-license/provenance inventory; fixed-owner reader setup; installer/upgrade/uninstall/
-rollback and node/service/Tailnet Lock state preservation in isolated Windows;
-dedicated pinned-key signing and tamper/replay/version contracts; credential-free
-GitHub candidate checks and isolated signing/release workflow design; integrated
-R01–R17/pre-delivery R18 reconciliation. None is hidden as a passed Stage 8 test,
-an open-ended deferral or an installed release.
+Final acceptance evidence below supersedes the first-candidate diagnostics. The
+installed client, updater and source services remain untouched. No Stage 8 Debug
+host check is substituted for production Release or installer acceptance.
 
 Local Sandbox is disabled. Hyper-V is installed/running, but the current process
 cannot inventory its VMs; no host feature, VM, service or privilege was changed.
@@ -96,3 +92,67 @@ commit leaves the prior committed floor intact and can be retried by the detache
 helper. Explicit history removal recognizes only the runtime's exact reserved
 filenames plus its cache subtree; similarly named unrelated files cause refusal
 before any history is deleted.
+
+## Verified Stage 9 result — 2026-10-13
+
+Production source: `ca73b3094ddf03cc44c9be2afdd48da138daf202`.
+Exact inherited core pin remains
+`github.com/Darkaxt/tailscale v1.103.0-pre.0.20261013063423-de6111f507ae`;
+its actual `VERSION.txt` is `1.105.0`. The local candidate is `1.105.0+1`, not an
+invented upstream version. Subsequent closure changes affect documentation and
+observer log capture only, not this product payload.
+
+1. A clean committed-source build produced the frozen windowed owner launcher,
+   collector/reader and setup helper; self-contained .NET 10.0.12 Windows host;
+   current production Angular assets and collected Python/OpenSSL/pywin32/
+   cryptography/.NET/WebView2/frontend notices. The pinned signed inventory covers
+   404 files. Python, Node, Go and a developer .NET installation are not needed to
+   run the package. Windows x64 with the installed Microsoft Evergreen WebView2
+   runtime is the target environment; WebView2 is an explicit system prerequisite,
+   not falsely described as a bundled browser runtime.
+2. [Windows run 38450846929](https://github.com/Darkaxt/TailD/actions/runs/38450846929)
+   passed the actual Inno installer and LocalSystem reader lifecycle: original-owner
+   SID/pipe, visible source-unavailable state on the clean host, nondestructive
+   preflight, unknown-history refusal, upgrade, replay/tamper rejection, detached
+   rollback with preserved watermark, normal uninstall retaining history and
+   explicit own-history removal. The independent synthetic Tailscale SCM entry
+   and opaque node/signer/provider sentinel remain unchanged at every checkpoint.
+   These are actual Windows operations over synthetic account state, not a live
+   authenticated tailnet migration. Native interrupted-metadata and signature/
+   path/version contracts also pass in that run.
+3. The production key signed the real local payload. Independent Inno extraction
+   followed by verification against the repository-pinned public key reconciled
+   every file, component identity and version. Local installer SHA-256:
+   `2897ee645b5505b7c0a64b111fdb7c4d7ddee937e4215524c66d5247bfa481a0`.
+   This is a manifest-signed payload; the Windows executables/installer are **not
+   Authenticode-signed**. CI fixture signatures are separately labeled and never
+   substituted for this production-key check.
+4. Actual hook-free Release WebView2 plus the frozen collector loaded Overview
+   metrics and navigated to Settings through native UI Automation, with deliberate
+   source unavailability and collection disabled. The real screenshot was reviewed;
+   no CDP/debug readiness hook, developer runtime, provider credential, source
+   connection or live network configuration change was used. Both owned processes
+   exited normally. The final native DLL SHA-256 is
+   `d9dd024d2defacc43e95da052ad834e086cc5ad2ea0e845da8d4e294ed2139bb`;
+   launcher SHA-256 is
+   `45a705002a00869a77891c05cb020385b62b89c784edb7af4e0608c16b47d810`.
+
+The single Start menu shortcut opens TailD analytics. The inherited TailDNS tray
+continues to own connectivity controls; it is not a competing analytics GUI or
+another VPN. This Stage 9 installer adds only analytics and the read-only reader
+under `C:/Program Files/Tailscale/TailD`. No in-place connectivity migration has
+been selected or performed; matching-core migration and active-client validation
+remain explicit Stage 10 obligations before any replacement claim.
+
+R01–R07 retain their recorded public lineage, live provider/source and inheritance
+evidence. R08–R16 retain the unchanged source/query/runtime/desktop acceptance in
+their owning documents, including the user's physical-outage waiver. R17 and the
+pre-delivery R18 requirements are satisfied by the evidence above and the signing
+arrangement. No current-stage blocker or tracked deferral remains. Full product
+delivery is not complete: release download proof, authenticated migration,
+updater activation and real update/interruption recovery belong to Stage 10.
+
+Private local installer/payload and verification evidence are retained outside
+GitHub. Superseded outputs are removed through reviewed exact-file cleanup. No
+signing identity, requested deliverable, source history or installed client is
+part of that cleanup.

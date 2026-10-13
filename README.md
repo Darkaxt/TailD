@@ -64,8 +64,12 @@ Control D capabilities and private native JSON/CSV exports. Actual stored-data
 drill-down/export, exact counters/revisions, saved queries, keyboard navigation,
 responsive sizes and user-accepted native 150% app-local zoom pass. Windows
 display scaling and installed clients are unchanged. See [desktop evidence](docs/taild/DESKTOP-ANALYTICS.md).
-Stage 9 packaging/readiness is ACTIVE; no TailD release or installed replacement
-is claimed.
+Stage 9 local packaging/readiness is COMPLETE: a production-key manifest-signed
+Windows candidate, actual isolated installer/reader upgrade/rollback/uninstall,
+offline Release launch and independent installer-payload verification pass.
+The executables/installer are not Authenticode-signed. Stage 10 is BLOCKED on
+explicit public-release/Windows-migration/updater authority; no TailD release or
+installed replacement is claimed. See [packaging evidence and delivery boundaries](docs/taild/PACKAGING.md).
 
 - [TailD authoritative specification](docs/taild/SPECIFICATION.md)
 - [Remaining-product specification: ingestion, metrics, desktop and delivery](docs/taild/PRODUCT-SPECIFICATION.md)

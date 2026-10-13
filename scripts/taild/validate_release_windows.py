@@ -29,8 +29,11 @@ def run(package,output):
             '--collector-pid',str(collector.pid),'--user-data',str(home/'ui-cache')],creationflags=subprocess.CREATE_NO_WINDOW)
         powershell=Path(os.environ['WINDIR'])/'System32'/'WindowsPowerShell'/'v1.0'/'powershell.exe'
         probe=Path(__file__).with_name('validate_release_window.ps1')
-        subprocess.run([str(powershell),'-NoProfile','-ExecutionPolicy','Bypass','-File',str(probe),
-            '-NativePid',str(native.pid),'-Output',str(output/'rendered.json')],check=True,creationflags=subprocess.CREATE_NO_WINDOW)
+        observed=subprocess.run([str(powershell),'-NoProfile','-ExecutionPolicy','Bypass','-File',str(probe),
+            '-NativePid',str(native.pid),'-Output',str(output/'rendered.json')],capture_output=True,creationflags=subprocess.CREATE_NO_WINDOW)
+        (output/'probe.stdout.log').write_bytes(observed.stdout)
+        (output/'probe.stderr.log').write_bytes(observed.stderr)
+        if observed.returncode:raise AssertionError('Release UI observer failed: '+observed.stderr.decode(errors='replace')[:5000])
         rendered=json.loads((output/'rendered.json').read_text(encoding='utf-8-sig'))
         screenshot=Path(os.environ['USERPROFILE'])/'.codex'/'skills'/'screenshot'/'scripts'/'take_screenshot.ps1'
         subprocess.run([str(powershell),'-NoProfile','-ExecutionPolicy','Bypass','-File',str(screenshot),

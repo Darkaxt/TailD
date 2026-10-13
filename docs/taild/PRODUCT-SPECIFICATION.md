@@ -1,6 +1,6 @@
 # TailD remaining-product specification
 
-Version 1.3, 2026-10-13. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.4, 2026-10-13. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
 
 ## 1. Authority, authorization and completion boundary
 
@@ -23,7 +23,7 @@ TailD authorizes remaining implementation, verification and commits through loca
 release-readiness, preserving the explicit Stage 10 delivery boundary. Stage 6 is
 COMPLETE with the evidence in POLICY-READS.md; Stage 7 is COMPLETE under its
 recorded live-test waiver. The reopened Stage 1 R02 repair is verified and COMPLETE;
-Stage 8 is COMPLETE and Stage 9 is the single ACTIVE stage. No public release,
+Stages 8–9 are COMPLETE; Stage 10 is BLOCKED on explicit delivery authority. No public release,
 installed-client replacement or updater activation is authorized by this continuation.
 
 The [stage ledger](IMPLEMENTATION-PLAN.md) maps every requirement to acceptance
@@ -560,8 +560,8 @@ authorization parks Stage 10; it does not make it COMPLETE.
 | 6 | Remaining Control D READ/capability coverage; R12, R14b credential boundary | COMPLETE |
 | 7 | Opt-in continuous lifecycle and secure runtime; R13, remaining R14 | COMPLETE |
 | 8 | Portmaster-derived desktop layout/explorer/export; R08 layout, R15, R16 | COMPLETE |
-| 9 | Production packaging and local release-readiness; R17, R18 pre-delivery reconciliation | ACTIVE |
-| 10 | Authorized release, rollout, updater proof and final reconciliation; remaining R18 | NOT STARTED |
+| 9 | Production packaging and local release-readiness; R17, R18 pre-delivery reconciliation | COMPLETE |
+| 10 | Authorized release, rollout, updater proof and final reconciliation; remaining R18 | BLOCKED on delivery/migration authority |
 
 Each stage's detailed acceptance obligations are in the ledger. Verification
 of an earlier implementation remains valid only for unchanged relevant code and

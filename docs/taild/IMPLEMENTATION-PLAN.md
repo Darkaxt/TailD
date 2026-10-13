@@ -11,7 +11,7 @@ authorizes its implementation, verification and commit; Stage 5 is now COMPLETE
 and Stages 6–10 remained NOT STARTED at that checkpoint. The October 13 request
 to continue TailD authorizes remaining implementation through Stage 9. Stage 6
 and Stage 7 are now COMPLETE. The reopened Stage 1 R02 promotion regression is
-resolved and verified; Stage 8 is COMPLETE and Stage 9 is the single ACTIVE stage. Stage 10 requires explicit delivery
+resolved and verified; Stages 8–9 are COMPLETE. Stage 10 is BLOCKED on explicit delivery
 authority. No release or installed-client replacement is authorized here.
 
 ## Stage 1 — Public TailDNS derivative with automatic inheritance
@@ -433,7 +433,7 @@ Dependency: Stage 7 COMPLETE; do not substitute mock-only UI for integration.
 
 ### Stage 9 — Production packaging and local release-readiness
 
-Status: **ACTIVE**. Requirements: R17 and R18 pre-delivery reconciliation.
+Status: **COMPLETE**. Requirements: R17 and R18 pre-delivery reconciliation.
 
 Objective: produce and verify an installable product with no developer toolchain
 requirement, while preserving the inherited in-place connectivity installation.
@@ -450,21 +450,26 @@ Acceptance criteria:
   build, offline launch and packaged-runtime/installer acceptance. No publication,
   updater activation or personal-device rollout merely to close this stage.
 
-Satisfied: none. Remaining: all criteria above.
-Advancement blocker B09 (internal): R17's production payload, isolated installer/
-recovery and offline Release acceptance are not yet demonstrated. Frozen launcher
-diagnostics and package contract regressions are not acceptance of the complete
-installer. Resolve with the clean, pinned-source production package, actual
-isolated Windows installer/SCM upgrade/rollback/uninstall evidence, offline native
-launch and integrated provenance/license/signature reconciliation. Stage 9 remains
-ACTIVE while this implementable work is completed; Stage 10 cannot advance.
-Tracked deferrals: none.
+Satisfied: all four criteria, reconciled in [PACKAGING.md](PACKAGING.md). Clean
+production source ca73b3094ddf03cc44c9be2afdd48da138daf202 produces the locally
+production-key-signed 1.105.0+1 payload and reviewed normal Inno installer. Actual
+Windows run 38450846929 passes installer/SCM upgrade, external rollback, anti-replay,
+tamper, history retention/removal and synthetic account-state preservation. Actual
+hook-free Release/frozen-collector offline Overview -> Settings -> normal close
+passes; independent installer extraction verifies all signed payload hashes.
+Collected notices/provenance and the credential-isolated signing/release design
+are recorded. Existing R01–R16 evidence remains applicable to unchanged product
+paths. No live authenticated migration, publication or updater is claimed.
+Resolved B09 (internal): production payload/isolated recovery/offline acceptance
+previously lacked evidence. The integrated checks above resolve it; no Debug
+host/component test is presented as installer acceptance.
+Remaining: none. Blockers: none. Tracked deferrals: none.
 Dependency: Stage 8 COMPLETE. Release and live rollout belong to Stage 10 by
 explicit scope separation, not an unmet Stage 9 criterion hidden as a deferral.
 
 ### Stage 10 — Authorized release, rollout and updater verification
 
-Status: **NOT STARTED**. Requirement: remaining R18, preserving R01–R17.
+Status: **BLOCKED**. Requirement: remaining R18, preserving R01–R17.
 
 Objective: deliver the verified Windows product and prove its independent update
 channel without redirecting existing TailDNS installations implicitly.
@@ -481,9 +486,14 @@ Acceptance criteria:
   compatibility and upstream ownership; existing maintenance tasks unchanged.
 
 Satisfied: none. Remaining: all criteria above.
-Blockers: none currently established; delivery authority is a future activation
-prerequisite. If absent when this stage is due, record the exact external blocker
-and park it as BLOCKED, never COMPLETE. Tracked deferrals: none.
+Blocker B10 (external): the continuation authorized implementation through local
+release-readiness, not public release, active Windows replacement or TailD updater
+activation. These actions are required by the first three acceptance criteria
+but cannot proceed without explicit delivery/migration authority. The user's
+authorization for those live actions resolves B10; actual production download,
+authenticated node/Tailnet Lock/DNS/GUI preservation and update/rollback must then
+be verified, not inferred from synthetic Stage 9 state. No Stage 10 implementation
+or live operation has begun. Tracked deferrals: none.
 Dependency: Stage 9 COMPLETE and explicit publication/deployment authorization.
 
 ## Stage 5 execution — 2026-10-08
