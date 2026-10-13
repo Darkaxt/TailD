@@ -51,6 +51,12 @@ jobs:
           $ErrorActionPreference='Stop'
           ./scripts/taild/build_package.ps1 -Output "$env:RUNNER_TEMP/acceptance/candidate-1" -Python "$env:RUNNER_TEMP/build-env/Scripts/python.exe" -Subversion 1 -FixturePublicKey $env:TAILD_FIXTURE_PUBLIC_KEY
           ./scripts/taild/build_package.ps1 -Output "$env:RUNNER_TEMP/acceptance/candidate-2" -Python "$env:RUNNER_TEMP/build-env/Scripts/python.exe" -Subversion 2 -FixturePublicKey $env:TAILD_FIXTURE_PUBLIC_KEY -SkipFrontendBuild
+      - name: Windows package and interrupted-metadata contracts
+        shell: pwsh
+        run: |
+          $env:TAILD_PACKAGE_TEST_OUTPUT="$env:RUNNER_TEMP/package-contract-fixtures"
+          & "$env:RUNNER_TEMP/build-env/Scripts/python.exe" -B -m unittest discover -s scripts/taild -p 'test_package*.py' -v
+          if($LASTEXITCODE){throw 'Windows package contracts failed'}
       - name: Actual isolated install upgrade rollback uninstall
         shell: pwsh
         run: |

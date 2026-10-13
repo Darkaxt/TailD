@@ -94,6 +94,15 @@ def reader_stop(remove=False):
     finally:manager.Close()
 
 
+def write_metadata(config,metadata):
+    # This fixed protected work file is reserved installation metadata, not
+    # arbitrary user content. A prior interrupted write can be replaced without
+    # truncating the last committed owner/anti-replay state.
+    pending=config.with_name('installation.pending.json');manifest.ordinary(pending)
+    with pending.open('w',encoding='utf-8') as f:json.dump(metadata,f);f.flush();os.fsync(f.fileno())
+    os.replace(pending,config)
+
+
 def reader_start(directory,owner):
     import pywintypes,win32security,win32service
     sid=win32security.ConvertSidToStringSid(win32security.ConvertStringSidToSid(owner) if owner.startswith('S-') else win32security.LookupAccountName(None,owner)[0])
@@ -105,9 +114,7 @@ def reader_start(directory,owner):
         with config.open('x',encoding='utf-8') as f:json.dump({'owner_sid':sid,'schema':'taild-installation-v1'},f)
     metadata=json.loads(config.read_text())
     metadata['highest_subversion']=max(metadata.get('highest_subversion',0),manifest.verify(directory,installed=True)['subversion'])
-    pending=config.with_name('installation.pending.json')
-    with pending.open('x',encoding='utf-8') as f:json.dump(metadata,f);f.flush();os.fsync(f.fileno())
-    os.replace(pending,config)
+    write_metadata(config,metadata)
     manager=win32service.OpenSCManager(None,None,win32service.SC_MANAGER_CREATE_SERVICE|win32service.SC_MANAGER_CONNECT)
     try:
         command='"'+str(directory/'TailD.exe')+'" reader-service'
@@ -141,7 +148,7 @@ def copy_verified(source,destination,data):
 def remove_verified(root,data):
     # Exact signed members only, never a recursive sweep or an external source.
     manifest.verify(root,installed=True)
-    for name in [r['path'] for r in data['files']]+[manifest.MANIFEST,manifest.SIGNATURE,'installation.json']:
+    for name in [r['path'] for r in data['files']]+[manifest.MANIFEST,manifest.SIGNATURE,'installation.json','installation.pending.json']:
         path=root/name
         if path.exists():manifest.ordinary(path);path.unlink()
     for directory in sorted((p for p in root.rglob('*') if p.is_dir()),key=lambda p:len(p.parts),reverse=True):
@@ -234,10 +241,10 @@ def rollback(candidate=None):
     for row in old['files']:
         source=previous/row['path'];target=app/row['path'];target.parent.mkdir(parents=True,exist_ok=True)
         shutil.copyfile(source,target)
-    for name in (manifest.MANIFEST,manifest.SIGNATURE,'installation.json'):
+    for name in (manifest.MANIFEST,manifest.SIGNATURE):
         if (previous/name).exists():shutil.copyfile(previous/name,app/name)
-    restored=json.loads((app/'installation.json').read_text());restored['highest_subversion']=highest
-    (app/'installation.json').write_text(json.dumps(restored),encoding='utf-8')
+    restored=json.loads((previous/'installation.json').read_text());restored['highest_subversion']=highest
+    write_metadata(app/'installation.json',restored)
     manifest.verify(app,installed=True)
     update_registration(old)
     reader_start(app,json.loads((app/'installation.json').read_text())['owner_sid'])
@@ -258,7 +265,7 @@ def abort(candidate):
     for row in data['files']:
         path=app/row['path']
         if path.exists():path.unlink()
-    for name in (manifest.MANIFEST,manifest.SIGNATURE,'installation.json'):
+    for name in (manifest.MANIFEST,manifest.SIGNATURE,'installation.json','installation.pending.json'):
         path=app/name
         if path.exists():manifest.ordinary(path);path.unlink()
 
@@ -277,7 +284,10 @@ def remove_history():
     if not root.exists():return
     history.private_directory(root)
     names={'history.sqlite3','history.sqlite3-journal','history.sqlite3-wal','history.sqlite3-shm',
-        'desktop-queries.json','desktop-queries.pending.json'}
+        'desktop-queries.json','desktop-queries.pending.json',
+        'runtime.json','runtime.pending.json','runtime-status.json','runtime-status.pending.json',
+        'runtime-dns-progress.json','runtime-dns-progress.pending.json',
+        'runtime-provider-limit.json','runtime-provider-limit.pending.json'}
     pending=[root];files=[];directories=[]
     while pending:
         directory=pending.pop();manifest.ordinary(directory);directories.append(directory)
@@ -286,7 +296,7 @@ def remove_history():
             if path.is_dir():
                 if directory==root and path.name!='ui-cache':raise manifest.PackageError('unrecognized-history-member')
                 pending.append(path)
-            elif directory!=root or path.name in names or path.name.startswith('runtime') and path.suffix=='.json':files.append(path)
+            elif directory!=root or path.name in names:files.append(path)
             else:raise manifest.PackageError('unrecognized-history-member')
     for path in files:path.unlink()
     for directory in sorted(directories,key=lambda p:len(p.parts),reverse=True):directory.rmdir()

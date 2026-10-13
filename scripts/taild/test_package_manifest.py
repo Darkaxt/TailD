@@ -14,6 +14,8 @@ import package_manifest as manifest
 import installer
 import signing
 import sys
+import history
+import reader
 
 
 class PackageManifestTest(unittest.TestCase):
@@ -57,6 +59,17 @@ class PackageManifestTest(unittest.TestCase):
         for name in ('TailD.exe','TailD.Setup.exe','unins001.exe','desktop/TailD.Desktop.exe'):
             self.assertTrue(installer.blocks_installation(app/name,app,True))
         self.assertFalse(installer.blocks_installation(app.parent/'other.exe',app,True))
+
+    @unittest.skipUnless(os.name=='nt','Windows owning-account history removal')
+    def test_history_removal_preserves_unknown_runtime_named_user_file(self):
+        local=history.private_directory(self.root/'local')
+        taild=history.private_directory(local/'TailD');home=history.private_directory(taild/'history')
+        notes=home/'runtime-user-notes.json';notes.write_text('Synthetic unrelated user notes')
+        (self.root/'installation.json').write_text(json.dumps({'owner_sid':reader.current_sid()}))
+        with patch.object(installer,'app_directory',return_value=self.root),patch.object(installer,'known_folder',return_value=local),\
+             self.assertRaisesRegex(manifest.PackageError,'unrecognized-history'):
+            installer.remove_history()
+        self.assertEqual(notes.read_text(),'Synthetic unrelated user notes')
 
     def setUp(self):
         if os.name=='nt':
@@ -140,6 +153,10 @@ class PackageManifestTest(unittest.TestCase):
                 target=app/row['path'];target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(self.root/row['path'],target)
             for name in (manifest.MANIFEST,manifest.SIGNATURE):shutil.copyfile(self.root/name,app/name)
             (app/'installation.json').write_text(json.dumps({**metadata,'highest_subversion':2}))
+            with patch.object(installer.os,'replace',side_effect=OSError('Synthetic atomic metadata commit failure')),\
+                 self.assertRaises(OSError):
+                installer.rollback(self.root)
+            self.assertEqual(json.loads((app/'installation.json').read_text())['highest_subversion'],2)
             installer.rollback(self.root)
             self.assertTrue((app/'desktop/ui/obsolete.js').exists());self.assertFalse((app/'desktop/ui/new.js').exists())
             self.assertEqual(verify(app,self.public,True)['subversion'],1)

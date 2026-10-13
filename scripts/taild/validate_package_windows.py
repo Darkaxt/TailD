@@ -141,6 +141,12 @@ def acceptance(root,compiler,repo):
         try:assert win32service.QueryServiceStatusEx(service)['CurrentState']==win32service.SERVICE_RUNNING
         finally:service.Close()
         check('uninstall-preflight-preserves-running-reader-and-history')
+        notes=home/'runtime-user-notes.json';notes.write_text('Synthetic unrelated user notes')
+        helper('remove-history',expected=1)
+        assert notes.read_text()=='Synthetic unrelated user notes' and (home/'history.sqlite3').exists()
+        # Explicit fixture state transition after proving refusal; not user data.
+        notes.unlink()
+        check('history-removal-refuses-unrecognized-runtime-named-content')
         run([setups[1],'/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/LOG='+str(root/'upgrade-2.log')])
         assert manifest.verify(app,public,True)['subversion']==2
         assert hashlib.sha256((home/'history.sqlite3').read_bytes()).hexdigest()==history_hash

@@ -90,3 +90,9 @@ outside the installed directory. The normal installer already extracts this
 complete external helper before making changes; manual rollback follows the same
 rule. Installed-helper rollback is refused before service/file changes, rather
 than trying to replace its own loaded executable or weakening Windows file locks.
+Rollback commits owner/sequence metadata with fsync and atomic replacement; it
+never copies an older watermark over the current one first. A failed metadata
+commit leaves the prior committed floor intact and can be retried by the detached
+helper. Explicit history removal recognizes only the runtime's exact reserved
+filenames plus its cache subtree; similarly named unrelated files cause refusal
+before any history is deleted.

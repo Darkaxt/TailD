@@ -8,7 +8,7 @@ import re
 PUBLIC_KEY='Vq5UrOc4cj4reJmuVdRJ9YFiSRuax9qua/F/WpyW+bE='
 MANIFEST='taild-package.json'
 SIGNATURE=MANIFEST+'.sig'
-METADATA={MANIFEST,SIGNATURE,'installation.json'}
+METADATA={MANIFEST,SIGNATURE,'installation.json','installation.pending.json'}
 
 
 class PackageError(ValueError):pass
@@ -95,7 +95,8 @@ def verify(root,public_key=PUBLIC_KEY,installed=False):
         return result
     data=validate(json.loads(raw,object_pairs_hook=unique))
     if inventory(root,installed,{r['path'] for r in data['files']})!=data['files']:raise PackageError('package-content-mismatch')
-    if not installed and (root/'installation.json').exists():raise PackageError('unexpected-installed-metadata')
+    if not installed and any((root/name).exists() for name in ('installation.json','installation.pending.json')):
+        raise PackageError('unexpected-installed-metadata')
     return data
 
 
