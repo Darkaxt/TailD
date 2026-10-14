@@ -688,6 +688,19 @@ advancement blockers, not unnamed deferrals or passed acceptance. This checkpoin
 finishes the independently verified collector correction up to the requested
 pre-deployment stop, not the overall Stage 10 outcome.
 
+### Stage 10 user refinement — 2026-10-14
+
+Stage 10 remains the single ACTIVE stage. R15a adds a connected refresh and
+Portmaster-layout refinement, already_authorized by the latest user feedback.
+B13: RESOLVED for the source/native refinement acceptance. The complete integrated
+loading/error/focus lifecycle, basename identity, transaction-local preparation,
+reviewed offline map and Portmaster grid pass focused regressions plus actual
+isolated native served-asset/viewport/150%-zoom/drill-down/export verification.
+Evidence and explicit real/synthetic boundaries: [DESKTOP-ANALYTICS.md](DESKTOP-ANALYTICS.md).
+No additional deployment or release is inferred from this refinement request.
+Remaining R15a source acceptance: none. Tracked deferrals: none. Existing B12
+remains; overall Stage 10 and installed rollout of this new UI are not COMPLETE.
+
 ## Stage 5 execution — 2026-10-08
 
 Authorization: already_authorized by the explicit request to start Stage 5.

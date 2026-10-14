@@ -14,7 +14,7 @@ export function bytes(value:unknown):string{
 }
 export interface Bin {start:string;end:string;inbound_bytes:string;outbound_bytes:string;total_bytes:string;
   coverage_incomplete:boolean;represented_microseconds:number;rate:unknown|null}
-export interface Consumer {value:string|null;label?:string;inbound_bytes:string;outbound_bytes:string;total_bytes:string;bucket_count?:number}
+export interface Consumer {value:string|null;label?:string;fullPath?:string;inbound_bytes:string;outbound_bytes:string;total_bytes:string;bucket_count?:number}
 
 @Component({selector:'sfng-netquery-line-chart',standalone:true,imports:[CommonModule],
   template:`<div class="chart-legend"><span class="received">● Received</span><span class="sent">● Sent</span>
@@ -73,7 +73,7 @@ export class SfngNetqueryLineChartComponent implements AfterViewInit {
 @Component({selector:'sfng-netquery-circular-bar-chart',standalone:true,imports:[CommonModule],
   template:`<div class="radial-surface"></div><div class="consumer-list" role="list">
     <div *ngFor="let row of rows;let i=index" role="listitem"><button class="consumer" (click)="select.emit(row)"
-      [title]="(row.label||row.value||'Unknown')+' · '+row.total_bytes+' bytes'">
+      [title]="(row.fullPath||row.label||row.value||'Unknown')+' · '+row.total_bytes+' bytes'">
       <span class="rank">{{i+1}}</span><span class="consumer-name">{{row.label||row.value||'Unknown identity'}}</span>
       <span>{{format(row.total_bytes)}}</span><span class="consumer-bar"><span [style.width.%]="share(row.inbound_bytes)" class="in"></span>
       <span [style.width.%]="share(row.outbound_bytes)" class="out"></span></span>
@@ -113,7 +113,7 @@ export class CircularBarChartComponent implements AfterViewInit {
     svg.append('g').selectAll('g').data(series).join('g').attr('fill',s=>s.key==='inbound_bytes'?'#85aaf5':'#b7a7ec')
       .selectAll('path').data(s=>s.map(p=>Object.assign(p,{series:s.key}))).join('path').attr('d',arc)
       .on('click',(_,d)=>{if(Number(d.data[0])<8)this.select.emit(this.rows[Number(d.data[0])])})
-      .append('title').text(d=>`${d.data[1].label||d.data[1].value||'Unknown'}\nReceived ${d.data[1].inbound_bytes} bytes\nSent ${d.data[1].outbound_bytes} bytes`);
+      .append('title').text(d=>`${d.data[1].label||d.data[1].value||'Unknown'}${d.data[1].fullPath?'\n'+d.data[1].fullPath:''}\nReceived ${d.data[1].inbound_bytes} bytes\nSent ${d.data[1].outbound_bytes} bytes`);
     svg.append('g').attr('text-anchor','middle').selectAll('g').data(y.ticks(3).slice(1)).join('g')
       .call(g=>g.append('circle').attr('stroke','#fff').attr('stroke-opacity',.15).attr('fill','none').attr('r',y))
       .call(g=>g.append('text').attr('y',d=>-y(d)).attr('dy','.35em').attr('fill','currentColor').attr('font-size',10).text(d=>d3.format('.2s')(d)));

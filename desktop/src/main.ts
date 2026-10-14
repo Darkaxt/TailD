@@ -10,6 +10,8 @@ import {Collection,State} from './collection';
 import {DashboardWidgetComponent} from './portmaster/panel';
 import {Bin,Consumer,CircularBarChartComponent,SfngNetqueryLineChartComponent,bytes,exact} from './portmaster/charts';
 import {Evidence} from './evidence';
+import {applicationName} from './application-label';
+import {WorldMapComponent} from './portmaster/world-map';
 
 type Kind='traffic'|'dns'|'correlations';
 type Page='Overview'|'Applications'|'Activity'|'Control D'|'Sources & health'|'Settings';
@@ -30,7 +32,7 @@ const fields:Record<Kind,string[]>={
   dns:['question','type','endpoint','profile','client','action','outcome','reason','reason_value','protocol','source','id','timestamp']};
 
 @Component({selector:'taild-app',standalone:true,
-  imports:[CommonModule,FormsModule,Collection,DashboardWidgetComponent,CircularBarChartComponent,SfngNetqueryLineChartComponent,Evidence,IngestionNotice],
+  imports:[CommonModule,FormsModule,Collection,DashboardWidgetComponent,CircularBarChartComponent,SfngNetqueryLineChartComponent,Evidence,IngestionNotice,WorldMapComponent],
   template:`
   <button class="skip-link" (click)="skipContent()">Skip to analytics content</button>
   <nav class="rail" aria-label="TailD navigation"><span class="brand" title="TailD · independent fork">TD</span>
@@ -63,7 +65,7 @@ const fields:Record<Kind,string[]>={
         <button id="available-history" (click)="availableHistory()" [disabled]="busy()">Latest retained hour</button></div>
     </fieldset>
     <div *ngIf="error()" id="analytics-error" class="error" role="alert">{{error()}}</div>
-    <div class="filter-tags" *ngIf="application()!==undefined || predicates.length || search">
+    <div class="filter-tags" [attr.inert]="busy()?'':null" *ngIf="application()!==undefined || predicates.length || search">
       <span class="filter-pill" *ngIf="application()!==undefined">Application: {{appName(application())}}<button aria-label="Remove application scope" (click)="clearApplication()">×</button></span>
       <span class="filter-pill" *ngFor="let filter of predicates;let i=index">{{predicateLabel(filter)}}<button [attr.aria-label]="'Remove filter '+(i+1)" (click)="removeFilter(i)">×</button></span>
       <span class="filter-pill" *ngIf="search">Search: {{search}}<button aria-label="Remove search" (click)="clearSearch()">×</button></span>
@@ -73,48 +75,55 @@ const fields:Record<Kind,string[]>={
       <span class="hint">{{b.aggregation_version}} · no socket/PID bytes or firewall verdicts</span>
       <span class="hint" *ngIf="application()!==undefined || predicates.length || device">DNS totals use independent endpoint scope when node/traffic/application filters cannot apply.</span>
       <span class="hint" *ngIf="catalog()?.nodes_truncated">Observed-node list is truncated; narrow the host scope.</span></div>
-    <div class="loading-state" role="status" *ngIf="busy()">{{batch()?'Refreshing · prior revision retained until the complete view is ready…':'Reading local history…'}}</div>
+    <div class="loading-overlay" *ngIf="busy()" role="status" aria-live="polite" aria-atomic="true" id="view-loading">
+      <div class="loading-dialog"><div class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+        <strong>{{batch()?'Refreshing view':'Loading analytics'}}</strong><span>Reading local history</span>
+        <small>{{batch()?'Your previous revision is kept until the new view is ready.':'Preparing the selected view.'}}</small></div></div>
     <div class="analytics-results" [attr.inert]="busy()?'':null">
 
     <ng-container *ngIf="page()==='Overview' || (page()==='Applications'&&application()!==undefined)">
-      <div class="dashboard-grid" *ngIf="summary() as s">
-        <app-dashboard-widget label="Traffic · canonical buckets" class="wide">
+      <div class="dashboard-grid" [class.application-dashboard]="application()!==undefined" *ngIf="summary() as s">
+        <app-dashboard-widget label="Recent activity" class="wide" id="dashboard-stats">
           <div class="mini-stats-list"><button class="mini-stat" id="received-card" (click)="explore('traffic')"><label>Received</label><span>{{format(s.data.inbound_bytes)}}</span><small>{{s.data.inbound_bytes}} bytes</small></button>
             <button class="mini-stat" id="sent-card" (click)="explore('traffic')"><label>Sent</label><span>{{format(s.data.outbound_bytes)}}</span><small>{{s.data.outbound_bytes}} bytes</small></button>
             <button class="mini-stat" id="applications-card" (click)="navigate('Applications')"><label>Observed applications</label><span>{{s.application_activity.known_distinct}}</span><small>{{s.application_activity.unknown_buckets}} unknown buckets</small></button>
             <button class="mini-stat" id="dns-card" (click)="explore('dns')"><label>DNS decisions</label><span>{{dnsSummary()?.dns_activity.events??'Unavailable'}}</span><small>Canonical provider events</small></button></div>
         </app-dashboard-widget>
-        <app-dashboard-widget label="Bandwidth history · observed samples" class="wide chart-panel">
+        <app-dashboard-widget label="Bandwidth history · observed samples" class="half chart-panel" id="dashboard-bandwidth">
           <sfng-netquery-line-chart [data]="bins()" (select)="binScope($event)" />
         </app-dashboard-widget>
-        <app-dashboard-widget [label]="application()===undefined?'Top applications · received / sent':'Top destinations · application scoped'" class="half">
+        <app-dashboard-widget [label]="application()===undefined?'Top applications · received / sent':'Top destinations · application scoped'" class="half" id="dashboard-consumers">
           <sfng-netquery-circular-bar-chart [data]="application()===undefined?consumers():destinations()" (select)="selectConsumer($event)" />
         </app-dashboard-widget>
-        <app-dashboard-widget label="Correlation evidence · not attribution" class="half">
+        <app-dashboard-widget label="Correlation evidence · not attribution" class="half" id="dashboard-correlations">
           <div class="partition" aria-label="Correlation bytes partition"><ng-container *ngFor="let item of correlation()"><button *ngIf="item.weight>0" [style.flex-grow]="item.weight" [title]="item.name+': '+item.bytes+' bytes'"
               [attr.aria-label]="item.name+': '+item.bytes+' bytes'" (click)="correlationScope(item.name)">{{item.weight>15?item.name:''}}</button></ng-container></div>
           <div class="rank-table"><button *ngFor="let item of correlation()" (click)="correlationScope(item.name)"><span>{{item.name}}</span><span>{{format(item.bytes)}}</span><small>{{item.count}} buckets</small></button></div>
           <p class="hint">A unique temporal candidate is an inference. Cache, TTL and process-to-domain origin are unproven.</p>
         </app-dashboard-widget>
-        <app-dashboard-widget label="DNS outcomes · provider codes unverified" class="half">
+        <app-dashboard-widget label="DNS outcomes · provider codes unverified" class="half" id="dashboard-outcomes">
           <div class="outcome-total">{{dnsSummary()?.dns_activity.events??'—'}}<small>observed decisions</small></div>
           <div class="partition" aria-label="DNS outcome distribution"><ng-container *ngFor="let item of outcomes()"><button *ngIf="item.count>0" [style.flex-grow]="item.count" (click)="outcomeScope(item.name)" [attr.aria-label]="item.name+': '+item.count+' decisions'">{{item.name}}</button></ng-container></div>
-          <div class="rank-table"><button *ngFor="let item of outcomes()" (click)="outcomeScope(item.name)"><span>{{item.name}}</span><span>{{item.count}}</span></button></div>
+          <div class="rank-table"><ng-container *ngFor="let item of outcomes()"><button *ngIf="item.count>0" (click)="outcomeScope(item.name)"><span>{{item.name}}</span><span>{{item.count}}</span></button></ng-container></div>
+          <p class="hint" *ngIf="!dnsSummary()?.dns_activity.events">No DNS decisions observed in this scope.</p>
           <p class="hint">Block rate unavailable until action meanings are verified. Unknown does not mean allowed.</p>
         </app-dashboard-widget>
-        <app-dashboard-widget label="DNS questions · selected endpoint" class="half">
+        <app-dashboard-widget label="DNS questions · selected endpoint" class="half" id="dashboard-questions">
           <div class="rank-table"><button *ngFor="let item of questions().slice(0,12)" (click)="questionScope(item.value)"><span>{{item.value||'Unknown question'}}</span><span>{{item.events}} decisions</span></button></div>
           <p *ngIf="!questions().length" class="hint">No provider decisions observed in this scope.</p>
           <p class="hint" *ngIf="application()!==undefined">Independent endpoint DNS scope, not all queries from this application. Candidate questions are in its activity evidence.</p>
           <div class="rank-table" *ngIf="application()!==undefined"><h3>Application candidate questions · inferred</h3><button *ngFor="let item of s.candidate_domains.inferred" (click)="candidateQuestionScope(item.question)"><span>{{item.question}}</span><span>{{format(item.total_bytes)}}</span></button></div>
         </app-dashboard-widget>
-        <app-dashboard-widget label="Destinations · exact bucket bytes" class="half" *ngIf="application()===undefined">
+        <app-dashboard-widget label="Destinations · exact bucket bytes" class="half" id="dashboard-destinations" *ngIf="application()===undefined">
           <div class="rank-table"><button *ngFor="let item of destinations().slice(0,12)" (click)="destinationScope(item.value)"><span>{{item.value||'Unknown destination'}}</span><span>{{format(item.total_bytes)}}</span></button></div>
         </app-dashboard-widget>
-        <app-dashboard-widget label="Answer geography / ASN · inferred" class="half">
+        <app-dashboard-widget label="Answer countries / ASN · inferred" class="half" id="dashboard-countries">
           <div class="table-scroll"><table><caption>Control D single-answer metadata; not measured routes</caption><thead><tr><th>Country</th><th>Candidate bytes</th></tr></thead>
             <tbody><tr *ngFor="let item of s.geography_asn.countries"><td><button class="identity-link" (click)="geographyScope('destination_country',item.value)">{{item.value||'Unknown'}}</button></td><td [title]="item.total_bytes+' bytes'">{{format(item.total_bytes)}}</td></tr></tbody></table>
             <table><thead><tr><th>Answer ASN</th><th>Candidate bytes</th></tr></thead><tbody><tr *ngFor="let item of s.geography_asn.asns"><td><button class="identity-link" (click)="geographyScope('destination_asn',item.value)">{{item.value||'Unknown'}}</button></td><td>{{format(item.total_bytes)}}</td></tr></tbody></table></div>
+        </app-dashboard-widget>
+        <app-dashboard-widget label="Answer-country map · inferred" class="half" id="dashboard-map">
+          <taild-world-map [data]="s.geography_asn.countries" (selectCountry)="geographyScope('destination_country',$event)" />
         </app-dashboard-widget>
       </div>
     </ng-container>
@@ -122,7 +131,7 @@ const fields:Record<Kind,string[]>={
     <app-dashboard-widget label="Applications · executable identity, not running processes" *ngIf="page()==='Applications'&&application()===undefined">
       <label class="search-input">Search identities<input id="application-search" [(ngModel)]="search" (keydown.enter)="scopeChanged()" placeholder="Executable path…"></label>
       <div class="table-scroll"><table id="application-table"><thead><tr><th>Application identity</th><th>Received</th><th>Sent</th><th>Last observed UTC</th><th>Candidate coverage</th></tr></thead><tbody>
-        <tr *ngFor="let row of applications()"><td><button class="identity-link" (click)="openApplication(row.keys.application)">{{row.keys.application_path||'Unknown executable'}}</button><small class="identity-id">{{row.keys.application||'Unknown identity'}}</small></td>
+        <tr *ngFor="let row of applications()"><td><button class="identity-link" [title]="row.keys.application_path||'Unknown executable'" (click)="openApplication(row.keys.application)">{{processName(row.keys.application_path)}}</button><small class="identity-id">{{row.keys.application_path||row.keys.application||'Unknown identity'}}</small></td>
           <td [title]="row.inbound_bytes+' bytes'">{{format(row.inbound_bytes)}}</td><td [title]="row.outbound_bytes+' bytes'">{{format(row.outbound_bytes)}}</td><td>{{row.last_observed_utc}}</td>
           <td>{{row.correlation_counts['unique-candidate']}} unique · {{row.correlation_counts.ambiguous}} ambiguous · {{row.count}} buckets</td></tr>
         <tr *ngIf="!applications().length"><td colspan="5">No application facts observed. Check the selected interval and source coverage.</td></tr></tbody></table></div>
@@ -152,7 +161,7 @@ const fields:Record<Kind,string[]>={
         <div id="fact-rows" [hidden]="!!group">
           <div class="fact-header"><span>{{kind==='dns'?'Question / endpoint':'Application / destination'}}</span><span>Source / evidence</span><span>UTC observation</span><span>{{kind==='dns'?'Outcome':'Observed data'}}</span></div>
           <details class="fact-entry" *ngFor="let row of rows();trackBy:trackRow" [attr.data-fact-id]="row.id" [open]="selected()===row.id" (toggle)="rowToggled(row,$event)">
-            <summary [attr.id]="'fact-'+row.id" class="fact-row"><span class="fact-identity"><strong>{{kind==='dns'?row.question:(row.application_path||'Unknown executable')}}</strong>
+            <summary [attr.id]="'fact-'+row.id" class="fact-row"><span class="fact-identity"><strong [title]="kind==='dns'?row.question:row.application_path">{{kind==='dns'?row.question:processName(row.application_path)}}</strong>
                 <small>{{kind==='dns'?row.endpoint:(row.destination_ip||'Unknown address')+(row.destination_port?':'+row.destination_port:'')}}</small></span>
               <span><span class="source-label">{{kind==='dns'?'Control D':'GlassWire'}}</span><small class="candidate-badge">{{row.correlation_state||row.reason||'Provider event'}}</small></span>
               <span>{{utc(row.timestamp)}}<small>{{row.context_state||'Endpoint scope, not physical-host proof'}}</small></span>
@@ -231,7 +240,8 @@ class App {
   factsResult=computed(()=>this.batch()?.results[4]);rows=computed(()=>this.factsResult()?.data.rows as Fact[]||[]);
   groups=computed(()=>this.batch()?.results[5]?.data.groups as Fact[]||[]);
   policies=computed(()=>this.batch()?.results[6]?.data.rows as Fact[]||[]);
-  consumers=computed(()=>this.applications().map(r=>({value:r.keys.application,label:r.keys.application_path||'Unknown executable',
+  processName=applicationName;
+  consumers=computed(()=>this.applications().map(r=>({value:r.keys.application,label:applicationName(r.keys.application_path),fullPath:r.keys.application_path,
     inbound_bytes:r.inbound_bytes,outbound_bytes:r.outbound_bytes,total_bytes:r.total_bytes,bucket_count:r.count} as Consumer)));
   destinations=computed(()=>this.summary()?.top_destinations as Consumer[]||[]);
   questions=computed(()=>this.dnsSummary()?.dns_questions.ranking as Fact[]||[]);
@@ -320,7 +330,7 @@ class App {
     this.start=new Date(Math.max(Date.parse(first),Date.parse(this.end)-3600000)).toISOString();this.range='custom';void this.scopeChanged()}
   providerSources(){return (this.catalog()?.sources||[]).filter(s=>s.kind==='dns')}
   runtimeSources(){return Object.entries(this.runtime()?.sources||{}).map(([name,value])=>({name,value}))}
-  appName(id:string|null|undefined){return id===this.application()&&this.applicationLabel()?this.applicationLabel():this.applications().find(r=>r.keys.application===id)?.keys.application_path||id||'Unknown executable'}
+  appName(id:string|null|undefined){return applicationName(id===this.application()&&this.applicationLabel()?this.applicationLabel():this.applications().find(r=>r.keys.application===id)?.keys.application_path)}
   openApplication(id:string|null){this.applicationLabel.set(this.applications().find(r=>r.keys.application===id)?.keys.application_path||'Unknown executable');this.application.set(id);this.kind='traffic';this.page.set('Applications');void this.scopeChanged()}
   clearApplication(){this.application.set(undefined);this.applicationLabel.set('');void this.scopeChanged()}
   explore(kind:Kind){if(kind==='dns')this.independentDns();this.kind=kind;this.field=kind==='dns'?'question':'application_path';this.group='';this.order='timestamp:desc';this.page.set('Activity');void this.scopeChanged()}

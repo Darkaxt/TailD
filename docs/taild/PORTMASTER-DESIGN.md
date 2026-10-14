@@ -185,9 +185,9 @@ the shell uses a 64px navigation offset and a 419px optional side panel.
 - Overview must contain real sent/received time series, interactive ranked
   consumers, DNS outcome distribution and explicit coverage/source state, not
   only numerical cards. Major chart surfaces target 320–400px height at desktop
-  sizes and maintain readable axes/legends at 1024px. Map/geographic display is
-  optional only where the specified source supports it; a labeled unknown state
-  must not imply measured geography.
+  sizes and maintain readable axes/legends at 1024px. The October 14 R15a amendment
+  now requires the offline map with inferred answer-country bytes and unknowns;
+  a labeled unknown state must not imply measured geography.
 - Every summary, series, ranked row and geographic selection opens the same
   scoped explorer; app details retain app identity. Evidence uses structured
   rows, source badges and explicit candidate/unknown labels, with raw JSON only
@@ -203,3 +203,34 @@ Stage 8 is now COMPLETE. The source-observed/adapted comparison and current nati
 workflow/viewport/zoom evidence are reconciled in [DESKTOP-ANALYTICS.md](DESKTOP-ANALYTICS.md).
 The research-state statements above describe the retrieval checkpoint; component
 integration and notices are now recorded there and in desktop/NOTICE.md.
+
+## October 14 R15a refinement
+
+The pinned dashboard template/styles and independent map renderer were reread
+from the immutable GitHub source because the old disposable clone is no longer
+present. No running-upstream screenshot is claimed. The adapted grid now preserves
+the source's country/map group and paired circular-consumer/bandwidth row, with
+compact DNS outcome/correlation/question panels replacing unsupported enforcement,
+SPN and subscription/news widgets. Tailscale colors remain unchanged.
+
+The actual map-renderer Mercator/TopoJSON paths, country events, Antarctica fit
+exclusion and owned resize lifecycle are adapted in `world-map.ts`. The original
+538266-byte topology is byte-identical to inventory blob
+`4e59231aa551697abd4ce85ed1ec7720fac2c3d2`. Notices record licenses and identity
+before import. Data loads once as a lazy local JavaScript chunk; no remote asset,
+new HTTP endpoint, CSP relaxation or geolocation service. SPN handlers, animated
+routes and pan/zoom infrastructure are omitted: this widget selects evidenced
+country aggregates, not a topology/network-route explorer. Only positive unique
+candidate bytes highlight countries; neutral land, unknown/unmapped totals and
+country/ASN table actions stay available.
+
+Portmaster's three-dot loading structure/wave now appears centrally above a
+translucent scrim for the actual outstanding operation. Old results are retained,
+their controls and filter chips are inert, duplicate refresh is excluded, and
+success/error clears the indicator. Reduced-motion rules disable the wave.
+There is no loading timeout or artificial delay. Application basenames are
+presentation only; identity/path actions and exact exports remain unchanged.
+
+Actual native served-asset workflow, representative viewport, keyboard, error
+recovery, same-basename identity and app-local 150% evidence are recorded in
+DESKTOP-ANALYTICS.md. This refinement is not yet a public release/deployment.

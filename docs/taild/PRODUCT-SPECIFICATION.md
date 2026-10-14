@@ -1,6 +1,6 @@
 # TailD remaining-product specification
 
-Version 1.5, 2026-10-14. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.6, 2026-10-14. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
 
 ## 1. Authority, authorization and completion boundary
 
@@ -453,11 +453,33 @@ Settings. Shared header: device/endpoint, time range, source freshness/coverage 
 active filter chips. Offer Recent (15 minutes), Last hour, Today and explicit UTC
 range; display timezone conversion and preserve UTC query semantics.
 
+October 14 user amendment (R15a; owned by ACTIVE Stage 10):
+refresh must show a centered Portmaster-themed loading indicator over a translucent
+content scrim while retaining the old revision. Loading lasts for the actual
+operation, never an artificial delay; error clears it and keeps prior data. Native
+Close remains available. Repeated refresh cannot enqueue duplicates or mutate the
+displayed scope. Avoid redundant correlation preparation within one revision-bound
+dashboard batch; no cross-revision cache or weakened coverage/query semantics.
+
+Application-facing labels use the executable basename, with full path available
+in title/details. Full paths and canonical application identities still drive
+filters, navigation and exports; equal basenames must not merge distinct paths.
+
+Restore the pinned Portmaster dashboard's compact country/map grouping and paired
+consumer/bandwidth panels, preserving Tailscale colors. Include its offline D3
+world-map widget with reviewed topology/source notices, country selection linked
+to the same scoped explorer, keyboard/list equivalence and explicit unknowns.
+Only unique temporal candidate answer-country bytes may highlight countries;
+unobserved geography remains neutral, never fabricated routes/location. Keep
+country/ASN tables and unsupported firewall/SPN widgets excluded. Verify actual
+served assets at the existing representative viewports and app-local 150% zoom,
+held refresh/error recovery, duplicate names, country drill-down and exact export.
+
 Overview follows the pinned dashboard's card/chart/ranked-consumer structure:
 received/sent data, observed applications, DNS decisions by verified outcome,
 correlation coverage; sent/received time series; top applications, destinations
 and DNS questions; geographic breakdown with unknowns; source status. A country
-table is required; a decorative map is not. Omit subscription/news/SPN widgets.
+table is required; R15a now also requires the truthful interactive map. Omit subscription/news/SPN widgets.
 Each card drills into exactly the scope that produced it, preserving time/device.
 
 Applications lists executable identity, received/sent bytes, last observed bucket

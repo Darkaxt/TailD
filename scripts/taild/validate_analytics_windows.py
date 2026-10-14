@@ -33,10 +33,10 @@ def populate(directory):
     for i in range(125):
         timestamp=history.instant(START)+(i*5+1)*1000000
         rows.append({'timestamp_utc':history.utc(timestamp),'timestamp_raw':timestamp//1000000,
-            'application_id':42,'application_path':hostile if i%3==0 else 'C:\\Synthetic\\normal.exe',
+            'application_id':42,'application_path':hostile if i%3==0 else ('C:\\Synthetic\\normal.exe' if i%3==1 else 'D:\\Other\\normal.exe'),
             'destination_ip':'198.51.100.2' if i%2 else '198.51.100.3','destination_port':443,'protocol_raw':97,'flags_raw':0,
             'destination_status':'observed-ipv4-little-endian','inbound_bytes':2**53+9 if i==0 else i+100,'outbound_bytes':i+20,
-            'provenance':{'rowid':i+1,'remote_host_blob_sha256':str(i%2),'application_blob_sha256':str(i%3==0)}})
+            'provenance':{'rowid':i+1,'remote_host_blob_sha256':str(i%2),'application_blob_sha256':str(i%3)}})
     traffic={'source':'glasswire-sqlite-observed-v1','collected_at_utc':END,
         'generation':{'traffic_database':{'file_id':'synthetic-1'},'application_database':{'file_id':'synthetic-2'}},
         'query_window':{'start_inclusive':START,'end_exclusive':END},'truncated':True,'rows':rows}
@@ -44,7 +44,7 @@ def populate(directory):
     dns={'source':'controld-activity-csv','collected_at_utc':END,'endpoint_id':'synthetic-endpoint',
          'query_window':traffic['query_window'],'truncated':False,'rows':[
            {'source':'controld-activity-csv','raw':{'timestamp':history.utc(history.instant(r['timestamp_utc'])-1000000),
-            'endpointId':'synthetic-endpoint','question':'synthetic.invalid','answers':'198.51.100.2',
+            'endpointId':'synthetic-endpoint','question':'synthetic.invalid','answers':r['destination_ip'],
             'rrType':'A','action':'unverified-code','trigger':'synthetic-reason','answerCountryCode':'DE','answerASN':'64500'}} for r in rows]}
     with_store.import_dns(dns,'synthetic-account','synthetic-endpoint')
     engine=analytics.Analytics(with_store)
@@ -134,8 +134,24 @@ def export_ui(session,format,destination):
     out,err=helper.communicate()
     if helper.returncode:raise AssertionError('Native dialog action failed: '+err)
     from playwright.sync_api import expect
+    # Save dispatch is not completion; inspect the original operation's receipt.
+    expect(session.page.locator('main')).to_have_attribute('aria-busy','false',timeout=20000)
+    error=session.page.locator('#analytics-error')
+    assert error.count()==0,'Native export failed: '+(error.inner_text() if error.count() else '')
     expect(session.page.locator('#export-status')).to_contain_text('Saved '+destination.name)
     assert destination.is_file()
+
+
+def duplicate_executable_drilldown(page):
+    from playwright.sync_api import expect
+    for path,count in (('C:\\Synthetic\\normal.exe',42),('D:\\Other\\normal.exe',41)):
+        page.locator('#nav-1').click();settled(page)
+        page.locator('#application-table .identity-link').filter(has_text='normal.exe').locator('xpath=..').get_by_title(path,exact=True).click()
+        settled(page)
+        page.get_by_role('button',name='Inspect application activity',exact=True).click();settled(page)
+        expect(page.locator('#fact-count')).to_have_text(str(count)+' facts')
+        assert set(page.locator('.fact-identity strong').evaluate_all('(nodes)=>nodes.map(n=>n.title)'))=={path}
+        page.get_by_role('button',name='Remove application scope',exact=True).click();settled(page)
 
 
 def run(shell,output,real_history,policy_history):
@@ -163,8 +179,27 @@ def run(shell,output,real_history,policy_history):
             page.locator('#view-refresh').click();held.wait()
             expect(page.locator('#scope-host')).to_be_disabled();expect(page.locator('#nav-1')).to_be_disabled()
             expect(page.locator('.analytics-results')).to_have_attribute('inert','')
+            expect(page.locator('#view-loading')).to_be_visible()
+            expect(page.locator('#view-loading')).to_contain_text('Refreshing view')
+            page.screenshot(path=str(output/'refresh-loading.png'))
         finally:release.set();session.collector.dispatch=original
         settled(page)
+        expect(page.locator('#view-loading')).to_have_count(0)
+        expect(page.locator('taild-world-map .map-surface')).to_have_attribute('data-map-ready','true')
+        assert page.locator('taild-world-map path').count()>150
+        assert page.locator('.consumer-name',has_text='normal.exe').count()==2
+        assert page.locator('.consumer-name',has_text='C:\\Synthetic').count()==0
+        assert {p.split(' · ')[0] for p in page.locator('.consumer',has_text='normal.exe').evaluate_all('(nodes)=>nodes.map(n=>n.title)')}=={'C:\\Synthetic\\normal.exe','D:\\Other\\normal.exe'}
+        # Real synthetic answer metadata has one unique preceding candidate for
+        # early buckets, and many later ambiguous buckets. Only inferred bytes
+        # are highlighted, never unobserved countries or routes.
+        germany=page.locator('taild-world-map path[data-country="DE"]')
+        expect(germany).to_have_attribute('role','button')
+        germany.focus();germany.press('Enter');settled(page)
+        expect(page.locator('.filter-tags')).to_contain_text('destination_country eq DE')
+        assert int(page.locator('#fact-count').inner_text().split()[0])>0
+        page.get_by_role('button',name='Remove filter 1',exact=True).click();settled(page)
+        page.locator('#nav-0').click();settled(page)
         expect(page.locator('#coverage-state')).to_have_text('partial traffic')
         page.locator('#scope-device').select_option('synthetic-node');settled(page)
         page.locator('#scope-device').select_option('');settled(page)
@@ -178,14 +213,15 @@ def run(shell,output,real_history,policy_history):
             measured=snapshot(page);assert measured['layout']['document_width']<=width
             reports.append(measured);page.screenshot(path=str(output/f'overview-{width}x{height}.png'),full_page=True)
         page.set_viewport_size({'width':1440,'height':900})
+        duplicate_executable_drilldown(page)
         page.locator('#nav-1').click();settled(page)
-        expect(page.locator('#application-table tbody tr')).to_have_count(2)
+        expect(page.locator('#application-table tbody tr')).to_have_count(3)
         app_buttons=page.locator('#application-table .identity-link')
         app_buttons.nth(0).click();settled(page)
         app_id=page.locator('.filter-pill').first.inner_text()
         page.screenshot(path=str(output/'application.png'),full_page=True)
         page.get_by_role('button',name='Inspect application activity',exact=True).click();settled(page)
-        scoped_count=int(page.locator('#fact-count').inner_text().split()[0]);assert scoped_count in (42,83)
+        scoped_count=int(page.locator('#fact-count').inner_text().split()[0]);assert scoped_count in (41,42)
         assert app_id.split('×')[0].strip() in page.locator('.filter-tags').inner_text()
         page.locator('.fact-entry > summary').first.click()
         expect(page.locator('taild-evidence').first).to_be_visible()
@@ -222,6 +258,7 @@ def run(shell,output,real_history,policy_history):
             writer.execute('UPDATE settings SET revision=revision+1');writer.commit()
         page.locator('#next-page').click()
         expect(page.locator('#analytics-error')).to_contain_text('History changed')
+        expect(page.locator('#view-loading')).to_have_count(0)
         assert page.locator('main').get_attribute('data-revision')==before_revision
         page.locator('#view-refresh').click();settled(page)
         json_path=synthetic/'evidence.json';csv_path=synthetic/'analytics.csv'

@@ -48,6 +48,18 @@ class AnalyticsTest(unittest.TestCase):
         return {'kind':'traffic','view':'summary','start':START,'end':END,
                 'scope':{'host':'host','account':'account','endpoint':'endpoint'},**changes}
 
+    def test_dashboard_batch_prepares_correlation_once_without_cross_revision_reuse(self):
+        requests=[self.request(),self.request(kind='dns'),
+                  self.request(view='series',bin_seconds=60),
+                  self.request(view='groups',group_by=['application','application_path'])]
+        expected=[self.engine.batch([q])['results'][0] for q in requests]
+        with patch.object(self.engine,'_correlations',wraps=self.engine._correlations) as prepare:
+            actual=self.engine.batch(requests)
+            self.assertEqual(actual['results'],expected)
+            self.assertEqual(prepare.call_count,1)
+            self.engine.batch(requests)
+            self.assertEqual(prepare.call_count,2,'Preparation cannot survive its read transaction')
+
     def test_policy_point_snapshot_is_queryable_without_retroactive_rule_causality(self):
         self.assertTrue(hasattr(self.engine,'record_policy'),'Stage 6 policy history integration missing')
         data={'source':'controld-api-readonly','account_scope':'account','endpoint':'endpoint',
@@ -353,8 +365,8 @@ class AnalyticsTest(unittest.TestCase):
         changed=copy.deepcopy(self.traffic)
         changed['rows'][0]['inbound_bytes']+=11
         called=[]
-        def query(request,revision):
-            result=original(request,revision)
+        def query(request,revision,prepared=None):
+            result=original(request,revision,prepared)
             if not called:
                 called.append(True)
                 other.import_traffic(changed,'host')

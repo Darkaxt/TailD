@@ -38,7 +38,7 @@ Exact paths/blob identities and GPL attribution are in [the design map](PORTMAST
 | Netquery filters/rows | Adapt dense toolbar, pills and expandable rows. Native inputs preserve keyboard semantics; allowlisted predicates replace raw TextQL/SQL. |
 | Details/accordion/pagination | Reuse structured expansion and lazy evidence. Revision cursors replace arbitrary page jumps; paged candidate subrows replace enormous repeated attributes. JSON remains secondary. |
 | Theme/settings/toggles | Reuse integrated themed panel/toggle subset. Native semantic controls replace unnecessary overlay/CDK dependencies; do not install the Angular12-peer UI package wholesale into Angular20. |
-| Geographic map | Not imported: verified semantics support the required country/ASN table and unknowns, not measured routes or precise geography. Avoid unreviewed optional map datasets. |
+| Geographic map | Not imported at Stage 8. The October 14 R15a amendment adds the reviewed offline country map; current evidence is below. No measured routes or precise geography are implied. |
 
 ## Reproducibility and evidence
 
@@ -67,3 +67,55 @@ The explicit user waiver for forced sleep/wake, network loss and GlassWire stop/
 update remains: physical scenarios are **untested**, not simulated passes. No
 installer, public release, updater activation or installed replacement is claimed.
 Dependency notices and toolchain-free runtimes must be included before distribution.
+
+## R15a integrated refinement — 2026-10-14
+
+Source feature is implemented and verified within ACTIVE Stage 10. B13 is resolved
+for this refinement's source/native acceptance, not the remaining B12 delivery,
+rollback or updater acceptance. Installed/public 1.105.0+3 is unchanged.
+
+- Actual native `https://taild.local/index.html` serves the production Angular
+  build in the isolated Debug inspector host. Held real query shows the centered
+  three-dot translucent loading layer; scope/navigation/results cannot mutate
+  while pending. Stale-revision error clears the layer and retains old data;
+  explicit refresh recovers with selected-row/focus preservation. No synthetic
+  timing is presented as a production latency measurement.
+- Regression reproduced three correlation preparations in one dashboard batch;
+  the integrated query engine now prepares once per matching UTC/scope/age domain
+  in the same read transaction. Separate query predicates/aggregates, revision
+  consistency, exact counters and coverage remain intact; nothing is reused across
+  batches. Focused analytics and existing held-source/read-only/close checks pass.
+- Portmaster-style country/map grouping and paired consumer/bandwidth panels are
+  verified at 1440×900, 1280×800 and 1024×768 CSS px without page overflow. Actual
+  150% native app-local zoom measures 949×574 CSS px / DPR 1.5 with keyboard access;
+  OS capture is retained. Windows display scaling is unchanged.
+- Reviewed pinned topology renders more than 150 country paths offline. Synthetic
+  unique answer metadata highlights Germany; Enter opens the exact country-filtered
+  explorer. Unknown/ambiguous geography remains neutral or explicitly unknown.
+  No route, client location, unsupported firewall verdict or external lookup.
+- Native duplicate-name check: `C:\Synthetic\normal.exe` and
+  `D:\Other\normal.exe` both display `normal.exe` but open distinct 42-/41-fact
+  scopes, with every rendered fact retaining the selected full path. Path titles,
+  canonical identities and private exports are unchanged.
+- Retained real GlassWire records reconstructed losslessly from the existing
+  private export feed the actual window: **203 facts / 20,684,627 bytes** reconcile
+  through activity drill-down and native private JSON/CSV export, including ACLs.
+  This is retained real data, not fresh provider/traffic acquisition. Synthetic
+  >2^53 exactness, hostile text, pagination and saved-query restart also pass.
+
+Durable private evidence:
+`D:/Tools/taild-stage10-validation-20261013/ui-refinement-20261014`.
+Primary reports: `analytics-validation.json`,
+`duplicate-executable-validation.json`; representative screenshots include
+`refresh-loading.png`, `overview-1440x900.png` and
+`overview-native-150-percent-window.png`. No private source data is published.
+
+Verified served assets: `main-5FHARNDJ.js` SHA-256
+`8e282fc32c5ce4b95bfb7f583ddcc7d6d61ae710054311878b43cfc89a7152e3`;
+`styles-GDRHY5LL.css` SHA-256
+`92503bcefd6b7e944318322cd3541cb100e974e063e5650f32f46cb8ded3b90f`;
+lazy map `chunk-CA5NCUVR.js` SHA-256
+`48d96f44b597af53d106d494da2f01cea43781415dcc1f8cc6bcc76330691b47`.
+Native shell source is unchanged. Design-debt assessment found no required new
+abstraction/refactor: transaction-local preparation and the existing component/
+bridge boundaries directly serve R15a. No follow-up infrastructure is introduced.

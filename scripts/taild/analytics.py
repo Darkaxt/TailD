@@ -298,7 +298,11 @@ class Analytics:
             revision=self.store.db.execute('SELECT revision FROM settings').fetchone()[0]
             if expected_revision is not None and (type(expected_revision) is not int or revision!=expected_revision):
                 raise QueryError('History changed; explicitly refresh the view',code='stale-revision')
-            results=[self._query(request,revision) for request in requests]
+            # Preparation belongs solely to this read transaction. Dashboard
+            # summary, series and application groups share the same canonical
+            # inputs/candidates, but keep their own predicates and aggregates.
+            prepared={}
+            results=[self._query(request,revision,prepared) for request in requests]
             return {'revision':revision,'aggregation_version':VERSION,'correlation_version':CORRELATION_VERSION,'results':results}
         finally:
             self.store.db.execute('ROLLBACK')
@@ -413,7 +417,7 @@ class Analytics:
         if node['field'] not in ({'source','scope','endpoint'} if kind=='dns' else {'source','scope'}): return True
         return Analytics._matches(row,node)
 
-    def _query(self,request,revision):
+    def _query(self,request,revision,prepared=None):
         kind=request.get('kind')
         view=request.get('view')
         if kind not in ('traffic','dns','correlations','context','policy') or view not in ('summary','facts','groups','series','health'):
@@ -421,11 +425,16 @@ class Analytics:
         a,b=history.bounds(request['start'],request['end'])
         scope=request.get('scope',{})
         age=request.get('max_age_seconds',300)
-        traffic=self._load('traffic',a,b,scope) if view!='health' and kind in ('traffic','correlations') else []
-        dns=self._load('dns',a-age*1000000,b,scope) if view!='health' and kind in ('traffic','correlations','dns') else []
-        contexts=self._load('context',a-age*1000000,b,{'host':scope['host']} if scope.get('host') else {}) if view!='health' else []
-        rows=[] if view=='health' else self._correlations(traffic,dns,contexts,age,scope) if kind in ('traffic','correlations') else (
-             [d for d in dns if d['timestamp']>=a] if kind=='dns' else self._load(kind,a,b,scope))
+        cache=prepared if prepared is not None else {}
+        key=('traffic' if kind=='correlations' else kind,view=='health',a,b,age,history.packed(scope))
+        if key not in cache:
+            traffic=self._load('traffic',a,b,scope) if view!='health' and kind in ('traffic','correlations') else []
+            dns=self._load('dns',a-age*1000000,b,scope) if view!='health' and kind in ('traffic','correlations','dns') else []
+            contexts=self._load('context',a-age*1000000,b,{'host':scope['host']} if scope.get('host') else {}) if view!='health' else []
+            rows=[] if view=='health' else self._correlations(traffic,dns,contexts,age,scope) if kind in ('traffic','correlations') else (
+                 [d for d in dns if d['timestamp']>=a] if kind=='dns' else self._load(kind,a,b,scope))
+            cache[key]=(dns,rows)
+        dns,rows=cache[key]
         unknown_device_buckets=sum(r.get('device') is None for r in rows) if kind in ('traffic','correlations') else 0
         if kind in ('traffic','correlations') and scope.get('device'):
             rows=[r for r in rows if r['device']==scope['device']]

@@ -1,6 +1,6 @@
 {
   "compilerOptions": {"target": "ES2022", "module": "preserve", "moduleResolution": "bundler",
     "lib": ["ES2022", "DOM"], "strict": true, "experimentalDecorators": true,
-    "useDefineForClassFields": false, "skipLibCheck": true},
+    "useDefineForClassFields": false, "skipLibCheck": true, "resolveJsonModule":true, "allowSyntheticDefaultImports":true},
   "angularCompilerOptions": {"strictTemplates": true}, "include": ["src/**/*.ts"]
 }

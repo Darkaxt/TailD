@@ -37,6 +37,17 @@ Paths below are relative to that repository. Imports are reviewed before copying
 | `desktop/angular/src/app/shared/netquery/connection-details/conn-details.{html,scss}` | `fcbe03cbda2269f8a9487117acbf6fd18de6adb7`, `f850b0030fbb7e586c51dad6078be6d0b082f9fe` | Structured expandable evidence sections / 250px columns; observed fields and uncertainty, no invented socket/TLS/lifetime |
 | `desktop/angular/projects/safing/ui/src/lib/accordion/accordion.html` | `4d47b842f610bf25f4d16eaf61b00ab0b120d8c6` | Active header/content projection replaced with native details/summary for browser keyboard and accessibility semantics |
 | `desktop/angular/projects/safing/ui/src/lib/pagination/pagination.html` | `dec63df8a42e1a32ebe9193cb768622621ad2406` | Previous/Next paginator and current-page treatment, cursor history rather than unsupported arbitrary page jumps |
+| `desktop/angular/src/app/pages/spn/map-renderer/map-renderer.ts` | `b794a8cc977af19094b9fdfbe576f2cc3561e325` | D3 Mercator/TopoJSON paths, country events, Antarctica exclusion and owned ResizeObserver; offline lazy asset, no SPN overlays/routes; observed-only keyboard country actions |
+| `assets/data/world-50m.json` | `4e59231aa551697abd4ce85ed1ec7720fac2c3d2` | Unmodified pinned country topology, 538266 bytes; SHA-256 c8598aca2a616f5fcdda15a95c5ee2d7c2be4ecc30edf67943c79e5ae97ee6e5. Packaged as lazy fixed-origin JS, never fetched remotely |
+| `desktop/angular/src/app/shared/loading/loading.{html,scss}` | `bfa7d9b67104427ae4e91a103d1b571158999490`, `fccdce9d0951be4b5f7de8ff593bb1e610efc302` | Three-dot structure and wave adapted to Tailscale tokens, reduced-motion support and a request-lifetime translucent scrim |
+
+Map data retains the upstream GPL source/distribution notices. Its country
+attributes are Natural Earth administrative metadata; Natural Earth's published
+[terms](https://www.naturalearthdata.com/about/terms-of-use/) state its map data
+is public domain (reviewed 2026-10-14). Borders are a static display reference,
+not a claim about network routes or physical location. TopoJSON client 3.1.0 is
+ISC-licensed; its MIT type declarations are build-only. Locked dependency notices
+are included in the ordinary frontend license inventory.
 
 The native shell is an original minimal WebView2/WinForms host, not a copy of
 Portmaster's service controller. The Angular application does not import upstream network,
