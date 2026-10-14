@@ -712,6 +712,51 @@ was introduced. No current-scope consolidation finding remains. Existing B12 is
 unchanged; Stage 10 remains ACTIVE; tracked deferrals: none. No public release or
 installed update is inferred from this optimization request.
 
+October 14 R15c delivery checkpoint: already_authorized by "deploy when ready".
+Normal **1.105.0+7**, source `52f019951a67e763b5beb80d02d5a7cf83d6f84f`, is
+published by successful signed-release run `38584566463`. Independent unauthenticated
+download verified the pinned envelope/package signatures, all 417 payload members,
+clean source provenance, inherited core and exact tag. Installer SHA-256:
+`f03fb8075a402039a054b055cc570a6402d437f0ab923162b7a91d9a8780acf1`;
+size 114,289,152 bytes. The ordinary installer completed through the elevation
+broker with exit 0 and no rollback, under the updater collision mutex.
+Fresh installed verification preserves login, addresses, Tailnet Lock public
+signer, service path/start type, update preference and DNS configuration; public
+and own MagicDNS resolve. Both services run. The owning-user collector resumed
+automatically before dashboard launch, with saved settings unchanged.
+
+The actual installed native dashboard exposes the partial-results announcement
+with enabled navigation, then all six enabled summary controls, Refresh and the
+ready announcement with no remaining loading state. Actual UTC input values span
+exactly 168 hours. The installed package inventory is verified against the public
+manifest. No exact launch-to-ready or physical-pixel timing is claimed. This live
+history differs from the fixed benchmark; expensive correlated scopes remain a
+documented limit, not an instant-render promise.
+
+Verification correction: Codex's MSIX AppData redirection exposed a stale private
+history copy while the real collector was healthy. Handle-resolved paths proved
+the mismatch. A normal desktop Explorer automation object launched the read-only
+verifier outside that package identity; ordinary Shell.Application alone did not.
+Actual physical history passes SQLite quick_check and contains both new indexes.
+All cached baseline sample keys still exist; DNS samples match exactly, while
+some traffic payloads differ. The cached pre-install sample is not a fresh physical
+baseline: complete before/after record equality is explicitly NOT claimed.
+No database writes, journal deletion, policy/settings change or product workaround
+was used for the diagnostic. A stale UIA element invalidated the first hierarchy
+observer; a fresh completed-view observation passed.
+
+Private installed evidence: `D:/Tools/taild-stage10-validation-20261013/live-update-7`.
+Verified detached public recovery payload: sibling `release-7`. Disposable scripts
+were removed through cleanup transaction `e38dbf79d72edcd96ab7085df09c711b`
+(20,865 bytes). Ticket `21e21fddce48b54bd4830da064b91c29742bca1cd20114b777ae33aecadfa9ce`
+remains partially applied: the installer-created empty `is-9NFQ5QEX8L.tmp/{app}`
+and its ancestors were reported locked/not-empty. No ACL relaxation or client
+termination was attempted. The prior +6 empty-directory ticket also still reports
+locked residuals after its original processes exited. These remain within B12's
+existing installer-lifecycle/cleanup finding. Recovery payloads are intentional,
+not expendable scratch. R15c release/deployment is verified; Stage 10 remains ACTIVE
+for existing B12 final reconciliation. Tracked deferrals: none.
+
 Seven-day default amendment: already_authorized by the October 14 request.
 Stage 10 remains the single ACTIVE stage. The internal seven-day aggregate
 acceptance blocker is RESOLVED: broad traffic aggregates stream without the

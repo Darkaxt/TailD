@@ -258,3 +258,26 @@ and does not alter filters, graph revisions or acquisition. The dashboard PE and
 window icon use the unmodified inherited ICO with original resource/hash notice.
 Local production frontend/native verification passes; the prior +2 candidate is
 superseded. This is not yet proof of an installed/published corrected update.
+
+## Windows packaged-agent verification boundary
+
+An MSIX-packaged diagnostic host can transparently redirect LocalAppData to its
+package's LocalCache. The October 14 +7 deployment proved this with
+GetFinalPathNameByHandle: ordinary shell reads saw stale history and status,
+while the authenticated installed collector read normal physical AppData.
+Read-only SQL against that redirected copy produced SQLITE_READONLY_ROLLBACK;
+neither journal deletion nor a product fallback addresses the wrong storage view.
+
+Before capturing a live baseline, verify handle-resolved storage paths. For an
+unelevated external verifier, obtain the desktop Explorer automation object through
+Shell.Application.Windows().FindWindowSW with SWC_DESKTOP and SWFO_NEEDDISPATCH,
+then use its Document.Application.ShellExecute. A newly created Shell.Application
+object alone can retain the package identity. Use a no-console runtime, a named
+completion event, private output and read-only access. Verify the resulting physical
+path and actual collector PID; do not infer them from a stale status JSON. Normal
+installed desktop launch should use that same unredirected shell boundary.
+
+The +7 actual physical history passes quick_check and includes both new dashboard
+indexes. The cached pre-install sample is not a fresh physical baseline and is
+not proof of exact before/after history equality. Keep this limitation explicit;
+the source benchmark snapshot is likewise not a current-live startup guarantee.

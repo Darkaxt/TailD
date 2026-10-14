@@ -47,6 +47,14 @@ native dashboard launch verified. The transient-file ACL race is corrected
 without relaxing permissions. This does not close the ledger's remaining B12
 lifecycle/updater/recovery acceptance or claim overall product completion.
 
+The subsequent "deploy when ready" authorizes the verified R15c optimization's
+signed public release and in-place Windows installation. Normal **1.105.0+7** is
+published and installed with exact public payload verification, identity/signer/
+DNS continuity, automatic collection resumption and actual native dashboard
+readiness. The upstream version stays 1.105.0. This does not close existing B12
+or convert snapshot benchmarks into live startup guarantees. The ledger records
+the discovered Codex MSIX AppData redirection and its evidence limits.
+
 The [stage ledger](IMPLEMENTATION-PLAN.md) maps every requirement to acceptance
 criteria. A plan cannot weaken this document. Only one implementation stage may
 be ACTIVE. Unmet current-stage requirements are advancement blockers; implementable

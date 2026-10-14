@@ -275,4 +275,24 @@ Private timing/render evidence:
 `D:/Tools/taild-stage10-validation-20261013/dashboard-performance-20261014`.
 R15c source/native acceptance is satisfied; B16 is resolved. Stage 10 remains
 ACTIVE for existing B12 delivery/lifecycle/updater reconciliation. The installed
-public +6 remains unchanged; this is not another release or deployment.
+public +6 remained unchanged at that source checkpoint.
+
+### R15c installed delivery — 2026-10-14
+
+The separately authorized signed **1.105.0+7** release is now independently
+downloaded, verified and installed in place. Complete installed payload verification,
+node/signer/DNS continuity, automatic collection resumption, actual native partial
+readiness with enabled navigation, completed six-summary readiness and the exact
+168-hour default pass. The physical history passes SQLite quick_check and has both
+additive indexes. See the stage ledger for immutable release identity and evidence.
+
+Do not equate the fixed benchmark snapshot with this current live history. Codex's
+MSIX process identity redirected shell AppData reads to a stale cached copy; the
+actual collector and dashboard run over normal physical AppData. Handle-resolved
+paths and an unelevated desktop-Explorer-launched read-only verifier established
+the correct boundary. The cached baseline's sample keys remain, but it cannot prove
+fresh physical before/after record equality; some mutable traffic payloads differ.
+No production code or stored facts were changed to accommodate the diagnostic.
+No exact installed startup latency or new unobstructed pixel-layout proof is claimed.
+The first UIA observer lost a dynamic element; a fresh completed-view observation
+verified readiness. Existing Stage 10/B12 scope is not closed by this delivery.

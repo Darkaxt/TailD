@@ -13,18 +13,20 @@ The extension combines Control D policy/decision data with application
 identity and network-byte metrics. Control D and existing firewall products keep
 their enforcement roles. No new packet-filtering engine is being implemented.
 
-[TailD 1.105.0+6 for Windows](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B6)
+[TailD 1.105.0+7 for Windows](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B7)
 is published and independently verified. Its complete connectivity/analytics
 installer has migrated the authorized Beacon installation in place, preserving
 authentication, addresses, Tailnet Lock signing and DNS settings. Open **TailD**
 from the Start menu. The analytics UI uses Portmaster-derived widgets with the
 Tailscale dark theme; collection remains opt-in. Payload and installer digests
 are Ed25519-signed; executables/installer are **not Authenticode-signed**.
-This release defaults analytics to a rolling seven-day window and streams large
-traffic aggregates without changing collection, retention or DNS preferences.
-The installed dashboard shows retained traffic and DNS data. Seven-day aggregate
-queries still have noticeable latency; this release does not claim to fix startup
-performance or the separately reported intermittent tray-launch popup.
+This release retains the rolling seven-day default and optimizes exact traffic
+aggregation. Completed DNS panels stream before the remaining traffic panels at
+one consistent revision; navigation remains available during loading. The fixed
+benchmark snapshot improved by 2.2×, not a universal startup-time guarantee.
+The installed dashboard reaches complete readiness with the new indexes active.
+Complex correlated views can still take time. Collection, retention and DNS
+preferences are unchanged; the intermittent tray-launch popup is not declared fixed.
 Stage 10 remains ACTIVE for live analytics, tray launch/focus integration and real
 updater/rollback verification. Other TailDNS installations, signing keys and
 maintenance tasks remain unchanged. The inherited status material below describes
