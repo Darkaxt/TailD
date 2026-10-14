@@ -723,6 +723,12 @@ access contracts pass. The corrected source launcher opens the actual installed
 +4 native dashboard during enabled collection, with all six summary actions
 verified in its rendered UIA hierarchy. The packaged hotfix remains required;
 source/native diagnosis is not a claim that installed +4 has been repaired.
+The first hotfix candidate was refused before signing: the newly enabled hosted
+history test exposed an 8.3-vs-canonical fixture path assertion, and the isolated
+uninstall test exposed the setup PYZ's missing `win32timezone` dependency for
+pywin32 FILETIME conversion. Canonical expected paths and the same explicit
+dependency already used by the owner PYZ correct these diagnosed boundaries;
+neither weakens the ACL rules or installer acceptance.
 
 Stage 10 remains the single ACTIVE implementation stage. R15b is
 already_authorized by "Now, use that report to improve TailD dashboard".

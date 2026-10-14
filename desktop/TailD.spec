@@ -5,7 +5,7 @@ repo=Path(SPECPATH).parent
 source=Path(os.environ.get('TAILD_RUNTIME_SOURCE',str(repo/'scripts/taild')))
 paths=[str(source)]
 owner=Analysis([str(source/'packaged.py')],pathex=paths,hiddenimports=['win32timezone'])
-setup=Analysis([str(source/'setup_entry.py')],pathex=paths)
+setup=Analysis([str(source/'setup_entry.py')],pathex=paths,hiddenimports=['win32timezone'])
 owner_pyz=PYZ(owner.pure)
 setup_pyz=PYZ(setup.pure)
 app=EXE(owner_pyz,owner.scripts,[],exclude_binaries=True,name='TailD',console=False,
