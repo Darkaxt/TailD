@@ -17,6 +17,15 @@ class DesktopContractTest(unittest.TestCase):
     request=test_analytics.AnalyticsTest.request
     query=test_analytics.AnalyticsTest.query
     context=test_analytics.AnalyticsTest.context
+    def test_progressive_desktop_results_keep_decimal_counters_and_final_order(self):
+        api=desktop_api.DesktopAPI(self.store);events=[]
+        request={'queries':[self.request(),self.request(kind='dns')]}
+        expected=api.dispatch('view-query',request)
+        result=api.dispatch('view-query',request,on_result=events.append)
+        self.assertEqual(result,expected)
+        self.assertEqual([e['index'] for e in events],[1,0])
+        self.assertIsInstance(events[1]['result']['data']['data']['total_bytes'],str)
+        for event in events:self.assertEqual(event['result'],result['results'][event['index']])
     def test_desktop_revision_query_saved_scope_and_safe_export(self):
         self.assertIsNotNone(desktop_api, 'Desktop query/export boundary missing')
         api = desktop_api.DesktopAPI(self.store)

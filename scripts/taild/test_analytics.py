@@ -49,6 +49,7 @@ class AnalyticsTest(unittest.TestCase):
                 'scope':{'host':'host','account':'account','endpoint':'endpoint'},**changes}
 
     def test_dashboard_batch_prepares_correlation_once_without_cross_revision_reuse(self):
+        self.context()
         requests=[self.request(),self.request(kind='dns'),
                   self.request(view='series',bin_seconds=60),
                   self.request(view='groups',group_by=['application','application_path'])]
@@ -59,6 +60,57 @@ class AnalyticsTest(unittest.TestCase):
             self.assertEqual(prepare.call_count,1)
             self.engine.batch(requests)
             self.assertEqual(prepare.call_count,2,'Preparation cannot survive its read transaction')
+
+    def test_unbound_dashboard_aggregates_in_sql_without_decoding_traffic_facts(self):
+        queries=[self.request(),self.request(view='series',bin_seconds=60),
+                 self.request(view='groups',group_by=['application','application_path'])]
+        facts=self.query(view='facts')['data']['rows']
+        with patch.object(self.engine,'_decode',wraps=self.engine._decode) as decode:
+            result=self.engine.batch(queries)
+        self.assertFalse(any(call.args[0]=='traffic' for call in decode.call_args_list),
+                         'Unbound dashboard expanded every traffic fact into Python')
+        self.assertEqual(result['results'][0]['data']['data']['total_bytes'],sum(r['total_bytes'] for r in facts))
+        self.assertEqual(result['results'][0]['data']['application_activity']['bucket_count'],len(facts))
+        self.assertEqual(sum(g['count'] for g in result['results'][2]['data']['groups']),len(facts))
+
+    def test_progressive_batch_emits_dns_before_held_traffic_in_one_revision(self):
+        queries=[self.request(),self.request(kind='dns'),self.request(view='series',bin_seconds=60),
+                 self.request(kind='dns',view='series',bin_seconds=60)]
+        expected=self.engine.batch(queries);events=[];query=self.engine._query
+        def observed(request,revision,prepared=None):
+            if request['kind']=='traffic':
+                self.assertEqual([e['index'] for e in events[:2]],[3,1])
+                self.assertTrue(self.store.db.in_transaction)
+            return query(request,revision,prepared)
+        with patch.object(self.engine,'_query',side_effect=observed):
+            actual=self.engine.batch(queries,on_result=events.append)
+        self.assertEqual(actual,expected)
+        self.assertEqual({e['revision'] for e in events},{actual['revision']})
+        for event in events:self.assertEqual(event['result'],actual['results'][event['index']])
+        self.assertFalse(self.store.db.in_transaction)
+
+    def test_sql_reduction_preserves_tied_rankings_filters_and_mixed_bin_widths(self):
+        traffic=copy.deepcopy(self.traffic)
+        for index,row in enumerate(traffic['rows']):
+            row.update(inbound_bytes=10,outbound_bytes=0,timestamp_raw=1791453630+index,
+                       timestamp_utc=history.utc((1791453630+index)*1000000))
+        # New identities due to timestamps; delete old fixture first.
+        with self.store.transaction():self.store.db.execute('DELETE FROM traffic')
+        self.store.import_traffic(traffic,'host')
+        app=self.store.db.execute('SELECT application FROM traffic ORDER BY time LIMIT 1').fetchone()[0]
+        queries=[self.request(),self.request(view='series',bin_seconds=17),self.request(view='series',bin_seconds=23),
+            self.request(view='groups',group_by=['application','application_path'],order_by=[{'field':'total_bytes','direction':'desc'}]),
+            self.request(where={'field':'application','op':'eq','value':app}),
+            self.request(where={'field':'application','op':'eq','value':None})]
+        with patch.object(self.engine,'_unbound_aggregates',return_value=None):expected=self.engine.batch(queries)
+        self.assertEqual(self.engine.batch(queries),expected)
+
+    def test_sql_reduction_normalizes_equivalent_query_bounds_and_default_age(self):
+        queries=[self.request(),self.request(view='groups',group_by=['destination_port','protocol_raw'],
+            start='2026-10-08T10:00:00.000Z',max_age_seconds=300),
+            self.request(view='series',start='2026-10-08T10:00:00.000Z',max_age_seconds=300,bin_seconds=17)]
+        with patch.object(self.engine,'_unbound_aggregates',return_value=None):expected=self.engine.batch(queries)
+        self.assertEqual(self.engine.batch(queries),expected)
 
     def test_dashboard_source_health_is_shared_only_inside_its_read_revision(self):
         queries=[self.request(),self.request(kind='dns')]

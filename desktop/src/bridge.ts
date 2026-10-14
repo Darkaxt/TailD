@@ -2,7 +2,7 @@
 interface WebView {postMessage(value:unknown):void;addEventListener(type:string,fn:(event:MessageEvent)=>void):void}
 const webview=(window as unknown as {chrome?:{webview:WebView}}).chrome?.webview;
 let sequence=0;
-const pending=new Map<number,{resolve:(value:unknown)=>void;reject:(error:Error)=>void}>();
+const pending=new Map<number,{resolve:(value:unknown)=>void;reject:(error:Error)=>void;progress?:(value:unknown)=>void}>();
 const errors:Record<string,string>={
   'invalid-export-destination':'Choose a new file in a local, non-linked folder. Existing files are never overwritten.',
   'stale-revision':'History changed. Refresh explicitly to open a new consistent revision.',
@@ -18,15 +18,19 @@ const errors:Record<string,string>={
 webview?.addEventListener('message',event=>{
   const message=event.data,request=pending.get(message?.id);
   if(!request)return;
+  if(message.ok===true&&message.progress===true){
+    try{request.progress?.(message.data)}catch(error){pending.delete(message.id);request.reject(error instanceof Error?error:new Error('Invalid query progress'))}
+    return;
+  }
   pending.delete(message.id);
   if(message.ok===true)request.resolve(message.data);
   else request.reject(new Error(errors[message.state]||'Collector unavailable. Reopen TailD to reconnect.'));
 });
-export function command<T=unknown>(op:string,body:unknown={}):Promise<T>{
+export function command<T=unknown>(op:string,body:unknown={},progress?:(value:unknown)=>void):Promise<T>{
   if(!webview)return Promise.reject(new Error('Open TailD using its desktop launcher.'));
   if(pending.size>=4)return Promise.reject(new Error('An operation is already pending.'));
   const id=++sequence;
   return new Promise<T>((resolve,reject)=>{
-    pending.set(id,{resolve:value=>resolve(value as T),reject});webview.postMessage({id,op,body});
+    pending.set(id,{resolve:value=>resolve(value as T),reject,progress});webview.postMessage({id,op,body});
   });
 }

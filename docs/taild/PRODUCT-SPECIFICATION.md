@@ -1,6 +1,6 @@
 # TailD remaining-product specification
 
-Version 1.7, 2026-10-14. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.8, 2026-10-14. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
 
 ## 1. Authority, authorization and completion boundary
 
@@ -486,6 +486,25 @@ dashboard batch; no cross-revision cache or weakened coverage/query semantics.
 Application-facing labels use the executable basename, with full path available
 in title/details. Full paths and canonical application identities still drive
 filters, navigation and exports; equal basenames must not merge distinct paths.
+
+October 14 dashboard-performance amendment (R15c; owned by ACTIVE Stage 10):
+the user explicitly authorizes optimizing the dashboard query and loading paths.
+Keep the seven-day default, exact integer counters, correlation uncertainty,
+source coverage, existing resource/privacy limits and consistent read revisions.
+Remove measured repeated scans/object expansion rather than hide delay behind a
+spinner. Display completed independent dashboard domains without waiting for
+unrelated expensive work, while clearly marking pending panels; never mix their
+revisions or enable a drill-down against an unfinished/stale generation. Keep
+navigation and native closure responsive, coalesce duplicate refresh and discard
+superseded presentation results without arbitrary cancellation deadlines.
+Use the existing Portmaster widgets and Tailscale palette, not a visual redesign.
+Acceptance: compare complete baseline/optimized results on one fixed retained
+seven-day snapshot; exact outputs must reconcile and measured complete-query
+latency must improve materially. Verify actual native packaged assets with held
+work, independent panel readiness, error recovery, refresh/navigation and
+revision-bound drill-down/export. Record actual timings and unsupported timing
+boundaries, not a synthetic instant-load claim. No collection/DNS/retention change
+or installed deployment/public release is implied by this optimization request.
 
 Restore the pinned Portmaster dashboard's compact country/map grouping and paired
 consumer/bandwidth panels, preserving Tailscale colors. Include its offline D3

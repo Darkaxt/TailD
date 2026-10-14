@@ -220,6 +220,10 @@ class History:
                 self.db.execute('CREATE TABLE snapshots(id TEXT PRIMARY KEY,kind TEXT NOT NULL,scope TEXT NOT NULL,time INTEGER NOT NULL,end INTEGER NOT NULL,data TEXT NOT NULL,revision INTEGER NOT NULL)')
                 self.db.execute('CREATE INDEX snapshots_scope_time ON snapshots(kind,scope,time,end)')
                 self.db.execute('PRAGMA user_version=4')
+            # Additive, backwards-compatible indexes, not stored metrics or a
+            # schema migration. Existing clients can still read the same facts.
+            self.db.execute('CREATE INDEX IF NOT EXISTS traffic_dashboard ON traffic(time,application,destination,inbound,outbound,source,identity,port)')
+            self.db.execute("CREATE INDEX IF NOT EXISTS traffic_unsupported_time_source ON traffic(time,source) WHERE json_extract(data,'$.destination_status')='unsupported-address-family'")
 
     def _bump(self):
         self.db.execute('UPDATE settings SET revision=revision+1')

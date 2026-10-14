@@ -49,13 +49,14 @@ class DesktopAPI:
         self.engine._validate(value)
         return value
 
-    def dispatch(self,op,body):
+    def dispatch(self,op,body,*,on_result=None):
         if not isinstance(body,dict): raise analytics.QueryError('Expected typed operation')
         if op=='view-query' and set(body)<={'queries','revision'} and 'queries' in body:
             if not isinstance(body['queries'],list) or not 1<=len(body['queries'])<=16:
                 raise analytics.QueryError('Expected bounded query batch')
             queries=[self.query(q) for q in body['queries']]
-            return ingestion.exact_json(self.engine.batch(queries,expected_revision=body.get('revision')))
+            emit=(lambda result:on_result(ingestion.exact_json(result))) if on_result else None
+            return ingestion.exact_json(self.engine.batch(queries,expected_revision=body.get('revision'),on_result=emit))
         if op=='view-catalog' and not body:
             sources=[{'id':r['id'],'kind':r['kind'],**{k:v for k,v in json.loads(r['metadata']).items()
                      if k in ('scope','endpoint')}} for r in self.store.db.execute('SELECT * FROM sources ORDER BY kind,id')]

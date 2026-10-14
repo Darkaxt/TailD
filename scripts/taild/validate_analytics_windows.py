@@ -109,7 +109,9 @@ class NativeSession:
 
 def settled(page):
     from playwright.sync_api import expect
-    expect(page.locator('main')).to_have_attribute('aria-busy','false')
+    # A five-second assertion deadline is not query completion. Observe the
+    # original generation's actual terminal transition, including slow history.
+    page.wait_for_function("()=>document.querySelector('main')?.getAttribute('aria-busy')==='false'",timeout=0)
     error=page.locator('#analytics-error')
     assert error.count()==0,'Desktop query failed (inspect private renderer evidence)'
     expect(page.locator('main')).to_have_attribute('data-ready','true')
@@ -216,16 +218,18 @@ def run(shell,output,real_history,policy_history):
         errors=[];page.on('pageerror',lambda error:errors.append(type(error).__name__))
         settled(page);page.screenshot(path=str(output/'empty.png'),full_page=True);select_range(page,START,END)
         # Hold one real queued query at its worker boundary. The UI must not
-        # mutate scope/navigation under an outstanding revision. Event based,
+        # mutate scope under an outstanding revision; navigation stays usable
+        # (supersession is exercised by validate_dashboard_performance_windows).
+        # Event based,
         # with no sleep, guessed duration, cancellation or mocked query result.
         held=threading.Event();release=threading.Event();original=session.collector.dispatch
-        def pending_query(request):
+        def pending_query(request,**kwargs):
             if request.get('op')=='view-query':held.set();release.wait()
-            return original(request)
+            return original(request,**kwargs)
         try:
             session.collector.dispatch=pending_query
             page.locator('#view-refresh').click();held.wait()
-            expect(page.locator('#scope-host')).to_be_disabled();expect(page.locator('#nav-1')).to_be_disabled()
+            expect(page.locator('#scope-host')).to_be_disabled();expect(page.locator('#nav-1')).to_be_enabled()
             expect(page.locator('.analytics-results')).to_have_attribute('inert','')
             expect(page.locator('#view-loading')).to_be_visible()
             expect(page.locator('#view-loading')).to_contain_text('Refreshing view')

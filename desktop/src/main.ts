@@ -13,6 +13,7 @@ import {Evidence} from './evidence';
 import {applicationName} from './application-label';
 import {WorldMapComponent} from './portmaster/world-map';
 import {DEFAULT_TIME_RANGE,presetBounds} from './time-range';
+import {mergeProgress,BatchProgress} from './progressive-batch';
 
 type Kind='traffic'|'dns'|'correlations';
 type Page='Overview'|'Applications'|'Activity'|'Control D'|'Sources & health'|'Settings';
@@ -36,16 +37,17 @@ const fields:Record<Kind,string[]>={
   imports:[CommonModule,FormsModule,Collection,DashboardWidgetComponent,CircularBarChartComponent,SfngNetqueryLineChartComponent,Evidence,IngestionNotice,WorldMapComponent],
   template:`
   <button class="skip-link" (click)="skipContent()">Skip to analytics content</button>
+  <div class="screen-reader-progress" role="status" aria-live="polite" aria-atomic="true">{{busy()?(pendingBatch()?'Some analytics panels are ready. Reading the remaining panels.':'Loading analytics…'):ready()?'Analytics view ready.':''}}</div>
   <nav class="rail" aria-label="TailD navigation"><span class="brand" title="TailD · independent fork">TD</span>
-    <button *ngFor="let item of pages;let i=index" [id]="'nav-'+i" class="nav-link" [class.active]="page()===item" [disabled]="busy()"
+    <button *ngFor="let item of pages;let i=index" [id]="'nav-'+i" class="nav-link" [class.active]="page()===item" [disabled]="!catalog()"
       [attr.aria-label]="item" [attr.aria-current]="page()===item?'page':null" [title]="item" (click)="navigate(item)">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons[i]" fill="none" stroke="currentColor" stroke-width="1.6" /></svg></button>
     <span class="rail-bottom" title="Read-only analytics">READ</span></nav>
-  <main id="analytics-main" tabindex="-1" class="analytics-shell" [attr.aria-busy]="busy()" [attr.data-revision]="batch()?.revision" [attr.data-ready]="ready()">
+  <main id="analytics-main" tabindex="-1" class="analytics-shell" [attr.aria-busy]="busy()" [attr.data-revision]="displayBatch()?.revision" [attr.data-ready]="ready()">
     <header class="page-heading"><div><div class="eyebrow">TailD / Network analytics</div><h1>{{page()}}</h1>
       <p>{{page()==='Applications'&&application()!==undefined?appName(application()):'Observed facts. Honest gaps. Your network stays unchanged.'}}</p></div>
       <div class="heading-status"><span class="badge" [class.good]="runtime()?.state==='collecting'">{{runtime()?.state||'Connecting'}}</span>
-      <span class="revision" *ngIf="batch() as b">Revision {{b.revision}}</span></div></header>
+      <span class="revision" *ngIf="displayBatch() as b">Revision {{b.revision}}{{pendingBatch()?' · loading panels':''}}</span></div></header>
     <taild-ingestion-notice *ngIf="page()!=='Settings'&&page()!=='Overview'" [state]="runtime()" [catalog]="catalog()" [start]="start" [end]="end" />
     <fieldset class="shared-scope" aria-label="Shared analytics scope" [disabled]="busy()" *ngIf="catalog() as c">
       <label>Host scope<select id="scope-host" [(ngModel)]="host" (change)="scopeChanged()"><option value="">All recorded hosts</option>
@@ -77,17 +79,21 @@ const fields:Record<Kind,string[]>={
       <span class="hint">{{b.aggregation_version}} · no socket/PID bytes or firewall verdicts</span>
       <span class="hint" *ngIf="application()!==undefined || predicates.length || device">DNS totals use independent endpoint scope when node/traffic/application filters cannot apply.</span>
       <span class="hint" *ngIf="catalog()?.nodes_truncated">Observed-node list is truncated; narrow the host scope.</span></div>
-    <div class="loading-overlay" *ngIf="busy()" role="status" aria-live="polite" aria-atomic="true" id="view-loading">
+    <div class="loading-overlay" *ngIf="busy()&&!pendingBatch()" role="status" aria-live="polite" aria-atomic="true" id="view-loading">
       <div class="loading-dialog"><div class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>
         <strong>{{batch()?'Refreshing view':'Loading analytics'}}</strong><span>Reading local history</span>
         <small>{{batch()?'Your previous revision is kept until the new view is ready.':'Preparing the selected view.'}}</small></div></div>
-    <div class="analytics-results" [attr.inert]="busy()?'':null">
+    <div class="progress-notice" *ngIf="busy()&&pendingBatch()" role="status" aria-live="polite" id="view-progress">
+      <span class="progress-pulse" aria-hidden="true"></span><strong>Loading remaining panels</strong>
+      <span>{{dnsSummary()?'Control D decisions ready.':'Reading Control D decisions.'}} {{summary()?'Traffic summary ready.':'Reading traffic aggregates.'}}</span>
+      <small>One consistent revision · drill-down available when this view finishes</small></div>
+    <div class="analytics-results" [attr.inert]="busy()?'':null" [attr.data-progress]="!!pendingBatch()">
 
     <ng-container *ngIf="page()==='Overview' || (page()==='Applications'&&application()!==undefined)">
-      <div class="dashboard-grid" [class.application-dashboard]="application()!==undefined" *ngIf="summary() as s">
-        <app-dashboard-widget label="Activity in the selected period" id="dashboard-stats">
-          <div class="mini-stats-list"><button class="mini-stat" id="received-card" (click)="explore('traffic')"><label>Received</label><span>{{format(s.data.inbound_bytes)}}</span><small>{{s.data.inbound_bytes}} bytes</small></button>
-            <button class="mini-stat" id="sent-card" (click)="explore('traffic')"><label>Sent</label><span>{{format(s.data.outbound_bytes)}}</span><small>{{s.data.outbound_bytes}} bytes</small></button>
+      <div class="dashboard-grid" [class.application-dashboard]="application()!==undefined" *ngIf="(summary() || pendingSummary) as s">
+        <app-dashboard-widget label="Activity in the selected period" id="dashboard-stats" [attr.data-pending]="!summary()">
+          <div class="mini-stats-list"><button class="mini-stat" id="received-card" (click)="explore('traffic')"><label>Received</label><span>{{summary()?format(s.data.inbound_bytes):'Loading…'}}</span><small>{{summary()?s.data.inbound_bytes+' bytes':'Traffic history'}}</small></button>
+            <button class="mini-stat" id="sent-card" (click)="explore('traffic')"><label>Sent</label><span>{{summary()?format(s.data.outbound_bytes):'Loading…'}}</span><small>{{summary()?s.data.outbound_bytes+' bytes':'Traffic history'}}</small></button>
             <button class="mini-stat" id="applications-card" (click)="navigate('Applications')"><label>Observed applications</label><span>{{s.application_activity.known_distinct}}</span><small>{{s.application_activity.unknown_buckets}} unknown buckets</small></button>
             <button class="mini-stat" id="dns-card" (click)="explore('dns')"><label>DNS decisions</label><span>{{dnsSummary()?.dns_activity.events??'Unavailable'}}</span><small>Independent endpoint scope</small></button>
             <button class="mini-stat" id="buckets-card" (click)="explore('traffic')"><label>Traffic buckets</label><span>{{s.application_activity.bucket_count}}</span><small>Not live connections</small></button>
@@ -101,39 +107,39 @@ const fields:Record<Kind,string[]>={
           <taild-ingestion-notice primary="dns" [state]="runtime()" [catalog]="catalog()" [start]="start" [end]="end" />
           <p class="hint">READ only. GlassWire supplies application bytes; Control D supplies endpoint DNS decisions. Neither proves complete coverage.</p>
         </app-dashboard-widget>
-        <app-dashboard-widget label="DNS activity · canonical decisions" id="dashboard-dns-trend">
+        <app-dashboard-widget label="DNS activity · canonical decisions" id="dashboard-dns-trend" [class.panel-pending]="!displayBatch()?.results?.[7]">
           <p class="hint">Independent account/endpoint scope · select a bin to inspect its decisions.</p>
           <sfng-netquery-line-chart metric="decisions" [data]="dnsBins()" (select)="dnsBinScope($event)" />
         </app-dashboard-widget>
-        <app-dashboard-widget label="Bandwidth history · observed samples" class="half chart-panel" id="dashboard-bandwidth">
+        <app-dashboard-widget label="Bandwidth history · observed samples" class="half chart-panel" id="dashboard-bandwidth" [class.panel-pending]="!displayBatch()?.results?.[2]">
           <sfng-netquery-line-chart [data]="bins()" (select)="binScope($event)" />
         </app-dashboard-widget>
-        <app-dashboard-widget [label]="application()===undefined?'Top applications · received / sent':'Top destinations · application scoped'" class="half" id="dashboard-consumers">
+        <app-dashboard-widget [label]="application()===undefined?'Top applications · received / sent':'Top destinations · application scoped'" class="half" id="dashboard-consumers" [class.panel-pending]="!displayBatch()?.results?.[3]">
           <sfng-netquery-circular-bar-chart [data]="application()===undefined?consumers():destinations()" (select)="selectConsumer($event)" />
         </app-dashboard-widget>
-        <app-dashboard-widget label="Correlation evidence · not attribution" class="half" id="dashboard-correlations">
+        <app-dashboard-widget label="Correlation evidence · not attribution" class="half" id="dashboard-correlations" [class.panel-pending]="!summary()">
           <div class="partition" aria-label="Correlation bytes partition"><ng-container *ngFor="let item of correlation()"><button *ngIf="item.weight>0" [style.flex-grow]="item.weight" [title]="item.name+': '+item.bytes+' bytes'"
               [attr.aria-label]="item.name+': '+item.bytes+' bytes'" (click)="correlationScope(item.name)">{{item.weight>15?item.name:''}}</button></ng-container></div>
           <div class="rank-table"><button *ngFor="let item of correlation()" (click)="correlationScope(item.name)"><span>{{item.name}}</span><span>{{format(item.bytes)}}</span><small>{{item.count}} buckets</small></button></div>
           <p class="hint">A unique temporal candidate is an inference. Cache, TTL and process-to-domain origin are unproven.</p>
         </app-dashboard-widget>
-        <app-dashboard-widget label="DNS outcomes · provider codes unverified" class="half" id="dashboard-outcomes">
+        <app-dashboard-widget label="DNS outcomes · provider codes unverified" class="half" id="dashboard-outcomes" [class.panel-pending]="!dnsSummary()">
           <p class="hint">Observed decision categories for the selected endpoint.</p>
           <div class="partition" aria-label="DNS outcome distribution"><ng-container *ngFor="let item of outcomes()"><button *ngIf="item.count>0" [attr.data-outcome]="item.name" [style.flex-grow]="item.count" (click)="outcomeScope(item.name)" [attr.aria-label]="item.name+': '+item.count+' decisions'">{{item.name}}</button></ng-container></div>
           <div class="rank-table"><ng-container *ngFor="let item of outcomes()"><button *ngIf="item.count>0" (click)="outcomeScope(item.name)"><span>{{item.name}}</span><span>{{item.count}}</span></button></ng-container></div>
           <p class="hint" *ngIf="!dnsSummary()?.dns_activity.events">No DNS decisions observed in this scope.</p>
           <p class="hint">Block rate unavailable until action meanings are verified. Unknown does not mean allowed.</p>
         </app-dashboard-widget>
-        <app-dashboard-widget label="DNS questions · selected endpoint" class="half" id="dashboard-questions">
+        <app-dashboard-widget label="DNS questions · selected endpoint" class="half" id="dashboard-questions" [class.panel-pending]="!dnsSummary()">
           <div class="rank-table"><button *ngFor="let item of questions().slice(0,12)" (click)="questionScope(item.value)"><span>{{item.value||'Unknown question'}}</span><span>{{item.events}} decisions</span></button></div>
           <p *ngIf="!questions().length" class="hint">No provider decisions observed in this scope.</p>
           <p class="hint" *ngIf="application()!==undefined">Independent endpoint DNS scope, not all queries from this application. Candidate questions are in its activity evidence.</p>
           <div class="rank-table" *ngIf="application()!==undefined"><h3>Application candidate questions · inferred</h3><button *ngFor="let item of s.candidate_domains.inferred" (click)="candidateQuestionScope(item.question)"><span>{{item.question}}</span><span>{{format(item.total_bytes)}}</span></button></div>
         </app-dashboard-widget>
-        <app-dashboard-widget label="Destinations · exact bucket bytes" class="half" id="dashboard-destinations" *ngIf="application()===undefined">
+        <app-dashboard-widget label="Destinations · exact bucket bytes" class="half" id="dashboard-destinations" *ngIf="application()===undefined" [class.panel-pending]="!summary()">
           <div class="rank-table"><button *ngFor="let item of destinations().slice(0,12)" (click)="destinationScope(item.value)"><span>{{item.value||'Unknown destination'}}</span><span>{{format(item.total_bytes)}}</span></button></div>
         </app-dashboard-widget>
-        <app-dashboard-widget label="Answer countries / ASN · inferred" class="half" id="dashboard-countries">
+        <app-dashboard-widget label="Answer countries / ASN · inferred" class="half" id="dashboard-countries" [class.panel-pending]="!summary()">
           <p class="hint">Unique temporal candidates · highlight a country to locate it on the map.</p>
           <div class="country-tiles"><button *ngFor="let item of s.geography_asn.countries" class="country-tile" [attr.data-country]="item.value||'unknown'"
               (mouseenter)="highlightedCountry.set(item.value)" (mouseleave)="highlightedCountry.set(null)"
@@ -144,8 +150,8 @@ const fields:Record<Kind,string[]>={
             <tbody><tr *ngFor="let item of s.geography_asn.countries"><td><button class="identity-link" (click)="geographyScope('destination_country',item.value)">{{item.value||'Unknown'}}</button></td><td [title]="item.total_bytes+' bytes'">{{format(item.total_bytes)}}</td></tr></tbody></table>
             <table><thead><tr><th>Answer ASN</th><th>Candidate bytes</th></tr></thead><tbody><tr *ngFor="let item of s.geography_asn.asns"><td><button class="identity-link" (click)="geographyScope('destination_asn',item.value)">{{item.value||'Unknown'}}</button></td><td>{{format(item.total_bytes)}}</td></tr></tbody></table></div></details>
         </app-dashboard-widget>
-        <app-dashboard-widget label="Answer-country map · inferred" class="half" id="dashboard-map">
-          <taild-world-map [data]="s.geography_asn.countries" [highlightedCountry]="highlightedCountry()" (selectCountry)="geographyScope('destination_country',$event)" />
+        <app-dashboard-widget label="Answer-country map · inferred" class="half" id="dashboard-map" [class.panel-pending]="!summary()">
+          <taild-world-map *ngIf="summary()" [data]="s.geography_asn.countries" [highlightedCountry]="highlightedCountry()" (selectCountry)="geographyScope('destination_country',$event)" />
         </app-dashboard-widget>
       </div>
     </ng-container>
@@ -241,27 +247,30 @@ class App {
     'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2'];
   kinds:Kind[]=['traffic','dns','correlations'];page=signal<Page>('Overview');runtime=signal<State|null>(null);
   catalog=signal<Catalog|null>(null);batch=signal<Batch|null>(null);busy=signal(false);error=signal('');notice=signal('');ready=signal(false);
+  pendingBatch=signal<Batch|null>(null);displayBatch=computed(()=>this.pendingBatch()||this.batch());
+  pendingSummary={data:{inbound_bytes:null,outbound_bytes:null},application_activity:{known_distinct:'Loading…',unknown_buckets:'Pending',bucket_count:'Loading…'},
+    candidate_domains:{inferred:[]},geography_asn:{countries:[],asns:[]}};
   application=signal<string|null|undefined>(undefined);applicationLabel=signal('');selected=signal('');saved=signal<Saved[]>([]);
   host='';device='';account='';endpoint='';range=DEFAULT_TIME_RANGE;start='';end='';timezone=Intl.DateTimeFormat().resolvedOptions().timeZone;
   kind:Kind='traffic';search='';predicates:Predicate[]=[];combine:'all'|'any'='all';field='application_path';operator='eq';filterValue='';
   group='';order='timestamp:desc';pageIndex=0;cursors:(string|undefined)[]=[undefined];savedName='';savedSelection='';retentionDays=7;deleteKind='traffic';confirmDelete=false;
-  private lastQuery:Query|null=null;private loadingGeneration=0;
+  private lastQuery:Query|null=null;private loadingGeneration=0;private queuedNavigation=false;
   highlightedCountry=signal<string|null>(null);private countryNames=new Intl.DisplayNames(['en'],{type:'region'});
   countryName(value:string|null){return value&&/^[A-Z]{2}$/.test(value)?this.countryNames.of(value)||value:value||'Unknown geography'}
   format=bytes;hosts=computed(()=>[...new Set((this.catalog()?.sources||[]).filter(s=>s.kind==='traffic').map(s=>s.scope))]);
   accounts=computed(()=>[...new Set(this.providerSources().map(s=>s.scope))]);
   endpoints(){return [...new Set(this.providerSources().filter(s=>!this.account||s.scope===this.account).map(s=>s.endpoint).filter((s):s is string=>!!s))]}
   nodes(){return [...new Set((this.catalog()?.nodes||[]).filter(s=>!this.host||s.host_scope===this.host).map(s=>s.node_id))]}
-  trafficResult=computed(()=>this.batch()?.results[0]||this.batch()?.results[3]||(this.kind!=='dns'?this.batch()?.results[4]:undefined));
-  dnsResult=computed(()=>this.batch()?.results[1]||(this.kind==='dns'?this.batch()?.results[4]:undefined));
+  trafficResult=computed(()=>this.displayBatch()?.results[0]||this.displayBatch()?.results[3]||(this.kind!=='dns'?this.displayBatch()?.results[4]:undefined));
+  dnsResult=computed(()=>this.displayBatch()?.results[1]||(this.kind==='dns'?this.displayBatch()?.results[4]:undefined));
   summary=computed<Fact|undefined>(()=>{
-    const data=this.batch()?.results[0]?.data;
+    const data=this.displayBatch()?.results[0]?.data;
     return this.page()==='Sources & health'?(data?.domain==='operational-not-network-activity'?{source_health:data}:undefined):data;
   });
-  dnsSummary=computed(()=>this.batch()?.results[1]?.data);
-  bins=computed(()=>this.batch()?.results[2]?.data.bins as Bin[]||[]);
-  dnsBins=computed(()=>this.batch()?.results[7]?.data.bins as Bin[]||[]);
-  applications=computed(()=>this.batch()?.results[3]?.data.groups as Fact[]||[]);
+  dnsSummary=computed(()=>this.displayBatch()?.results[1]?.data);
+  bins=computed(()=>this.displayBatch()?.results[2]?.data.bins as Bin[]||[]);
+  dnsBins=computed(()=>this.displayBatch()?.results[7]?.data.bins as Bin[]||[]);
+  applications=computed(()=>this.displayBatch()?.results[3]?.data.groups as Fact[]||[]);
   factsResult=computed(()=>this.batch()?.results[4]);rows=computed(()=>this.factsResult()?.data.rows as Fact[]||[]);
   groups=computed(()=>this.batch()?.results[5]?.data.groups as Fact[]||[]);
   policies=computed(()=>this.batch()?.results[6]?.data.rows as Fact[]||[]);
@@ -307,7 +316,7 @@ class App {
     }return query;
   }
   async refresh(newTime=false,revision?:number){
-    if(this.busy())return;this.busy.set(true);this.ready.set(false);this.error.set('');const generation=++this.loadingGeneration;
+    if(this.busy())return;this.busy.set(true);this.ready.set(false);this.error.set('');this.pendingBatch.set(null);const generation=++this.loadingGeneration;
     const focused=newTime&&this.selected()?'fact-'+this.selected():document.activeElement instanceof HTMLElement?document.activeElement.id:'';
     try{
       if(newTime){if(this.range!=='custom')this.setTime();this.pageIndex=0;this.cursors=[undefined]}
@@ -334,18 +343,27 @@ class App {
         this.page()==='Applications'?[3]:this.page()==='Control D'?[6]:this.page()==='Sources & health'?[0]:
         [...(this.kind==='dns'?[]:[2]),4,...(this.group?[5]:[])];
       if(this.page()==='Sources & health')planned[0]={...traffic,view:'health'};
-      const result=await command<Batch>('view-query',{queries:indices.map(i=>planned[i]),...(revision===undefined?{}:{revision})});
+      const result=await command<Batch>('view-query',{queries:indices.map(i=>planned[i]),...(revision===undefined?{}:{revision})},event=>{
+        if(generation===this.loadingGeneration)this.pendingBatch.set(mergeProgress(this.pendingBatch(),event as BatchProgress,indices) as Batch);
+      });
       if(generation!==this.loadingGeneration)return;
-      const ordered:Result[]=[];indices.forEach((i,j)=>ordered[i]=result.results[j]);this.batch.set({...result,results:ordered});
+      const ordered:Result[]=[];indices.forEach((i,j)=>ordered[i]=result.results[j]);
+      const state=await command<State>('state');if(generation!==this.loadingGeneration)return;
+      this.batch.set({...result,results:ordered});this.runtime.set(state);
       if(ordered[4]){this.pageIndex=Math.floor(ordered[4].data.page_offset/50);
         this.cursors[this.pageIndex]=ordered[4].data.current_cursor||undefined;
         this.lastQuery={...facts};delete this.lastQuery.cursor;delete this.lastQuery.anchor_id;}
-      this.runtime.set(await command<State>('state'));this.ready.set(true);
+      this.ready.set(true);
       if(focused)requestAnimationFrame(()=>document.getElementById(focused)?.focus());
-    }catch(e){this.error.set((e as Error).message)}finally{this.busy.set(false)}
+    }catch(e){if(generation===this.loadingGeneration)this.error.set((e as Error).message)}finally{
+      this.pendingBatch.set(null);this.busy.set(false);
+      if(this.queuedNavigation){this.queuedNavigation=false;void this.refresh()}
+    }
   }
-  async navigate(page:Page){if(this.busy())return;this.page.set(page);this.notice.set('');
+  async navigate(page:Page){this.page.set(page);this.notice.set('');
+    this.pageIndex=0;this.cursors=[undefined];
     if(page==='Applications'){this.kind='traffic';this.group=''}
+    if(this.busy()){this.loadingGeneration++;this.queuedNavigation=true;this.pendingBatch.set(null);this.batch.set(null);return}
     await this.scopeChanged();}
   async scopeChanged(){this.pageIndex=0;this.cursors=[undefined];await this.refresh()}
   timeChanged(){if(this.range!=='custom')this.setTime();void this.scopeChanged()}

@@ -153,6 +153,34 @@ class RuntimeTest(unittest.TestCase):
         finally:
             client.close();server.stop();thread.join()
 
+    def test_native_pipe_delivers_dns_progress_before_held_traffic_and_keeps_receipts(self):
+        import analytics
+        base={'kind':'traffic','view':'summary','start':'2026-10-07T16:36:40Z','end':'2026-10-07T16:36:43Z'}
+        name='progress-'+uuid.uuid4().hex
+        server=reader.PipeServer(name,reader.current_sid(),self.collector)
+        thread=threading.Thread(target=server.serve);thread.start();server.ready.wait()
+        client=reader.PipeClient(name);entered=threading.Event();release=threading.Event();events=[];results=[];errors=[]
+        query=analytics.Analytics._query
+        def held(engine,request,revision,prepared=None):
+            if request['kind']=='traffic':entered.set();release.wait()
+            return query(engine,request,revision,prepared)
+        def run():
+            try:results.append(client.request({'op':'view-query','body':{'queries':[base,{**base,'kind':'dns'}]}},on_result=events.append))
+            except BaseException as error:errors.append(error)
+        try:
+            with patch.object(analytics.Analytics,'_query',held):
+                worker=threading.Thread(target=run);worker.start()
+                try:
+                    self.assertTrue(entered.wait(10),'Diagnostic: traffic query not entered')
+                    self.assertEqual([e['index'] for e in events],[1])
+                finally:release.set();worker.join()
+            self.assertEqual(errors,[])
+            self.assertEqual([e['index'] for e in events],[1,0])
+            self.assertEqual({e['revision'] for e in events},{results[0]['revision']})
+            self.assertEqual(client.request({'op':'state'})['state'],'disabled')
+        finally:
+            release.set();client.close();server.stop();thread.join()
+
     def test_unexpected_command_failure_resolves_current_waiter_before_worker_exit(self):
         original = self.collector._execute
         def broken(store, op, body):

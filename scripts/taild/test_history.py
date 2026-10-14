@@ -68,6 +68,19 @@ class HistoryTest(unittest.TestCase):
         self.assertEqual(self.query(application_path='other')['row_count'], 0)
         self.assertEqual(self.store.health()['sources'][0]['complete_through'], END)
 
+    def test_dashboard_indexes_are_additive_on_existing_schema_and_preserve_revision(self):
+        self.ingest()
+        before=self.query();revision=self.store.db.execute('SELECT revision FROM settings').fetchone()[0]
+        indexes={r[1] for r in self.store.db.execute('PRAGMA index_list(traffic)')}
+        self.assertTrue({'traffic_dashboard','traffic_unsupported_time_source'}<=indexes)
+        self.assertEqual(self.store.db.execute('PRAGMA user_version').fetchone()[0],4)
+        self.store.db.execute('DROP INDEX traffic_dashboard')
+        self.store.db.execute('DROP INDEX traffic_unsupported_time_source')
+        self.store.close();self.store=history.History(self.home,now=NOW);self.addCleanup(self.store.close)
+        self.assertTrue({'traffic_dashboard','traffic_unsupported_time_source'}<={r[1] for r in self.store.db.execute('PRAGMA index_list(traffic)')})
+        self.assertEqual(self.store.db.execute('SELECT revision FROM settings').fetchone()[0],revision)
+        self.assertEqual(self.query(),before)
+
     def test_read_view_is_read_only_and_sees_committed_facts_during_writer_transaction(self):
         self.ingest()
         self.store.db.execute('BEGIN IMMEDIATE')

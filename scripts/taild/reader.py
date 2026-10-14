@@ -306,7 +306,13 @@ class PipeServer:
                         self._authenticate()
                         authenticated = True
                         try:
-                            result = {'state':'stopping'} if request == {'op':'shutdown'} else self.source.dispatch(request)
+                            def progress(data):
+                                _send(self._handle,self._stop,{'ok':True,'progress':True,'data':data},RESPONSE_BYTES)
+                                if _receive(self._handle,self._stop,REQUEST_BYTES)!={'op':'ack'}:
+                                    raise ReaderError('invalid-message')
+                            if isinstance(request,dict) and request.get('op')=='view-query' and hasattr(self.source,'dispatch_progress'):
+                                result=self.source.dispatch_progress(request,progress)
+                            else:result = {'state':'stopping'} if request == {'op':'shutdown'} else self.source.dispatch(request)
                             response = {'ok':True, 'data':result}
                         except ReaderError as error:
                             response = {'ok':False, 'state':error.state}
@@ -361,7 +367,7 @@ class PipeClient:
                         self._handle = None
                     win32api.CloseHandle(self._stop)
 
-    def request(self, request):
+    def request(self, request,*,on_result=None):
         with self._lock:
             if self._closed:
                 raise ReaderError('stopped')
@@ -371,8 +377,12 @@ class PipeClient:
                         win32con.OPEN_EXISTING, win32file.FILE_FLAG_OVERLAPPED |
                         win32con.SECURITY_SQOS_PRESENT | 0x10000, None)  # SECURITY_IDENTIFICATION
                 _send(self._handle, self._stop, request, REQUEST_BYTES)
-                response = _receive(self._handle, self._stop, RESPONSE_BYTES)
-                _send(self._handle, self._stop, {'op':'ack'}, REQUEST_BYTES)
+                while True:
+                    response = _receive(self._handle, self._stop, RESPONSE_BYTES)
+                    _send(self._handle, self._stop, {'op':'ack'}, REQUEST_BYTES)
+                    if not isinstance(response,dict) or response.get('progress') is not True:break
+                    if response.get('ok') is not True or request.get('op')!='view-query':raise ReaderError('invalid-response')
+                    if on_result:on_result(response['data'])
                 if not isinstance(response, dict) or response.get('ok') is not True:
                     raise ReaderError(response.get('state','invalid-response') if isinstance(response,dict) else 'invalid-response')
                 return response['data']

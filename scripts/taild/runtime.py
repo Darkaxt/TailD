@@ -332,7 +332,10 @@ class Collector:
     def command(self, op, body=None):
         return self.submit(op,body).result()
 
-    def dispatch(self, request):
+    def dispatch_progress(self,request,on_result):
+        return self.dispatch(request,on_result=on_result)
+
+    def dispatch(self, request,*,on_result=None):
         if not isinstance(request,dict) or set(request)-{'op','body'} or 'op' not in request:
             raise RuntimeError('invalid-command')
         if request == {'op':'session'}:
@@ -358,7 +361,7 @@ class Collector:
                 view=store.read_view(now=self.now())
                 try:
                     if op=='view-catalog':view.db.execute('BEGIN')
-                    return desktop_api.DesktopAPI(view).dispatch(op,body)
+                    return desktop_api.DesktopAPI(view).dispatch(op,body,on_result=on_result)
                 finally:view.close()
             return self.command(request['op'], request.get('body'))
         except analytics.QueryError as error:

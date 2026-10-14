@@ -65,7 +65,7 @@ internal sealed class OwnerBridge : IDisposable
         expectedPid=pid;
         name="\\\\.\\pipe\\Darkaxt.TailD."+instance;
     }
-    public async Task<JsonElement> Request(string op,JsonElement body)
+    public async Task<JsonElement> Request(string op,JsonElement body,Action<JsonElement>? progress=null)
     {
         // Native allowlist: renderer cannot request a session token, arbitrary
         // SQL, path, shell command, source access or arbitrary filesystem operation.
@@ -91,22 +91,30 @@ internal sealed class OwnerBridge : IDisposable
             // Lifecycle exact operations deliberately omit body for protocol ACK hooks.
             var request=op is "shutdown" or "window-closed" ? JsonSerializer.SerializeToUtf8Bytes(new{op}) :
                 JsonSerializer.SerializeToUtf8Bytes(new{op,body});
-            return await Exchange(request);
+            return await Exchange(request,op=="view-query"?progress:null);
         }
         finally {serial.Release();}
     }
-    private async Task<JsonElement> Exchange(byte[] request)
+    private async Task<JsonElement> Exchange(byte[] request,Action<JsonElement>? progress=null)
     {
         await Write(request);
-        var head=new byte[4];await pipe!.ReadExactlyAsync(head);
-        var size=System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(head);
-        if(size==0||size>16*1024*1024)throw new InvalidDataException();
-        var raw=new byte[size];await pipe.ReadExactlyAsync(raw);
-        using var result=JsonDocument.Parse(raw,new JsonDocumentOptions{MaxDepth=24});
-        await Write("{\"op\":\"ack\"}"u8.ToArray());
-        if(result.RootElement.GetProperty("ok").GetBoolean()!=true)
-            throw new BridgeError(result.RootElement.TryGetProperty("state",out var state)?state.GetString()!:"unavailable");
-        return result.RootElement.GetProperty("data").Clone();
+        while(true)
+        {
+            var head=new byte[4];await pipe!.ReadExactlyAsync(head);
+            var size=System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(head);
+            if(size==0||size>16*1024*1024)throw new InvalidDataException();
+            var raw=new byte[size];await pipe.ReadExactlyAsync(raw);
+            using var result=JsonDocument.Parse(raw,new JsonDocumentOptions{MaxDepth=24});
+            await Write("{\"op\":\"ack\"}"u8.ToArray());
+            if(result.RootElement.GetProperty("ok").GetBoolean()!=true)
+                throw new BridgeError(result.RootElement.TryGetProperty("state",out var state)?state.GetString()!:"unavailable");
+            if(result.RootElement.TryGetProperty("progress",out var partial)&&partial.ValueKind==JsonValueKind.True)
+            {
+                progress?.Invoke(result.RootElement.GetProperty("data").Clone());
+                continue;
+            }
+            return result.RootElement.GetProperty("data").Clone();
+        }
     }
     private async Task Write(byte[] raw)
     {
@@ -242,7 +250,9 @@ internal sealed class CollectionWindow : Form
                 throw new InvalidDataException();
             id=root.GetProperty("id").GetInt64();var op=root.GetProperty("op").GetString()!;
             var body=root.GetProperty("body");if(body.ValueKind!=JsonValueKind.Object)throw new InvalidDataException();
-            var data=op=="export-query"?await Export(body):await bridge.Request(op,body);
+            var data=op=="export-query"?await Export(body):await bridge.Request(op,body,partial=>{
+                if(!view.IsDisposed&&!disposingWindow)view.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(new{id,ok=true,progress=true,data=partial}));
+            });
             view.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(new{id,ok=true,data}));
             if(op=="shutdown"){disposingWindow=true;Close();}
         }
@@ -287,7 +297,7 @@ internal sealed class CollectionWindow : Form
     private async void ClosingWindow(object? sender,FormClosingEventArgs e)
     {
         if(disposingWindow)return;
-        e.Cancel=true;Enabled=false;
+        e.Cancel=true;Enabled=false;Hide();
         try{await bridge.Request("window-closed",Empty);}
         catch(Exception){ /* Broken pipe: runtime owns terminal/disabled cleanup. */ }
         disposingWindow=true;Close();

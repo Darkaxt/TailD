@@ -212,3 +212,67 @@ DNS configuration, retention and installed release +5 were not changed.
 Private evidence: `D:/Tools/taild-stage10-validation-20261013/seven-day-20261014`.
 The current amendment is source/native-verified, not a public release or installed
 update. Stage 10/B12 and the reported tray-launch issue remain open.
+
+## Dashboard performance — R15c, 2026-10-14
+
+The dashboard now streams completed results over the existing authenticated
+owner pipe while retaining one SQLite read transaction/revision. Control D's
+decision chart is computed first; traffic summaries/charts/rankings follow.
+Native frame receipts and the final response remain explicit. Pending panels are
+labeled rather than filled with zeros, and a new generation never borrows a panel
+from an older revision. The previous complete view remains the recovery state.
+Navigation coalesces to the latest requested page without starting overlapping
+queries or killing the current transaction. Native Close hides the window
+immediately, then completes the existing receipt/transaction lifecycle.
+
+When no observed context can produce a DNS candidate, traffic aggregates reduce
+in SQLite instead of expanding every canonical bucket in Python. Weighted rows
+preserve exact counts, bytes, unknowns, tied ranking order and multiple UTC bin
+widths. The small exact-sum aggregate returns decimal integers, not SQLite REAL or
+overflowing signed-64-bit SUM. Evidence/ID/complex candidate filters and observed
+bound contexts retain the normal evaluator. DNS inputs and source health are
+shared only within the current read transaction; geography counts use one pass.
+Covering and unsupported-family partial indexes are additive to history schema 4,
+with no cached metrics, migration incompatibility, changed facts or retention.
+On the measured snapshot the indexes required about 5.3 seconds once and about
+191 MiB of additional disk space. Subsequent starts reuse them.
+
+Same fixed retained seven-day facts and revision, exact full-output equality:
+prior code **19.74 s**; optimized runs **6.62–8.87 s**. The final current-source
+measurement was **8.87 s**, with the DNS chart result at **1.36 s** and DNS summary
+at **2.66 s**. These are backend request/result milestones, not native startup or
+physical presentation times. Host load causes variation; no universal latency
+guarantee or instant seven-day correlated-filter claim is made.
+
+The actual isolated native host additionally verifies DNS panels while traffic is
+held, navigation/superseded-result rejection, error restoration, refresh recovery,
+exact card-to-facts/private native export and immediate visible close while a
+query is held. Complete desktop regression covers all six summaries, map/country
+coordination, same-name executable identities, source navigation, saved queries,
+large integers, compound filters, pagination/revision rejection, JSON/CSV ACLs,
+three representative sizes and app-local 150% zoom. Source histories were opened
+read-only; no installed client, provider token/policy, DNS or collection setting
+was changed. Current policy/live provider revalidation is not claimed.
+
+Focused UX review retained the existing theme and widgets, keyboard navigation,
+focus indicators, explicit pending versus empty states and reduced-motion support.
+The progress announcement sits outside the busy main region so assistive technology
+can announce partial readiness. Review reference:
+[Web Interface Guidelines](https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md).
+Debug inspectors remain absent from the Release build.
+
+Backend regressions, frontend contracts/type-check/production bundle and native
+Debug/Release compilation pass. The initial broad backend invocation omitted
+`TAILD_PACKAGE_TEST_OUTPUT`; affected packaging tests passed with its scoped
+registered scratch root. The initial live-history native observer's five-second
+assertion expired during valid loading; it now observes actual terminal readiness
+without canceling the query. A close observer initially used WebView document
+visibility, which is not native Form visibility; the final probe uses synchronous
+native close dispatch and the actual window's visibility. These failed diagnostic
+attempts are not reported as successful checks.
+
+Private timing/render evidence:
+`D:/Tools/taild-stage10-validation-20261013/dashboard-performance-20261014`.
+R15c source/native acceptance is satisfied; B16 is resolved. Stage 10 remains
+ACTIVE for existing B12 delivery/lifecycle/updater reconciliation. The installed
+public +6 remains unchanged; this is not another release or deployment.
