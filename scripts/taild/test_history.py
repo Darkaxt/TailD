@@ -115,7 +115,7 @@ class HistoryTest(unittest.TestCase):
             db.execute('INSERT INTO stats_databases VALUES(2,?,1791331200,1791504000,2)',(b'glasswire_stats_30sec_1791331200.db',))
             db.commit()
         catalog = glasswire.discover(self.root)
-        self.assertEqual([x['path'] for x in catalog['databases']], [str(self.stats)])
+        self.assertEqual([x['path'] for x in catalog['databases']], [str(self.stats.resolve())])
         with closing(sqlite3.connect(self.main)) as db:
             db.execute('UPDATE stats_databases SET filename=? WHERE id=1',(b'../glasswire_stats_1sec_1791331200.db',))
             db.commit()
