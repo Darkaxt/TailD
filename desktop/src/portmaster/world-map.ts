@@ -22,13 +22,18 @@ import {Consumer,bytes,exact} from './charts';
     .map-surface ::ng-deep path{fill:#3b3939;stroke:#1f1e1e;stroke-width:.7;stroke-linejoin:round}
     .map-surface ::ng-deep path.observed{fill:#4b70cc;cursor:pointer}
     .map-surface ::ng-deep path.observed:hover,.map-surface ::ng-deep path.observed:focus{fill:#85aaf5;stroke:#f9f7f6;outline:none}
+    .map-surface ::ng-deep path.highlighted{fill:#85aaf5;stroke:#f9f7f6}
     @media(max-width:850px){.map-surface{height:300px}}`]})
 export class WorldMapComponent implements AfterViewInit {
   private element=inject(ElementRef<HTMLElement>);private destroy=inject(DestroyRef);private disposed=false;
   private countries:FeatureCollection<Geometry,{iso_a2:string;name:string}>|null=null;
   private rows:Consumer[]=[];ready=signal(false);failed=signal(false);unmapped=signal(0n);format=bytes;
   @Output() selectCountry=new EventEmitter<string>();
+  private highlighted:string|null=null;
+  @Input() set highlightedCountry(value:string|null){this.highlighted=value;this.highlight()}
   @Input() set data(value:Consumer[]){this.rows=value||[];this.render()}
+  private highlight(){const value=this.highlighted;select(this.element.nativeElement).selectAll<SVGPathElement,unknown>('path[data-country]')
+    .classed('highlighted',function(){return this.getAttribute('data-country')===value})}
   async ngAfterViewInit(){
     this.destroy.onDestroy(()=>{this.disposed=true});
     try{
@@ -62,6 +67,6 @@ export class WorldMapComponent implements AfterViewInit {
       .on('click',(_,d)=>{if((values.get(d.properties.iso_a2)||0n)>0n)this.selectCountry.emit(d.properties.iso_a2)})
       .on('keydown',(event:KeyboardEvent,d)=>{if((event.key==='Enter'||event.key===' ')&&(values.get(d.properties.iso_a2)||0n)>0n){event.preventDefault();this.selectCountry.emit(d.properties.iso_a2)}});
     paths.append('title').text(d=>`${d.properties.name} · ${values.has(d.properties.iso_a2)?values.get(d.properties.iso_a2)+' inferred bytes':'No geography observed'}`);
-    this.ready.set(true);
+    this.highlight();this.ready.set(true);
   }
 }

@@ -8,6 +8,15 @@ const state={state:'collecting',settings:{traffic:true,dns:true},sources:{
 const catalog={intervals:{traffic:{start:'2026-10-12T00:00:00Z',end:'2026-10-12T00:35:00Z',latest_observation:'2026-10-12T00:34:59Z'},
   dns:{start:null,end:null},snapshots:{start:'2026-10-14T00:00:00Z',end:'2026-10-14T12:00:00Z'}}};
 
+test('dashboard prioritizes Control D without changing source activity or opt-ins',()=>{
+  const view=describeIngestion(state,catalog,'2026-10-14T10:00:00Z','2026-10-14T11:00:00Z','dns');
+  assert.deepEqual(view.sources.map(s=>s.kind),['dns','traffic']);
+  assert.match(view.sources[0].activity,/Waiting for source read/);
+  assert.match(view.sources[1].activity,/12 source reads committed/);
+  assert.equal(view.active,true);
+  assert.deepEqual(describeIngestion(state,catalog,'','','traffic').sources.map(s=>s.kind),['traffic','dns']);
+});
+
 test('older imported facts explain empty recent graphs without fake completion',()=>{
   const view=describeIngestion(state,catalog,'2026-10-14T10:00:00Z','2026-10-14T11:00:00Z');
   assert.equal(view.active,true);

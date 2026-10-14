@@ -22,10 +22,11 @@ export class IngestionNotice implements OnDestroy {
   @Input() set state(value:State|null){if(value)this.observed.set(value)}
   @Input() set catalog(value:IngestionCatalog|null){if(value)this.retained.set(value)}
   @Input() start='';@Input() end='';
+  @Input() primary:'traffic'|'dns'='traffic';
   private disposed=false;private reading=false;private timer?:number;
   private visible=()=>{if(!document.hidden)void this.observe()};
   constructor(){document.addEventListener('visibilitychange',this.visible);void this.observe();this.schedule()}
-  description(){return describeIngestion(this.observed(),this.retained(),this.start,this.end)}
+  description(){return describeIngestion(this.observed(),this.retained(),this.start,this.end,this.primary)}
   private schedule(){if(this.disposed)return;this.timer=window.setTimeout(async()=>{
     await this.observe();this.schedule();},5000)}
   private async observe(){

@@ -45,7 +45,7 @@ const fields:Record<Kind,string[]>={
       <p>{{page()==='Applications'&&application()!==undefined?appName(application()):'Observed facts. Honest gaps. Your network stays unchanged.'}}</p></div>
       <div class="heading-status"><span class="badge" [class.good]="runtime()?.state==='collecting'">{{runtime()?.state||'Connecting'}}</span>
       <span class="revision" *ngIf="batch() as b">Revision {{b.revision}}</span></div></header>
-    <taild-ingestion-notice *ngIf="page()!=='Settings'" [state]="runtime()" [catalog]="catalog()" [start]="start" [end]="end" />
+    <taild-ingestion-notice *ngIf="page()!=='Settings'&&page()!=='Overview'" [state]="runtime()" [catalog]="catalog()" [start]="start" [end]="end" />
     <fieldset class="shared-scope" aria-label="Shared analytics scope" [disabled]="busy()" *ngIf="catalog() as c">
       <label>Host scope<select id="scope-host" [(ngModel)]="host" (change)="scopeChanged()"><option value="">All recorded hosts</option>
         <option *ngFor="let value of hosts()" [value]="value">{{value}}</option></select></label>
@@ -83,11 +83,25 @@ const fields:Record<Kind,string[]>={
 
     <ng-container *ngIf="page()==='Overview' || (page()==='Applications'&&application()!==undefined)">
       <div class="dashboard-grid" [class.application-dashboard]="application()!==undefined" *ngIf="summary() as s">
-        <app-dashboard-widget label="Recent activity" class="wide" id="dashboard-stats">
+        <app-dashboard-widget label="Activity in the selected period" id="dashboard-stats">
           <div class="mini-stats-list"><button class="mini-stat" id="received-card" (click)="explore('traffic')"><label>Received</label><span>{{format(s.data.inbound_bytes)}}</span><small>{{s.data.inbound_bytes}} bytes</small></button>
             <button class="mini-stat" id="sent-card" (click)="explore('traffic')"><label>Sent</label><span>{{format(s.data.outbound_bytes)}}</span><small>{{s.data.outbound_bytes}} bytes</small></button>
             <button class="mini-stat" id="applications-card" (click)="navigate('Applications')"><label>Observed applications</label><span>{{s.application_activity.known_distinct}}</span><small>{{s.application_activity.unknown_buckets}} unknown buckets</small></button>
-            <button class="mini-stat" id="dns-card" (click)="explore('dns')"><label>DNS decisions</label><span>{{dnsSummary()?.dns_activity.events??'Unavailable'}}</span><small>Canonical provider events</small></button></div>
+            <button class="mini-stat" id="dns-card" (click)="explore('dns')"><label>DNS decisions</label><span>{{dnsSummary()?.dns_activity.events??'Unavailable'}}</span><small>Independent endpoint scope</small></button>
+            <button class="mini-stat" id="buckets-card" (click)="explore('traffic')"><label>Traffic buckets</label><span>{{s.application_activity.bucket_count}}</span><small>Not live connections</small></button>
+            <button class="mini-stat" id="questions-card" (click)="explore('dns','question')"><label>Question groups</label><span>{{dnsSummary()?.dns_questions.distinct??'Unavailable'}}</span><small>Unknown names retained</small></button></div>
+        </app-dashboard-widget>
+        <app-dashboard-widget label="Collection & source context" id="dashboard-collection" *ngIf="page()==='Overview'">
+          <div class="source-priority"><span class="source-label">Control D</span><span class="hint">DNS decisions & policy</span></div>
+          <div class="dashboard-source-actions"><button id="dashboard-provider" (click)="navigate('Control D')">Control D details <span aria-hidden="true">→</span></button>
+            <button id="dashboard-health" (click)="navigate('Sources & health')">Source health <span aria-hidden="true">→</span></button>
+            <button id="dashboard-settings" (click)="navigate('Settings')">Manage collection <span aria-hidden="true">→</span></button></div>
+          <taild-ingestion-notice primary="dns" [state]="runtime()" [catalog]="catalog()" [start]="start" [end]="end" />
+          <p class="hint">READ only. GlassWire supplies application bytes; Control D supplies endpoint DNS decisions. Neither proves complete coverage.</p>
+        </app-dashboard-widget>
+        <app-dashboard-widget label="DNS activity · canonical decisions" id="dashboard-dns-trend">
+          <p class="hint">Independent account/endpoint scope · select a bin to inspect its decisions.</p>
+          <sfng-netquery-line-chart metric="decisions" [data]="dnsBins()" (select)="dnsBinScope($event)" />
         </app-dashboard-widget>
         <app-dashboard-widget label="Bandwidth history · observed samples" class="half chart-panel" id="dashboard-bandwidth">
           <sfng-netquery-line-chart [data]="bins()" (select)="binScope($event)" />
@@ -102,8 +116,8 @@ const fields:Record<Kind,string[]>={
           <p class="hint">A unique temporal candidate is an inference. Cache, TTL and process-to-domain origin are unproven.</p>
         </app-dashboard-widget>
         <app-dashboard-widget label="DNS outcomes · provider codes unverified" class="half" id="dashboard-outcomes">
-          <div class="outcome-total">{{dnsSummary()?.dns_activity.events??'—'}}<small>observed decisions</small></div>
-          <div class="partition" aria-label="DNS outcome distribution"><ng-container *ngFor="let item of outcomes()"><button *ngIf="item.count>0" [style.flex-grow]="item.count" (click)="outcomeScope(item.name)" [attr.aria-label]="item.name+': '+item.count+' decisions'">{{item.name}}</button></ng-container></div>
+          <p class="hint">Observed decision categories for the selected endpoint.</p>
+          <div class="partition" aria-label="DNS outcome distribution"><ng-container *ngFor="let item of outcomes()"><button *ngIf="item.count>0" [attr.data-outcome]="item.name" [style.flex-grow]="item.count" (click)="outcomeScope(item.name)" [attr.aria-label]="item.name+': '+item.count+' decisions'">{{item.name}}</button></ng-container></div>
           <div class="rank-table"><ng-container *ngFor="let item of outcomes()"><button *ngIf="item.count>0" (click)="outcomeScope(item.name)"><span>{{item.name}}</span><span>{{item.count}}</span></button></ng-container></div>
           <p class="hint" *ngIf="!dnsSummary()?.dns_activity.events">No DNS decisions observed in this scope.</p>
           <p class="hint">Block rate unavailable until action meanings are verified. Unknown does not mean allowed.</p>
@@ -118,12 +132,18 @@ const fields:Record<Kind,string[]>={
           <div class="rank-table"><button *ngFor="let item of destinations().slice(0,12)" (click)="destinationScope(item.value)"><span>{{item.value||'Unknown destination'}}</span><span>{{format(item.total_bytes)}}</span></button></div>
         </app-dashboard-widget>
         <app-dashboard-widget label="Answer countries / ASN · inferred" class="half" id="dashboard-countries">
-          <div class="table-scroll"><table><caption>Control D single-answer metadata; not measured routes</caption><thead><tr><th>Country</th><th>Candidate bytes</th></tr></thead>
+          <p class="hint">Unique temporal candidates · highlight a country to locate it on the map.</p>
+          <div class="country-tiles"><button *ngFor="let item of s.geography_asn.countries" class="country-tile" [attr.data-country]="item.value||'unknown'"
+              (mouseenter)="highlightedCountry.set(item.value)" (mouseleave)="highlightedCountry.set(null)"
+              (focus)="highlightedCountry.set(item.value)" (blur)="highlightedCountry.set(null)"
+              [title]="countryName(item.value)+': '+item.total_bytes+' inferred bytes'" (click)="geographyScope('destination_country',item.value)">
+              <span class="country-code" aria-hidden="true">{{item.value||'?'}}</span><span class="country-name">{{countryName(item.value)}}</span><span>{{format(item.total_bytes)}}</span></button></div>
+          <details class="geography-data"><summary>Exact country / ASN data</summary><div class="table-scroll"><table><caption>Control D single-answer metadata; not measured routes</caption><thead><tr><th>Country</th><th>Candidate bytes</th></tr></thead>
             <tbody><tr *ngFor="let item of s.geography_asn.countries"><td><button class="identity-link" (click)="geographyScope('destination_country',item.value)">{{item.value||'Unknown'}}</button></td><td [title]="item.total_bytes+' bytes'">{{format(item.total_bytes)}}</td></tr></tbody></table>
-            <table><thead><tr><th>Answer ASN</th><th>Candidate bytes</th></tr></thead><tbody><tr *ngFor="let item of s.geography_asn.asns"><td><button class="identity-link" (click)="geographyScope('destination_asn',item.value)">{{item.value||'Unknown'}}</button></td><td>{{format(item.total_bytes)}}</td></tr></tbody></table></div>
+            <table><thead><tr><th>Answer ASN</th><th>Candidate bytes</th></tr></thead><tbody><tr *ngFor="let item of s.geography_asn.asns"><td><button class="identity-link" (click)="geographyScope('destination_asn',item.value)">{{item.value||'Unknown'}}</button></td><td>{{format(item.total_bytes)}}</td></tr></tbody></table></div></details>
         </app-dashboard-widget>
         <app-dashboard-widget label="Answer-country map · inferred" class="half" id="dashboard-map">
-          <taild-world-map [data]="s.geography_asn.countries" (selectCountry)="geographyScope('destination_country',$event)" />
+          <taild-world-map [data]="s.geography_asn.countries" [highlightedCountry]="highlightedCountry()" (selectCountry)="geographyScope('destination_country',$event)" />
         </app-dashboard-widget>
       </div>
     </ng-container>
@@ -224,6 +244,8 @@ class App {
   kind:Kind='traffic';search='';predicates:Predicate[]=[];combine:'all'|'any'='all';field='application_path';operator='eq';filterValue='';
   group='';order='timestamp:desc';pageIndex=0;cursors:(string|undefined)[]=[undefined];savedName='';savedSelection='';retentionDays=7;deleteKind='traffic';confirmDelete=false;
   private lastQuery:Query|null=null;private loadingGeneration=0;
+  highlightedCountry=signal<string|null>(null);private countryNames=new Intl.DisplayNames(['en'],{type:'region'});
+  countryName(value:string|null){return value&&/^[A-Z]{2}$/.test(value)?this.countryNames.of(value)||value:value||'Unknown geography'}
   format=bytes;hosts=computed(()=>[...new Set((this.catalog()?.sources||[]).filter(s=>s.kind==='traffic').map(s=>s.scope))]);
   accounts=computed(()=>[...new Set(this.providerSources().map(s=>s.scope))]);
   endpoints(){return [...new Set(this.providerSources().filter(s=>!this.account||s.scope===this.account).map(s=>s.endpoint).filter((s):s is string=>!!s))]}
@@ -236,6 +258,7 @@ class App {
   });
   dnsSummary=computed(()=>this.batch()?.results[1]?.data);
   bins=computed(()=>this.batch()?.results[2]?.data.bins as Bin[]||[]);
+  dnsBins=computed(()=>this.batch()?.results[7]?.data.bins as Bin[]||[]);
   applications=computed(()=>this.batch()?.results[3]?.data.groups as Fact[]||[]);
   factsResult=computed(()=>this.batch()?.results[4]);rows=computed(()=>this.factsResult()?.data.rows as Fact[]||[]);
   groups=computed(()=>this.batch()?.results[5]?.data.groups as Fact[]||[]);
@@ -295,6 +318,7 @@ class App {
       // A DNS-specific explorer filter can select traffic by candidate existence;
       // incompatible traffic-only predicates never masquerade as DNS filtering.
       series.bin_seconds=Math.max(1,Math.min(86400,Math.ceil((Date.parse(this.end)-Date.parse(this.start))/1000/120)));
+      const dnsSeries={...this.query('dns','series'),bin_seconds:series.bin_seconds};
       const apps={...this.query('traffic','groups'),group_by:['application','application_path'],order_by:[{field:'total_bytes',direction:'desc'}]};
       const facts:Query={...this.query(selectedKind,'facts'),limit:50,order_by:[{field:this.order.split(':')[0],direction:this.order.split(':')[1]}],
         ...(newTime&&this.selected()?{anchor_id:this.selected()}:this.cursors[this.pageIndex]?{cursor:this.cursors[this.pageIndex]}:{})};
@@ -303,8 +327,8 @@ class App {
       // Query only this page's required fact domain, still in one read revision.
       // Policy/history controls must not load unrelated network facts or inherit
       // their resource limits. No empty result is substituted for an unread view.
-      const planned:Record<number,Query>={0:traffic,1:dns,2:series,3:apps,4:facts,5:groups,6:policy};
-      const indices=this.page()==='Overview'||this.page()==='Applications'&&this.application()!==undefined?[0,1,2,3]:
+      const planned:Record<number,Query>={0:traffic,1:dns,2:series,3:apps,4:facts,5:groups,6:policy,7:dnsSeries};
+      const indices=this.page()==='Overview'||this.page()==='Applications'&&this.application()!==undefined?[0,1,2,3,7]:
         this.page()==='Applications'?[3]:this.page()==='Control D'?[6]:this.page()==='Sources & health'?[0]:
         [...(this.kind==='dns'?[]:[2]),4,...(this.group?[5]:[])];
       if(this.page()==='Sources & health')planned[0]={...traffic,view:'health'};
@@ -333,7 +357,7 @@ class App {
   appName(id:string|null|undefined){return applicationName(id===this.application()&&this.applicationLabel()?this.applicationLabel():this.applications().find(r=>r.keys.application===id)?.keys.application_path)}
   openApplication(id:string|null){this.applicationLabel.set(this.applications().find(r=>r.keys.application===id)?.keys.application_path||'Unknown executable');this.application.set(id);this.kind='traffic';this.page.set('Applications');void this.scopeChanged()}
   clearApplication(){this.application.set(undefined);this.applicationLabel.set('');void this.scopeChanged()}
-  explore(kind:Kind){if(kind==='dns')this.independentDns();this.kind=kind;this.field=kind==='dns'?'question':'application_path';this.group='';this.order='timestamp:desc';this.page.set('Activity');void this.scopeChanged()}
+  explore(kind:Kind,group=''){if(kind==='dns')this.independentDns();this.kind=kind;this.field=kind==='dns'?'question':'application_path';this.group=group;this.order='timestamp:desc';this.page.set('Activity');void this.scopeChanged()}
   selectConsumer(row:Consumer){if(this.application()===undefined)this.openApplication(row.value);else this.destinationScope(row.value)}
   destinationScope(value:string|null){this.kind='traffic';this.constrain({field:'destination_ip',op:'eq',value});this.explore('traffic')}
   independentDns(){this.application.set(undefined);if(this.predicates.some(p=>this.predicateFields(p).some(f=>!fields.dns.includes(f))))this.predicates=[]}
@@ -342,7 +366,8 @@ class App {
   geographyScope(field:string,value:string|null){this.constrain({field,op:'eq',value});this.explore('traffic')}
   correlationScope(value:string){this.constrain({field:'correlation_state',op:'eq',value});this.explore('correlations')}
   outcomeScope(value:string){this.independentDns();this.constrain({field:'outcome',op:'eq',value});this.explore('dns')}
-  binScope(bin:Bin){this.start=bin.start;this.end=bin.end;this.range='custom';this.explore('traffic')}
+  binScope(bin:Bin){this.start=bin.scope_start||bin.start;this.end=bin.scope_end||bin.end;this.range='custom';this.explore('traffic')}
+  dnsBinScope(bin:Bin){this.start=bin.scope_start||bin.start;this.end=bin.scope_end||bin.end;this.range='custom';this.explore('dns')}
   setKind(kind:Kind){if(this.busy())return;
     if(this.predicates.some(p=>this.predicateFields(p).some(f=>!fields[kind].includes(f)))){this.error.set('Remove incompatible filters before switching fact mode.');return}
     if(kind==='dns'&&this.application()!==undefined){this.error.set('Remove application scope before opening independent endpoint DNS facts.');return}

@@ -701,6 +701,34 @@ No additional deployment or release is inferred from this refinement request.
 Remaining R15a source acceptance: none. Tracked deferrals: none. Existing B12
 remains; overall Stage 10 and installed rollout of this new UI are not COMPLETE.
 
+### Stage 10 report-driven dashboard refinement — 2026-10-14
+
+Stage 10 remains the single ACTIVE implementation stage. R15b is
+already_authorized by "Now, use that report to improve TailD dashboard".
+Compact sequence within this stage: integrate mapped dashboard composition and
+scope-correct DNS trend/country interactions → verify the complete native
+summary/chart/drill-down/export workflow at representative sizes → reconcile
+R08/R11/R15b, document and commit. No new implementation stage is opened.
+
+B14: RESOLVED for R15b source/native acceptance. Six summaries, source-context
+actions, canonical DNS decision series, clipped-bin drill-down/export and
+query-free country focus highlighting pass in the actual isolated native host.
+Source relationships and overflow are measured at 1440×900, 1280×800, 1024×768
+and native 150% zoom (949×574 CSS px). Retained real traffic reconciles 203 facts /
+20,684,627 bytes through drill-down and private export. DNS event/count scenarios
+are synthetic; no fresh Control D capture or restored live policy proof is claimed.
+Evidence, served hashes and criterion reconciliation are in
+[DESKTOP-ANALYTICS.md](DESKTOP-ANALYTICS.md). Remaining R15b source criteria: none.
+Existing B12 delivery/recovery acceptance remains unchanged and is not resolved
+by this refinement. Tracked deferrals: none. Stage 10 remains ACTIVE.
+Installed/public +3 stays unchanged; this request authorizes development, not a
+new release or deployment.
+
+Design-debt assessment: this refinement reuses the existing dashboard, chart,
+map, status and typed-query boundaries. The narrow DNS series branch removes
+the traffic-only metric assumption at its source; no service, provider wrapper,
+cross-revision cache, extra timer or speculative framework was introduced.
+
 ## Stage 5 execution — 2026-10-08
 
 Authorization: already_authorized by the explicit request to start Stage 5.

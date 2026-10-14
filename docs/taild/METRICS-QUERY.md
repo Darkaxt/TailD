@@ -74,7 +74,13 @@ there are no persisted links/aggregates to survive deletion or go stale.
 Each request has `kind` (`traffic`, `dns`, `correlations`, `context`, `policy`),
 `view` (`facts`, `groups`, `summary`, `series`, `health`) and UTC `start`/`end`.
 Unsupported combinations are rejected: snapshots are not traffic summaries and
-DNS decisions are not a throughput series. Optional `scope` has independent
+DNS decisions are not a throughput series. The R15b dashboard extension adds
+DNS `series` as canonical **decisions/bin**, not bytes or link utilization;
+its coverage is computed from DNS source runs. The metric contract is now
+`taild-metrics-v2`. Traffic series semantics are unchanged. Both series return
+floor-aligned plot bounds and `scope_start`/`scope_end` clipped to the requested
+half-open interval for drill-down. Unobserved zero-count DNS bins remain gaps;
+zero decisions with complete DNS coverage are observed zero. Optional `scope` has independent
 `host` (local traffic/context), `account` and `endpoint` (provider data) selectors.
 An optional physical `device` requires observed historical context for traffic;
 it is rejected for DNS/policy because an endpoint does not prove a physical host.

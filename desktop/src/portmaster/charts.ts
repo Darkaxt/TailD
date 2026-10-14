@@ -12,27 +12,29 @@ export function bytes(value:unknown):string{
   while(n>=divisor*1024n&&index<units.length-1){divisor*=1024n;index++}
   return index?`${n/divisor}.${(n%divisor)*10n/divisor} ${units[index]}`:`${n} B`;
 }
-export interface Bin {start:string;end:string;inbound_bytes:string;outbound_bytes:string;total_bytes:string;
+export interface Bin {start:string;end:string;scope_start?:string;scope_end?:string;events?:number;inbound_bytes?:string;outbound_bytes?:string;total_bytes?:string;
   coverage_incomplete:boolean;represented_microseconds:number;rate:unknown|null}
 export interface Consumer {value:string|null;label?:string;fullPath?:string;inbound_bytes:string;outbound_bytes:string;total_bytes:string;bucket_count?:number}
 
 @Component({selector:'sfng-netquery-line-chart',standalone:true,imports:[CommonModule],
-  template:`<div class="chart-legend"><span class="received">● Received</span><span class="sent">● Sent</span>
+  template:`<div class="chart-legend"><ng-container *ngIf="metric==='traffic';else decisions"><span class="received">● Received</span><span class="sent">● Sent</span>
     <button [attr.aria-pressed]="mode==='bytes'" (click)="changeMode('bytes')">Bytes / bin</button>
-    <button [attr.aria-pressed]="mode==='rate'" (click)="changeMode('rate')">B/s</button>
+    <button [attr.aria-pressed]="mode==='rate'" (click)="changeMode('rate')">B/s</button></ng-container>
+    <ng-template #decisions><span class="received">● DNS decisions / bin</span></ng-template>
     <span>Gaps are unobserved · partial values are lower bounds</span></div>
     <div class="line-surface" #surface></div>
-    <p *ngIf="!hasValues" class="chart-empty">No measured {{mode==='rate'?'complete-bin rates':'traffic'}} in this scope. Missing coverage is not zero.</p>
+    <p *ngIf="!hasValues" class="chart-empty">No observed {{metric==='decisions'?'DNS decisions':mode==='rate'?'complete-bin rates':'traffic'}} in this scope. Missing coverage is not zero.</p>
     <details class="chart-data"><summary>Exact chart data · UTC</summary><div class="table-scroll"><table>
-      <thead><tr><th>UTC bin</th><th>Received bytes</th><th>Sent bytes</th><th>Coverage</th><th>Rate</th></tr></thead>
+      <thead><tr><th>UTC bin</th><ng-container *ngIf="metric==='traffic'"><th>Received bytes</th><th>Sent bytes</th></ng-container><th *ngIf="metric==='decisions'">Decisions</th><th>Coverage</th><th *ngIf="metric==='traffic'">Rate</th></tr></thead>
       <tbody><tr *ngFor="let bin of bins"><td><button (click)="select.emit(bin)">{{bin.start}}</button></td>
-        <td>{{bin.inbound_bytes}}</td><td>{{bin.outbound_bytes}}</td><td>{{bin.coverage_incomplete?'Partial / unobserved':'Observed'}}</td>
-        <td>{{bin.rate===null?'Unavailable':bin.total_bytes+' bytes / '+bin.represented_microseconds+' μs'}}</td></tr></tbody>
+        <ng-container *ngIf="metric==='traffic'"><td>{{bin.inbound_bytes}}</td><td>{{bin.outbound_bytes}}</td></ng-container><td *ngIf="metric==='decisions'">{{bin.events}}</td><td>{{bin.coverage_incomplete?'Partial / unobserved':'Observed'}}</td>
+        <td *ngIf="metric==='traffic'">{{bin.rate===null?'Unavailable':bin.total_bytes+' bytes / '+bin.represented_microseconds+' μs'}}</td></tr></tbody>
     </table></div></details>`,
   styles:[`:host{display:block;position:relative}.line-surface{height:280px;width:100%}.chart-empty{position:absolute;top:130px;left:64px;right:64px;text-align:center}`]})
 export class SfngNetqueryLineChartComponent implements AfterViewInit {
   private element=inject(ElementRef<HTMLElement>);private destroy=inject(DestroyRef);private ready=false;
   @Input() set data(value:Bin[]){this.bins=value||[];this.redraw()}
+  @Input() metric:'traffic'|'decisions'='traffic';
   @Output() select=new EventEmitter<Bin>();
   bins:Bin[]=[];mode:'bytes'|'rate'='bytes';hasValues=false;
   changeMode(mode:'bytes'|'rate'){this.mode=mode;this.redraw()}
@@ -44,20 +46,22 @@ export class SfngNetqueryLineChartComponent implements AfterViewInit {
     d3.select(surface).selectAll('svg').remove();
     const width=Math.max(200,surface.getBoundingClientRect().width),height=280,margin={left:60,right:20,top:24,bottom:38};
     const svg=d3.select(surface).append('svg').attr('width','100%').attr('height',height)
-      .attr('role','img').attr('aria-label','Sent and received traffic. Exact values and scope links in chart data table.');
+      .attr('role','img').attr('aria-label',this.metric==='decisions'?'DNS decision counts. Exact values and scope links in chart data table.':'Sent and received traffic. Exact values and scope links in chart data table.');
     const x=d3.scaleUtc().range([margin.left,width-margin.right]).domain(this.bins.length?
       [new Date(this.bins[0].start),new Date(this.bins[this.bins.length-1].end)]:[new Date(0),new Date(60000)]);
-    const value=(b:Bin,key:'inbound_bytes'|'outbound_bytes'):number|null=>{
+    const value=(b:Bin,key:'inbound_bytes'|'outbound_bytes'|'events'):number|null=>{
+      if(key==='events')return b.coverage_incomplete&&b.events===0?null:b.events??null;
       if(this.mode==='rate'&&b.rate===null)return null;
       if(this.mode==='bytes'&&b.coverage_incomplete&&exact(b.total_bytes)===0n)return null;
       const observed=Number(exact(b[key]));return this.mode==='rate'?observed*1000000/b.represented_microseconds:observed;
     };
-    const max=d3.max(this.bins,b=>Math.max(value(b,'inbound_bytes')||0,value(b,'outbound_bytes')||0))||0;
-    this.hasValues=this.bins.some(b=>value(b,'inbound_bytes')!==null||value(b,'outbound_bytes')!==null);
+    const series:readonly (readonly ['inbound_bytes'|'outbound_bytes'|'events',string])[]=this.metric==='decisions'?[['events','#85aaf5']]:[['inbound_bytes','#85aaf5'],['outbound_bytes','#b7a7ec']];
+    const max=d3.max(this.bins,b=>Math.max(...series.map(([key])=>value(b,key)||0)))||0;
+    this.hasValues=this.bins.some(b=>series.some(([key])=>value(b,key)!==null));
     const y=d3.scaleLinear().range([height-margin.bottom,margin.top]).domain([0,max>0?max*1.15:1]);
     svg.append('g').attr('transform',`translate(0,${height-margin.bottom})`).call(d3.axisBottom(x).ticks(5).tickFormat(d=>d3.utcFormat('%H:%M')(d as Date)));
-    svg.append('g').attr('transform',`translate(${margin.left},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(d=>d3.format('.2s')(Number(d))+(this.mode==='rate'?'/s':'')));
-    for(const [key,color] of [['inbound_bytes','#85aaf5'],['outbound_bytes','#b7a7ec']] as const){
+    svg.append('g').attr('transform',`translate(${margin.left},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(d=>this.metric==='decisions'?(Number.isInteger(Number(d))?String(d):''):d3.format('.2s')(Number(d))+(this.mode==='rate'?'/s':'')));
+    for(const [key,color] of series){
       const line=d3.line<Bin>().defined(b=>value(b,key)!==null).x(b=>x(new Date(b.start))).y(b=>y(value(b,key)!)).curve(d3.curveLinear);
       const area=d3.area<Bin>().defined(b=>value(b,key)!==null).x(b=>x(new Date(b.start))).y0(height-margin.bottom).y1(b=>y(value(b,key)!)).curve(d3.curveLinear);
       svg.append('path').datum(this.bins).attr('fill',color).attr('opacity',.09).attr('d',area);
@@ -65,7 +69,7 @@ export class SfngNetqueryLineChartComponent implements AfterViewInit {
       svg.append('g').selectAll('circle').data(this.bins.filter(b=>value(b,key)!==null)).join('circle')
         .attr('cx',b=>x(new Date(b.start))).attr('cy',b=>y(value(b,key)!)).attr('r',3).attr('fill',color)
         .on('click',(_,b)=>this.select.emit(b)).append('title')
-        .text(b=>`${b.start} – ${b.end}\n${key==='inbound_bytes'?'Received':'Sent'}: ${b[key]} bytes\n${b.coverage_incomplete?'Partial / lower bound':'Observed'}; rate ${b.rate===null?'unavailable':'sampled, not instantaneous'}`);
+        .text(b=>`${b.scope_start||b.start} – ${b.scope_end||b.end}\n${key==='events'?'DNS decisions':key==='inbound_bytes'?'Received':'Sent'}: ${b[key]}${key==='events'?'':' bytes'}\n${b.coverage_incomplete?'Partial / lower bound':'Observed'}${key==='events'?'':'; rate '+(b.rate===null?'unavailable':'sampled, not instantaneous')}`);
     }
   }
 }

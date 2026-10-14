@@ -119,3 +119,65 @@ lazy map `chunk-CA5NCUVR.js` SHA-256
 Native shell source is unchanged. Design-debt assessment found no required new
 abstraction/refactor: transaction-local preparation and the existing component/
 bridge boundaries directly serve R15a. No follow-up infrastructure is introduced.
+
+## R15b report-driven dashboard refinement 2026-10-14
+
+The [full Portmaster mapping](PORTMASTER-LAYOUT-MAP.md) now drives a more faithful
+composition while retaining Tailscale colors and the reviewed Portmaster panel,
+line chart, radial consumer chart and offline map. Six scope-bound summaries
+precede a primary DNS decision chart; collection context occupies the adjacent
+sidebar at wide sizes. Smaller layouts move it below the trend. Country tiles
+coordinate map focus/hover; consumer/bandwidth panels are paired, followed by DNS
+question/destination rankings and the correlation partition. Exact country/ASN
+tables remain available. No unsupported SPN, firewall score, news or subscription
+widget was introduced.
+
+The DNS series uses canonical provider event counts and its own source coverage,
+not traffic totals or traffic coverage. Metric version is `taild-metrics-v2`;
+Tailscale/product/release versions are unchanged. Partial-bin scope bounds are
+clipped to the selected half-open UTC interval. Missing zero-count bins remain
+gaps; complete zero-count bins represent observed zero. Existing byte/rate
+semantics and exact counters are unchanged. Source status can display Control D
+first without changing acquisition scheduling or opt-ins.
+
+| Criterion | Current evidence |
+|---|---|
+| R08 layout relationships | Actual served native assets show summary/trend beside source context at 1440 px; coordinated country/map and paired consumer/bandwidth composition. Template/style reuse and deliberate adaptations are recorded in `desktop/NOTICE.md`. |
+| Six summaries and source navigation | All six buttons and provider/health/settings links execute normal UI events and reach the intended scoped view. Question groups open grouped DNS facts, not traffic grouping. |
+| DNS trend correctness | Real SQLite fixtures preserve duplicate events, endpoint filtering, zero versus missing coverage and a shared batch revision. Native summary/series reconcile 125 synthetic events. A clipped first bin drills into exactly one event and exports that selected scope through the actual Windows Save dialog. |
+| Geographic interaction | Native keyboard focus highlights Germany without a revision change or query; activation opens its exact country-filtered explorer. Unknown geography remains neutral and listed. |
+| Retained source workflow | Previously captured GlassWire facts reconstructed losslessly from the private export: 203 facts / 20,684,627 bytes reconcile through actual native application/activity/evidence and private export. This is retained traffic, not a fresh acquisition. |
+| Existing safety and interaction | Held refresh/error recovery, duplicate executable basenames, selected-row/focus preservation, pagination, hostile text, exact large counters, saved-scope restart, JSON/CSV export and private ACLs pass. No installed client, source service, credential or provider policy changed. |
+| Viewports and accessibility | Actual native 1440×900, 1280×800 and 1024×768 CSS layouts have no horizontal document overflow. Native 150% app zoom measures 949×574 CSS px / DPR 1.5, with working keyboard navigation. OS-window screenshot reviewed; Windows scaling unchanged. New actions use native buttons with focus treatment; unknown outcomes are neutral; status remains announced, with no new animation. |
+
+Focused analytics, desktop query/export, source-publication/scheduling and frontend
+label/status regressions passed. Production Angular type-check/build and the
+isolated native build succeeded. Validation uses the actual
+`https://taild.local/index.html` assets, not a recreated browser UI. All six changed
+implementation files were hash-matched between checkout and tested source copy.
+The native validator's initial hidden-table read failed because its disclosure
+was closed; the final normal open/select workflow passes. An initial diagnostic
+test invocation named nonexistent modules/omitted required test output metadata;
+the affected valid contracts were rerun successfully, not counted as passes.
+
+Private durable evidence:
+`D:/Tools/taild-stage10-validation-20261013/dashboard-layout-20261014`.
+`analytics-validation.json` contains build identity and measured hierarchy;
+representative screenshots cover all three widths, native 150% zoom, country
+focus, loading, empty and retained-real evidence states. Copies were hash-checked.
+
+Verified served assets: `main-XTFXJ7SB.js` SHA-256
+`4de49c67ff2da00c818e7e2a5e1b3f52531416e3eca3195a311901ed25af5ff2`;
+`styles-AUMQ4UYW.css` SHA-256
+`9ab83b74fb42d5ae39f0684d19da5fe047c7886669cff0c017ab9cce2a6f57af`.
+Native assembly SHA-256
+`2ba5ea58c0b2c249377c8ff81e59752574c0fb028cd8db668e0e213651a571a9`.
+No live Control D read or current policy revalidation was required or performed.
+R15b source acceptance is satisfied; B14 is resolved. B12 and Stage 10's remaining
+installed delivery/recovery acceptance remain open; this is not overall product
+completion. No release/deployment is inferred from this request.
+
+Expendable source copies, dependency/build output, WebView caches and test histories
+were removed after evidence preservation through cleanup transaction
+`3d1b0d2964a4385ab6302cd02be419ff`: applied, 296,066,023 bytes, no exclusions/errors
+or residual task directory. Source and durable private evidence remain available.

@@ -154,6 +154,54 @@ def duplicate_executable_drilldown(page):
         page.get_by_role('button',name='Remove application scope',exact=True).click();settled(page)
 
 
+def dashboard_workflow(session,output):
+    from playwright.sync_api import expect
+    page=session.page
+    expect(page.locator('#dashboard-stats .mini-stat')).to_have_count(6)
+    expect(page.locator('#dashboard-dns-trend svg')).to_have_attribute('aria-label',
+        'DNS decision counts. Exact values and scope links in chart data table.')
+    expected=int(page.locator('#dns-card span').inner_text())
+    counts=page.locator('#dashboard-dns-trend tbody tr').evaluate_all('(rows)=>rows.map(r=>Number(r.cells[1].textContent))')
+    assert sum(counts)==expected==125
+    original_revision=page.locator('main').get_attribute('data-revision')
+    tile=page.locator('.country-tile[data-country="DE"]');tile.focus()
+    expect(page.locator('taild-world-map path[data-country="DE"]')).to_have_class('observed highlighted')
+    assert page.locator('main').get_attribute('data-revision')==original_revision
+    page.screenshot(path=str(output/'country-focus.png'),full_page=True)
+    for control,destination in (('dashboard-provider','Control D'),('dashboard-health','Sources & health'),('dashboard-settings','Settings')):
+        page.locator('#'+control).click();settled(page)
+        expect(page.locator('h1')).to_have_text(destination)
+        page.locator('#nav-0').click();settled(page)
+    for control,mode in (('received-card','traffic'),('sent-card','traffic'),('buckets-card','traffic'),('dns-card','dns')):
+        page.locator('#'+control).click();settled(page)
+        expect(page.locator('#mode-'+mode)).to_have_attribute('aria-selected','true')
+        expect(page.locator('#fact-count')).to_have_text('125 facts')
+        page.locator('#nav-0').click();settled(page)
+    page.locator('#applications-card').click();settled(page)
+    expect(page.locator('#application-table tbody tr')).to_have_count(3)
+    page.locator('#nav-0').click();settled(page)
+    page.locator('#questions-card').click();settled(page)
+    expect(page.locator('#group-by')).to_have_value('question')
+    page.get_by_role('button',name='Inspect facts',exact=True).click();settled(page)
+    expect(page.locator('#fact-count')).to_have_text('125 facts')
+    page.get_by_role('button',name='Remove filter 1',exact=True).click();settled(page)
+    page.locator('#nav-0').click();settled(page)
+    # Partial first-bin drill-down must not reintroduce earlier events.
+    clipped='2026-10-13T10:00:01Z';select_range(page,clipped,END)
+    page.locator('#dashboard-dns-trend .chart-data > summary').click()
+    first=page.locator('#dashboard-dns-trend tbody tr').first
+    bin_events=int(first.locator('td').nth(1).inner_text())
+    first.get_by_role('button').click();settled(page)
+    expect(page.locator('#mode-dns')).to_have_attribute('aria-selected','true')
+    expect(page.locator('#utc-start')).to_have_value(clipped)
+    expect(page.locator('#fact-count')).to_have_text(str(bin_events)+' facts')
+    export_ui(session,'json',output/'dns-bin-evidence.json')
+    exported=json.loads((output/'dns-bin-evidence.json').read_text(encoding='utf-8'))
+    assert exported['result']['data']['total_count']==bin_events
+    assert exported['query']['kind']=='dns' and exported['query']['start']==clipped
+    page.locator('#nav-0').click();settled(page);select_range(page,START,END)
+
+
 def run(shell,output,real_history,policy_history):
     from playwright.sync_api import sync_playwright,expect
     import win32security
@@ -204,13 +252,20 @@ def run(shell,output,real_history,policy_history):
         page.locator('#scope-device').select_option('synthetic-node');settled(page)
         page.locator('#scope-device').select_option('');settled(page)
         expect(page.locator('#received-card small')).to_have_text(str(expected_total-sum(i+20 for i in range(125)))+' bytes')
-        assert page.locator('sfng-netquery-line-chart svg').count()==1
+        assert page.locator('sfng-netquery-line-chart svg').count()==2
         assert page.locator('sfng-netquery-circular-bar-chart svg path').count()>0
         assert page.locator('main img').count()==0 and page.evaluate('window.__taildInjection===undefined')
+        dashboard_workflow(session,output)
         for width,height in ((1440,900),(1280,800),(1024,768)):
             page.set_viewport_size({'width':width,'height':height})
+            page.locator('h1').scroll_into_view_if_needed()
             expect(page.locator('#received-card')).to_be_visible()
             measured=snapshot(page);assert measured['layout']['document_width']<=width
+            if width==1440:
+                bounds=page.locator('[id^="dashboard-"]').evaluate_all('(nodes)=>Object.fromEntries(nodes.map(n=>{const b=n.getBoundingClientRect();return [n.id,{x:b.x,y:b.y,width:b.width}]}))')
+                assert bounds['dashboard-collection']['x']>bounds['dashboard-stats']['x']
+                assert bounds['dashboard-dns-trend']['y']>bounds['dashboard-stats']['y']
+                assert bounds['dashboard-map']['x']>bounds['dashboard-countries']['x']
             reports.append(measured);page.screenshot(path=str(output/f'overview-{width}x{height}.png'),full_page=True)
         page.set_viewport_size({'width':1440,'height':900})
         duplicate_executable_drilldown(page)
@@ -388,6 +443,8 @@ def run(shell,output,real_history,policy_history):
             'native_app_local_zoom_percent':150,'zoom_css_viewport':zoom_snapshot['viewport'],
             'zoom_keyboard_and_overflow_verified':True,'lazy_compact_candidate_evidence':True,
             'installed_client_changed':False,'snapshots':reports,'source_history_opened_read_only':True,'actual_policy_rendered':actual_policy,
+            'dashboard_six_summaries':True,'dns_series_count_and_native_export':True,'clipped_dns_bin_scope':True,
+            'country_focus_without_query':True,'source_context_navigation':True,'portmaster_layout_relationships':True,
             'build_sha256':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in [shell,shell.with_suffix('.dll'),*(shell.parent/'ui').glob('*.js'),*(shell.parent/'ui').glob('*.css')]}}
         (output/'analytics-validation.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
         print(json.dumps({k:v for k,v in report.items() if k!='snapshots'}))

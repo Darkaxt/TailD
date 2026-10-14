@@ -60,6 +60,40 @@ class AnalyticsTest(unittest.TestCase):
             self.engine.batch(requests)
             self.assertEqual(prepare.call_count,2,'Preparation cannot survive its read transaction')
 
+    def test_dns_dashboard_series_counts_decisions_with_its_own_coverage_and_scope(self):
+        duplicate=copy.deepcopy(self.dns)
+        duplicate['rows']*=2
+        self.store.import_dns(duplicate,'account','endpoint')
+        scope={'host':'absent-traffic-host','account':'account','endpoint':'endpoint'}
+        queries=[self.request(kind='dns',scope=scope),
+                 self.request(kind='dns',view='series',bin_seconds=60,scope=scope),
+                 self.request(kind='dns',view='facts',scope=scope)]
+        batch=self.engine.batch(queries)
+        summary,series,facts=batch['results']
+        self.assertEqual(series['data']['unit'],'decisions/bin')
+        bins=series['data']['bins']
+        self.assertEqual([b['events'] for b in bins],[2,0])
+        self.assertFalse(any(b['coverage_incomplete'] for b in bins))
+        self.assertEqual(sum(b['events'] for b in bins),summary['data']['dns_activity']['events'])
+        self.assertEqual(sum(b['events'] for b in bins),facts['data']['total_count'])
+        self.assertNotIn('total_bytes',bins[0])
+        self.assertEqual(len({r['revision'] for r in batch['results']}),1)
+        filtered=self.query(kind='dns',view='series',bin_seconds=60,
+                            where={'field':'question','op':'eq','value':'missing.invalid'})
+        self.assertEqual([b['events'] for b in filtered['data']['bins']],[0,0])
+        missing=self.query(kind='dns',view='series',bin_seconds=60,
+                           scope={'account':'account','endpoint':'missing-endpoint'})
+        self.assertTrue(all(b['coverage_incomplete'] for b in missing['data']['bins']))
+
+    def test_dns_bin_drilldown_never_expands_a_partial_boundary(self):
+        start='2026-10-08T10:00:15Z';end='2026-10-08T10:01:15Z'
+        result=self.query(kind='dns',view='series',start=start,end=end,bin_seconds=60)
+        bins=result['data']['bins']
+        self.assertEqual(bins[0]['scope_start'],start)
+        self.assertEqual(bins[-1]['scope_end'],end)
+        self.assertEqual(bins[0]['start'],START,'Plot bins remain floor-aligned')
+        self.assertEqual(bins[0]['events'],1)
+
     def test_policy_point_snapshot_is_queryable_without_retroactive_rule_causality(self):
         self.assertTrue(hasattr(self.engine,'record_policy'),'Stage 6 policy history integration missing')
         data={'source':'controld-api-readonly','account_scope':'account','endpoint':'endpoint',

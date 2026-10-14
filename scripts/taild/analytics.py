@@ -17,7 +17,7 @@ import join
 import ingestion
 import controld
 
-VERSION='taild-metrics-v1'
+VERSION='taild-metrics-v2'
 CORRELATION_VERSION='same-endpoint-answer-ip-preceding-context-v1'
 CONTEXT_FIELDS=frozenset(('source','captured_at_utc','observed_until_utc','coverage_method',
     'node_id','user_id','os','backend_state','dns_accepted','local_override','resolver_endpoint',
@@ -321,8 +321,6 @@ class Analytics:
             raise QueryError('Unsupported fact kind/view')
         if request['view'] in ('summary','series') and kind not in ('traffic','correlations','dns'):
             raise QueryError('Snapshots support facts/groups/health, not traffic metrics')
-        if request['view']=='series' and kind=='dns':
-            raise QueryError('Throughput series requires traffic facts')
         if 'group_by' in request and request['view']!='groups' or 'bin_seconds' in request and request['view']!='series':
             raise QueryError('Query option is unsupported for this view')
         if 'order_by' in request and request['view'] not in ('facts','groups') or 'limit' in request and request['view']!='facts':
@@ -458,12 +456,21 @@ class Analytics:
                 right=left+step
                 selected=[r for r in rows if left<=r['timestamp']<right]
                 inside_left,inside_right=max(a,left),min(b,right)
+                if kind=='dns':
+                    known=not self._coverage('dns',inside_left,inside_right,scope,request.get('where'))['incomplete']
+                    bins.append({'start':history.utc(left),'end':history.utc(right),
+                                 'scope_start':history.utc(inside_left),'scope_end':history.utc(inside_right),
+                                 'events':len(selected),'represented_microseconds':inside_right-inside_left,
+                                 'coverage_incomplete':not known})
+                    continue
                 known=not self._coverage('traffic',inside_left,inside_right,scope,request.get('where'))['incomplete'] and not (scope.get('device') and unknown_device_buckets)
                 totals=self._totals(selected)
                 bins.append({'start':history.utc(left),'end':history.utc(right),**totals,
+                             'scope_start':history.utc(inside_left),'scope_end':history.utc(inside_right),
                              'represented_microseconds':inside_right-inside_left,'coverage_incomplete':not known,
                              'rate':{'numerator_bytes':totals['total_bytes'],'denominator_microseconds':inside_right-inside_left,'per_second_scale':1000000} if known else None})
-            data={'bins':bins,'unit':'B/s','sampled_not_instantaneous':True}
+            data=({'bins':bins,'unit':'decisions/bin','denominator':'canonical-provider-decisions'} if kind=='dns'
+                  else {'bins':bins,'unit':'B/s','sampled_not_instantaneous':True})
         elif view=='facts':
             limit=request.get('limit',100)
             offset=0

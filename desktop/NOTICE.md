@@ -41,6 +41,12 @@ Paths below are relative to that repository. Imports are reviewed before copying
 | `assets/data/world-50m.json` | `4e59231aa551697abd4ce85ed1ec7720fac2c3d2` | Unmodified pinned country topology, 538266 bytes; SHA-256 c8598aca2a616f5fcdda15a95c5ee2d7c2be4ecc30edf67943c79e5ae97ee6e5. Packaged as lazy fixed-origin JS, never fetched remotely |
 | `desktop/angular/src/app/shared/loading/loading.{html,scss}` | `bfa7d9b67104427ae4e91a103d1b571158999490`, `fccdce9d0951be4b5f7de8ff593bb1e610efc302` | Three-dot structure and wave adapted to Tailscale tokens, reduced-motion support and a request-lifetime translucent scrim |
 
+The October 14 R15b dashboard refinement follows the same pinned dashboard
+template/styles: summary/trend beside context, coordinated country tiles/map,
+paired consumer/bandwidth panels and ranked drill-downs. DNS event counts and
+Control D-first collection context replace unsupported connection/SPN/news
+semantics. No additional upstream library, asset or code file was imported.
+
 Map data retains the upstream GPL source/distribution notices. Its country
 attributes are Natural Earth administrative metadata; Natural Earth's published
 [terms](https://www.naturalearthdata.com/about/terms-of-use/) state its map data

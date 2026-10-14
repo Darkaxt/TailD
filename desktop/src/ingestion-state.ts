@@ -4,9 +4,10 @@ interface Source {state:string;last_success_utc?:string;progress?:unknown;result
 interface State {state:string;settings:{traffic:boolean;dns:boolean};sources:Record<string,Source>}
 interface Interval {start:string|null;end:string|null;latest_observation?:string|null}
 export interface IngestionCatalog {intervals:Record<string,Interval>}
-export function describeIngestion(state:State|null,catalog:IngestionCatalog|null,start:string,end:string){
+export function describeIngestion(state:State|null,catalog:IngestionCatalog|null,start:string,end:string,primary:'traffic'|'dns'='traffic'){
   const paused=state?.state==='paused';
-  const sources=(['traffic','dns'] as const).filter(kind=>state?.settings[kind]).map(kind=>{
+  const order:('traffic'|'dns')[]=primary==='dns'?['dns','traffic']:['traffic','dns'];
+  const sources=order.filter(kind=>state?.settings[kind]).map(kind=>{
     const source=state!.sources[kind]||{state:'starting'};
     const progress=source.progress as {phase?:string;start?:string;end?:string;committed_reads?:number}|undefined;
     const interval=catalog?.intervals[kind];

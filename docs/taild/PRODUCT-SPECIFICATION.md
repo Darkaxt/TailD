@@ -1,6 +1,6 @@
 # TailD remaining-product specification
 
-Version 1.6, 2026-10-14. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.7, 2026-10-14. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
 
 ## 1. Authority, authorization and completion boundary
 
@@ -474,6 +474,30 @@ unobserved geography remains neutral, never fabricated routes/location. Keep
 country/ASN tables and unsupported firewall/SPN widgets excluded. Verify actual
 served assets at the existing representative viewports and app-local 150% zoom,
 held refresh/error recovery, duplicate names, country drill-down and exact export.
+
+October 14 report-driven dashboard amendment (R15b; owned by ACTIVE Stage 10):
+use [the complete layout mapping](PORTMASTER-LAYOUT-MAP.md) to improve the
+dashboard, without expanding this request into other pages, collectors or delivery.
+Keep the existing Tailscale palette and Portmaster panel/chart primitives. Place
+six meaningful scope-bound summaries above a primary DNS decision-count chart,
+with collection status alongside them. Show Control D first in that status panel;
+keep GlassWire acquisition independent. Country tiles and the map coordinate
+hover/focus without changing filters until activated. Preserve unknown country/ASN
+tables, ranked consumers, destinations, DNS questions and correlation partition.
+Dashboard links preserve interval and applicable scope into activity/application
+details; DNS always exposes its independent endpoint scope. Do not introduce
+firewall/SPN/privacy scores, subscription cards or news.
+
+Acceptance: decision-count bins reconcile with the canonical DNS summary and
+filtered facts at one revision, use DNS coverage (not traffic coverage), and keep
+unobserved bins as gaps. A bin drill-down uses the intersection with the selected
+half-open interval. Six summaries and collection-context actions work end to end;
+country hover/focus coordinates the map without a query, and selection opens the
+same country-filtered facts. The complete dashboard fits actual served/native
+1440×900, 1280×800 and 1024×768 viewports and app-local 150% zoom; keyboard actions,
+empty/partial states, loading/error recovery, exact counters, same-name application
+identities and exports remain valid. No installed update or public release is
+implied by this amendment.
 
 Overview follows the pinned dashboard's card/chart/ranked-consumer structure:
 received/sent data, observed applications, DNS decisions by verified outcome,
