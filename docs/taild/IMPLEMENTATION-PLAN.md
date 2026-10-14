@@ -730,6 +730,40 @@ pywin32 FILETIME conversion. Canonical expected paths and the same explicit
 dependency already used by the owner PYZ correct these diagnosed boundaries;
 neither weakens the ACL rules or installer acceptance.
 
+B15: **RESOLVED** by normal release **1.105.0+5**, source
+`47125e4197adc64a80ade008f7c88fd51836b0bc`, successful protected workflow
+`38563621928`. Independent anonymous public download verifies the pinned outer,
+connectivity and package signatures and all 417 payload members. Installer:
+114,263,685 bytes; SHA-256
+`e1a865f9a2f98d980676a1577d38611a71a5f12022b73ee458e41f4857715aa0`.
+Elevation request `448cec49edaa4f2fa5fc4181b46a5683` completed with administrator
+token and installer exit 0. The manual transaction held the existing updater
+collision mutex; node, addresses, signer, service path, update preference and DNS
+configuration are unchanged, and public/own MagicDNS resolve. Both services run.
+The owner collector resumed automatically without manual restart, preserving its
+opt-ins. The actual installed production launcher opened the unelevated native
+dashboard; its rendered hierarchy verifies all six enabled scope summaries.
+The unchanged frontend assets match the previously verified +4 payload exactly.
+Live retained traffic is nonzero and query revisions reconcile; the selected
+recent endpoint interval has zero DNS events, so nonempty live DNS proof is not
+claimed. Private evidence and the valid native screenshot are retained under
+`D:/Tools/taild-stage10-validation-20261013/live-update-5`; the detached verified
++5 payload and installed +4 rollback remain available for explicit recovery.
+Existing B12 final lifecycle/updater/recovery reconciliation remains open; this
+closes the dashboard deployment and launcher defect, not all of Stage 10.
+
+Cleanup transaction `727d43ba4055de8176be1594a055653a` removed all 2,060,691
+disposable payload/log/script/capture bytes from the exact task Temp root. The
+reviewed ticket `b041b60bf3dbae078add00e6d3cd193340d10f0e64326bf13ca5a7a5f3489cf3`
+was resumed through elevation without changing ACLs; only the empty
+`D:/Temp/taild-release-4-20261014/is-RXTNVXV7ZU.tmp/{app}` directory remains
+locked, with its two containing directories retained. Preserve this partial
+ticket until the actual lock is released; do not stop the working client solely
+for cleanup or claim complete removal. This remains part of B12's existing
+installer-lifecycle finding, not a dashboard or connectivity failure.
+Design-debt assessment: the bounded object check replaces the racy shell/path
+inspection; it introduces no additional state owner or general security framework.
+
 Stage 10 remains the single ACTIVE implementation stage. R15b is
 already_authorized by "Now, use that report to improve TailD dashboard".
 Compact sequence within this stage: integrate mapped dashboard composition and

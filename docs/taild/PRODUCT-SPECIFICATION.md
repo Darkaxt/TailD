@@ -39,6 +39,14 @@ retained 1.105.0+3 candidate is now published and deployed with verified in-plac
 identity/DNS continuity and automatic opted-in owner collection resumption;
 Stage 10 remains ACTIVE for its remaining acceptance criteria.
 
+The subsequent deployment request authorizes the report-driven dashboard release
+and correction of an observed owner-launch failure. Normal **1.105.0+5** is now
+published and installed from the verified source recorded in the ledger, with
+node/signer/DNS continuity, automatic opted-in collector resumption and actual
+native dashboard launch verified. The transient-file ACL race is corrected
+without relaxing permissions. This does not close the ledger's remaining B12
+lifecycle/updater/recovery acceptance or claim overall product completion.
+
 The [stage ledger](IMPLEMENTATION-PLAN.md) maps every requirement to acceptance
 criteria. A plan cannot weaken this document. Only one implementation stage may
 be ACTIVE. Unmet current-stage requirements are advancement blockers; implementable
