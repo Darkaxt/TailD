@@ -13,15 +13,18 @@ The extension combines Control D policy/decision data with application
 identity and network-byte metrics. Control D and existing firewall products keep
 their enforcement roles. No new packet-filtering engine is being implemented.
 
-[TailD 1.105.0+5 for Windows](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B5)
+[TailD 1.105.0+6 for Windows](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B6)
 is published and independently verified. Its complete connectivity/analytics
 installer has migrated the authorized Beacon installation in place, preserving
 authentication, addresses, Tailnet Lock signing and DNS settings. Open **TailD**
 from the Start menu. The analytics UI uses Portmaster-derived widgets with the
 Tailscale dark theme; collection remains opt-in. Payload and installer digests
 are Ed25519-signed; executables/installer are **not Authenticode-signed**.
-This release adds the mapped dashboard composition and fixes owner launch racing
-normal SQLite journal removal, without relaxing history permissions.
+This release defaults analytics to a rolling seven-day window and streams large
+traffic aggregates without changing collection, retention or DNS preferences.
+The installed dashboard shows retained traffic and DNS data. Seven-day aggregate
+queries still have noticeable latency; this release does not claim to fix startup
+performance or the separately reported intermittent tray-launch popup.
 Stage 10 remains ACTIVE for live analytics, tray launch/focus integration and real
 updater/rollback verification. Other TailDNS installations, signing keys and
 maintenance tasks remain unchanged. The inherited status material below describes

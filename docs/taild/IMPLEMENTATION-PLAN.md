@@ -705,7 +705,36 @@ earlier rolling scope). No instant-load or live DNS restoration claim. Full
 backend contracts, production frontend type-check/build and isolated native
 verification pass. Evidence: `D:/Tools/taild-stage10-validation-20261013/seven-day-20261014`.
 No DNS/retention change or separate minor release is implied. Existing B12/tray
-investigation stays open; installed +5 is unchanged. Tracked deferrals: none.
+investigation stays open. Tracked deferrals: none. See the subsequent +6 delivery
+checkpoint below for installed state.
+
+October 14 seven-day delivery checkpoint: normal release **1.105.0+6**, source
+`b0760a42abf896bd0679147c9b4a56ba033c5f8c`, is published by successful run
+`38573569015`. An independent public download verified both pinned Ed25519
+signatures, the complete 417-member package and inherited core provenance.
+Installer SHA-256: `d7c29058cd6813ddb1bdd60096537936418a72f3bdaacf0d85b7fb2deae1e63f`.
+The authorized elevated in-place installation completed with login, node addresses,
+Tailnet Lock signer, DNS preferences, saved collection configuration and retained
+history samples preserved. Public/MagicDNS resolution passed and owning-user
+collection resumed automatically without a manual start.
+
+The actual installed native renderer at its fixed packaged origin shows Last 7
+days, exactly 168 elapsed hours, enabled summary/refresh controls, populated traffic
+and DNS summaries, and no loading/error control. Public JavaScript assets match
+the previously native-verified source build. Private evidence is under
+`D:/Tools/taild-stage10-validation-20261013/live-update-6` and the verified public
+recovery payload is under the sibling `release-6` directory.
+The WindowOpened diagnostic observer missed its event and was explicitly ended
+after independent rendered-accessibility proof; its failure is not a product
+startup failure or timing measurement. An additional tree probe encountered a
+transient ElementNotAvailable error. Screen captures were occluded, so no new
+unobstructed visual-layout or exact installed startup-duration claim is made.
+
+Performance remains an observed issue within ACTIVE Stage 10: the earlier retained
+seven-day batch measured 28.84 seconds and the desktop awaits the complete batch
+before exposing results. Current history has grown beyond the earlier measurement.
+No performance correction or tray-popup fix is claimed by +6. Existing B12
+lifecycle/updater/final reconciliation remains open; tracked deferrals: none.
 Design-debt assessment: transaction-local aggregate fanout and source-health
 reuse remove measured repeated work; no cross-revision cache, timer, service or
 rollup infrastructure was added. No required consolidation finding.
