@@ -1,6 +1,9 @@
 # Portmaster source design reference for TailD
 
 Metrics reference inspected 2026-10-08; layout/widget retrieval refreshed 2026-10-13.
+Full navigation, tab and widget mapping refreshed 2026-10-14:
+[short report and graph](PORTMASTER-LAYOUT-REPORT.md) and
+[complete layout inventory](PORTMASTER-LAYOUT-MAP.md).
 This is an engineering/reuse reference. The Stage 7 panel and switch primitives
 are integrated with notices in `desktop/NOTICE.md`; analytics families below
 remain Stage 8 work, not already integrated product views.
