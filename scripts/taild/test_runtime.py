@@ -211,7 +211,7 @@ class RuntimeTest(unittest.TestCase):
         finally:
             connection.close()
 
-    def test_pause_backpressure_and_query_yield_at_committed_slice_boundary(self):
+    def test_pause_and_query_do_not_wait_for_a_held_source_read(self):
         entered, release = threading.Event(), threading.Event()
         original = self.server.source
         class GatedSource:
@@ -233,11 +233,9 @@ class RuntimeTest(unittest.TestCase):
             self.assertTrue(entered.wait(10), 'Diagnostic: source read did not begin')
             paused = self.collector.submit('pause')
             queued = [self.collector.submit('state') for _ in range(31)]
-            with self.assertRaises(runtime.RuntimeError):
-                self.collector.submit('state')
-            release.set()
-            self.assertEqual(paused.result()['state'],'paused')
+            self.assertEqual(paused.result(10)['state'],'paused')
             self.assertTrue(all(f.result()['state']=='paused' for f in queued))
+            self.assertFalse(release.is_set())
             self.assertEqual(gate.catalogs,1)
             self.assertEqual(gate.reads,1)  # Pause prevented the next source read.
             self.assertEqual(self.query()[0],200)
@@ -281,6 +279,88 @@ class RuntimeTest(unittest.TestCase):
         finally:
             release.set()
             if worker.ident is not None:worker.join()
+
+    def test_controld_commits_while_glasswire_read_is_held(self):
+        entered,release,dns_committed=threading.Event(),threading.Event(),threading.Event()
+        original=self.server.source;writes=[];fetch_threads=[]
+        original_import=history.History.import_dns
+        class GatedSource:
+            def dispatch(source,request):
+                if request.get('op')=='traffic':entered.set();release.wait()
+                return original.dispatch(request)
+        self.server.source=GatedSource()
+        def fetch(token,account_type,instance,left,right,**kwargs):
+            fetch_threads.append(threading.get_ident())
+            return {'source':'controld-activity-csv','collected_at_utc':'2026-10-08T00:00:00Z',
+                'query_window':{'start_inclusive':left,'end_inclusive':right},
+                'endpoint_id':'synthetic','truncated':False,'rows':[]}
+        def imported(store,*args,**kwargs):
+            value=original_import(store,*args,**kwargs)
+            writes.append(threading.get_ident());dns_committed.set()
+            return value
+        try:
+            with patch.object(controld,'activity_slice',side_effect=fetch),patch.object(history.History,'import_dns',imported):
+                self.collector.command('credential',{'token':'synthetic-read-token','confirm_read_only':True,'persist':False})
+                self.collector.command('configure',{'traffic':True,'dns':True,'provider':{
+                    'account_scope':'synthetic','endpoint':'synthetic','account_type':'personal','instance':'synthetic'}})
+                self.assertTrue(entered.wait(10),'Diagnostic: GlassWire read did not enter')
+                self.assertTrue(dns_committed.wait(10),'Control D waited behind the held GlassWire source')
+                self.assertEqual(set(writes),{self.collector.thread.ident},'Database writes left the owning writer')
+                self.assertNotIn(self.collector.thread.ident,fetch_threads,'Network IO blocked the writer')
+                self.assertFalse(release.is_set())
+                self.assertEqual(self.collector.command('pause')['state'],'paused')
+                release.set()
+                self.collector.close()
+        finally:release.set()
+
+    def test_glasswire_commits_while_controld_read_is_held_and_stop_joins_both(self):
+        dns_entered,release,traffic_committed,stop_done=([threading.Event() for _ in range(4)])
+        original=self.server.source;writes=[];fetch_threads=[];errors=[]
+        original_import=history.History.import_traffic
+        class Source:
+            def dispatch(source,request):
+                if request.get('op')=='traffic':
+                    if not dns_entered.wait(10):raise AssertionError('DNS acquisition never started')
+                return original.dispatch(request)
+        self.server.source=Source()
+        def fetch(token,account_type,instance,left,right,**kwargs):
+            fetch_threads.append(threading.get_ident());dns_entered.set();release.wait()
+            return {'source':'controld-activity-csv','collected_at_utc':'2026-10-08T00:00:00Z',
+                'query_window':{'start_inclusive':left,'end_inclusive':right},
+                'endpoint_id':'synthetic','truncated':False,'rows':[]}
+        def imported(store,*args,**kwargs):
+            result=original_import(store,*args,**kwargs)
+            writes.append(threading.get_ident());traffic_committed.set()
+            return result
+        def stop():
+            try:self.collector.close()
+            except BaseException as error:errors.append(error)
+            finally:stop_done.set()
+        stopper=threading.Thread(target=stop)
+        try:
+            with patch.object(controld,'activity_slice',side_effect=fetch),patch.object(history.History,'import_traffic',imported):
+                self.collector.command('credential',{'token':'synthetic-read-token','confirm_read_only':True,'persist':False})
+                self.collector.command('configure',{'traffic':True,'dns':True,'provider':{
+                    'account_scope':'synthetic','endpoint':'synthetic','account_type':'personal','instance':'synthetic'}})
+                self.assertTrue(traffic_committed.wait(10),'GlassWire waited behind the held Control D source')
+                acquisitions=list(self.collector.acquisitions.values())
+                # A refresh coalesces with the current reads, never starts duplicates.
+                refreshed=self.collector.submit('refresh')
+                self.collector.command('state')  # Writer has processed the refresh.
+                self.assertEqual(set(fetch_threads),{self.collector.acquisitions['dns'].ident})
+                self.assertEqual(set(writes),{self.collector.thread.ident})
+                stopper.start()
+                self.assertFalse(stop_done.is_set(),'Shutdown discarded an in-flight provider read')
+                release.set()
+                self.assertTrue(stop_done.wait(10),'Diagnostic: acquisition threads did not exit')
+                stopper.join()
+                self.assertFalse(errors,errors)
+                self.assertTrue(refreshed.done(),'Shutdown stranded the refresh waiter')
+                self.assertTrue(all(not thread.is_alive() for thread in acquisitions))
+                self.assertEqual(len(fetch_threads),1,'Stop admitted another provider read')
+        finally:
+            release.set()
+            if stopper.ident is not None:stopper.join()
 
     def test_real_sqlite_full_rolls_back_then_restart_recovers(self):
         self.collector.close()
@@ -439,6 +519,42 @@ class RuntimeTest(unittest.TestCase):
             self.assertEqual(store.db.execute("SELECT count(*) FROM runs WHERE state='irreducibly-capped'").fetchone()[0],0)
         finally:
             store.close()
+
+    def test_glasswire_backfill_survives_restart_and_new_traffic_window_moves_forward(self):
+        original=self.server.source;calls=[]
+        with closing(sqlite3.connect(self.stats)) as db:
+            db.execute('INSERT INTO traffic_stats SELECT timestamp+1,app_id,remote_host,remote_port,remote_host_region,protocol,flags,4,outbound_bytes,threat_level FROM traffic_stats')
+            db.commit()
+        class SmallSlices:
+            def dispatch(source,request):
+                if request.get('op')=='traffic':
+                    calls.append((request['start'],request['end']))
+                    request={**request,'limit':1}
+                return original.dispatch(request)
+        self.server.source=SmallSlices()
+        self.collector.command('configure',{'traffic':True})
+        self.collector.command('refresh');self.collector.command('pause')
+        progress=json.loads((self.home/'runtime-traffic-progress.json').read_bytes())
+        self.assertTrue(progress['pending_windows'],'Fixture did not exercise bounded continuation')
+        self.collector.close();calls.clear()
+        self.collector=runtime.Collector(self.home,self.client,now=lambda:'2026-10-08T00:01:00Z')
+        self.collector.start()
+        self.addCleanup(self.collector.close)
+        try:
+            self.collector.command('refresh')
+            self.assertEqual(calls[0],('2026-10-07T23:59:00Z','2026-10-08T00:01:00Z'),
+                'Restart resumed old backfill ahead of current traffic')
+            resumed=json.loads((self.home/'runtime-traffic-progress.json').read_bytes())
+            self.assertEqual((resumed['start'],resumed['end']),(progress['start'],progress['end']))
+            self.assertNotEqual(resumed['pending_windows'],progress['pending_windows'])
+            # Explicit refresh opportunities advance the saved root; no timer,
+            # deadline or discarded horizon is used to declare catch-up complete.
+            while resumed['pending_windows']:
+                self.collector.command('refresh')
+                resumed=json.loads((self.home/'runtime-traffic-progress.json').read_bytes())
+            facts=self.query()[1]['results'][0]['data']['rows']
+            self.assertEqual(sum(int(row['inbound_bytes']) for row in facts),104)
+        finally:self.collector.command('pause')
 
     def test_native_resume_subscription_is_hidden_and_unregisters_on_stop(self):
         import win32con

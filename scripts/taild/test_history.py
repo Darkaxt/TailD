@@ -351,6 +351,38 @@ store.import_traffic(payload['data'],'synthetic-host')
         self.assertEqual(result['inbound_bytes'],104)
         self.assertFalse(result['coverage']['incomplete'])
 
+    def test_bounded_traffic_backfill_resumes_newest_first_without_skipping(self):
+        folder=self.root/'stats';folder.mkdir();self.writer.close()
+        self.stats=self.stats.replace(folder/self.stats.name)
+        with closing(sqlite3.connect(self.main)) as db:
+            db.execute('CREATE TABLE stats_databases(filename BLOB,timestamp INTEGER,expire_time INTEGER,scale INTEGER)')
+            db.execute('INSERT INTO stats_databases VALUES(?,1791331200,1791504000,1)',(self.stats.name.encode(),))
+            db.commit()
+        from reader import GlassWireSource
+        source=GlassWireSource(self.root)
+        calls=[]
+        class Source:
+            def discover(inner,directory):return source.catalog()
+            def physical_identity(inner,path):return glasswire.physical_identity(path)
+            def read_traffic(inner,path,main,left,right,limit):
+                calls.append((left,right))
+                return glasswire.read_traffic(path,main,left,right,limit)
+        start='2026-10-06T00:00:00Z';end=NOW
+        first=ingestion.traffic_window(self.store,'synthetic-host',start,end,reader=Source(),
+            limit=1,max_slices=1,defer_budget=True)
+        self.assertEqual(len(calls),1)
+        self.assertEqual(calls[0][1],end,'Historical import started at the oldest day')
+        pending=first['pending_windows']
+        self.assertTrue(pending)
+        while pending:
+            before=len(calls)
+            result=ingestion.traffic_window(self.store,'synthetic-host',start,end,reader=Source(),
+                limit=1,max_slices=1,defer_budget=True,resume_pending=pending)
+            self.assertLessEqual(len(calls)-before,1)
+            pending=result['pending_windows']
+        self.assertEqual(self.query()['inbound_bytes'],100)
+        self.assertFalse(self.query()['coverage']['incomplete'])
+
     def test_migration_failure_rolls_back_schema_and_preserves_facts(self):
         self.ingest()
         self.store.db.execute('alter table settings drop column revision')

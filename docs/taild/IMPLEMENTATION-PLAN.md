@@ -557,8 +557,55 @@ The earlier signed +2 candidate at 02b6825 is superseded and must not be publish
 Next: sign the current coherent correction, independently verify its complete
 release payload, and prove installed update/tray/recovery and real collection
 continuity. Refactoring assessment: no optional consolidation; the native pipe
-serializes read callers, the collector remains the sole SQLite/source writer,
+serializes read callers, the collector remains the sole SQLite writer,
 and diagnostic monitoring never acquires data or changes the displayed revision.
+
+Latest Stage 10 checkpoint, October 14: normal release **1.105.0+2** at
+456af1ee493461b7f1ed88cab955d62ed4078db0 passed signing/complete-package matrix
+run 38482124246 and independent public download/extraction: installer SHA-256
+98dc6ddf3d1abca0c5c42c0574030edde4bc09992fb71109356ff9943349f6dc,
+114,056,037 bytes, all 415 signed payload members verified. The actual running
+service dispatched the signed updater and completed installation; fresh continuity
+checks preserved node/addresses/Tailnet Lock signer/DNS preferences and update
+preferences, with public/MagicDNS resolution and installed-package verification.
+Actual tray left activation launched the owning unelevated desktop and collector.
+These supersede the earlier pending +2 publication/update notes, not the remaining
+rollback/recovery, repeated focus/minimized restore/right-menu or final acceptance.
+Automatic unattended collector resumption after the update is not yet proven;
+the subsequent actual tray launch is not evidence of that separate requirement.
+
+User correction: Control D is the primary integration; source acquisition must
+run independently in parallel, not wait for a GlassWire backlog. R13/R18 now
+explicitly preserve one SQLite writer while giving each source its own serialized
+acquisition loop. GlassWire starts every pass with recent traffic and then advances
+a saved, bounded newest-first backfill. No history cutoff, retention or default
+chart-range change is authorized. The former shared-worker source design was an
+internal advancement blocker for this correction, not a credential failure.
+
+The integrated source correction is verified on Windows: either held source lets
+the other read and commit through the sole owning writer; refresh coalesces without
+duplicate reads; pause is responsive and prevents unadmitted catalog reads;
+pause/resume invalidates the old pass and starts a fresh recent-data opportunity;
+shutdown settles the in-flight reads/commits and joins both threads. Real SQLite
+continuation survives restart, recent time advances first and replay conserves
+traffic totals. Provider denial/recovery and persisted Retry-After, write failure,
+read-only views, deletion/retention and the known-file uninstall check remain
+verified. The same concurrency contracts run in hosted Linux CI as dispatcher
+tests, separately from actual Windows owner/token/native-pipe verification.
+
+The current source also passes the actual isolated native WebView2 workflow:
+controls/autosave, ingestion notice, navigation/ordinary Close during held source
+IO, reopen with opt-in intact, explicit stop, CSP/injection and icon presence.
+This is source-build integration using synthetic SQLite records, not a packaged
+or installed Control D correction. Source/runtime and UI validation leave the
+installed 1.105.0+2, its real history, VPN, credentials and source services untouched.
+The user has expressly asked to stop before the next deployment. Further package
+verification may proceed, but installed validation waits for that boundary to be
+lifted. B12 remains open for the installed correction and the other enumerated
+real workflows/final R01–R18 reconciliation; Stage 10 remains ACTIVE and is not
+declared complete. Tracked deferrals: none. Assessment: the separate acquisition
+threads serve this demonstrated requirement; no new service, task, framework,
+consolidation stage or optional refactoring is introduced.
 
 ## Stage 5 execution — 2026-10-08
 

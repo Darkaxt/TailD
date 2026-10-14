@@ -1,6 +1,6 @@
 # TailD remaining-product specification
 
-Version 1.4, 2026-10-13. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.5, 2026-10-14. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
 
 ## 1. Authority, authorization and completion boundary
 
@@ -25,10 +25,14 @@ COMPLETE with the evidence in POLICY-READS.md; Stage 7 is COMPLETE under its
 recorded live-test waiver. The reopened Stage 1 R02 repair is verified and COMPLETE;
 Stages 8–9 are COMPLETE. The subsequent October 13 "go ahead", replying to the
 explicit Stage 10 release/in-place Windows migration/updater question, authorizes
-those live actions. Stage 10 is ACTIVE. Normal release 1.105.0+1 is published and
-independently verified; authenticated Beacon migration preserves node, addresses,
+those live actions. Stage 10 is ACTIVE. Normal release 1.105.0+2 is published and
+independently verified; authenticated Beacon migration and the actual
+service-dispatched signed-channel update preserve node, addresses,
 Tailnet Lock signer, service path and DNS preferences, with public/MagicDNS reads
-passing. Live analytics and updater/rollback acceptance still remain.
+passing. Remaining live analytics, tray/recovery and rollback acceptance remain
+in the stage ledger. The October 14 instruction to continue development but stop
+before the next deployment holds further installed-client changes; it does not
+authorize substituting isolated tests for the remaining installed proof.
 
 The [stage ledger](IMPLEMENTATION-PLAN.md) maps every requirement to acceptance
 criteria. A plan cannot weaken this document. Only one implementation stage may
@@ -347,6 +351,14 @@ The default product sampling requirement is one traffic refresh opportunity per
 upward to respect provider capacity. These are data-acquisition cadences, not
 timeouts, completion tests, sleeps or forced cancellation. Serialize each source;
 coalesce missed ticks and never overlap or abort an active read to meet cadence.
+October 14 correction: source acquisition is independent and concurrent across
+Control D and GlassWire; only local database operations are serialized. Control D
+is the primary integration and starts promptly when enabled, regardless of a held
+GlassWire read/backfill. GlassWire reads the recent overlap first on every pass,
+then advances a bounded durable backfill, so current traffic continues forward
+while older history is reconciled. Neither source may hold the other's network
+or source-read opportunity. Preserve per-source quota, exact replay and lifecycle
+contracts; no parallel reads of the same source.
 Filesystem notifications may trigger discovery but are not proof a bucket is final.
 Use provider-supported rate limits and declared analytical overlap windows.
 
@@ -551,12 +563,14 @@ from the latest event, fabricate a percentage/ETA or emit repeated OS popups.
 Refresh this diagnostic notice only while the dashboard is visible, without
 starting source reads, changing the selected range or invalidating its revision.
 Read-only dashboard queries and ordinary window closure must not wait behind an
-unrelated source acquisition. Keep source reads and SQLite writes serialized and
+unrelated source acquisition. Serialize reads within each source and SQLite writes,
+not acquisition across independent sources, and
 retain revision-consistent queries/exports and explicit lifecycle acknowledgments.
 Use the inherited unmodified Tailscale icon for the dashboard executable and
 window/taskbar, with source provenance. These are Stage 10 acceptance requirements;
 the user chose ingestion visibility, not a change to retention or the 15-minute
-default. No ingestion-order optimization is required by this clarification.
+default. The subsequent October 14 instruction additionally requires independent
+source acquisition and recent-first GlassWire collection as specified in R13.
 
 Stage 10 requires separate explicit publication/deployment authority. Publish one
 normal signed release only after Stage 9 closure; independently download and

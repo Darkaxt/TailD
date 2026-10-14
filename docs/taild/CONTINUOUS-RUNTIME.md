@@ -9,10 +9,15 @@ later stages; this is not overall TailD completion or an installed-client releas
 The owning-user process runs unelevated and owns its SQLite connection. It starts
 with collection disabled unless the same private history contains an explicit
 saved opt-in. Configuration is idempotent and autosaved; no Save button is needed.
-One worker serializes source reads, transactions and a bounded command queue.
-Queries, pause, settings changes and deletion run between committed source slices;
-they are not held behind an entire retained-horizon scan. Missed acquisition
-opportunities coalesce without overlapping reads or timed cancellation.
+One writer serializes local transactions and a bounded caller command queue.
+Control D and GlassWire acquire independently on separate threads; a held read
+of either source cannot prevent the other from reading/committing. Control D has
+first admission when both are due. Source IO never holds a database transaction.
+Only commits and local operations enter the writer; each acquisition has at most
+one outstanding commit. Pause/settings/queries remain responsive during source IO.
+Missed opportunities coalesce, with at most one acquisition per source. Shutdown
+drains the actual in-flight reads/commits and joins both threads before closing
+SQLite; there are no kill deadlines or detached acquisition threads.
 
 The Windows reader exposes only installed-source catalog discovery and bounded
 traffic slices by catalog-bound identity, plus authenticated shutdown. No caller
@@ -39,6 +44,15 @@ not assert an irreducible provider cap. Facts/checkpoints commit before the
 continuation advances, so interruption can replay but cannot skip committed work.
 Actual irreducibly capped seconds remain incomplete. Retry-after is a provider
 boundary and survives process restart; resume/network events cannot bypass it.
+
+GlassWire likewise admits eight recent-window reads then eight retained-history
+reads per pass. Every pass starts with the newest two-minute overlap; an atomic
+private `runtime-traffic-progress.json` resumes the captured older horizon.
+Backfill visits newest catalog/day/subdivision first and does not discard pending
+slices at the scheduling budget. Facts/checkpoints commit before the continuation
+advances; restart can replay, never skip or double count. Completed horizons are
+reconciled again because source rows are mutable. Expired/missing catalog members
+remain explicit gaps. Retention and the dashboard's 15-minute default are unchanged.
 
 Optional credentials can remain in owning-process memory or be explicitly saved
 through the existing current-user vault. The privileged reader never receives

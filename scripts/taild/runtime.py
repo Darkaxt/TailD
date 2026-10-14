@@ -1,7 +1,7 @@
 """Opt-in owning-user collector and authenticated local query lifecycle.
 
 Run explicitly; no startup registration, installation, elevation, or VPN writes.
-One worker owns SQLite writes and source acquisition. Native dashboard reads use
+One worker owns SQLite writes; each source has independent acquisition. Dashboard reads use
 separate read-only connections and never wait for an unrelated source operation.
 """
 import argparse
@@ -259,7 +259,8 @@ class Collector:
         self.not_before = {'traffic':0, 'dns':0}
         self._transient_token = None
         self.config_revision = 0
-        self.coalesced_refresh = []
+        self.acquisitions = {}
+        self.refresh_waiters = []
         self.lifecycle = None
         self.wake_pending = False
         self.stop_after_window_receipt = False
@@ -456,6 +457,9 @@ class Collector:
             return self._state()
         if op in ('pause','resume') and not body:
             self.paused = op == 'pause'
+            # A quick pause/resume is still a lifecycle transition. In-flight IO
+            # settles, but its old pass cannot overwrite the fresh opportunity.
+            self.config_revision += 1
             if op == 'resume':
                 self.write_error = False
                 self.due = {'traffic':0, 'dns':0}
@@ -476,58 +480,101 @@ class Collector:
             store.now = history.instant(self.now())
             store.cleanup()
             return {'retention_applied':True}
-        if op == 'refresh' and not body:
-            if not self.paused and not self.write_error:
-                for kind in ('traffic','dns'):
-                    if (not self.paused and not self.closing and not self.write_error and
-                            self.config[kind] and time.monotonic() >= self.not_before[kind]):
-                        self._acquire(store,kind, policy=kind == 'dns')
-            return self._state()
         raise RuntimeError('invalid-command')
 
-    def _acquire(self, store, kind, *, policy=False):
+    def _commit(self, action):
+        # Only the owning writer runs these internal calls. Two acquisition
+        # threads can each have at most one outstanding commit; caller admission
+        # backpressure must not discard facts already returned by a source.
+        future=Future()
+        with self.condition:
+            self.queue.append(('_store',action,future))
+            self.condition.notify()
+        return future.result()
+
+    def _start_acquisition(self, store, kind, *, policy=False):
+        if (kind in self.acquisitions or self.closing or self.paused or self.write_error or
+                not self.config[kind] or time.monotonic()<self.not_before[kind]):
+            return False
+        config=self.config;revision=self.config_revision;token=self._transient_token
+        store.now=history.instant(self.now());store.cleanup()
+        start=store.health()['expiry_floor'];end=history.utc(store.now//1000000*1000000)
+        self.sources[kind]={'state':'collecting','progress':{'phase':'discovering','committed_reads':0}}
+        worker=threading.Thread(target=self._acquire,name='TailD '+kind+' acquisition',
+            args=(store,kind,config,revision,token,start,end),kwargs={'policy':policy})
+        self.acquisitions[kind]=worker
+        try:worker.start()
+        except BaseException:
+            del self.acquisitions[kind]
+            raise
+        return True
+
+    def _request_refresh(self, store, future):
+        kinds=set()
+        for kind in ('dns','traffic'):
+            if (self.config[kind] and not self.paused and not self.closing and not self.write_error and
+                    time.monotonic()>=self.not_before[kind]):
+                self._start_acquisition(store,kind,policy=kind=='dns')
+                kinds.add(kind)
+        if kinds:self.refresh_waiters.append((future,self.config_revision,kinds))
+        else:future.set_result(self._state())
+
+    def _finished_acquisition(self, store, kind):
+        self.acquisitions.pop(kind).join()  # Actual exit, never a deadline.
+        waiting,self.refresh_waiters=self.refresh_waiters,[]
+        for future,revision,kinds in waiting:
+            kinds.discard(kind)
+            if kinds:self.refresh_waiters.append((future,revision,kinds))
+            elif revision!=self.config_revision and not (self.paused or self.closing or self.write_error):
+                self._request_refresh(store,future)
+            else:future.set_result(self._state())
+
+    def _acquire(self, store, kind, config, revision, transient_token, start, end, *, policy=False):
         committed_reads=0
-        self.sources[kind] = {'state':'collecting','progress':{'phase':'discovering','committed_reads':0}}
         def report_progress(phase,left,right):
             nonlocal committed_reads
             if phase=='committed':committed_reads+=1
-            self.sources[kind]={'state':'collecting','progress':{
-                'phase':phase,'start':left,'end':right,'committed_reads':committed_reads}}
+            with self.condition:
+                self.sources[kind]={'state':'collecting','progress':{
+                    'phase':phase,'start':left,'end':right,'committed_reads':committed_reads}}
         retry = None
-        revision = self.config_revision
         def checkpoint():
-            # Source connections/transactions have already closed at these
-            # boundaries. Serve queued queries and lifecycle operations before
-            # starting another source slice, without aborting committed work.
-            while True:
-                with self.condition:
-                    command = self.queue.popleft() if self.queue else None
-                if command is None:
-                    break
-                if command[0] == 'refresh' and command[1] == {}:
-                    self.coalesced_refresh.append((command[2],kind))
-                else:
-                    self._deliver(store,command)
-            return not (self.closing or self.paused or self.write_error or
-                        self.config_revision != revision or not self.config[kind])
+            with self.condition:
+                return not (self.closing or self.paused or self.write_error or
+                            self.config_revision != revision or not self.config[kind])
         try:
-            store.now = history.instant(self.now())
-            store.cleanup()
+            if not checkpoint():
+                self.sources[kind]={'state':'write-error' if self.write_error else 'paused' if self.paused else
+                    'disabled' if not self.config[kind] else 'starting'}
+                return
             if self.cli is not None:
                 try:
                     captured = analytics.capture_context(self.cli)
-                    analytics.Analytics(store).record_context(self.config['host_scope'], captured)
+                    self._commit(lambda: analytics.Analytics(store).record_context(config['host_scope'], captured))
                     self.sources['context'] = {'state':'point-observation','last_success_utc':self.now()}
                 except analytics.QueryError:
                     self.sources['context'] = {'state':'unavailable','historical_binding':'unproven'}
-            end = history.utc(store.now//1000000*1000000)
-            start = store.health()['expiry_floor']
+            recent_start = history.utc(max(history.instant(start),history.instant(end)-120*1000000))
             if kind == 'traffic':
-                result = ingestion.traffic_window(store, self.config['host_scope'],start,end,
-                                                  reader=self.reader,checkpoint=checkpoint,progress=report_progress)
+                recent=ingestion.traffic_window(store,config['host_scope'],recent_start,end,
+                    reader=self.reader,checkpoint=checkpoint,progress=report_progress,commit=self._commit,
+                    max_slices=8,defer_budget=True)
+                progress=self._traffic_progress(config['host_scope'],start,end)
+                backfill=({'slice_attempts':0,'pending_windows':progress['pending_windows'],'interrupted':True}
+                    if recent.get('interrupted') else ingestion.traffic_window(store,config['host_scope'],
+                        progress['start'],progress['end'],reader=self.reader,checkpoint=checkpoint,
+                        progress=report_progress,commit=self._commit,max_slices=8,defer_budget=True,
+                        resume_pending=progress['pending_windows']))
+                progress['pending_windows']=backfill['pending_windows']
+                if not self.write_error and progress['pending_windows'] is not None:
+                    self._save_traffic_progress(progress)
+                result={'slice_attempts':recent['slice_attempts']+backfill['slice_attempts'],
+                    'request_budget':16,'recent_pending_windows':len(recent['pending_windows'] or []),
+                    'backfill_pending_windows':len(backfill['pending_windows'] or []),
+                    'interrupted':recent.get('interrupted',False) or backfill.get('interrupted',False)}
             else:
-                provider = self.config['provider']
-                token = self._transient_token or credentials.CredentialStore().read()
+                provider = config['provider']
+                token = transient_token or credentials.CredentialStore().read()
                 if token is None:
                     raise RuntimeError('credential-required')
                 try:
@@ -537,15 +584,16 @@ class Collector:
                     # Eight requests prioritize the recent two-minute analytical
                     # overlap, then eight continue the captured retained-horizon
                     # backfill. These are resource budgets, not retries/timeouts.
-                    recent_start = history.utc(max(history.instant(start),history.instant(end)-120*1000000))
                     recent = ingestion.dns_windows(store,provider['account_scope'],provider['endpoint'],
-                        recent_start,end,fetch,max_slices=8,defer_budget=True,checkpoint=checkpoint,progress=report_progress)
+                        recent_start,end,fetch,max_slices=8,defer_budget=True,checkpoint=checkpoint,
+                        progress=report_progress,commit=self._commit)
                     progress = self._dns_progress(provider,start,end)
                     backfill = ({'slices_read':0,'pending_windows':progress['pending_windows'],'interrupted':True}
                                 if recent.get('interrupted') else
                         ingestion.dns_windows(store,provider['account_scope'],provider['endpoint'],
                             progress['start'],progress['end'],fetch,max_slices=8,defer_budget=True,
-                            resume_pending=progress['pending_windows'],checkpoint=checkpoint,progress=report_progress))
+                            resume_pending=progress['pending_windows'],checkpoint=checkpoint,
+                            progress=report_progress,commit=self._commit))
                     progress['pending_windows'] = backfill['pending_windows']
                     if not self.write_error:
                         self._save_dns_progress(progress)
@@ -556,7 +604,7 @@ class Collector:
                     if policy and not result.get('interrupted') and checkpoint():
                         captured_policy = controld.policy_snapshot(token,provider['endpoint'],
                             account_scope=provider['account_scope'],organization=provider.get('organization'))
-                        analytics.Analytics(store).record_policy(captured_policy)
+                        self._commit(lambda: analytics.Analytics(store).record_policy(captured_policy))
                 finally:
                     token = None
             if result.get('interrupted'):
@@ -591,17 +639,43 @@ class Collector:
             # private evidence to conceal disk exhaustion.
             self.write_error = True
             self.sources[kind] = {'state':'write-error'}
+        except BaseException as error:
+            # An unexpected defect is fatal, not a quietly retried source error.
+            self.start_error=type(error).__name__
+            self.closing=True
+            self.sources[kind]={'state':'worker-failed'}
         finally:
-            if retry:
-                self.not_before[kind] = time.monotonic() + retry
-            self.due[kind] = time.monotonic() + max(self.config[kind+'_seconds'],retry or 0)
-            pending,self.coalesced_refresh = self.coalesced_refresh,[]
-            for future,source in pending:
-                if self.config_revision != revision and not (self.paused or self.closing or self.write_error):
-                    with self.condition:
-                        self.queue.appendleft(('refresh',{},future))
-                else:
-                    future.set_result({**self._state(),'refresh_coalesced_source':source})
+            token=transient_token=None
+            with self.condition:
+                if retry:self.not_before[kind] = time.monotonic() + retry
+                self.due[kind] = (time.monotonic()+max(config[kind+'_seconds'],retry or 0)
+                                  if revision==self.config_revision else 0)
+                self.queue.append(('_finished',kind,None))
+                self.condition.notify()
+
+    def _traffic_progress(self, scope, start, end):
+        path=self.directory/'runtime-traffic-progress.json'
+        if path.exists():
+            if path.is_symlink() or path.stat().st_nlink!=1 or path.stat().st_size>8*1024*1024:
+                raise RuntimeError('invalid-traffic-progress')
+            value=reader.decode_message(path.read_bytes(),maximum=8*1024*1024)
+            if (not isinstance(value,dict) or set(value)!={'scope','start','end','pending_windows'} or
+                    not isinstance(value['pending_windows'],list)):
+                raise RuntimeError('invalid-traffic-progress')
+            a,b=history.bounds(value['start'],value['end'])
+            if value['scope']==scope and value['pending_windows'] and b<=history.instant(end) and b>history.instant(start):
+                return value
+        return {'scope':scope,'start':start,'end':end,'pending_windows':None}
+
+    def _save_traffic_progress(self, value):
+        pending=self.directory/'runtime-traffic-progress.pending.json'
+        target=self.directory/'runtime-traffic-progress.json'
+        if pending.is_symlink() or target.is_symlink():raise RuntimeError('invalid-traffic-progress')
+        raw=json.dumps(value,separators=(',',':'))
+        if len(raw.encode())>8*1024*1024:raise RuntimeError('resource-limit')
+        with pending.open('w',encoding='utf-8') as output:
+            output.write(raw);output.flush();os.fsync(output.fileno())
+        pending.replace(target)
 
     def _dns_progress(self, provider, start, end):
         path = self.directory/'runtime-dns-progress.json'
@@ -659,7 +733,25 @@ class Collector:
 
     def _deliver(self, store, command):
         op,body,future = command
+        if op=='_finished':
+            self._finished_acquisition(store,body)
+            return
+        if op=='_store':
+            try:
+                if self.write_error:raise RuntimeError('write-error')
+                future.set_result(body())
+            except (sqlite3.Error,OSError) as error:
+                self.write_error=True
+                future.set_exception(error)
+            except BaseException as error:future.set_exception(error)
+            return
+        if self.closing:
+            future.set_exception(RuntimeError('stopping'))
+            return
         try:
+            if op=='refresh' and body=={}:
+                self._request_refresh(store,future)
+                return
             future.set_result(self._execute(store,op,body))
         except (sqlite3.Error,OSError):
             self.write_error = True
@@ -726,14 +818,16 @@ class Collector:
             self.ready.set()
             while True:
                 with self.condition:
-                    if self.closing:
+                    if self.closing and not self.acquisitions and not self.queue:
                         break
-                    if self.wake_pending:
+                    if self.wake_pending and not self.closing:
+                        self.config_revision += 1
                         self.due = {'traffic':0,'dns':0}
                         self.wake_pending = False
                         self._restore_provider_limit()
                     command = self.queue.popleft() if self.queue else None
-                    eligible = [] if self.paused or self.write_error else [k for k in ('traffic','dns') if self.config[k]]
+                    eligible = [] if self.closing or self.paused or self.write_error else [
+                        k for k in ('dns','traffic') if self.config[k] and k not in self.acquisitions]
                     due = [k for k in eligible if max(self.due[k],self.not_before[k]) <= time.monotonic()]
                     if command is None and not due:
                         # This wait schedules acquisition opportunities; expiry
@@ -745,7 +839,7 @@ class Collector:
                 if command:
                     self._deliver(store,command)
                 else:
-                    self._acquire(store,due[0])
+                    for kind in due:self._start_acquisition(store,kind)
                 self._publish_status()
         except BaseException as error:
             self.start_error = type(error).__name__
@@ -753,8 +847,19 @@ class Collector:
             self.ready.set()
             with self.condition:
                 self.closing = True
-                while self.queue:
-                    self.queue.popleft()[2].set_exception(RuntimeError('stopping'))
+            # An in-flight source may still return facts after explicit shutdown
+            # or a writer defect. Drain its commits/completion before closing the
+            # store; never strand a future, orphan a thread or discard its result.
+            while self.acquisitions or self.queue:
+                with self.condition:
+                    if not self.queue:
+                        self.condition.wait()
+                        continue
+                    command=self.queue.popleft()
+                self._deliver(store,command)
+            for future,revision,kinds in self.refresh_waiters:
+                future.set_exception(RuntimeError('stopping'))
+            self.refresh_waiters=[]
             if store is not None:
                 store.close()
             self._transient_token = None

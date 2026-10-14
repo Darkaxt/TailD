@@ -71,6 +71,17 @@ class PackageManifestTest(unittest.TestCase):
             installer.remove_history()
         self.assertEqual(notes.read_text(),'Synthetic unrelated user notes')
 
+    @unittest.skipUnless(os.name=='nt','Windows owning-account history removal')
+    def test_history_removal_recognizes_traffic_continuations_without_deleting_on_check(self):
+        local=history.private_directory(self.root/'local')
+        taild=history.private_directory(local/'TailD');home=history.private_directory(taild/'history')
+        names=('runtime-traffic-progress.json','runtime-traffic-progress.pending.json')
+        for name in names:(home/name).write_text('{}')
+        (self.root/'installation.json').write_text(json.dumps({'owner_sid':reader.current_sid()}))
+        with patch.object(installer,'app_directory',return_value=self.root),patch.object(installer,'known_folder',return_value=local):
+            installer.remove_history(dry_run=True)
+        self.assertTrue(all((home/name).read_text()=='{}' for name in names))
+
     def setUp(self):
         if os.name=='nt':
             base=os.environ.get('TAILD_PACKAGE_TEST_OUTPUT')

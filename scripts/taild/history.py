@@ -81,6 +81,7 @@ def private_directory(path):
             private_names = ('history.sqlite3','history.sqlite3-journal','history.sqlite3-wal','history.sqlite3-shm',
                 'runtime.json','runtime.pending.json','runtime-status.json','runtime-status.pending.json',
                 'runtime-dns-progress.json','runtime-dns-progress.pending.json',
+                'runtime-traffic-progress.json','runtime-traffic-progress.pending.json',
                 'runtime-provider-limit.json','runtime-provider-limit.pending.json')
             private_names += ('desktop-queries.json','desktop-queries.pending.json')
             targets = [path] + [path / name for name in private_names if (path/name).exists()]
