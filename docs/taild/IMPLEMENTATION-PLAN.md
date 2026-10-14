@@ -703,6 +703,27 @@ remains; overall Stage 10 and installed rollout of this new UI are not COMPLETE.
 
 ### Stage 10 report-driven dashboard refinement — 2026-10-14
 
+Deployment authorization is now explicit in the user's response to the readiness
+report. Signed normal +4 was published from `4787242` through run `38559423351`,
+independently downloaded and installed with verified node/signer/DNS continuity.
+B15 (internal, ACTIVE Stage 10): actual owner dashboard launch fails intermittently
+because R14a's PowerShell ACL check races SQLite journal removal. Live traced
+`GetAcl_PathNotFound` names `history.sqlite3-journal`; this also prevents accepting
+automatic owner-collector startup. Resolve with object-bound ACL/link validation,
+deterministic disappearance/security tests and a corrected signed installed build.
+R15b source acceptance remains valid; live launch/delivery acceptance is blocked
+by B15 until that workflow passes. Existing B12 remains; tracked deferrals: none.
+
+B15 source checkpoint: Windows ACL and hard-link/reparse checks now use the same
+open object with read/write/delete sharing; only an optional file's not-found
+result is treated as absence. Public ACLs and access denial still fail closed.
+The deterministic pre-open journal-removal regression failed on the old code and
+passes with the correction; removal after open, public ACL, hard-link and denied
+access contracts pass. The corrected source launcher opens the actual installed
++4 native dashboard during enabled collection, with all six summary actions
+verified in its rendered UIA hierarchy. The packaged hotfix remains required;
+source/native diagnosis is not a claim that installed +4 has been repaired.
+
 Stage 10 remains the single ACTIVE implementation stage. R15b is
 already_authorized by "Now, use that report to improve TailD dashboard".
 Compact sequence within this stage: integrate mapped dashboard composition and

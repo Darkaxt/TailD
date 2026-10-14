@@ -393,6 +393,15 @@ contracts, actual window lifecycle, ownership and other R14 checks remain requir
 
 ## 10. Security, privacy and resource boundaries — R14
 
+October 14 deployment correction (R14a/R18, ACTIVE Stage 10): opening the
+dashboard and resuming opted-in collection must tolerate normal SQLite journal
+removal and atomic diagnostic-file replacement. Validate Windows ownership,
+allow-list ACLs and link identity against the opened object, not a pathname
+enumerated before a separate PowerShell process. A transient file absent when
+opened is absent, not a launch failure; access denial, public ACLs and links still
+fail closed. Verify deterministic disappearance before/after open, existing
+security rejection contracts and the installed owner dashboard/collector workflow.
+
 R14a (first persistence): user-owned analytics storage and exports have restrictive
 ACLs for the owner and required Windows administration/system identities; data is
 not globally readable. No secrets or private records in Git/CI/arguments/logs.

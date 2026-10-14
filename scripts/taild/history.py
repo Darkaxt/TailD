@@ -51,6 +51,46 @@ def _run(args, **kwargs):
                           creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0, **kwargs).stdout
 
 
+def _windows_private_object(path, sid, *, optional=False):
+    """Inspect one opened object, including a journal unlinked after open."""
+    import pywintypes
+    import win32con
+    import win32file
+    import win32security
+    try:
+        handle=win32file.CreateFile(str(path),win32con.READ_CONTROL|0x80, # FILE_READ_ATTRIBUTES
+            win32con.FILE_SHARE_READ|win32con.FILE_SHARE_WRITE|win32con.FILE_SHARE_DELETE,
+            None,win32con.OPEN_EXISTING,
+            win32con.FILE_FLAG_BACKUP_SEMANTICS|win32file.FILE_FLAG_OPEN_REPARSE_POINT,None)
+    except pywintypes.error as error:
+        if optional and error.winerror==2:return
+        raise HistoryError('Cannot inspect private history object') from None
+    try:
+        info=win32file.GetFileInformationByHandle(handle)
+        if info[0]&win32con.FILE_ATTRIBUTE_REPARSE_POINT or (
+                not info[0]&win32con.FILE_ATTRIBUTE_DIRECTORY and info[7]>1):
+            raise HistoryError('History cannot use linked files')
+        descriptor=win32security.GetSecurityInfo(handle,win32security.SE_FILE_OBJECT,
+            win32security.OWNER_SECURITY_INFORMATION|win32security.DACL_SECURITY_INFORMATION)
+        owner=win32security.ConvertSidToStringSid(descriptor.GetSecurityDescriptorOwner())
+        dacl=descriptor.GetSecurityDescriptorDacl()
+        if dacl is None:raise HistoryError('History requires a private ACL')
+        allowed={sid,'S-1-5-18','S-1-5-32-544'}
+        actual=set()
+        for index in range(dacl.GetAceCount()):
+            ace=dacl.GetAce(index)
+            if ace[0][0] in (win32security.ACCESS_ALLOWED_ACE_TYPE,win32security.ACCESS_ALLOWED_OBJECT_ACE_TYPE):
+                actual.add(win32security.ConvertSidToStringSid(ace[-1]))
+            elif ace[0][0] not in (win32security.ACCESS_DENIED_ACE_TYPE,win32security.ACCESS_DENIED_OBJECT_ACE_TYPE):
+                raise HistoryError('Unsupported history ACL')
+        if owner not in allowed or sid not in actual or not actual<=allowed|{'S-1-3-4'}:
+            raise HistoryError('History requires a private owner/SYSTEM/Administrators ACL')
+    except pywintypes.error:
+        raise HistoryError('Cannot inspect private history object') from None
+    finally:
+        handle.Close()
+
+
 def private_directory(path):
     """Create only the explicitly selected owned directory; never relax existing ACLs."""
     path = Path(path).absolute()
@@ -65,36 +105,20 @@ def private_directory(path):
         if created:
             path.mkdir(mode=0o700)  # Parent must exist; never claim ownership of a broad tree.
         if os.name == 'nt':
-            sid = list(csv.reader(_run(['whoami', '/user', '/fo', 'csv', '/nh']).splitlines()))[0][1]
-            allowed = {sid, 'S-1-5-18', 'S-1-5-32-544'}
+            import reader
+            sid = reader.current_sid()
             if created:
                 _run(['icacls', str(path), '/inheritance:r', '/grant:r',
                       f'*{sid}:(OI)(CI)F', '*S-1-5-18:(OI)(CI)F', '*S-1-5-32-544:(OI)(CI)F'])
-            env = {k: v for k, v in os.environ.items() if k.lower() != 'psmodulepath'}
-            # pwsh's inherited module path can prevent Windows PowerShell loading
-            # its Security module. Let that executable choose its own defaults.
-            script = ("$ErrorActionPreference='Stop'; $a=Get-Acl -LiteralPath $env:TAILD_ACL_PATH; "
-                      '@{owner=$a.GetOwner([Security.Principal.SecurityIdentifier]).Value; '
-                      'allow=@($a.Access | Where-Object AccessControlType -eq Allow | '
-                      'ForEach-Object { $_.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value })} '
-                      '| ConvertTo-Json -Compress')
             private_names = ('history.sqlite3','history.sqlite3-journal','history.sqlite3-wal','history.sqlite3-shm',
                 'runtime.json','runtime.pending.json','runtime-status.json','runtime-status.pending.json',
                 'runtime-dns-progress.json','runtime-dns-progress.pending.json',
                 'runtime-traffic-progress.json','runtime-traffic-progress.pending.json',
                 'runtime-provider-limit.json','runtime-provider-limit.pending.json')
             private_names += ('desktop-queries.json','desktop-queries.pending.json')
-            targets = [path] + [path / name for name in private_names if (path/name).exists()]
-            for target in targets:
-                if target.is_symlink() or target.stat().st_nlink > 1:
-                    raise HistoryError('History cannot use linked files')
-                env['TAILD_ACL_PATH'] = str(target)
-                acl = json.loads(_run(['powershell', '-NoProfile', '-NonInteractive', '-Command', script], env=env))
-                actual = acl['allow']
-                # Python 3.13+ mkdir(0700) adds OWNER RIGHTS; that is safe only
-                # with this checked owner, never as a broadly trusted principal.
-                if acl['owner'] not in allowed or sid not in actual or not set(actual) <= allowed | {'S-1-3-4'}:
-                    raise HistoryError('History requires a private owner/SYSTEM/Administrators ACL')
+            _windows_private_object(path,sid)
+            for name in private_names:
+                _windows_private_object(path/name,sid,optional=True)
         else:
             targets = [path] + [path/name for name in ('history.sqlite3','history.sqlite3-journal','history.sqlite3-wal','history.sqlite3-shm') if (path/name).exists()]
             for target in targets:

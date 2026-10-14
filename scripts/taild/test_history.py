@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 try:
     import history
@@ -332,6 +333,60 @@ store.import_traffic(payload['data'],'synthetic-host')
             subprocess.run(['icacls',str(self.store.path),'/grant','*S-1-1-0:R'],check=True,capture_output=True)
         with self.assertRaises(history.HistoryError):
             history.History(self.home,now=NOW)
+
+    @unittest.skipUnless(sys.platform=='win32','Windows object-bound ACL contract')
+    def test_disappearing_sqlite_journal_does_not_refuse_owner_launch(self):
+        import win32file
+        journal=self.home/'history.sqlite3-journal'
+        journal.write_bytes(b'finished synthetic transaction')
+        removed=[]
+        original_run=history._run
+        original_open=win32file.CreateFile
+        def disappear():
+            journal.unlink();removed.append(True)
+        def run(args,**kwargs):
+            if kwargs.get('env',{}).get('TAILD_ACL_PATH')==str(journal):disappear()
+            return original_run(args,**kwargs)
+        def open_file(name,*args):
+            if str(name)==str(journal) and journal.exists():disappear()
+            return original_open(name,*args)
+        with patch.object(history,'_run',side_effect=run),patch.object(win32file,'CreateFile',side_effect=open_file):
+            self.assertEqual(history.private_directory(self.home),self.home.resolve())
+        self.assertTrue(removed,'Journal disappearance was not exercised')
+
+    @unittest.skipUnless(sys.platform=='win32','Windows object-bound ACL contract')
+    def test_opened_journal_acl_survives_path_removal(self):
+        import win32file
+        journal=self.home/'history.sqlite3-journal'
+        journal.write_bytes(b'finished synthetic transaction')
+        removed=[]
+        original=win32file.CreateFile
+        def open_file(name,*args):
+            handle=original(name,*args)
+            if str(name)==str(journal):journal.unlink();removed.append(True)
+            return handle
+        with patch.object(win32file,'CreateFile',side_effect=open_file):
+            self.assertEqual(history.private_directory(self.home),self.home.resolve())
+        self.assertTrue(removed,'Stable open-handle inspection was not exercised')
+
+    @unittest.skipUnless(sys.platform=='win32','Windows object-bound ACL contract')
+    def test_private_object_access_denial_is_not_treated_as_disappearance(self):
+        import pywintypes,win32file
+        original=win32file.CreateFile
+        target=self.home/'runtime-status.pending.json'
+        def denied(name,*args):
+            if str(name)==str(target):raise pywintypes.error(5,'CreateFile','Access denied')
+            return original(name,*args)
+        with patch.object(win32file,'CreateFile',side_effect=denied),self.assertRaises(history.HistoryError):
+            history.private_directory(self.home)
+
+    @unittest.skipUnless(sys.platform=='win32','Windows object-bound ACL contract')
+    def test_private_object_hard_link_is_rejected(self):
+        import os
+        target=self.home/'runtime-status.pending.json'
+        target.write_bytes(b'synthetic')
+        os.link(target,self.root/'other-link')
+        with self.assertRaises(history.HistoryError):history.private_directory(self.home)
 
     def test_traffic_ingestion_subdivides_truncated_window(self):
         folder=self.root/'stats'
