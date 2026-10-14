@@ -496,7 +496,6 @@ class AnalyticsTest(unittest.TestCase):
                 self.query(**change)
 
     def test_batch_holds_one_real_sqlite_revision_during_a_concurrent_commit(self):
-        self.store.db.execute('PRAGMA journal_mode=WAL')
         other=history.History(self.store.directory,now=END)
         self.addCleanup(other.close)
         original=self.engine._query

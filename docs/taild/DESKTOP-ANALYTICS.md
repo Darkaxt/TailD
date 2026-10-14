@@ -296,3 +296,22 @@ No production code or stored facts were changed to accommodate the diagnostic.
 No exact installed startup latency or new unobstructed pixel-layout proof is claimed.
 The first UIA observer lost a dynamic element; a fresh completed-view observation
 verified readiness. Existing Stage 10/B12 scope is not closed by this delivery.
+
+### Post-deployment concurrent-write correction
+
+The +7 installed collector subsequently froze writes while a long dashboard
+snapshot was active. Physical profile inspection confirms DELETE journaling and
+write-error for both sources. An isolated real History/read_view/collector commit
+reproduces SQLITE_BUSY with rollback; production does not retain the original
+exception code, so the exact live error is not claimed as recovered. The previous
+concurrent-revision test hid the setup gap by explicitly selecting WAL itself.
+
+Normal initialization now enables and verifies WAL before writer transactions,
+after rejecting unsupported schema versions. Read-only dashboard transactions keep
+one committed revision without blocking ingestion commits. Existing DELETE-mode
+history reopens without changing schema, facts, counters or retention. Actual
+source correction commits while a dashboard batch is held; that batch remains on
+its original revision and the next query sees the update. Genuine disk-full
+rollback/freeze and explicit recovery, crash atomicity, restart and private ACL
+contracts still pass. No busy-timeout increase, query cancellation, retry or error
+suppression was added. Installed acceptance remains open in B17 until delivery.

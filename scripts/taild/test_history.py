@@ -102,6 +102,30 @@ class HistoryTest(unittest.TestCase):
         self.ingest()
         self.assertEqual((self.query()['inbound_bytes'],self.query()['outbound_bytes']), (135,2))
 
+    def test_default_dashboard_snapshot_does_not_block_ingestion_commit(self):
+        self.ingest()
+        view=self.store.read_view()
+        try:
+            view.db.execute('BEGIN')
+            revision=view.db.execute('SELECT revision FROM settings').fetchone()[0]
+            before=[tuple(row) for row in view.db.execute('SELECT identity,inbound,outbound FROM traffic')]
+            self.writer.execute('UPDATE traffic_stats SET inbound_bytes=135')
+            self.writer.commit()
+            self.ingest()
+            self.assertEqual([tuple(row) for row in view.db.execute('SELECT identity,inbound,outbound FROM traffic')],before)
+            self.assertEqual(self.query()['inbound_bytes'],135)
+            self.assertGreater(self.query()['revision'],revision)
+        finally:view.close()
+
+    def test_existing_delete_journal_history_reopens_with_concurrent_reader_support(self):
+        self.ingest()
+        before=self.query()
+        self.store.db.execute('PRAGMA journal_mode=DELETE')
+        self.store.close()
+        self.store=history.History(self.home,now=NOW);self.addCleanup(self.store.close)
+        self.assertEqual(self.store.db.execute('PRAGMA journal_mode').fetchone()[0],'wal')
+        self.assertEqual(self.query(),before)
+
     def test_generation_survives_mutation_and_changes_on_replacement(self):
         before = self.read()['generation']
         self.add_row(1791391002)

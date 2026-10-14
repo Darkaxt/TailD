@@ -387,6 +387,11 @@ Record explicit disabled, starting, collecting, paused, stale/error, incompatibl
 and stopping states. Pause stops new reads; shutdown awaits the current transaction
 or explicit cancellation. Resume/start/network-restored events drive catch-up.
 No arbitrary watchdog kills, retry loops, lock stealing or timeout-based recovery.
+Dashboard read snapshots must not prevent the owning writer from committing
+acquired facts. Normal history initialization establishes SQLite WAL mode before
+opening concurrent views, keeping one consistent revision per dashboard batch.
+Genuine storage failures still roll back and freeze writes until explicit resume;
+contention must not be concealed by extending busy timeouts or restarting queries.
 Closing the window does not implicitly disable enabled collection; an explicit
 Exit/pause control explains whether the collector remains active.
 

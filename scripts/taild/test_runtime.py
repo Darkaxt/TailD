@@ -194,6 +194,41 @@ class RuntimeTest(unittest.TestCase):
             with self.assertRaises(reader.ReaderError):
                 future.result()
 
+    def test_ingestion_commits_while_dashboard_snapshot_is_held(self):
+        import analytics
+        self.collector.command('configure',{'traffic':True})
+        self.collector.command('refresh')
+        self.collector.command('pause')
+        initial=self.query()[1]['results'][0]
+        with closing(sqlite3.connect(self.stats)) as writer:
+            writer.execute('UPDATE traffic_stats SET inbound_bytes=135');writer.commit()
+        entered,release=threading.Event(),threading.Event()
+        results=[];errors=[];original=analytics.Analytics._query
+        def held(engine,request,revision,prepared=None):
+            entered.set();release.wait()
+            return original(engine,request,revision,prepared)
+        def dashboard():
+            try:results.append(self.collector.dispatch({'op':'view-query','body':{'queries':[{
+                'kind':'traffic','view':'facts','start':'2026-10-07T16:36:40Z',
+                'end':'2026-10-07T16:36:43Z','limit':10}]}}))
+            except BaseException as error:errors.append(error)
+        worker=threading.Thread(target=dashboard)
+        with patch.object(analytics.Analytics,'_query',held):
+            worker.start()
+            try:
+                entered.wait()
+                # Real writer transaction first; on the old DELETE mode this
+                # raises write-error rather than stranding a source waiter.
+                self.collector.command('cleanup')
+                self.collector.command('resume')
+                refreshed=self.collector.command('refresh')
+                self.assertNotEqual(refreshed['state'],'write-error')
+                self.assertFalse(release.is_set(),'The dashboard was not held during ingestion')
+            finally:release.set();worker.join()
+        self.assertEqual(errors,[])
+        self.assertEqual(results[0]['results'][0],initial)
+        self.assertEqual(self.query()[1]['results'][0]['data']['rows'][0]['inbound_bytes'],'135')
+
     def test_unauthorized_origins_headers_paths_and_injection_fail(self):
         session = self.collector.session()
         for headers in (

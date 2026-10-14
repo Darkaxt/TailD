@@ -193,6 +193,11 @@ class History:
         version = self.db.execute('PRAGMA user_version').fetchone()[0]
         if version not in (0, 1, 2, 3, 4):
             raise HistoryError('Unsupported history schema; existing data preserved')
+        # Dashboard batches retain a committed read snapshot while the single
+        # ingestion writer continues. DELETE journals require an exclusive
+        # commit lock, turning a valid long read into a collector write failure.
+        if self.db.execute('PRAGMA journal_mode=WAL').fetchone()[0].lower()!='wal':
+            raise HistoryError('History requires WAL for concurrent dashboard reads')
         with self.transaction():
             if version == 0:
                 statements = [

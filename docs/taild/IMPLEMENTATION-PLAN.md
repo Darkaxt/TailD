@@ -757,6 +757,39 @@ existing installer-lifecycle/cleanup finding. Recovery payloads are intentional,
 not expendable scratch. R15c release/deployment is verified; Stage 10 remains ACTIVE
 for existing B12 final reconciliation. Tracked deferrals: none.
 
+October 14 post-deployment regression B17 (internal, Stage 10 ACTIVE): the actual
++7 collector reports write-error for both sources, with physical history revision
+3960 and rollback-journal mode DELETE. A held read_view plus the real collector
+commit path reproduces SQLITE_BUSY and the same stopped state; the failed commit
+rolls back. The existing concurrent-revision test manually enables WAL, masking
+production's missing setup. The original live exception is not retained, so its
+exact code is inferred from the matching isolated reproduction, not recovered
+from a live log. R13/R15c read/write coexistence is not accepted until corrected.
+Resolution within this stage: establish WAL in normal history initialization,
+preserve physical read-only snapshot/revision semantics and genuine write-error
+freeze/resume, remove the test-only setup, then verify real source commits while a
+dashboard batch is held, crash/reopen/privacy contracts and the corrected installed
+workflow. No retry, increased busy timeout, forced cancellation or data removal.
+Existing implementation/delivery authority is reused for this regression; no new
+stage, provider/DNS configuration change or tracked deferral is introduced.
+
+B17 source checkpoint: normal initialization now establishes and verifies WAL
+after the existing schema-version guard and before writer transactions. Schema 4,
+facts, retention, read-only views and genuine error freeze/resume are unchanged.
+Default-mode and DELETE-to-WAL reopen regressions preserve exact old snapshots
+while new commits become visible to new readers. The actual owning-user runtime
+ingests changed GlassWire counters while a dashboard batch is event-held; the
+held batch retains its old revision and the next query sees the correction.
+Crash-before/after-commit, private-file ACL, explicit disk-full freeze/restart and
+all backend contracts pass. Initial diagnostic invocations contained a nested
+transaction in a new test and a nonexistent test_ingestion module; those are
+test-invocation defects, not passing product checks. Corrected focused tests and
+the full backend discovery pass. Original production failure is demonstrated
+without a timeout override. Design assessment: use SQLite's existing concurrent
+snapshot mode; no new synchronization owner, retry/fallback or service. B17
+remains an installed-acceptance blocker until the corrected release is verified
+on the actual physical profile. Existing B12 remains; Stage 10 stays ACTIVE.
+
 Seven-day default amendment: already_authorized by the October 14 request.
 Stage 10 remains the single ACTIVE stage. The internal seven-day aggregate
 acceptance blocker is RESOLVED: broad traffic aggregates stream without the
