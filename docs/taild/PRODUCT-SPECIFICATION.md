@@ -31,8 +31,13 @@ service-dispatched signed-channel update preserve node, addresses,
 Tailnet Lock signer, service path and DNS preferences, with public/MagicDNS reads
 passing. Remaining live analytics, tray/recovery and rollback acceptance remain
 in the stage ledger. The October 14 instruction to continue development but stop
-before the next deployment holds further installed-client changes; it does not
-authorize substituting isolated tests for the remaining installed proof.
+before the next deployment held further installed-client changes. The subsequent
+October 14 instruction, "You can deploy now", lifts that hold and authorizes the
+retained verified Windows candidate's in-place deployment and continuity checks.
+It does not substitute isolated tests for the remaining installed proof. The
+retained 1.105.0+3 candidate is now published and deployed with verified in-place
+identity/DNS continuity and automatic opted-in owner collection resumption;
+Stage 10 remains ACTIVE for its remaining acceptance criteria.
 
 The [stage ledger](IMPLEMENTATION-PLAN.md) maps every requirement to acceptance
 criteria. A plan cannot weaken this document. Only one implementation stage may

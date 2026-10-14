@@ -639,11 +639,46 @@ and WebView caches are removed through exact reviewed cleanup; credentials,
 installed history and existing recovery payloads are preserved. Installed Beacon
 is freshly confirmed running **1.105.0-taild.2**, and the public normal release
 remains **1.105.0+2**. Candidate +3 is neither published nor deployed. The latest
-user instruction holds the next deployment. No new task or updater-channel
-publication bypasses that hold.
+user instruction at that checkpoint held the next deployment. The subsequent
+October 14 "You can deploy now" lifts that hold. The +3 payload, inherited core
+manifest, release envelope and installer digest were freshly reverified against
+the pinned production key; the installed +2 baseline was captured privately in
+`D:/Tools/taild-stage10-validation-20261013/live-update-3/before.json`. The existing
+rollback-protected in-place installer is submitted once through the elevation
+gate (request `44f7aba427944128a5308e94aace3a62`). Submission is not deployment
+success. That request subsequently completed with administrator token, installer
+exit 0 and complete package/continuity verification. Installed version is
+**1.105.0-taild.3**. Node, addresses, Tailnet Lock signer, service path, current
+update preference and DNS settings are preserved; public and own MagicDNS resolve.
+Both services run. The unelevated `TailD.Background.exe` resumed automatically in
+the owning user's session without dashboard activation, retained both opt-ins,
+and its authenticated pipe reports committed reads from both independent sources
+with no data-write error. Private `after-3.json`, `collector-after.json` and
+`collector-acquisition.json` retain the actual evidence alongside the baseline.
+The observed current GlassWire interval preceded its older-history read. This
+closes installed correction/automatic collector-resumption proof for this manual
+update, not all updater/session lifecycle paths. Stage 10 remains ACTIVE.
 
-B12 still owns installed correction/collection continuity, actual rollback and
-restoration, unattended collector resume, open-window update handoff, repeated
+Normal release `windows-v1.105.0+3` is now published at the exact signed source
+`0a76e1dd917995aa9a4ce0bf2d47315c144544a2`, not the later documentation/test commit.
+Independent public download verifies both pinned signatures, the package manifest
+digest and the complete 114,063,057-byte installer SHA-256
+`38ea300ac60284dac8dbec346f3cc33ea33584b43ef76f9a8cb33cffd3094d52`.
+Private `public-release-verification.json` records this evidence. No Android
+release/device change occurred.
+
+Installer cleanup transaction `cede28bad94ea885b1991a2f6d4a1b32` reviewed only
+the exact Inno residual `C:/Users/darka/AppData/Local/Temp/is-BTSGEG2S2C.tmp` and
+its empty `{app}` child. Apply reports both directories locked, with zero files
+or payload bytes remaining. Current process inspection identifies the working
+directory of the running tray child as that `{app}` path. Preserve the valid
+partial ticket `6f5c233c785beeaf52ca048ecc6eedbf2ce213d0bbff386a891d5becc2300da4`
+until those actual consumers exit; do not force-stop the working tray for cleanup
+or claim the directories were removed. This is a concrete installer-lifecycle
+finding for B12 reconciliation, not a connectivity or acquisition failure.
+
+B12 still owns integrated collection/drill-down/export continuity, actual rollback
+and restoration, unattended service-update collector resume, open-window update handoff, repeated
 tray focus/minimized restore/right-click controls and final R01–R18 reconciliation.
 The service's signed update path is verified; the standalone `tailscale update`
 entrypoint still inherits the upstream updater and needs reconciliation with R18
