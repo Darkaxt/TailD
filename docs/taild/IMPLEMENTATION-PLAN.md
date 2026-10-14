@@ -607,6 +607,52 @@ declared complete. Tracked deferrals: none. Assessment: the separate acquisition
 threads serve this demonstrated requirement; no new service, task, framework,
 consolidation stage or optional refactoring is introduced.
 
+Pre-deployment candidate checkpoint: source
+0a76e1dd917995aa9a4ce0bf2d47315c144544a2 passed hosted check run 38488989232 and
+the complete signed candidate workflow 38489010515. Publication was disabled;
+the publish job is SKIPPED. The workflow includes actual isolated
+install/upgrade/rollback/uninstall and fresh-host complete-product refusal/recovery
+without an authenticated baseline. Independent downloaded/extracted installer
+verification matches all 415 signed payload members and the pinned core.
+Candidate **1.105.0+3** installer SHA-256:
+38ea300ac60284dac8dbec346f3cc33ea33584b43ef76f9a8cb33cffd3094d52,
+114,063,057 bytes; package-manifest SHA-256:
+cf694e3856c715f5ba425ffae8bf5196e09734f70bf17869cc8afa6e31444248.
+This is the pinned Ed25519 project identity, not Authenticode signing.
+
+A separately launched, unelevated frozen candidate proves the real READ boundary
+without deployment: hold synthetic GlassWire catalog discovery on its actual
+protected named pipe first, then enable Control D with the existing owning-user
+vault credential passed only in memory. The successful provider run commits while
+the gate remains held, 0.464 seconds from provider configure to observed commit.
+The response window is empty; this proves a successful source read, not observed
+DNS activity or a new host-to-endpoint binding. Cooperative pause/shutdown exits
+cleanly. Initial diagnostic observer predicates were corrected and retained as
+invalid observations: an expiry gap is not a successful provider commit, and an
+older disabled diagnostic-file snapshot is not a failed configure receipt.
+The final gate-first proof requires a complete/truncated provider run and the
+authenticated enabled receipt; no inferred ordering from simultaneous enablement.
+
+The verified candidate assets/payload and sanitized reports are retained locally
+for the next approved delivery. Expendable downloads/extraction, test histories
+and WebView caches are removed through exact reviewed cleanup; credentials,
+installed history and existing recovery payloads are preserved. Installed Beacon
+is freshly confirmed running **1.105.0-taild.2**, and the public normal release
+remains **1.105.0+2**. Candidate +3 is neither published nor deployed. The latest
+user instruction holds the next deployment. No new task or updater-channel
+publication bypasses that hold.
+
+B12 still owns installed correction/collection continuity, actual rollback and
+restoration, unattended collector resume, open-window update handoff, repeated
+tray focus/minimized restore/right-click controls and final R01–R18 reconciliation.
+The service's signed update path is verified; the standalone `tailscale update`
+entrypoint still inherits the upstream updater and needs reconciliation with R18
+before any claim that all update entrypoints use the project channel. Do not run
+that command on Beacon as a diagnostic. These remain identified current-stage
+advancement blockers, not unnamed deferrals or passed acceptance. This checkpoint
+finishes the independently verified collector correction up to the requested
+pre-deployment stop, not the overall Stage 10 outcome.
+
 ## Stage 5 execution — 2026-10-08
 
 Authorization: already_authorized by the explicit request to start Stage 5.

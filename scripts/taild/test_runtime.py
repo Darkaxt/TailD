@@ -301,9 +301,11 @@ class RuntimeTest(unittest.TestCase):
         try:
             with patch.object(controld,'activity_slice',side_effect=fetch),patch.object(history.History,'import_dns',imported):
                 self.collector.command('credential',{'token':'synthetic-read-token','confirm_read_only':True,'persist':False})
-                self.collector.command('configure',{'traffic':True,'dns':True,'provider':{
-                    'account_scope':'synthetic','endpoint':'synthetic','account_type':'personal','instance':'synthetic'}})
+                self.collector.command('configure',{'traffic':True})
                 self.assertTrue(entered.wait(10),'Diagnostic: GlassWire read did not enter')
+                configured=self.collector.submit('configure',{'dns':True,'provider':{
+                    'account_scope':'synthetic','endpoint':'synthetic','account_type':'personal','instance':'synthetic'}})
+                configured.result(10)  # Admission must not wait for GlassWire.
                 self.assertTrue(dns_committed.wait(10),'Control D waited behind the held GlassWire source')
                 self.assertEqual(set(writes),{self.collector.thread.ident},'Database writes left the owning writer')
                 self.assertNotIn(self.collector.thread.ident,fetch_threads,'Network IO blocked the writer')
