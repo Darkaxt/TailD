@@ -3,6 +3,7 @@
 import {AfterViewInit,Component,DestroyRef,ElementRef,EventEmitter,Input,Output,inject} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import * as d3 from 'd3';
+import {utcTickPattern} from '../time-range';
 
 export const exact=(value:unknown):bigint=>BigInt(value==null?'0':String(value));
 export function bytes(value:unknown):string{
@@ -59,7 +60,8 @@ export class SfngNetqueryLineChartComponent implements AfterViewInit {
     const max=d3.max(this.bins,b=>Math.max(...series.map(([key])=>value(b,key)||0)))||0;
     this.hasValues=this.bins.some(b=>series.some(([key])=>value(b,key)!==null));
     const y=d3.scaleLinear().range([height-margin.bottom,margin.top]).domain([0,max>0?max*1.15:1]);
-    svg.append('g').attr('transform',`translate(0,${height-margin.bottom})`).call(d3.axisBottom(x).ticks(5).tickFormat(d=>d3.utcFormat('%H:%M')(d as Date)));
+    const tickPattern=this.bins.length?utcTickPattern(this.bins[0].start,this.bins[this.bins.length-1].end):'%H:%M';
+    svg.append('g').attr('transform',`translate(0,${height-margin.bottom})`).call(d3.axisBottom(x).ticks(5).tickFormat(d=>d3.utcFormat(tickPattern)(d as Date)));
     svg.append('g').attr('transform',`translate(${margin.left},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(d=>this.metric==='decisions'?(Number.isInteger(Number(d))?String(d):''):d3.format('.2s')(Number(d))+(this.mode==='rate'?'/s':'')));
     for(const [key,color] of series){
       const line=d3.line<Bin>().defined(b=>value(b,key)!==null).x(b=>x(new Date(b.start))).y(b=>y(value(b,key)!)).curve(d3.curveLinear);

@@ -467,8 +467,13 @@ verify the actual served assets, not only source or mock previews.
 
 Persistent sidebar: Overview, Applications, Activity, Control D, Sources & health,
 Settings. Shared header: device/endpoint, time range, source freshness/coverage and
-active filter chips. Offer Recent (15 minutes), Last hour, Today and explicit UTC
-range; display timezone conversion and preserve UTC query semantics.
+active filter chips. Default to the rolling Last 7 days (exactly 168 hours), and
+offer Recent (15 minutes), Last hour, Today and explicit UTC range. Display
+timezone conversion and preserve UTC query semantics. Refresh rolls a preset
+forward; navigation and explicit/saved scopes retain their selected bounds.
+Multi-day charts show UTC dates. Seven-day traffic aggregates must include
+all retained traffic facts without truncation or materializing the entire traffic history
+in memory; existing explicit fact/export and response resource bounds remain.
 
 October 14 user amendment (R15a; owned by ACTIVE Stage 10):
 refresh must show a centered Portmaster-themed loading indicator over a translucent

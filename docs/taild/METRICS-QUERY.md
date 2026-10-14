@@ -108,13 +108,22 @@ Retention maintenance may also advance the revision. Same-store pagination and
 batches are verified; no historical snapshot-server/session infrastructure is implied.
 
 Budgets are explicit resource limits: 16 queries/batch, 100,000 retained source
-facts or snapshots per read, 10,000 rows/page or chart bins, four group/order
+facts for materialized detail reads or DNS correlation inputs, 100,000 snapshots,
+10,000 rows/page or chart bins, four group/order
 fields, 256 predicate nodes/depth eight, 100 `in` values, 1,024 text characters.
 The CLI bounds request input to 1,048,576 characters. The recorded analytical age
 defaults to 300 seconds and supports 1–86,400 seconds; it is not a timeout or TTL.
 Budget excess is an error, not a successful truncated aggregation. Data reads use
 fixed SQL with bound bounds/scopes; typed predicates are evaluated in the backend,
 not interpolated as SQL. No caller-supplied SQL, expressions or aliases exist.
+
+The default rolling seven-day dashboard streams larger traffic scopes through
+one-row-at-a-time decoding and exact aggregate counters. Summary, series and
+group output do not truncate at the detail budget. Preparation remains inside
+the same read transaction; large scopes are replayed from that same SQLite
+snapshot instead of retaining their raw facts. In-memory group cardinality and
+the existing response-size boundary still apply. Broad fact drill-down/export
+retains its explicit resource limits; narrow by a chart bin or application.
 
 ## Metric results and denominators
 

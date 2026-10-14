@@ -12,6 +12,7 @@ import {Bin,Consumer,CircularBarChartComponent,SfngNetqueryLineChartComponent,by
 import {Evidence} from './evidence';
 import {applicationName} from './application-label';
 import {WorldMapComponent} from './portmaster/world-map';
+import {DEFAULT_TIME_RANGE,presetBounds} from './time-range';
 
 type Kind='traffic'|'dns'|'correlations';
 type Page='Overview'|'Applications'|'Activity'|'Control D'|'Sources & health'|'Settings';
@@ -56,6 +57,7 @@ const fields:Record<Kind,string[]>={
       <label>Endpoint · not host attribution<select id="scope-endpoint" [(ngModel)]="endpoint" (change)="scopeChanged()"><option value="">All recorded endpoints</option>
         <option *ngFor="let value of endpoints()" [value]="value">{{value}}</option></select></label>
       <label>Time range<select id="time-range" [(ngModel)]="range" (change)="timeChanged()">
+        <option value="week">Last 7 days</option>
         <option value="recent">Recent · 15 minutes</option><option value="hour">Last hour</option><option value="today">Today</option>
         <option value="custom">Explicit UTC range</option></select></label>
       <button id="view-refresh" [disabled]="busy()" (click)="refresh(true)">Refresh view</button>
@@ -240,7 +242,7 @@ class App {
   kinds:Kind[]=['traffic','dns','correlations'];page=signal<Page>('Overview');runtime=signal<State|null>(null);
   catalog=signal<Catalog|null>(null);batch=signal<Batch|null>(null);busy=signal(false);error=signal('');notice=signal('');ready=signal(false);
   application=signal<string|null|undefined>(undefined);applicationLabel=signal('');selected=signal('');saved=signal<Saved[]>([]);
-  host='';device='';account='';endpoint='';range='recent';start='';end='';timezone=Intl.DateTimeFormat().resolvedOptions().timeZone;
+  host='';device='';account='';endpoint='';range=DEFAULT_TIME_RANGE;start='';end='';timezone=Intl.DateTimeFormat().resolvedOptions().timeZone;
   kind:Kind='traffic';search='';predicates:Predicate[]=[];combine:'all'|'any'='all';field='application_path';operator='eq';filterValue='';
   group='';order='timestamp:desc';pageIndex=0;cursors:(string|undefined)[]=[undefined];savedName='';savedSelection='';retentionDays=7;deleteKind='traffic';confirmDelete=false;
   private lastQuery:Query|null=null;private loadingGeneration=0;
@@ -278,7 +280,7 @@ class App {
     this.retentionDays=this.catalog()!.health.retention_days;
     this.saved.set((await command<{queries:Saved[]}>('saved-query',{action:'list'})).queries);
   }catch(e){this.error.set((e as Error).message)}finally{this.busy.set(false)}await this.refresh()}
-  private setTime(){const now=new Date();this.end=now.toISOString();const from=this.range==='today'?new Date(now.getFullYear(),now.getMonth(),now.getDate()):new Date(now.getTime()-(this.range==='hour'?3600000:900000));this.start=from.toISOString()}
+  private setTime(){Object.assign(this,presetBounds(this.range))}
   localTime(value:string){return Number.isFinite(Date.parse(value))?new Date(value).toLocaleString():'Invalid timestamp'}
   utc(value:number|string){const n=Number(value);return Number.isFinite(n)?new Date(n/1000).toISOString():'Unavailable'}
   scope(){return {...(this.host?{host:this.host}:{}),...(this.device?{device:this.device}:{}),...(this.account?{account:this.account}:{}),...(this.endpoint?{endpoint:this.endpoint}:{})}}

@@ -60,6 +60,58 @@ class AnalyticsTest(unittest.TestCase):
             self.engine.batch(requests)
             self.assertEqual(prepare.call_count,2,'Preparation cannot survive its read transaction')
 
+    def test_dashboard_source_health_is_shared_only_inside_its_read_revision(self):
+        queries=[self.request(),self.request(kind='dns')]
+        with patch.object(self.store,'health',wraps=self.store.health) as health_read:
+            result=self.engine.batch(queries)
+            self.assertEqual(result['results'][0]['data']['source_health'],result['results'][1]['data']['source_health'])
+            self.assertEqual(health_read.call_count,1)
+            self.engine.batch(queries)
+            self.assertEqual(health_read.call_count,2)
+
+    def test_seven_day_aggregates_stream_beyond_the_fact_page_budget(self):
+        # Real SQLite rows, deliberately beyond the old materialization bound.
+        row=self.store.db.execute('SELECT * FROM traffic LIMIT 1').fetchone()
+        columns=list(row.keys());identity=columns.index('identity')
+        with self.store.transaction():
+            self.store.db.executemany('INSERT INTO traffic VALUES('+','.join('?' for _ in columns)+')',
+                (tuple('large-'+str(i) if j==identity else row[j] for j in range(len(columns)))
+                 for i in range(100001)))
+        start='2026-10-01T10:02:00Z'
+        expected=(row['inbound']+row['outbound'])*100001+sum(r['inbound_bytes']+r['outbound_bytes'] for r in self.traffic['rows'])
+        requests=[self.request(start=start),self.request(start=start,view='series',bin_seconds=5040),
+                  self.request(start=start,view='groups',group_by=['application','application_path'])]
+        result=self.engine.batch(requests)
+        summary,series,groups=[r['data'] for r in result['results']]
+        self.assertEqual(summary['data']['total_bytes'],expected)
+        self.assertEqual(summary['application_activity']['bucket_count'],100004)
+        self.assertEqual(sum(b['total_bytes'] for b in series['bins']),expected)
+        self.assertEqual(sum(g['total_bytes'] for g in groups['groups']),expected)
+        self.assertTrue(result['results'][0]['coverage']['incomplete'])
+        self.assertEqual(len({r['revision'] for r in result['results']}),1)
+        target=history.digest(['traffic',row['source'],row['identity'],None])
+        filtered=self.engine.batch([self.request(start=start,where={'field':'id','op':'eq','value':target})])['results'][0]
+        self.assertEqual(filtered['data']['application_activity']['bucket_count'],1)
+        self.assertEqual(filtered['data']['data']['total_bytes'],row['inbound']+row['outbound'])
+        with self.assertRaisesRegex(analytics.QueryError,'Fact budget exceeded'):
+            self.engine.batch([self.request(start=start,view='facts')])
+
+    def test_streamed_aggregates_preserve_candidates_filters_and_conflicting_context(self):
+        self.context()
+        # An overlapping incompatible capture must still invalidate binding.
+        self.context(node_id='other-node',captured_at_utc='2026-10-08T10:00:15Z')
+        queries=[self.request(),self.request(view='series',bin_seconds=60),
+            self.request(view='groups',group_by=['application','application_path']),
+            self.request(scope={'host':'host','device':'node'}),
+            self.request(where={'field':'question','op':'eq','value':'example.invalid'})]
+        expected=self.engine.batch(queries)
+        load=self.engine._load
+        def streamed(kind,*args,**kwargs):
+            result=load(kind,*args,**kwargs)
+            return (lambda **_:iter(result)) if kind=='traffic' and kwargs.get('allow_stream') else result
+        with patch.object(self.engine,'_load',side_effect=streamed):
+            self.assertEqual(self.engine.batch(queries),expected)
+
     def test_dns_dashboard_series_counts_decisions_with_its_own_coverage_and_scope(self):
         duplicate=copy.deepcopy(self.dns)
         duplicate['rows']*=2

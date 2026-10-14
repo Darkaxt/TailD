@@ -181,3 +181,34 @@ Expendable source copies, dependency/build output, WebView caches and test histo
 were removed after evidence preservation through cleanup transaction
 `3d1b0d2964a4385ab6302cd02be419ff`: applied, 296,066,023 bytes, no exclusions/errors
 or residual task directory. Source and durable private evidence remain available.
+
+## Rolling seven-day default — 2026-10-14
+
+New windows select Last 7 days (168 elapsed hours). Recent/Last hour/Today and
+explicit UTC scopes remain available. Navigation retains bounds; Refresh rolls
+presets forward but preserves custom/saved bounds. Multi-day chart ticks show
+UTC dates. `validate_time_range_windows.py` verifies the actual native served
+assets, defaults, navigation, refresh, custom scopes and DNS-bin drill-down.
+
+The actual retained seven-day traffic horizon exceeds the previous 100,000-fact
+materialization budget. Aggregate reads now decode broad traffic incrementally,
+fan out matching summary/series/group queries in the same read transaction and
+reuse source-health results only inside that transaction. Compact aggregate
+projection keeps raw provenance in bounded detail reads; identity predicates
+still compute canonical IDs. Context interval lookup preserves overlapping/
+conflicting captures. There is no cross-revision cache or silent truncation.
+DNS-input, detail, export, group cardinality/response bounds remain explicit.
+
+Verification: focused/complete backend contracts; production frontend type-check
+and build; actual native seven-day controls and drill-down. Read-only retained
+history exceeding the old fact budget reconciles exact bytes and DNS events
+across summaries, charts and application groups at one revision. Account/scope
+details and live counts remain in private evidence. The exact same broad
+batch fell from 46.71 s to 28.84 s after removing repeated health scans; an
+earlier rolling scope took 116.73 s before aggregate projection/fanout. This is
+still a heavy uncached history view, not an instant-load claim. Source collection,
+DNS configuration, retention and installed release +5 were not changed.
+
+Private evidence: `D:/Tools/taild-stage10-validation-20261013/seven-day-20261014`.
+The current amendment is source/native-verified, not a public release or installed
+update. Stage 10/B12 and the reported tray-launch issue remain open.

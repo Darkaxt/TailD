@@ -690,6 +690,26 @@ pre-deployment stop, not the overall Stage 10 outcome.
 
 ### Stage 10 user refinement — 2026-10-14
 
+Seven-day default amendment: already_authorized by the October 14 request.
+Stage 10 remains the single ACTIVE stage. The internal seven-day aggregate
+acceptance blocker is RESOLVED: broad traffic aggregates stream without the
+100,000-fact detail bound. Exact counters, coverage, revision consistency and
+explicit detail/export/DNS-input bounds remain. Native served-asset verification
+passes rolling 168-hour presets, shorter/custom scopes, navigation, refresh,
+date labels and DNS-bin drill-down. Retained read-only history beyond the old
+fact budget reconciles exact traffic bytes, groups and DNS event counts at one
+revision. Live counts and scope details stay in private evidence, not GitHub.
+Measured broad batch: 28.84 s versus 46.71 s for the exact same scope before the
+health-scan correction (initial unoptimized seven-day attempt: 116.73 s at an
+earlier rolling scope). No instant-load or live DNS restoration claim. Full
+backend contracts, production frontend type-check/build and isolated native
+verification pass. Evidence: `D:/Tools/taild-stage10-validation-20261013/seven-day-20261014`.
+No DNS/retention change or separate minor release is implied. Existing B12/tray
+investigation stays open; installed +5 is unchanged. Tracked deferrals: none.
+Design-debt assessment: transaction-local aggregate fanout and source-health
+reuse remove measured repeated work; no cross-revision cache, timer, service or
+rollup infrastructure was added. No required consolidation finding.
+
 Stage 10 remains the single ACTIVE stage. R15a adds a connected refresh and
 Portmaster-layout refinement, already_authorized by the latest user feedback.
 B13: RESOLVED for the source/native refinement acceptance. The complete integrated
