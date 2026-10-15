@@ -1,5 +1,36 @@
 # TailD staged execution
 
+October 15 R25 local-control correction: Stage 10 remains the single **ACTIVE**
+stage. R25 is **COMPLETE**, B30 resolved. Two sequential gpt-6.1-sol Low QA reviews
+identified the shared native/pipe queue, analytics loading/inert state, sequential
+CLI GETs and resolver/profile validation defects. Main integrated fixed local-only
+owner-authenticated transport within the existing collector, separate admission,
+parallel fixed GETs, honest DNS labels and one About heading. No new process,
+service, generic RPC, automatic retry or timeout control flow.
+Actual native-served assets pass local reads and preference edits before a held
+analytics query is released; original query/receipts drain. Native and renderer
+admission remain 4 analytics / 2 local; wrong-owner/general commands are refused;
+collector close joins an in-flight local read. Malformed/mixed-profile responses,
+operational-state revisions and invalid analytics dates pass regression checks.
+Desktop and 560px layouts plus native 150% app-local zoom pass; screenshots were
+inspected. Local tab switches make zero extra daemon reads (30.20/42.63ms host
+action-to-ready at 100/150%; synthetic daemon boundary, not physical pixel latency).
+Real installed-daemon read completes in 391.10ms; no metric aggregation is involved.
+Backend discovery's only failures were the omitted package-fixture environment;
+all affected modules passed after setting the registered task-owned output root.
+Frontend tests/typecheck, Angular production and native Debug/Release builds pass;
+Release assembly has no validation/debug hooks. Closure review found no required
+consolidation: fixed operations and lifecycle stay with their existing owners.
+The owner's subsequent correction explicitly required the Windows override.
+Current READ account inventory verifies endpoint `1ck0taaf0tt` and its profile;
+direct DoH succeeds. Profile-pinned local-DNS edit now reads back Configured/Applied
+true at `https://dns.controld.com/1ck0taaf0tt`; public DNS and MagicDNS both pass.
+Tailnet DNS stays enabled, profile unchanged; no provider-policy/tailnet writes.
+Evidence: D:/Tools/taild-stage10-validation-20261013/local-controls-r25.
+No new binary release/deployment or tracked deferral. Installed version remains
+1.105.0+11; only the explicitly requested resolver setting changed live. B12 remains
+open and prevents claiming overall Stage 10/project completion.
+
 October 15 R22–R24 delivery: Stage 10 remains the single **ACTIVE** stage.
 The owner explicitly authorized release and local deployment after reconciliation.
 R22–R24 source/native acceptance and this bounded delivery are **COMPLETE**.

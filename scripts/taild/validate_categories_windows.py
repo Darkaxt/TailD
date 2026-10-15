@@ -8,9 +8,13 @@ import copy
 from datetime import datetime,timezone
 import json
 from pathlib import Path
+import threading
+import time
+from unittest.mock import patch
 
 from playwright.sync_api import sync_playwright,expect
 import connectivity
+import analytics
 from test_connectivity import DaemonFixture
 from test_management import snapshot as policy_fixture
 from validate_analytics_windows import NativeSession,populate,settled,capture_preview
@@ -26,6 +30,80 @@ def categories_visible(page):
     assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
     about=page.locator('#nav-about').bounding_box()
     assert about and about['y']>page.evaluate('innerHeight')-90,about
+
+
+def independent_controls(session,daemon,directory):
+    """Hold the real analytics worker until real local controls have completed."""
+    page=session.page;entered=threading.Event();release=threading.Event()
+    original=analytics.Analytics._query;reads=[]
+    local_entered,local_release,hold_local=(threading.Event() for _ in range(3))
+    def measured(method,path,body=None):
+        if hold_local.is_set() and method=='GET' and path=='status':
+            local_entered.set();local_release.wait()
+        reads.append((method,path));return daemon(method,path,body)
+    session.collector.connectivity=connectivity.Connectivity(None,call=measured)
+    def held(engine,*args,**kwargs):
+        entered.set();release.wait();return original(engine,*args,**kwargs)
+    try:
+        with patch.object(analytics.Analytics,'_query',held):
+            page.locator('#view-refresh').click();entered.wait()
+            started=time.perf_counter();page.locator('#category-tailscale').click();controls_ready(page)
+            initial_ms=(time.perf_counter()-started)*1000
+            expect(page.locator('#connectivity-window')).to_contain_text('Test device')
+            expect(page.locator('#view-loading')).to_have_count(0)
+            expect(page.locator('.screen-reader-progress')).to_have_count(0)
+            expect(page.locator('main')).to_have_attribute('aria-busy','false')
+            assert not page.locator('.analytics-results').evaluate('e=>e.inert')
+            before=len(reads);started=time.perf_counter()
+            page.locator('#nav-preferences').click();controls_ready(page)
+            tab_ms=(time.perf_counter()-started)*1000
+            assert len(reads)==before,'Switching local tabs reread daemon state'
+            page.locator('#connectivity-unattended').uncheck();controls_ready(page)
+            assert daemon.prefs['ForceDaemon'] is False
+            page.locator('#connectivity-unattended').check();controls_ready(page)
+            assert not release.is_set(),'Analytics completed before local controls'
+            capture_preview(session,directory/'local-controls-held-query.png')
+            page.locator('#nav-about').click()
+            expect(page.locator('#about-version')).to_have_text('1.105.0+10')
+            expect(page.locator('h1')).to_have_text('About')
+            expect(page.locator('#about-panel h2')).to_have_text('TailD')
+            expect(page.locator('#view-loading')).to_have_count(0)
+            capture_preview(session,directory/'about-held-query.png')
+            # Exercise native admission independently of the renderer helper.
+            page.evaluate('''()=>{
+              window.__localQA={};chrome.webview.addEventListener('message',e=>{
+                if(e.data.id>=920000)window.__localQA[e.data.id]=e.data;});
+              for(let i=0;i<4;i++)chrome.webview.postMessage({id:920000+i,op:'state',body:{}});
+            }''')
+            page.wait_for_function("()=>window.__localQA[920003]?.state==='backpressure'",timeout=0)
+            hold_local.set()
+            page.evaluate('''()=>{
+              for(const [i,op] of ['connectivity-read','connectivity-about','connectivity-read'].entries())
+                chrome.webview.postMessage({id:920010+i,op,body:{}});
+            }''')
+            local_entered.wait()
+            page.wait_for_function("()=>window.__localQA[920012]?.state==='backpressure'",timeout=0)
+            local_release.set()
+            page.wait_for_function("()=>window.__localQA[920010]?.ok&&window.__localQA[920011]?.ok",timeout=0)
+            assert not page.evaluate("()=>!!window.__localQA[920000]")
+    finally:local_release.set();release.set()
+    # Let the original query deliver its terminal receipt, not a cancellation.
+    page.locator('#category-analytics').click();settled(page)
+    page.wait_for_function("()=>[920000,920001,920002].every(id=>window.__localQA[id]?.ok)",timeout=0)
+    page.locator('#utc-start').fill('invalid');page.locator('#utc-start').press('Tab')
+    expect(page.locator('#analytics-error')).to_be_visible()
+    page.locator('#category-tailscale').click();controls_ready(page)
+    expect(page.locator('#analytics-error')).to_have_count(0)
+    expect(page.locator('#connectivity-window')).to_contain_text('Test device')
+    page.locator('#nav-about').click();expect(page.locator('#about-version')).to_have_text('1.105.0+10')
+    expect(page.locator('#analytics-error')).to_have_count(0)
+    page.locator('#category-analytics').click()
+    page.locator('#time-range').select_option('week');settled(page)
+    daemon.writes.clear()
+    return {'held_analytics_local_read_and_edit':True,'original_query_drained':True,
+            'invalid_dates_isolated':True,'one_about_heading':True,'native_admission_limits':{'analytics':4,'local':2},
+            'initial_local_ready_host_ms':round(initial_ms,2),'local_tab_host_ms':round(tab_ms,2),
+            'local_tab_extra_reads':0,'physical_pixel_latency':None}
 
 
 def run(shell,output):
@@ -44,6 +122,7 @@ def run(shell,output):
                     'question':'blocked-category-test.invalid','profileId':'profile','rrType':'A','action':'0','trigger':'filter','triggerValue':'ads'},'local','device',collected=now))
                 page=session.page;page.set_default_timeout(0);errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
                 settled(page);categories_visible(page)
+                independence=independent_controls(session,daemon,directory)
                 expect(page.locator('#category-pages button')).to_have_count(5)
                 page.locator('#category-tailscale').focus();page.locator('#category-tailscale').press('Enter');settled(page);controls_ready(page)
                 expect(page.locator('#category-pages button')).to_have_count(3)
@@ -69,6 +148,11 @@ def run(shell,output):
                 page.locator('#connectivity-confirm').click();controls_ready(page)
                 assert len(daemon.writes)==6 and daemon.prefs['CorpDNS'] is True
                 page.locator('#nav-resolver').click();settled(page)
+                daemon.resolver.update(Configured=False,Applied=False,Endpoint='')
+                page.locator('#connectivity-reload').click();controls_ready(page)
+                expect(page.locator('#connectivity-window')).to_contain_text('Tailnet DNS · Enabled')
+                expect(page.locator('#connectivity-window')).to_contain_text('Custom override · Not configured')
+                capture_preview(session,directory/'resolver-absent.png')
                 field=page.locator('#connectivity-resolver');field.fill('https://dns.example.invalid/r24');field.press('Tab');controls_ready(page)
                 assert daemon.resolver['Endpoint']=='https://dns.example.invalid/r24'
                 expect(page.locator('#connectivity-window')).to_contain_text('Applied')
@@ -147,7 +231,7 @@ def run(shell,output):
                     'typed_pipe_readback':True,'stale_snapshot_refused':True,'incident_edit_preserved':True,
                     'keyboard_category_and_about':True,'unapproved_external_link_rejected':True,
                     'daemon_fixture_mutations':len(daemon.writes),'production_mutations':False,
-                    'backend_state':daemon.prefs['WantRunning'],'page_errors':errors})
+                    'backend_state':daemon.prefs['WantRunning'],'page_errors':errors,'local_controls':independence})
             finally:session.close()
     result={'ok':True,'views':receipts,'native_served':True,'isolated_external_boundaries':True}
     (output/'categories.json').write_text(json.dumps(result,indent=2),encoding='utf-8')

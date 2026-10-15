@@ -2,6 +2,7 @@
 import copy
 import json
 import unittest
+import threading
 from unittest.mock import patch
 from types import SimpleNamespace
 try:
@@ -54,6 +55,22 @@ class ConnectivityTest(unittest.TestCase):
         self.assertEqual(data['profile'],'profile-a')
         self.assertNotIn('PrivateNodeKey',json.dumps(data));self.assertNotIn('Persist',json.dumps(data))
         self.assertEqual(len(data['preferences']),5)
+    def test_operational_resolver_state_does_not_invalidate_preferences(self):
+        revision=self.control.read()['revision']
+        self.daemon.resolver.update(Applied=False,Reason='temporary portal',CaptivePortal=True)
+        result=self.control.dispatch('connectivity-edit',{'revision':revision,'preference':'unattended','value':False})
+        self.assertFalse(next(p['value'] for p in result['preferences'] if p['id']=='unattended'))
+    def test_incomplete_or_mixed_profile_resolver_is_not_disabled(self):
+        for resolver in ({},{**self.daemon.resolver,'ProfileID':'another-profile'}):
+            self.daemon.resolver=resolver
+            with self.assertRaises(connectivity.ConnectivityError):self.control.read()
+    def test_independent_gets_are_started_together(self):
+        self.assertTrue(hasattr(self.control,'_read_all'),'Independent GET launch path is missing')
+        barrier=threading.Barrier(5)
+        def call(method,path,body=None):
+            barrier.wait();return self.daemon(method,path,body)
+        self.control.call=call
+        self.assertEqual(self.control.read()['profile'],'profile-a')
     def test_each_tray_preference_uses_its_exact_mask_and_readback(self):
         for action,field,value,stored in [('allow-incoming','ShieldsUp',False,True),
             ('use-dns','CorpDNS',False,False),('use-subnets','RouteAll',False,False),
@@ -75,6 +92,7 @@ class ConnectivityTest(unittest.TestCase):
         self.assertEqual(self.daemon.prefs['Hostname'],'unchanged')
     def test_changed_profile_or_pref_rejects_before_mutation(self):
         for change in ('profile','prefs'):
+            self.daemon.profile['ID']='profile-a'
             revision=self.control.read()['revision']
             if change=='profile':self.daemon.profile['ID']='profile-b'
             else:self.daemon.prefs['ShieldsUp']=not self.daemon.prefs['ShieldsUp']

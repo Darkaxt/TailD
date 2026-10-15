@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import subprocess
 import threading
+from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlsplit
 
 import core_manifest
@@ -21,6 +22,10 @@ PREFERENCES=(
     ('use-subnets','Use Tailscale subnets','RouteAll','EnableTailscaleSubnets'),
     ('auto-update','Automatically install TailD updates','AutoUpdate','ApplyUpdates'),
     ('unattended','Run unattended','ForceDaemon','EnableServerMode'))
+
+
+def instance_name(instance):
+    return 'settings-'+hashlib.sha256(instance.encode('ascii')).hexdigest()[:32]
 
 
 class ConnectivityError(Exception):
@@ -72,10 +77,16 @@ class Connectivity:
         except (ValueError,KeyError,TypeError,AttributeError):
             raise ConnectivityError('connectivity-unavailable') from None
 
+    def _read_all(self):
+        paths=('status','prefs','profiles/current','local-dns','policy/')
+        # These fixed GETs are independent. Join every owned call; no retry,
+        # timeout or discarded process substitutes for actual completion.
+        with ThreadPoolExecutor(max_workers=len(paths),thread_name_prefix='TailD settings read') as pool:
+            calls=[pool.submit(self.call,'GET',path) for path in paths]
+            return [call.result() for call in calls]
+
     def _snapshot(self):
-        status=self.call('GET','status');prefs=self.call('GET','prefs')
-        profile=self.call('GET','profiles/current');resolver=self.call('GET','local-dns')
-        policy=self.call('GET','policy/')
+        status,prefs,profile,resolver,policy=self._read_all()
         get=lambda key:self._policy(policy,key)
         visible=lambda key:str(get(key)).lower()!='hide'
         editable=lambda key:str(get(key)).lower() not in ('always','never')
@@ -88,7 +99,11 @@ class Connectivity:
             show=visible('PreferencesMenuVisibility') and (action!='auto-update' or visible('UpdateMenuVisibility'))
             preferences.append({'id':action,'label':label,'value':value,'visible':show,
                 'editable':bool(profile_id) and show and editable(key)})
-        safe_resolver={key:resolver.get(key) for key in ('ProfileID','Configured','Endpoint','Applied','CaptivePortal','Reason')}
+        resolver_fields={'ProfileID':str,'Configured':bool,'Endpoint':str,'Applied':bool,'CaptivePortal':bool,'Reason':str}
+        if any(type(resolver.get(key)) is not kind for key,kind in resolver_fields.items()):
+            raise ConnectivityError('connectivity-unavailable')
+        if resolver['ProfileID']!=profile_id:raise ConnectivityError('connectivity-conflict')
+        safe_resolver={key:resolver[key] for key in resolver_fields}
         peers=[{'id':p.get('ID'),'name':p.get('HostName') or p.get('DNSName'),
             'addresses':p.get('TailscaleIPs') or [],'online':bool(p.get('Online')),'exit':bool(p.get('ExitNodeOption'))}
             for p in (status.get('Peer') or {}).values()]
@@ -111,6 +126,7 @@ class Connectivity:
         # Only editable state is hashed: peer traffic/health updates must not
         # invalidate an unrelated preference click. No private prefs are hashed.
         revision={key:view[key] for key in ('profile','preferences','prefs','resolver','can_disconnect','can_exit','can_exit_lan','can_run_exit','can_resolver','can_reset')}
+        revision['resolver']={key:safe_resolver[key] for key in ('ProfileID','Configured','Endpoint')}
         view['revision']=hashlib.sha256(json.dumps(revision,sort_keys=True).encode()).hexdigest()
         return view
 

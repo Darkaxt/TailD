@@ -895,6 +895,45 @@ in-place installer path, preserving login, signing identity, credentials, histor
 source opt-ins and network preferences. Verify the public download and installed
 payload plus actual owning-user category/About workflows before claiming delivery.
 
+### October 15 local-control responsiveness and state clarity — R25
+
+The owner rejects analytics-style refresh blocking on local Tailscale pages.
+Local Connection/Preferences/DNS/About requests must remain serviceable while
+analytics work is pending; analytics loading, timestamps, errors and admission
+limits must not block or describe those pages. Preserve the original analytics
+operation through its real completion. No timeout/cancellation workaround,
+stale-success fallback, relaxed origin/CSP, new service or generic RPC.
+Reuse the owning-user authenticated pipe contract with a narrowly allowlisted
+independent local-control lane in the same collector; preserve mutation ordering,
+policy/profile/conflict guards and readback. Avoid five sequential CLI startups
+for independent GETs; changing local tabs must reuse the mounted state without
+another fetch. Initial local reads remain honest asynchronous service reads,
+not metric aggregation or an assertion of zero physical latency.
+
+Explicitly distinguish tailnet DNS acceptance from the optional per-device
+custom override. Show whether each is enabled and whether an endpoint is saved;
+never imply all DNS is disabled when only the override is absent. Do not invent
+or automatically restore a provider endpoint without explicit owner authority.
+The owner's subsequent correction explicitly requires the Windows device override
+enabled with the previously supplied `https://dns.controld.com/1ck0taaf0tt`.
+Verify the current account/endpoint association and direct DoH response first;
+apply through the profile-pinned local-DNS edit and verify public DNS, MagicDNS,
+and applied state. Preserve the previous state for rollback if resolution fails.
+Do not change tailnet-wide DNS or Control D policy. Missing/mixed-profile resolver
+responses are unavailable/conflicting, not Disabled. Operational applied/reason/
+portal changes must not invalidate an unrelated preference edit. About has one
+page heading and product identity, without a nested repeated About panel title.
+
+Stage 10 acceptance: two sequential bounded QA reviews; deterministic held-query
+native workflow proves local reads and controls usable before analytics releases;
+invalid analytics dates do not affect local pages; separate admission limits,
+same-user authentication and graceful lane/request shutdown pass; malformed,
+profile-conflict and operational-state regressions pass; actual native desktop,
+narrow and 150% screenshots plus measured initial-read/tab-navigation timings;
+read-only installed-daemon compatibility and focused build/security/packaging
+checks; commit/sync. Only the explicitly requested device resolver restoration
+above is authorized; no provider-policy mutation or new release/deployment.
+
 ## 15. Stage mapping and verification boundaries
 
 | Stage | Required scope | Status at specification creation |

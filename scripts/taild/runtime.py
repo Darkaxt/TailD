@@ -236,6 +236,15 @@ class LocalAPI:
         self.loop.call_soon_threadsafe(self.loop.stop)
         self.thread.join()
 
+class ConnectivitySource:
+    """Same owner authentication, fixed local controls, no history/lifecycle RPC."""
+    def __init__(self,collector):self.collector=collector
+    def dispatch(self,request):
+        if not isinstance(request,dict) or request.get('op') not in connectivity.OPERATIONS:
+            raise RuntimeError('invalid-command')
+        return self.collector.dispatch(request)
+
+
 class Collector:
     def __init__(self, directory, traffic_reader, *, now=None, instance='collector', cli=None):
         self.directory = Path(directory).absolute()
@@ -250,6 +259,9 @@ class Collector:
         self.thread = None
         self.store = None
         self.api = None
+        self.local_control = None
+        self.local_thread = None
+        self.local_error = None
         self.mutex = None
         self.start_error = None
         self.closing = False
@@ -309,6 +321,14 @@ class Collector:
             raise RuntimeError('startup-failed') from None
         try:
             self.api = LocalAPI(self)
+            self.local_control=reader.PipeServer(connectivity.instance_name(self.instance),owner,ConnectivitySource(self))
+            def serve_local():
+                try:self.local_control.serve()
+                except BaseException as error:self.local_error=type(error).__name__
+                finally:self.local_control.ready.set()
+            self.local_thread=threading.Thread(target=serve_local,name='TailD local settings control')
+            self.local_thread.start();self.local_control.ready.wait()
+            if self.local_error:raise RuntimeError('startup-failed')
             self.lifecycle = lifecycle.WindowsLifecycle(self._wake)
             self.lifecycle.start()
         except BaseException:
@@ -958,6 +978,8 @@ class Collector:
         with self.condition:
             self.closing = True
             self.condition.notify()
+        if self.local_control is not None:self.local_control.stop()
+        if self.local_thread is not None:self.local_thread.join()
         if self.lifecycle is not None:
             self.lifecycle.close()
         if self.thread is not None:

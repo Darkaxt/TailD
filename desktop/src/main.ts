@@ -41,13 +41,13 @@ const fields:Record<Kind,string[]>={
   imports:[CommonModule,FormsModule,Collection,DashboardWidgetComponent,CircularBarChartComponent,SfngNetqueryLineChartComponent,Evidence,IngestionNotice,WorldMapComponent,ControlDManagement,BrandMark,Connectivity,About],
   template:`
   <button class="skip-link" (click)="skipContent()">Skip to analytics content</button>
-  <div class="screen-reader-progress" role="status" aria-live="polite" aria-atomic="true">{{busy()?(pendingBatch()?'Some analytics panels are ready. Reading the remaining panels.':'Loading analytics…'):ready()?'Analytics view ready.':''}}</div>
+  <div *ngIf="analyticsPage()" class="screen-reader-progress" role="status" aria-live="polite" aria-atomic="true">{{busy()?(pendingBatch()?'Some analytics panels are ready. Reading the remaining panels.':'Loading analytics…'):ready()?'Analytics view ready.':''}}</div>
   <nav class="rail" aria-label="TailD navigation">
     <button id="category-tailscale" class="nav-link category-root" [class.active]="category()==='tailscale'" aria-label="Tailscale" title="Tailscale" [attr.aria-expanded]="category()==='tailscale'&&page()!=='About'" [attr.aria-controls]="page()==='About'?null:'category-pages'" (click)="selectCategory('tailscale')"><taild-brand-mark brand="tailscale" /></button>
     <button id="nav-3" class="nav-link category-root" [class.active]="category()==='controld'" aria-label="Control D" title="Control D" [attr.aria-expanded]="category()==='controld'&&page()!=='About'" [attr.aria-controls]="page()==='About'?null:'category-pages'" (click)="selectCategory('controld')"><taild-brand-mark brand="controld" /></button>
     <button id="category-analytics" class="nav-link category-root" [class.active]="category()==='analytics'" aria-label="Analytics" title="Analytics" [attr.aria-expanded]="category()==='analytics'&&page()!=='About'" [attr.aria-controls]="page()==='About'?null:'category-pages'" (click)="selectCategory('analytics')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18v16H3zM7 16v-4M12 16V8M17 16v-6" fill="none" stroke="currentColor" stroke-width="1.6" /></svg></button>
     <button id="nav-about" class="nav-link rail-bottom" [class.active]="page()==='About'" [attr.aria-current]="page()==='About'?'page':null" aria-label="About TailD" title="About TailD" (click)="navigate('About')"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6" /><path d="M12 11v6M12 7v1" stroke="currentColor" stroke-width="2" /></svg></button></nav>
-  <main id="analytics-main" tabindex="-1" class="analytics-shell" [attr.aria-busy]="busy()" [attr.data-revision]="displayBatch()?.revision" [attr.data-ready]="ready()">
+  <main id="analytics-main" tabindex="-1" class="analytics-shell" [attr.aria-busy]="analyticsBusy()" [attr.data-revision]="displayBatch()?.revision" [attr.data-ready]="ready()">
     <header class="page-heading"><div><div class="eyebrow product-brand"><taild-brand-mark brand="tailscale" /><span>TailD / {{page()==='About'?'About':category()==='tailscale'?'Device control':category()==='controld'?'Control D':'Network analytics'}}</span></div><h1 class="section-title"><taild-brand-mark brand="controld" *ngIf="category()==='controld'&&page()!=='About'" />{{pageTitle()}}</h1>
       <p>{{category()==='tailscale'&&page()!=='About'?'Manage the existing device · explicit changes, preserved identity.':category()==='controld'&&page()!=='About'?'Resolve DNS incidents · review shared-profile changes before applying.':page()==='Applications'&&application()!==undefined?appName(application()):'Observed facts. Honest gaps. Your network stays unchanged.'}}</p></div>
       <div class="heading-status" *ngIf="category()!=='tailscale'&&page()!=='About'"><span class="badge" [class.good]="runtime()?.state==='collecting'">{{runtime()?.state||'Connecting'}}</span>
@@ -73,7 +73,7 @@ const fields:Record<Kind,string[]>={
         <span class="hint">{{localTime(start)}} → {{localTime(end)}} · {{timezone}}</span>
         <button id="available-history" (click)="availableHistory()" [disabled]="busy()">Latest retained hour</button></div>
     </fieldset>
-    <div *ngIf="error()" id="analytics-error" class="error" role="alert">{{error()}}</div>
+    <div *ngIf="analyticsPage()&&error()" id="analytics-error" class="error" role="alert">{{error()}}</div>
     <div class="filter-tags" [attr.inert]="busy()?'':null" *ngIf="category()==='analytics'&&page()!=='About'&&(application()!==undefined || predicates.length || search)">
       <span class="filter-pill" *ngIf="application()!==undefined">Application: {{appName(application())}}<button aria-label="Remove application scope" (click)="clearApplication()">×</button></span>
       <span class="filter-pill" *ngFor="let filter of predicates;let i=index">{{predicateLabel(filter)}}<button [attr.aria-label]="'Remove filter '+(i+1)" (click)="removeFilter(i)">×</button></span>
@@ -84,15 +84,15 @@ const fields:Record<Kind,string[]>={
       <span class="hint">{{b.aggregation_version}} · no socket/PID bytes or firewall verdicts</span>
       <span class="hint" *ngIf="application()!==undefined || predicates.length || device">DNS totals use independent endpoint scope when node/traffic/application filters cannot apply.</span>
       <span class="hint" *ngIf="catalog()?.nodes_truncated">Observed-node list is truncated; narrow the host scope.</span></div>
-    <div class="loading-overlay" *ngIf="busy()&&!pendingBatch()" role="status" aria-live="polite" aria-atomic="true" id="view-loading">
+    <div class="loading-overlay" *ngIf="analyticsBusy()&&!pendingBatch()" role="status" aria-live="polite" aria-atomic="true" id="view-loading">
       <div class="loading-dialog"><div class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>
         <strong>{{batch()?'Refreshing view':'Loading analytics'}}</strong><span>Reading local history</span>
         <small>{{batch()?'Your previous revision is kept until the new view is ready.':'Preparing the selected view.'}}</small></div></div>
-    <div class="progress-notice" *ngIf="busy()&&pendingBatch()" role="status" aria-live="polite" id="view-progress">
+    <div class="progress-notice" *ngIf="analyticsBusy()&&pendingBatch()" role="status" aria-live="polite" id="view-progress">
       <span class="progress-pulse" aria-hidden="true"></span><strong>Loading remaining panels</strong>
       <span>{{dnsSummary()?'Control D decisions ready.':'Reading Control D decisions.'}} {{summary()?'Traffic summary ready.':'Reading traffic aggregates.'}}</span>
       <small>One consistent revision · drill-down available when this view finishes</small></div>
-    <div class="analytics-results" [attr.inert]="busy()?'':null" [attr.data-progress]="!!pendingBatch()">
+    <div class="analytics-results" [attr.inert]="analyticsBusy()?'':null" [attr.data-progress]="!!pendingBatch()">
 
     <ng-container *ngIf="page()==='Overview' || (page()==='Applications'&&application()!==undefined)">
       <div class="dashboard-grid" [class.application-dashboard]="application()!==undefined" *ngIf="(summary() || pendingSummary) as s">
@@ -238,6 +238,8 @@ const fields:Record<Kind,string[]>={
   </main>`})
 class App {
   category=signal<Category>('analytics');
+  analyticsPage(){return this.category()==='analytics'&&this.page()!=='About'}
+  analyticsBusy(){return this.analyticsPage()&&this.busy()}
   categoryPages(){return categoryPages[this.category()]}
   selectCategory(category:Category){void this.navigate(categoryPages[category][0].page)}
   pageTitle(){return this.page()==='Control D'?'Recent DNS':this.page()==='Control D policy'?'Profile policy':this.page()==='Settings'?'Collection settings':this.page()}
@@ -318,12 +320,12 @@ class App {
     }return query;
   }
   async refresh(newTime=false,revision?:number){
+    if(!this.analyticsPage()){this.batch.set(null);this.ready.set(true);this.error.set('');return;}
     if(this.busy())return;this.busy.set(true);this.ready.set(false);this.error.set('');this.pendingBatch.set(null);const generation=++this.loadingGeneration;
     const focused=newTime&&this.selected()?'fact-'+this.selected():document.activeElement instanceof HTMLElement?document.activeElement.id:'';
     try{
       if(newTime){if(this.range!=='custom')this.setTime();this.pageIndex=0;this.cursors=[undefined]}
       if(!/^\d{4}-\d\d-\d\dT.*Z$/.test(this.start)||!/^\d{4}-\d\d-\d\dT.*Z$/.test(this.end)||Date.parse(this.start)>=Date.parse(this.end))throw new Error('Use ascending RFC 3339 UTC timestamps ending in Z.');
-      if(this.page()==='About'||this.category()==='tailscale'||this.category()==='controld'){this.batch.set(null);this.ready.set(true);return;}
       if(this.page()==='Settings'){
         this.catalog.set(await command<Catalog>('view-catalog'));this.runtime.set(await command<State>('state'));this.batch.set(null);this.ready.set(true);return;
       }
@@ -362,7 +364,7 @@ class App {
       this.pendingBatch.set(null);this.finishOperation();
     }
   }
-  async navigate(page:Page){this.page.set(page);const category=categoryForPage(page);if(category)this.category.set(category);this.notice.set('');
+  async navigate(page:Page){this.page.set(page);const category=categoryForPage(page);if(category)this.category.set(category);this.notice.set('');this.error.set('');
     this.pageIndex=0;this.cursors=[undefined];
     if(page==='Applications'){this.kind='traffic';this.group=''}
     if(this.busy()){this.loadingGeneration++;this.queuedNavigation=true;this.pendingBatch.set(null);this.batch.set(null);return}

@@ -12,9 +12,12 @@ import uuid
 from unittest.mock import patch
 
 import history
+import analytics
 import controld
 import ingestion
 import reader
+import connectivity
+from test_connectivity import DaemonFixture
 import test_glasswire
 
 runtime = __import__('runtime') if importlib.util.find_spec('runtime') else None
@@ -31,6 +34,26 @@ class IsolatedLiveStream:
 @unittest.skipUnless(os.name == 'nt', 'Windows owning-user runtime')
 class RuntimeTest(unittest.TestCase):
     add_row = test_glasswire.GlassWireTest.add_row
+
+    def test_local_settings_lane_rejects_general_operations_and_does_not_wait_for_query(self):
+        self.assertTrue(hasattr(connectivity,'instance_name'),'Independent fixed local-control lane is missing')
+        self.collector.connectivity.call=DaemonFixture()
+        entered,release=threading.Event(),threading.Event();results=[]
+        original=analytics.Analytics._query
+        def held(engine,*args,**kwargs):
+            entered.set();release.wait();return original(engine,*args,**kwargs)
+        def query():results.append(self.query())
+        worker=threading.Thread(target=query)
+        client=reader.PipeClient(connectivity.instance_name(self.collector.instance))
+        try:
+            with patch.object(analytics.Analytics,'_query',held):
+                worker.start();entered.wait()
+                state=client.request({'op':'connectivity-read','body':{}})
+                self.assertEqual(state['profile'],'profile-a')
+                self.assertFalse(release.is_set())
+                with self.assertRaises(reader.ReaderError):client.request({'op':'state','body':{}})
+        finally:
+            release.set();worker.join();client.close()
 
     def setUp(self):
         isolated=patch.object(runtime.live_dns,'Stream',IsolatedLiveStream)
@@ -57,6 +80,39 @@ class RuntimeTest(unittest.TestCase):
             now=lambda:'2026-10-08T00:00:00Z', instance=name)
         self.collector.start()
         self.addCleanup(self.collector.close)
+
+    def test_local_settings_lane_preserves_native_owner_authentication(self):
+        self.collector.local_control.owner_sid='S-1-5-19'
+        client=reader.PipeClient(connectivity.instance_name(self.collector.instance))
+        try:
+            with self.assertRaises(reader.ReaderError):client.request({'op':'connectivity-read','body':{}})
+        finally:client.close()
+
+    def test_close_joins_inflight_local_read_before_returning(self):
+        entered,release,stopping,returned= (threading.Event() for _ in range(4))
+        daemon=DaemonFixture();errors=[]
+        def held(method,path,body=None):
+            if path=='status':entered.set();release.wait()
+            return daemon(method,path,body)
+        self.collector.connectivity.call=held
+        client=reader.PipeClient(connectivity.instance_name(self.collector.instance))
+        def read():
+            try:client.request({'op':'connectivity-read','body':{}})
+            except reader.ReaderError:pass # Explicit collector shutdown closes its transport.
+            except BaseException as error:errors.append(type(error).__name__)
+        original=self.collector.local_control.stop
+        def stop():original();stopping.set()
+        def close():self.collector.close();returned.set()
+        worker=threading.Thread(target=read);closer=threading.Thread(target=close)
+        try:
+            with patch.object(self.collector.local_control,'stop',stop):
+                worker.start();entered.wait();closer.start();stopping.wait()
+                self.assertFalse(returned.is_set(),'Close abandoned the owned local read')
+                release.set();worker.join();closer.join()
+            self.assertTrue(returned.is_set());self.assertFalse(self.collector.local_thread.is_alive())
+            self.assertEqual(errors,[])
+        finally:
+            release.set();worker.join();closer.join();client.close()
 
     def stop_reader(self):
         self.server.stop()

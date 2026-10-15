@@ -49,7 +49,9 @@ interface ConnectivityState {revision:string;profile:string;account:string;state
         <button id="connectivity-reset" *ngIf="s.show_reset" [disabled]="busy()||!s.can_reset" (click)="ask('reset')">Reset to defaults…</button>
       </app-dashboard-widget>
       <app-dashboard-widget label="Custom DNS resolver" brand="tailscale" *ngIf="view==='DNS resolver'">
-        <div class="resolver-state"><span class="badge" [class.good]="s.resolver.Applied">{{s.resolver.Applied?'Applied':s.resolver.Configured?'Saved, not applied':'Disabled'}}</span><p>{{s.resolver.Reason}}</p></div>
+        <div class="resolver-state"><span class="badge" [class.good]="dnsAccepted()">Tailnet DNS · {{dnsAccepted()?'Enabled':'Disabled'}}</span>
+          <span class="badge" [class.good]="s.resolver.Applied">Custom override · {{s.resolver.Applied?'Applied':s.resolver.Configured?'Saved, not applied':'Not configured'}}</span></div>
+        <p class="hint">{{s.resolver.Configured?s.resolver.Reason:'No per-device endpoint is saved. The tailnet DNS preference does not configure a custom provider.'}}</p>
         <label>HTTPS DNS endpoint<input id="connectivity-resolver" [(ngModel)]="endpoint" placeholder="https://dns.controld.com/your-endpoint" (blur)="saveResolver()" (keydown.enter)="$event.preventDefault();saveResolver()" [disabled]="busy()||!s.can_resolver" maxlength="2048"></label>
         <p class="hint">A valid endpoint saves when you leave the field. Saved and applied are separate states; this does not prove provider reachability.</p>
         <button id="connectivity-resolver-disable" [disabled]="busy()||!s.can_resolver||!s.resolver.Configured" (click)="edit('resolver-enabled',false)">Disable custom resolver</button>
@@ -66,6 +68,7 @@ export class Connectivity {
   @Input() view='Connection';state=signal<ConnectivityState|null>(null);busy=signal(false);error=signal('');notice=signal('');confirming=signal<'reset'|'disconnect'|null>(null);endpoint='';
   constructor(){void this.load()}
   exitNodes(){return this.state()?.peers.filter(peer=>peer.exit)||[]}
+  dnsAccepted(){return this.state()?.preferences.find(pref=>pref.id==='use-dns')?.value===true}
   async load(){if(this.busy())return;this.busy.set(true);this.error.set('');this.confirming.set(null);
     try{const s=await command<ConnectivityState>('connectivity-read');this.state.set(s);this.endpoint=s.resolver.Endpoint||''}
     catch(e){this.error.set((e as Error).message);this.state.set(null)}finally{this.busy.set(false)}}
@@ -82,14 +85,14 @@ export class Connectivity {
     catch(e){this.error.set((e as Error).message);this.state.set(null)}finally{this.busy.set(false);this.confirming.set(null)}}
 }
 
-@Component({selector:'taild-about',standalone:true,imports:[CommonModule,DashboardWidgetComponent,BrandMark],template:`
-  <app-dashboard-widget label="About TailD" brand="tailscale" id="about-panel">
+@Component({selector:'taild-about',standalone:true,imports:[CommonModule,BrandMark],template:`
+  <section id="about-panel">
     <div class="about-identity"><taild-brand-mark brand="tailscale" /><div><h2>TailD</h2><p>Independent TailDNS / Tailscale fork · local network analytics and control</p></div></div>
     <dl class="about-facts"><dt>Release</dt><dd id="about-version">{{data()?.version||'Reading version…'}}</dd><dt>CLI</dt><dd>{{data()?.cli_version||'Unavailable'}}</dd>
       <dt>Inherited core</dt><dd>{{data()?.core||'Unavailable'}}</dd><dt>Licensing</dt><dd>{{data()?.license||'GPL-3.0-only desktop / BSD-3-Clause inherited core'}}</dd></dl>
     <p class="hint">Tailscale and Control D marks identify the inherited product and integration; TailD is not an official or endorsed release of either company.</p><p class="error" role="alert" *ngIf="error()">{{error()}}</p>
     <div class="actions"><button id="about-project" (click)="open('project')">Project</button><button (click)="open('releases')">Releases</button><button (click)="open('licenses')">Licenses & attribution</button></div>
-  </app-dashboard-widget>`})
+  </section>`})
 export class About {
   data=signal<Record<string,string>|null>(null);error=signal('');
   constructor(){void command<Record<string,string>>('connectivity-about').then(data=>this.data.set(data)).catch(()=>this.data.set({version:'Unavailable'}))}
