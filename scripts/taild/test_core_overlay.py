@@ -5,9 +5,21 @@ from pathlib import Path
 import unittest
 import uuid
 import core_overlay
+import core_manifest
 
 
 class CoreOverlayTest(unittest.TestCase):
+    def test_reviewed_build_pins_match_inherited_module(self):
+        root=Path(__file__).resolve().parents[2]
+        replace=next(line for line in (root/'go.mod').read_text().splitlines()
+                     if line.startswith('replace tailscale.com => '))
+        module=replace.split()[-1]
+        self.assertTrue(module.endswith('-'+core_overlay.PIN),'Inherited core advanced without overlay review')
+        self.assertTrue(core_manifest.CORE.startswith(core_overlay.PIN))
+        self.assertEqual(core_manifest.CORE_MODULE,module)
+        self.assertIn('github.com/Darkaxt/tailscale '+module+' '+core_manifest.CORE_SUM,(root/'go.sum').read_text().splitlines())
+        self.assertIn("$commit='"+core_manifest.CORE+"'",(root/'scripts/taild/build_connectivity.ps1').read_text())
+
     def test_exact_pin_branding_and_channel_overlay_without_source_mutation(self):
         core=os.environ.get('TAILD_CORE_TEST_SOURCE')
         if not core:self.skipTest('Exact downloaded core required for this build integration check')

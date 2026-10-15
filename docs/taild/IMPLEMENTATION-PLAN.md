@@ -72,6 +72,16 @@ collector commits and actual dashboard readiness. Previous verified +8 remains
 the recovery release. No extra implementation stage or unrelated device access.
 These are active internal acceptance requirements, not a new approval checkpoint.
 
+Release blocker B24 (internal): inherited go.mod advanced to core 4b17755738ec,
+while overlay acceptance, binary stamp and the protected signer's core manifest
+still pinned de6111f507ae. The new agreement regression reproduces the mismatch.
+Reviewed the exact 13-commit upstream range: all ten overlay inputs and their
+Windows tray/installer/updater directories are unchanged. Exact-source overlay
+transforms preserve those inputs; reviewed pins and module checksum now match
+go.mod/go.sum. Signer tests refuse a mismatched provenance core pin. The existing
+production public key and credential handling are unchanged. Full clean hosted
+build/installer/signing acceptance remains required before B24 is resolved.
+
 Sources of truth: [initial specification](SPECIFICATION.md) for R01–R07 and
 [remaining-product specification](PRODUCT-SPECIFICATION.md) for R08–R18.
 Stages 1–3 were authorized by the request to create the public TailD derivative,

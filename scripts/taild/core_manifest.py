@@ -4,7 +4,9 @@ import json
 from pathlib import Path
 
 NAMES=('taildns-installer.exe','taildns-ipn.exe','taildns.exe','taildnsd.exe','tailscale.exe')
-CORE='de6111f507aea869fbf6d4c7b8f2419a79150496'
+CORE='4b17755738ec51bb9e94a83e65ef972b8b52260a'
+CORE_MODULE='v1.103.0-pre.0.20261015053538-4b17755738ec'
+CORE_SUM='h1:7XVaXzixfR3AelZMeaaAahuBzspFD4Jq5j3I3oSWVN8='
 
 
 def make(package,provenance,subversion):
@@ -14,8 +16,7 @@ def make(package,provenance,subversion):
     if (data.get('schema')!='taild-core-build-v1' or data.get('core_commit')!=CORE or
         data.get('source_dirty') is not False or data.get('upstream_version')!='1.105.0' or
         type(subversion) is not int or not 1<=subversion<=65535 or data.get('subversion')!=subversion or
-        data.get('core_module')!='v1.103.0-pre.0.20261013063423-de6111f507ae' or
-        data.get('module_sum')!='h1:YMpB56Zr4ZPWFjM5MUFGxZJ3HlDAfnktuLpyhrQ/ms4='):
+        data.get('core_module')!=CORE_MODULE or data.get('module_sum')!=CORE_SUM):
         raise ValueError('Unverified connectivity source/version')
     rows=[]
     for name in NAMES:

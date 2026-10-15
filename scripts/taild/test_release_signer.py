@@ -29,14 +29,14 @@ class SignerTest(unittest.TestCase):
             'connectivity/inherited-core-LICENSE.txt'):
             path=package/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(('synthetic '+name).encode())
         core=package/'connectivity'
-        provenance={'schema':'taild-core-build-v1','core_commit':core_manifest.CORE,'core_module':'v1.103.0-pre.0.20261013063423-de6111f507ae',
+        provenance={'schema':'taild-core-build-v1','core_commit':core_manifest.CORE,'core_module':core_manifest.CORE_MODULE,
             'source_commit':'a'*40,'source_dirty':False,'upstream_version':'1.105.0','subversion':1,
-            'module_sum':'h1:YMpB56Zr4ZPWFjM5MUFGxZJ3HlDAfnktuLpyhrQ/ms4='}
+            'module_sum':core_manifest.CORE_SUM}
         (core/'core-provenance.json').write_text(json.dumps(provenance))
         (core/'taildns-windows-update.json').write_bytes(core_manifest.make(core,core/'core-provenance.json',1))
         provenance={'source_commit':'a'*40,'source_dirty':False,'fixture_trust':False,'connectivity':True,
             'subversion':1,'architecture':'windows-amd64','upstream_version':'1.105.0',
-            'core_replace':'replace tailscale.com => github.com/Darkaxt/tailscale v1.103.0-pre.0.20261013063423-de6111f507ae',
+            'core_replace':'replace tailscale.com => github.com/Darkaxt/tailscale '+core_manifest.CORE_MODULE,
             'files':manifest.inventory(package)}
         (self.root/'provenance.json').write_text(json.dumps(provenance))
         return package
@@ -61,6 +61,15 @@ class SignerTest(unittest.TestCase):
         with self.assertRaises(ValueError):release_signer.sign_package(self.key,self.root,'a'*40,1)
         self.assertFalse((package/manifest.SIGNATURE).exists())
         self.assertFalse((package/'connectivity'/'taildns-windows-update.json.sig').exists())
+
+    def test_source_core_pin_mismatch_is_not_signed(self):
+        package=self.build()
+        path=self.root/'provenance.json';data=json.loads(path.read_bytes())
+        data['core_replace']='replace tailscale.com => github.com/Darkaxt/tailscale v1.103.0-pre.0.20261013063423-de6111f507ae'
+        path.write_text(json.dumps(data))
+        with self.assertRaisesRegex(ValueError,'identity'):
+            release_signer.sign_package(self.key,self.root,'a'*40,1)
+        self.assertFalse((package/manifest.SIGNATURE).exists())
 
 
 if __name__=='__main__':unittest.main()

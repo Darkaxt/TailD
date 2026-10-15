@@ -28,7 +28,8 @@ def sign_package(key,build,expected_source,sequence):
     if (provenance.get('source_commit')!=expected_source or provenance.get('source_dirty') is not False or
         provenance.get('fixture_trust') is not False or provenance.get('connectivity') is not True or
         provenance.get('subversion')!=sequence or provenance.get('architecture')!='windows-amd64' or
-        provenance.get('upstream_version')!='1.105.0'):
+        provenance.get('upstream_version')!='1.105.0' or
+        provenance.get('core_replace')!='replace tailscale.com => github.com/Darkaxt/tailscale '+core_manifest.CORE_MODULE):
         raise ValueError('Release build identity is not the selected clean production source')
     if contract.inventory(package)!=sorted(provenance['files'],key=lambda row:row['path']):
         raise ValueError('Unsigned build inventory mismatch')
