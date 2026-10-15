@@ -995,6 +995,10 @@ Include a private representative replay above the observed failure size with
 concurrent read-only snapshots; do not upload private captured facts as CI fixtures.
 Test observations may be reloaded under the owner's explicit testing authorization;
 runtime configuration, credentials, node/signer and resolver remain preserved.
+An authorized empty-history reset also resets only the derived DNS/traffic import
+cursors and runtime-status snapshot, so discarded intervals are not incorrectly
+treated as imported. Preserve provider backoff state and other persistent settings;
+do not use a database reset to bypass a provider rate limit.
 Do not claim the corruption's cause fixed merely from a dependency version change.
 R26's independently verified UI corrections remain intact; any subsequent corrective
 release/deployment requires the same signed-artifact and installed acceptance gates.
@@ -1014,7 +1018,7 @@ https://www.sqlite.org/download.html. Use an immutable digest, not a latest URL.
 | 7 | Opt-in continuous lifecycle and secure runtime; R13, remaining R14 | COMPLETE |
 | 8 | Portmaster-derived desktop layout/explorer/export; R08 layout, R15, R16 | COMPLETE |
 | 9 | Production packaging and local release-readiness; R17, R18 pre-delivery reconciliation | COMPLETE |
-| 10 | Authorized release, rollout, updater proof and final reconciliation; remaining R18 | ACTIVE; B33 authorized test-data replacement verified, corrective delivery pending |
+| 10 | Authorized release, rollout, updater proof and final reconciliation; remaining R18 | ACTIVE; R26/R27 corrective +14 delivery verified; existing B12 remains |
 
 Each stage's detailed acceptance obligations are in the ledger. Verification
 of an earlier implementation remains valid only for unchanged relevant code and

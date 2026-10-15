@@ -1,5 +1,43 @@
 # TailD staged execution
 
+October 16 R26/R27 corrective delivery verified: Stage 10 remains **ACTIVE** only
+for the existing broader B12 rollout/updater obligations; B32 and B34 are resolved.
+Public +14 (workflow 38812388916, source
+55cad833438915391c575a3653abc3a775bd9c1b) passed every signing/installer gate.
+Independent public verification checked the exact tag, latest/non-draft release,
+Ed25519 envelope/package/core identity, checksums, all 444 payload members,
+amd64 provenance, unchanged upstream 1.105.0, SQLite 3.54.0 archive/DLL identity,
+R26 assets and absent Release debug hooks. Installer SHA256:
+363d2f8871b16e1a3d912ccb46c91f2ab8877f992b7a3557863ed65d14b5b3ad.
+Broker ba6509c15a69433aa874b3e2cca6f6e0 exited 0; installed manifest matches +14
+and the exact source. Node/signing keys, credentials, configuration, resolver,
+public DNS and MagicDNS remain verified. No Android/provider-policy changes.
+
+The authorized test-history reset retained settings and cleared derived import
+cursors. Standard-user file inspections subsequently differed from the installed
+elevated owner's view; they are NOT accepted as proof of that owner's live data.
+Read-only audit in the actual owner's context (broker
+5324a1ad67a345899f7fff6b0bb3b2fd exit0) verifies SQLite 3.54.0, quick_check=ok,
+6,808 DNS observations, 108,991 traffic facts and the unique real DoH query.
+The authenticated recent lane independently returns that query. File-view
+differences and original corruption attribution remain unproven; no causal claim.
+Installed Release UIA verifies the real query, loaded policy, category navigation
+and Custom Override Applied. Normal keyboard search was needed because UIA
+SetValue did not reliably deliver the renderer input event. Probe host timing
+includes harness interaction and is NOT a GUI latency benchmark. A late screenshot
+was occluded by another app and excluded; the resolver capture is valid. Controlled
+native R26 loading animation/independent queues/100% and 150% evidence remains
+applicable to unchanged signed assets. Receipts: private release-14 directory.
+The original 3.4 GB forensic snapshot remains hash-verified on D:. Historical
+corruption is not claimed conclusively fixed by the dependency update. B12 unchanged;
+no new stage, blocker workaround, required deferral or extra service.
+Reviewed cleanup removed retired test datasets and expendable replay/capture output;
+the forensic snapshot, public installer and verification receipts remain intentional
+outputs. Empty Inno scratch directories remain under release12/release13/release14
+Temp roots. +14's exact ticket still reports a locked empty `{app}` directory even
+after elevated apply; it was revoked without ACL changes or another deletion method.
+This operational residual does not affect installed product acceptance.
+
 October 16 R27 recurrent-history investigation: Stage 10 remains the single
 **ACTIVE** stage. +13 is published and installed (workflow 38805532580, exact
 source a419b036e4c5d0cb5eee403e5a6d04f695c8338e; public verification and broker
