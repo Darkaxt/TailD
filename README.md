@@ -38,8 +38,10 @@ confirmation, using a separate Write credential; collection remains READ-only.
 The sidebar keeps Tailscale, Control D and Analytics category icons visible while
 showing only the selected category's pages. Control D opens on recent DNS activity;
 profile policy is a separate tab. The tray remains available for account sign-in
-and Taildrop. These navigation/control additions are on development main; see
-the release-versus-development distinction below.
+and Taildrop. These navigation/control additions are available starting with
+**1.105.0+11**.
+
+![TailD Tailscale category: existing device connection, exit-node controls and network devices](docs/taild/screenshots/connection.png)
 
 ### Resolve DNS incidents without opening the browser
 
@@ -48,7 +50,7 @@ resolutions with their provider-supplied filter/list, service or rule trigger,
 and descriptive category details. Create a Block or explicit Bypass exception,
 or edit existing rules, filters, services and profile options.
 
-![TailD Control D incident workspace with shared-profile scope and management tabs](docs/taild/screenshots/management.png)
+![TailD Control D Recent DNS workspace with decisions and blocking reasons; Profile policy is a separate tab](docs/taild/screenshots/management.png)
 
 Writes are never retried automatically. Changed policy/bindings invalidate the
 preview; successful actions are read back. READ and Write credentials stay in

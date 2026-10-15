@@ -2,10 +2,34 @@
 
 October 15 R22–R24 delivery: Stage 10 remains the single **ACTIVE** stage.
 The owner explicitly authorized release and local deployment after reconciliation.
-R22–R24 source/native acceptance is COMPLETE; this delivery remains ACTIVE until
-the complete signing workflow, independent public artifact verification, in-place
-installation and installed-owner category/About acceptance pass. Preserve the
-previous verified release/recovery payload and all existing identity/settings.
+R22–R24 source/native acceptance and this bounded delivery are **COMPLETE**.
+Normal release **1.105.0+11**, source `d12a13f3fc006ba70ecaa3088dcaaca2377811e8`,
+passed workflow `38787061471`, including isolated installer lifecycle and failed-
+migration recovery. Independent public download verified pinned Ed25519 envelope,
+package and core signatures, checksums, exact tag/source/core/upstream identity,
+443 payload members, amd64 executables and the new navigation/About assets.
+Installer SHA-256: `58ba8aad0169c2642be7f22e44e8629ca58dacdc5edfff42995e01c6c7ccc8ab`.
+The original broker request `40f7f74705b24540b47d16d5fa4e525c` completed elevated
+with installer exit 0. Installed payload, node/addresses/signer, DNS/context,
+updater choice, preserved official GUI/wintun, public DNS and MagicDNS pass the
+physical-profile before/after comparison. Source settings and both credentials
+remain; the actual collector is collecting with live DNS connected. The read-only
+history quick_check and WAL assertions passed before the observer encountered a
+stale pre-restart PID; a separate fresh health check confirms the current process.
+Installed hook-free Release UIA controls verify category exclusivity, all five
+preferences, resolver read, live recent DNS, policy tabs, ready analytics metrics
+and bottom-left About/version. The observer needed ExpandCollapse semantics for
+ARIA-expanded buttons and interactive-control readiness instead of a UIA-omitted
+panel wrapper; the invalid wrapper wait was explicitly cancelled, not counted as
+a pass. No product workaround or live network/policy write was introduced.
+Evidence/recovery payload: D:/Tools/taild-stage10-validation-20261013/release-11.
+The previous verified release/recovery payload remains available.
+Task staging/bytecode were removed with reviewed exact-file cleanup. The helper
+attempted `C:/Users/darka/AppData/Local/Temp/is-B5ST4RS3SB.tmp` and its `{app}`
+child, reporting both locked; they contain no files. ACL inspection confirms
+owner-user RX versus Administrators/SYSTEM full control. Preserve these empty
+installer-owned directories rather than changing ACLs or requesting another
+administrator action for 0 B; the partial ticket was explicitly revoked.
 No additional feature, device deployment or production policy mutation. B12's
 broader lifecycle/updater reconciliation is not closed by this bounded delivery.
 
