@@ -1,5 +1,34 @@
 # TailD staged execution
 
+October 15 incident management: Stage 10 remains the single **ACTIVE** stage.
+R19–R21 and publication/deployment are already_authorized. Execution: integrate
+endpoint-scoped management/live-history and map correction; verify real provider
+and native UI workflows; run sequential bounded QA; publish, independently verify
+and install the complete update.
+
+B26 (internal advancement blocker): R19–R21 source integration and acceptance are
+verified; normal public release and installed-owner validation remain required.
+Real READ association and all required Write actions/readback passed on an
+unassigned task-created profile, whose deletion and unchanged production policy
+were verified. Actual SSE -> SQLite -> typed query passed; an independent owning
+collector persisted a real event without any window and drained pause/shutdown.
+Historical acquisition was isolated in that lifecycle probe, not claimed as real
+CSV evidence; real SQLite overlap/duplicate/suppression regressions pass.
+
+Three sequential same-model Low QA reviews found binding/readback uncertainty,
+comment verification, malformed SSE/cancellation and stale UI/action-coercion /
+contrast issues. Their fixes have focused regression and actual native served-UI
+evidence: confirmed actions, shared-scope rejection, failed binding clears actions,
+latest-search coalescing with Follow off, refusal to silently convert Spoof rules,
+blocking filter/category details, 7.18:1 active-tab contrast and 850/560px layouts.
+The map card computes align-self:start and content height 464px, not row stretch.
+Credential-free receipts: D:/Tools/taild-stage10-validation-20261013/management-10.
+Fresh backend suite passes after supplying its required owned fixture-output
+environment (the first invocation lacked that environment, not a code defect).
+Angular production and native Debug builds and frontend contracts pass.
+No production policy, installed binding or Android device was changed. Existing B12 is unchanged.
+Tracked deferrals: none. No later stage is ACTIVE.
+
 ## Current correction — 2026-10-15
 
 October 15 credential setup (R14b, already_authorized): Stage 10 remains the single

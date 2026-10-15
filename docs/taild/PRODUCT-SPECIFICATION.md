@@ -634,7 +634,8 @@ Control D shows endpoint/profile associations, current policy snapshots and the
 resource capability matrix. Sources & health shows lag, completeness, gaps,
 unsupported fields, privileges and compatibility. Settings provides secure
 credentials, endpoint binding, sampling, retention, privacy/export and collection
-controls. Provider policies and firewall controls remain read-only with optional
+controls. Firewall controls and analytic policy reads remain read-only; R19
+separately authorizes explicit confirmed Control D incident actions. Optional
 links to their owning application/site, not inert copied Portmaster buttons.
 
 **Acceptance:** a real-data overview -> application -> filtered activity -> evidence
@@ -761,6 +762,53 @@ production workflow, independent normal-release verification, successful approve
 installation/update/rollback and a documented ownership/compatibility procedure.
 No unresolved required blocker or tracked deferral remains. A missing delivery
 authorization parks Stage 10; it does not make it COMPLETE.
+
+## 14a. October 15 incident-management amendment (R19–R21)
+
+The owner authorizes implementation, bounded sequential QA reviews, a normal
+public release and in-place Windows deployment. Stage 10 owns this amendment.
+
+R19: Add a Control D incident workspace using existing Portmaster widgets and
+Tailscale charcoal/blue. Select an explicit endpoint; show its enforced profile
+and all endpoints sharing that profile before changing policy. Provide Rules,
+Filters, Services and Profile Options tabs, searchable recent DNS and Block /
+Allow / Edit actions. Allow means explicit Bypass, not rule removal. Support rule
+creation/modification/deletion and filter/service/option edits on provider-returned
+resources. Account/billing administration, endpoint reassignment and a full
+website clone are not required.
+
+October 15 owner refinement: blocked resolutions show the provider's blocking
+trigger and supplied rule/filter/list/service identifier or label, plus supplied
+category labels in decision details. Descriptive classification is not proof of
+the blocking cause. Missing trigger/name/category metadata stays explicitly
+unavailable; never infer a specific blocking list from the outcome alone.
+
+Reads use the READ vault target; writes only the separate Write target after
+account-continuity verification, explicit preview/confirmation and fresh profile /
+resource conflict checks. Credentials never enter the renderer. No automatic
+mutation retries. Ambiguous transport outcomes require a fresh read before another
+explicit action. Read back successful writes; show locked/unsupported resources.
+
+R20: Independently collect the bound endpoint's live DNS SSE using READ access
+when DNS collection is enabled. Persist through the single SQLite writer even
+with the dashboard closed. Complete historical CSV intervals remain authoritative
+and fill gaps. Stream observations never assert complete coverage. Reconcile
+overlap without inflating counts, preserving repeated identical requests. Pause,
+binding changes and shutdown cancel actual I/O and drain the original worker.
+Expose connection/error/last-event state. Explicit refresh/resume or real network
+lifecycle events restart disconnected streams, not an arbitrary reconnect loop.
+Never expose stream auth URLs or tokens.
+
+R21: Size the answer-country map card to its content instead of stretching to
+the two neighbouring grid rows. Verify actual served desktop/narrow layouts,
+empty/populated states, and preserve unknown rather than zero-filled data.
+
+Acceptance: real READ inventory/recent DNS and live stream -> persisted facts ->
+dashboard; real Write operations/readback on an unassigned task-created test
+profile, exact test-profile cleanup and unchanged production policy; native UI
+confirmation/conflict/error flows and responsive map geometry; independent QA;
+fresh focused integration/build checks; independently verified public release and
+installed owner workflow preserving node identity, DNS, credentials and history.
 
 ## 15. Stage mapping and verification boundaries
 

@@ -27,6 +27,8 @@ import glasswire
 import history
 import ingestion
 import lifecycle
+import live_dns
+import management
 import reader
 
 
@@ -265,6 +267,10 @@ class Collector:
         self.wake_pending = False
         self.stop_after_window_receipt = False
         self.window_attached = False
+        self.management = management.Management()
+        self.live_stream = None
+        self.live_thread = None
+        self.live_attempt_revision = None
 
     def start(self):
         if self.thread is not None or self.closing:
@@ -342,11 +348,16 @@ class Collector:
             return self.session()
         if request == {'op':'shutdown'}:
             return {'state':'stopping'}
-        if request['op'] not in ('state','configure','pause','resume','refresh','query','delete','cleanup','credential','credential-remove','window-opened','window-closed',*desktop_api.OPERATIONS):
+        if request['op'] not in ('state','configure','pause','resume','refresh','query','delete','cleanup','credential','credential-remove','window-opened','window-closed',*desktop_api.OPERATIONS,*management.OPERATIONS):
             raise RuntimeError('invalid-command')
         try:
             op=request['op'];body=request.get('body') or {}
             if not isinstance(body,dict):raise RuntimeError('invalid-command')
+            if op in management.OPERATIONS:
+                with self.condition:
+                    if self.closing:raise RuntimeError('stopping')
+                    provider=dict(self.config['provider']) if self.config['provider'] else None
+                return self.management.dispatch(op,body,provider)
             # The native pipe already serializes its caller. Read-only views do
             # not belong behind an unrelated source acquisition or write batch.
             # Lifecycle flags need no SQLite access; preserve explicit receipts.
@@ -364,6 +375,14 @@ class Collector:
                     return desktop_api.DesktopAPI(view).dispatch(op,body,on_result=on_result)
                 finally:view.close()
             return self.command(request['op'], request.get('body'))
+        except management.ManagementError as error:
+            raise RuntimeError(str(error)) from None
+        except controld.ControlDError as error:
+            raise RuntimeError('management-denied' if error.state=='denied' else
+                               'management-rate-limited' if error.state=='rate-limited' else
+                               'management-resource-unavailable') from None
+        except credentials.CredentialError:
+            raise RuntimeError('management-read-credential-required') from None
         except analytics.QueryError as error:
             # Typed-query validation failures are public protocol errors, not
             # fatal pipe-server exceptions or private exception messages.
@@ -513,6 +532,9 @@ class Collector:
         return True
 
     def _request_refresh(self, store, future, *, wait=True):
+        # An explicit refresh is a user-requested reconnect opportunity, not a
+        # periodic stream retry. Never create a second live worker.
+        self.live_attempt_revision=None
         kinds=set()
         for kind in ('dns','traffic'):
             if (self.config[kind] and not self.paused and not self.closing and not self.write_error and
@@ -736,6 +758,10 @@ class Collector:
 
     def _deliver(self, store, command):
         op,body,future = command
+        if op=='_live_finished':
+            self.live_thread.join()
+            self.live_thread=self.live_stream=None
+            return
         if op=='_finished':
             self._finished_acquisition(store,body)
             return
@@ -802,6 +828,56 @@ class Collector:
         else:
             self.diagnostics={'state':'available'}
 
+    def _synchronize_live(self, store):
+        enabled=not (self.closing or self.paused or self.write_error) and self.config['dns']
+        if self.live_thread is not None:
+            if not enabled or self.live_revision!=self.config_revision:self.live_stream.cancel()
+            return
+        if not enabled:
+            self.sources['dns_live']={'state':'write-error' if self.write_error else
+                'paused' if self.paused else 'disabled'}
+            return
+        if self.live_attempt_revision==self.config_revision or time.monotonic()<self.not_before['dns']:return
+        self.live_revision=self.config_revision;self.live_attempt_revision=self.config_revision
+        self.live_stream=live_dns.Stream()
+        config=self.config;stream=self.live_stream;transient=self._transient_token
+        self.sources['dns_live']={'state':'connecting','coverage':'observations-only'}
+        def collect():
+            count=0
+            try:
+                token=transient or credentials.CredentialStore().read()
+                if not token:raise credentials.CredentialError('Missing READ credential')
+                def connected():
+                    self.sources['dns_live']={'state':'connected','coverage':'observations-only','events':0}
+                def receive(raw):
+                    nonlocal count
+                    if stream.stopped.is_set():return
+                    def commit():
+                        store.now=history.instant(self.now())
+                        return store.import_live_dns(raw,config['provider']['account_scope'],
+                            config['provider']['endpoint'],collected=self.now())
+                    result=self._commit(commit);count+=1
+                    self.sources['dns_live']={'state':'connected','coverage':'observations-only',
+                        'events':count,'last_event_utc':raw['timestamp'],'last_success_utc':self.now(),
+                        'last_result':result['state']}
+                stream.run(token,config['provider'],receive,connected)
+                if not stream.stopped.is_set():self.sources['dns_live']['state']='disconnected'
+            except controld.ControlDError as error:
+                self.sources['dns_live']={'state':error.state,'status':error.status,'coverage':'observations-only'}
+            except credentials.CredentialError:self.sources['dns_live']={'state':'credential-required'}
+            except live_dns.LiveError:self.sources['dns_live']={'state':'disconnected','coverage':'observations-only'}
+            except (sqlite3.Error,OSError):
+                self.write_error=True;self.sources['dns_live']={'state':'write-error'}
+            except reader.ReaderError:self.sources['dns_live']={'state':'write-error' if self.write_error else 'stopping'}
+            except BaseException as error:
+                self.start_error=type(error).__name__;self.closing=True
+            finally:
+                token=None
+                with self.condition:
+                    self.queue.append(('_live_finished',None,None));self.condition.notify()
+        self.live_thread=threading.Thread(target=collect,name='TailD live DNS')
+        self.live_thread.start()
+
     def _run(self):
         store = None
         self.due = {'traffic':0, 'dns':0}
@@ -820,8 +896,9 @@ class Collector:
             self._publish_status()
             self.ready.set()
             while True:
+                self._synchronize_live(store)
                 with self.condition:
-                    if self.closing and not self.acquisitions and not self.queue:
+                    if self.closing and not self.acquisitions and self.live_thread is None and not self.queue:
                         break
                     if self.wake_pending and not self.closing:
                         self.config_revision += 1
@@ -850,10 +927,11 @@ class Collector:
             self.ready.set()
             with self.condition:
                 self.closing = True
+            if self.live_stream is not None:self.live_stream.cancel()
             # An in-flight source may still return facts after explicit shutdown
             # or a writer defect. Drain its commits/completion before closing the
             # store; never strand a future, orphan a thread or discard its result.
-            while self.acquisitions or self.queue:
+            while self.acquisitions or self.live_thread is not None or self.queue:
                 with self.condition:
                     if not self.queue:
                         self.condition.wait()

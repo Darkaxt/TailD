@@ -324,6 +324,31 @@ class History:
             self._expire()
         return {'revision': revision, 'state': state, 'source': source}
 
+    def import_live_dns(self, raw, scope, endpoint, *, collected):
+        """One observed event, never a coverage interval or checkpoint.
+
+        Complete CSV windows replace all live observations in their interval.
+        Late stream events already covered by such a window are ignored. No
+        cross-format hash heuristic can erase genuinely identical requests.
+        """
+        time=instant(raw['timestamp'])
+        if raw.get('endpointId')!=endpoint or not isinstance(raw.get('question'),str):
+            raise HistoryError('Live DNS endpoint scope does not match')
+        with self.transaction():
+            floor=self._expire();source=self._source('dns',scope,endpoint=endpoint)
+            if (time<floor or self._suppressed('dns',source,time) or
+                    self.db.execute("SELECT 1 FROM runs WHERE source=? AND state='complete' AND start<=? AND end>? LIMIT 1",
+                                    (source,time,time)).fetchone()):
+                return {'state':'historical-or-suppressed','source':source}
+            revision=self._run(source,time,time+1,{'collected_at_utc':collected},'observed-live')
+            identity=digest(raw)
+            ordinal=self.db.execute('SELECT coalesce(max(ordinal),0)+1 FROM dns WHERE source=? AND identity=?',
+                                    (source,identity)).fetchone()[0]
+            self.db.execute('INSERT INTO dns VALUES(?,?,?,?,?,?,?,?)',
+                (source,identity,ordinal,time,endpoint,raw['question'],revision,
+                 packed({'source':'controld-live-sse','raw':raw})))
+        return {'state':'observed-live','source':source,'revision':revision}
+
     def import_dns(self, data, scope, endpoint):
         if not isinstance(endpoint, str) or not endpoint:
             raise HistoryError('Explicit Control D endpoint scope is required')

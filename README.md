@@ -2,7 +2,7 @@
 
 Your tailnet, DNS decisions and application traffic—in one desktop.
 
-TailD combines **TailDNS connectivity**, **Control D analytics and policy inspection**,
+TailD combines **TailDNS connectivity**, **Control D analytics and incident management**,
 and **GlassWire traffic measurements** in a Portmaster-inspired interface with a
 Tailscale-style dark theme. Investigate what applications transferred, what your
 DNS provider decided, and how strong the evidence linking them actually is.
@@ -24,13 +24,30 @@ The screenshots contain no real accounts, browsing history or personal applicati
 | Application traffic | Received/sent bytes, executable identities, ranked consumers, destinations and bandwidth history from existing GlassWire counters. |
 | Answer geography | Provider-reported country/ASN decision counts and an offline world map; switch explicitly to inferred traffic-byte geography. |
 | Activity explorer | Typed filters, grouping, sorting, pagination, application and time-bin drill-down, saved local queries and expandable source evidence. |
-| Policy inspection | Read-only endpoint/profile associations, clients, rules, filters, services, groups, options and restrictions—with unavailable capabilities kept visible. |
+| Incident management | Endpoint/profile associations, shared-device impact, searchable recent resolutions, Block / explicit Bypass / Edit rule actions, and confirmed filter/service/profile-option changes. |
+| Policy inspection | READ snapshots of clients, rules, filters, services, groups, options and restrictions—with unavailable capabilities kept visible. |
 | Local history | Opt-in independent collectors, ingestion progress, pause/resume, retention and deletion, coverage gaps, corrections and private JSON/CSV exports. |
 | TailDNS connectivity | Inherited DNS improvements, MagicDNS-aware resolution, the Windows tray, matching daemon/CLI, and installer/updater integration. |
 
 Control D remains responsible for its DNS filtering. GlassWire and Windows keep
 their firewall roles. TailD does not install another packet-filtering engine or
-change provider policy.
+change firewall policy. Control D policy changes require an explicit preview and
+confirmation, using a separate Write credential; collection remains READ-only.
+
+### Resolve DNS incidents without opening the browser
+
+Inspect the enforced profile and every endpoint it affects. Review blocked
+resolutions with their provider-supplied filter/list, service or rule trigger,
+and descriptive category details. Create a Block or explicit Bypass exception,
+or edit existing rules, filters, services and profile options.
+
+![TailD Control D incident workspace with shared-profile scope and management tabs](docs/taild/screenshots/management.png)
+
+Writes are never retried automatically. Changed policy/bindings invalidate the
+preview; successful actions are read back. READ and Write credentials stay in
+separate owning-user Windows vault entries, never in the dashboard or repository.
+Live DNS streams persist independently of the window, with historical overlap
+reconciled without treating collection gaps as zero traffic.
 
 ## Explore the network, not just a wall of counters
 
@@ -86,6 +103,9 @@ state and source progress remain explicit.
 4. In **Settings**, select the Control D account/endpoint and supply a **READ-only**
    token for DNS collection. Enable application traffic collection if GlassWire
    is installed. Collection is opt-in; viewing retained history does not enable it.
+5. For incident management, register a separate Write token using the documented
+   [secure credential flow](docs/taild/POLICY-READS.md). No Write token is needed
+   for analytics or live DNS collection.
 
 The analytics desktop is currently Windows amd64. Control D data requires a
 readable account/endpoint; traffic analytics require an existing compatible
@@ -103,6 +123,8 @@ The latest verified public Windows release is
 The screenshots were captured from development main using synthetic facts. The
 October 15 dashboard, provider-outcome/geography and Applications performance
 corrections they demonstrate are included in this public installer.
+The incident workspace and live-stream integration are currently verified on
+development main and are being prepared for the next release; they are not in +9.
 
 Stage 10 remains active for outstanding live delivery/updater acceptance; this
 README does not claim every deployment, recovery or lifecycle scenario is

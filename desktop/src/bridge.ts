@@ -4,6 +4,16 @@ const webview=(window as unknown as {chrome?:{webview:WebView}}).chrome?.webview
 let sequence=0;
 const pending=new Map<number,{resolve:(value:unknown)=>void;reject:(error:Error)=>void;progress?:(value:unknown)=>void}>();
 const errors:Record<string,string>={
+  'management-conflict':'The profile or its affected devices changed. Reload and preview the change again.',
+  'management-invalid-change':'That change is invalid or targets an unavailable resource.',
+  'management-denied':'Control D denied access. Check permissions and profile lock state.',
+  'management-rate-limited':'Control D is rate limiting requests. No policy change was retried.',
+  'management-write-rejected':'Control D rejected the change. Reload to inspect current policy.',
+  'management-outcome-unknown':'The outcome could not be verified. Reload policy before trying another explicit change.',
+  'management-account-mismatch':'The READ and Write credentials do not belong to the same selected account.',
+  'management-read-credential-required':'Configure the owning-user READ credential first.',
+  'management-write-credential-required':'A separate Write credential is required for management actions. READ collection is unchanged.',
+  'management-resource-unavailable':'Control D policy is unavailable or incompatible. No automatic mutation was attempted.',
   'invalid-export-destination':'Choose a new file in a local, non-linked folder. Existing files are never overwritten.',
   'stale-revision':'History changed. Refresh explicitly to open a new consistent revision.',
   'invalid-query':'That filter or query is not supported for this fact mode.',

@@ -41,6 +41,26 @@ class HistoryTest(unittest.TestCase):
         data = self.read()
         return self.store.import_traffic(data, 'synthetic-host')
 
+    def test_live_dns_preserves_duplicates_and_csv_authoritatively_reconciles(self):
+        raw=self.dns()['rows'][0]['raw']
+        for _ in range(2):self.store.import_live_dns(raw,'local','synthetic',collected=NOW)
+        self.assertEqual(self.store.db.execute('SELECT count(*) FROM dns').fetchone()[0],2)
+        self.assertIsNone(self.store.db.execute('SELECT * FROM checkpoints').fetchone())
+        self.store.import_dns(self.dns(),'local','synthetic')
+        self.assertEqual(self.store.db.execute('SELECT count(*) FROM dns').fetchone()[0],2)
+        self.store.import_live_dns(raw,'local','synthetic',collected=NOW)
+        self.assertEqual(self.store.db.execute('SELECT count(*) FROM dns').fetchone()[0],2)
+        self.store.import_dns(self.dns(rows=[]),'local','synthetic')
+        self.assertEqual(self.store.db.execute('SELECT count(*) FROM dns').fetchone()[0],0)
+
+    def test_live_dns_obeys_scope_retention_and_user_deletion(self):
+        raw=self.dns()['rows'][0]['raw']
+        with self.assertRaises(history.HistoryError):
+            self.store.import_live_dns(raw,'local','different',collected=NOW)
+        self.store.delete('dns',START,END)
+        self.store.import_live_dns(raw,'local','synthetic',collected=NOW)
+        self.assertEqual(self.store.db.execute('SELECT count(*) FROM dns').fetchone()[0],0)
+
     def query(self, **filters):
         return self.store.query('traffic', START, END, **filters)
 

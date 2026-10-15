@@ -15,7 +15,10 @@ internal sealed class BridgeError(string state) : Exception
 {
     public string State {get;}=state is "invalid-query" or "stale-revision" or "invalid-export-destination" or "resource-limit" or "invalid-settings" or
         "explicit-provider-required" or "backpressure" or "write-error" or "credential-not-accepted" or
-        "read-only-confirmation-required" or "invalid-command" or "stopping" ? state:"unavailable";
+        "read-only-confirmation-required" or "invalid-command" or "stopping" or
+        "management-conflict" or "management-invalid-change" or "management-denied" or "management-rate-limited" or
+        "management-write-rejected" or "management-outcome-unknown" or "management-account-mismatch" or
+        "management-read-credential-required" or "management-write-credential-required" or "management-resource-unavailable" ? state:"unavailable";
 }
 
 internal static class Program
@@ -70,7 +73,8 @@ internal sealed class OwnerBridge : IDisposable
         // Native allowlist: renderer cannot request a session token, arbitrary
         // SQL, path, shell command, source access or arbitrary filesystem operation.
         if(op is not ("state" or "configure" or "pause" or "resume" or "refresh" or "credential" or "shutdown" or "window-closed" or
-            "credential-remove" or "view-query" or "view-catalog" or "saved-query" or "export-query" or "retention" or "delete" or "delete-snapshots" or "cleanup"))
+            "credential-remove" or "view-query" or "view-catalog" or "saved-query" or "export-query" or "retention" or "delete" or "delete-snapshots" or "cleanup" or
+            "management-read" or "management-prepare" or "management-apply" or "management-cancel"))
             throw new InvalidDataException();
         await serial.WaitAsync();
         try

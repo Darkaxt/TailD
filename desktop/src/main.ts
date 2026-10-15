@@ -14,6 +14,8 @@ import {applicationName} from './application-label';
 import {WorldMapComponent,GeographyRow} from './portmaster/world-map';
 import {DEFAULT_TIME_RANGE,presetBounds} from './time-range';
 import {mergeProgress,BatchProgress} from './progressive-batch';
+import {ControlDManagement} from './control-d-management';
+import {resolutionReason,resolutionCategories} from './resolution-reason';
 
 type Kind='traffic'|'dns'|'correlations';
 type Page='Overview'|'Applications'|'Activity'|'Control D'|'Sources & health'|'Settings';
@@ -34,7 +36,7 @@ const fields:Record<Kind,string[]>={
   dns:['question','type','endpoint','profile','client','action','outcome','reason','reason_value','protocol','provider_country','provider_asn','source','id','timestamp']};
 
 @Component({selector:'taild-app',standalone:true,
-  imports:[CommonModule,FormsModule,Collection,DashboardWidgetComponent,CircularBarChartComponent,SfngNetqueryLineChartComponent,Evidence,IngestionNotice,WorldMapComponent],
+  imports:[CommonModule,FormsModule,Collection,DashboardWidgetComponent,CircularBarChartComponent,SfngNetqueryLineChartComponent,Evidence,IngestionNotice,WorldMapComponent,ControlDManagement],
   template:`
   <button class="skip-link" (click)="skipContent()">Skip to analytics content</button>
   <div class="screen-reader-progress" role="status" aria-live="polite" aria-atomic="true">{{busy()?(pendingBatch()?'Some analytics panels are ready. Reading the remaining panels.':'Loading analytics…'):ready()?'Analytics view ready.':''}}</div>
@@ -45,11 +47,11 @@ const fields:Record<Kind,string[]>={
     <span class="rail-bottom" title="Read-only analytics">READ</span></nav>
   <main id="analytics-main" tabindex="-1" class="analytics-shell" [attr.aria-busy]="busy()" [attr.data-revision]="displayBatch()?.revision" [attr.data-ready]="ready()">
     <header class="page-heading"><div><div class="eyebrow">TailD / Network analytics</div><h1>{{page()}}</h1>
-      <p>{{page()==='Applications'&&application()!==undefined?appName(application()):'Observed facts. Honest gaps. Your network stays unchanged.'}}</p></div>
+      <p>{{page()==='Control D'?'Resolve DNS incidents · review shared-profile changes before applying.':page()==='Applications'&&application()!==undefined?appName(application()):'Observed facts. Honest gaps. Your network stays unchanged.'}}</p></div>
       <div class="heading-status"><span class="badge" [class.good]="runtime()?.state==='collecting'">{{runtime()?.state||'Connecting'}}</span>
       <span class="revision" *ngIf="displayBatch() as b">Revision {{b.revision}}{{pendingBatch()?' · loading panels':''}}</span></div></header>
     <taild-ingestion-notice *ngIf="page()!=='Settings'&&page()!=='Overview'" [state]="runtime()" [catalog]="catalog()" [start]="start" [end]="end" />
-    <fieldset class="shared-scope" aria-label="Shared analytics scope" [disabled]="busy()" *ngIf="catalog() as c">
+    <fieldset class="shared-scope" aria-label="Shared analytics scope" [disabled]="busy()" *ngIf="page()!=='Control D'&&catalog() as c">
       <label>Host scope<select id="scope-host" [(ngModel)]="host" (change)="hostChanged()"><option value="">All recorded hosts</option>
         <option *ngFor="let value of hosts()" [value]="value">{{value}}</option></select></label>
       <label>Observed node · traffic only<select id="scope-device" [(ngModel)]="device" (change)="scopeChanged()"><option value="">All / historical binding unknown</option>
@@ -195,6 +197,7 @@ const fields:Record<Kind,string[]>={
               <span><span class="source-label">{{kind==='dns'?'Control D':'GlassWire'}}</span><small class="candidate-badge">{{row.correlation_state||row.reason||'Provider event'}}</small></span>
               <span>{{utc(row.timestamp)}}<small>{{row.context_state||'Endpoint scope, not physical-host proof'}}</small></span>
               <span>{{kind==='dns'?(row.outcome||'Unknown'):format(row.total_bytes)}}<small>{{kind==='dns'?'Raw action: '+row.action:row.total_bytes+' bytes'}}</small></span></summary>
+            <p *ngIf="kind==='dns'">{{dnsReason(row)}}</p><p class="hint" *ngIf="kind==='dns'">Classification: {{dnsCategories(row).join(', ')||'Not supplied'}} · descriptive categories are not the blocking cause.</p>
             <taild-evidence *ngIf="selected()===row.id" [data]="row" /><p class="hint">{{kind==='dns'?'Policy snapshots are point observations, not proof of historical rule causality.':'DNS candidates are inferences. PID, socket lifetime and encryption verdict: unavailable.'}}</p>
           </details>
           <p class="empty-state" *ngIf="!rows().length">No matching observed facts. An empty result is not proof of complete coverage.</p>
@@ -207,20 +210,7 @@ const fields:Record<Kind,string[]>={
         <button id="open-query" [disabled]="busy()||!savedSelection" (click)="openSaved()">Open</button><button [disabled]="busy()||!savedSelection" (click)="removeSaved()">Remove</button></div>
     </section>
 
-    <section *ngIf="page()==='Control D'" class="grid">
-      <app-dashboard-widget label="Endpoint / account associations" class="wide"><div class="table-scroll"><table><thead><tr><th>Source</th><th>Account scope</th><th>Endpoint</th><th>Association evidence</th></tr></thead><tbody>
-        <tr *ngFor="let item of providerSources()"><td>{{item.id}}</td><td>{{item.scope}}</td><td>{{item.endpoint||'Unknown'}}</td><td>Recorded source; endpoint does not prove a physical host</td></tr></tbody></table></div></app-dashboard-widget>
-      <app-dashboard-widget label="Policy history · captured READ snapshots" class="wide">
-        <p class="hint">Each snapshot is current only at its capture. No provider policy writes; unavailable categories stay visible.</p>
-        <p class="hint" *ngIf="batch()?.results?.[6]?.data?.next_cursor">More than 100 snapshots match. Narrow the UTC range to inspect older captures.</p>
-        <details *ngFor="let policy of policies()" class="policy-snapshot" [open]="policy===policies()[0]"><summary>{{utc(policy.timestamp)}} · endpoint {{policy.endpoint}} · profile {{policy.profile}}</summary>
-          <div class="table-scroll"><table><thead><tr><th>Resource</th><th>Capability / state</th><th>Read contract</th><th>Details</th></tr></thead><tbody>
-            <tr *ngFor="let item of resourceEntries(policy.resources)"><td>{{item.name}}</td><td><span class="badge" [class.warn]="item.value.state!=='available'">{{item.value.state||'Unavailable'}}</span></td>
-              <td>{{item.value.route||item.value.capability?.route||item.value.source||'Recorded provider READ'}}</td><td><details><summary>Inspect {{item.name}}</summary><taild-evidence [data]="item.value" /></details></td></tr></tbody></table></div>
-          <taild-evidence [data]="policyIdentity(policy)" /></details>
-        <p *ngIf="!policies().length" class="empty-state">No policy snapshot in this UTC scope. Enable an explicit Control D binding and READ collection in Settings, or select retained history.</p>
-      </app-dashboard-widget>
-    </section>
+    <taild-control-d *ngIf="page()==='Control D'" />
     <section *ngIf="page()==='Sources & health'" class="grid">
       <app-dashboard-widget label="Live runtime" class="wide"><div class="status-table" *ngFor="let item of runtimeSources()"><span>{{item.name}}</span><span class="badge" [class.warn]="item.value.state!=='collecting'">{{item.value.state}}</span><taild-evidence [data]="item.value" /></div></app-dashboard-widget>
       <app-dashboard-widget label="History coverage & lag" class="wide"><details *ngFor="let source of summary()?.source_health.sources" class="policy-snapshot"><summary>{{source.kind}} · {{source.id}} · complete through {{source.complete_through||'Unknown'}}</summary><taild-evidence [data]="source" /></details></app-dashboard-widget>
@@ -328,6 +318,7 @@ class App {
     try{
       if(newTime){if(this.range!=='custom')this.setTime();this.pageIndex=0;this.cursors=[undefined]}
       if(!/^\d{4}-\d\d-\d\dT.*Z$/.test(this.start)||!/^\d{4}-\d\d-\d\dT.*Z$/.test(this.end)||Date.parse(this.start)>=Date.parse(this.end))throw new Error('Use ascending RFC 3339 UTC timestamps ending in Z.');
+      if(this.page()==='Control D'){this.batch.set(null);this.ready.set(true);return;}
       if(this.page()==='Settings'){
         this.catalog.set(await command<Catalog>('view-catalog'));this.runtime.set(await command<State>('state'));this.batch.set(null);this.ready.set(true);return;
       }
@@ -382,6 +373,8 @@ class App {
     this.start=new Date(Math.max(Date.parse(first),Date.parse(this.end)-3600000)).toISOString();this.range='custom';void this.scopeChanged()}
   providerSources(){return (this.catalog()?.sources||[]).filter(s=>s.kind==='dns')}
   runtimeSources(){return Object.entries(this.runtime()?.sources||{}).map(([name,value])=>({name,value}))}
+  dnsReason(row:Fact){return resolutionReason(row)}
+  dnsCategories(row:Fact){return resolutionCategories(row)}
   appName(id:string|null|undefined){return applicationName(id===this.application()&&this.applicationLabel()?this.applicationLabel():this.applications().find(r=>r.keys.application===id)?.keys.application_path)}
   openApplication(id:string|null){this.applicationLabel.set(this.applications().find(r=>r.keys.application===id)?.keys.application_path||'Unknown executable');this.application.set(id);this.kind='traffic';this.page.set('Applications');void this.scopeChanged()}
   clearApplication(){this.application.set(undefined);this.applicationLabel.set('');void this.scopeChanged()}
