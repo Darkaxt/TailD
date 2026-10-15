@@ -148,13 +148,13 @@ The executables and installer are **not Authenticode-signed**. Review the
 ### Release versus development main
 
 The latest verified public Windows release is
-[1.105.0+14](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B14).
+[1.105.0+15](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B15).
 It includes category navigation, native device controls, independent Recent DNS
 loading, matching sidebar icon padding and the pinned SQLite 3.54.0 runtime.
 
-The October 16 screenshots use current development-main assets and synthetic
-facts. Session policy reuse and the compact DNS refresh icon are newer source
-changes, **not included in +14**. No newer public installer is claimed here.
+It also includes session policy reuse and the compact DNS refresh icon. The
+October 16 screenshots use these same signed-release interface assets and
+clearly disclosed synthetic facts, not private browsing or account data.
 
 Stage 10 remains active for outstanding live delivery/updater acceptance; this
 README does not claim every deployment, recovery or lifecycle scenario is

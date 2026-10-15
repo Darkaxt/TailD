@@ -1,10 +1,48 @@
 # TailD staged execution
 
-October 16 R28 delivery ACTIVE under the owner's "install it" authorization.
-Stage 10 remains the sole ACTIVE stage. Public signed release verification and
-in-place installed acceptance are required before claiming delivery. Preserve
-identity, credentials, custom resolver and history; no provider writes or reset.
-Source acceptance B35 remains satisfied; broader B12 stays open.
+October 16 R28 +15 delivery verified under the owner's "install it" authorization.
+Stage 10 remains the sole ACTIVE stage for broader B12. Workflow 38820000299
+passed every gate at exact source 0e55ab92258e10fcd079bde2606a8c7eb1c44c07.
+Independent public verification confirmed the exact latest normal tag, pinned
+Ed25519 envelope/package/core signatures, checksums, all 444 payload members,
+amd64, upstream 1.105.0, SQLite 3.54.0 and matching screenshot/interface hashes.
+Installer SHA256: 5f33db57858eaffbbb54b8a5b5a447522f9fe7a8bb4a5996bf9454c79d875d0f.
+Broker d2346bd1e57e4607bb8d908f32df55a6 exited 0. Before/after checks in the
+installed elevated owner's context preserve node, signer, credentials, resolver,
+settings and history identity; quick_check=ok, DNS facts 33,249 -> 33,331, traffic
+facts retained at 570,235. Both services, public DNS and MagicDNS pass. No reset
+or provider writes. The existing standard/elevated file-view discrepancy remains
+an explicit limitation; these counts describe the audited owner context only.
+Installed authenticated lanes verify explicit fresh policy reload (4245.94ms)
+and identical same-scope cached policy (3.78ms); timings are IPC host elapsed,
+not pixel latency. The installed Release UIA snapshot verifies the cached notice,
+100 rendered DNS decision rows and the labelled 37px refresh target. The initial
+full-tree diagnostic was invalidated by periodic row replacement; targeted UIA
+selectors provide the bounded renderer evidence instead. No installed keyboard
+search or full navigation-flow claim is made; unchanged native source validation
+at 100%/150% remains recorded below. Receipts: private release-15 directory.
+
+Delivery exposed an existing updater/manual-install collision: a daemon-launched
+second +15 installer stopped the collector during GUI validation. Its stale GUI
+was closed normally; that installer then exited, and normal launch plus current
+policy/recent/UI checks passed. B12 retains the internal updater serialization/
+revalidation acceptance gap: updater dispatch snapshots the installed sequence
+before download and does not revalidate it before graceful stop when a manual
+installation intervenes. Resolve against exact release/process evidence and
+verify overlapping manual/automatic promotion without redundant stop/install.
+Do not claim this collision fixed, all updater scenarios complete, or the entire
+Stage 10 closed. B35 remains satisfied; no new implementation stage or deferral.
+Final readback after that installer exited re-verifies every installed payload
+hash, node/signer, preferences, credentials, runtime settings, applied resolver,
+public DNS/MagicDNS and the current standard-owner history quick_check=ok.
+The GUI's persistent analytics pipe is deliberately single-client; an additional
+diagnostic connection returned busy and was replaced by the runtime-status
+snapshot rather than altering IPC ownership. No additional installed IPC claim.
+Reviewed cleanup removed 272,990,253 bytes of extraction/verification scratch
+and 26,712 bytes of diagnostic bytecode. Four empty directory entries remain
+under the +15 installer-temp root (including its ancestors): two locked and two
+not-empty ancestors. The ticket was revoked; no ACL repair or alternate deletion
+method. Public installer, rollback/forensic material and receipts remain retained.
 
 October 16 R28 verified: Stage 10 remains the sole **ACTIVE** stage for B12;
 B35 is resolved. Collector-local browsing reuse is scoped to the exact provider,
