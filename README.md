@@ -99,10 +99,10 @@ The executables and installer are **not Authenticode-signed**. Review the
 ### Release versus development main
 
 The latest verified public Windows release is
-[1.105.0+8](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B8).
-The screenshots show development main, including the October 15 dashboard,
-provider-outcome/geography and Applications performance corrections. Those
-corrections are not yet included in that public installer.
+[1.105.0+9](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B9).
+The screenshots were captured from development main using synthetic facts. The
+October 15 dashboard, provider-outcome/geography and Applications performance
+corrections they demonstrate are included in this public installer.
 
 Stage 10 remains active for outstanding live delivery/updater acceptance; this
 README does not claim every deployment, recovery or lifecycle scenario is

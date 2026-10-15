@@ -23,8 +23,9 @@ The root README's four dashboard screenshots are actual native captures with
 clearly labeled synthetic facts: reserved example domains, TEST-NET addresses,
 generic executable paths and no real account or browsing data. Reproduce with
 `scripts/taild/capture_readme_windows.py` and an isolated Debug host. The screenshots
-show development main, not the currently published +8 installer. Existing
-Stage 10 delivery/updater criteria are not closed by these source checks.
+were captured from development main; the subsequent +9 release includes these
+corrections. Existing Stage 10 delivery/updater criteria are not closed by the
+source checks alone; installed acceptance is recorded in the stage ledger.
 
 Stage 8 is COMPLETE for the source-built desktop, not an installed TailD release.
 Stage 9 owns toolchain-free packaging and isolated installer acceptance; Stage 10

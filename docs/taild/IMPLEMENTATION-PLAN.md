@@ -72,15 +72,52 @@ collector commits and actual dashboard readiness. Previous verified +8 remains
 the recovery release. No extra implementation stage or unrelated device access.
 These are active internal acceptance requirements, not a new approval checkpoint.
 
-Release blocker B24 (internal): inherited go.mod advanced to core 4b17755738ec,
+Release blocker B24 resolved: inherited go.mod advanced to core 4b17755738ec,
 while overlay acceptance, binary stamp and the protected signer's core manifest
 still pinned de6111f507ae. The new agreement regression reproduces the mismatch.
 Reviewed the exact 13-commit upstream range: all ten overlay inputs and their
 Windows tray/installer/updater directories are unchanged. Exact-source overlay
 transforms preserve those inputs; reviewed pins and module checksum now match
 go.mod/go.sum. Signer tests refuse a mismatched provenance core pin. The existing
-production public key and credential handling are unchanged. Full clean hosted
-build/installer/signing acceptance remains required before B24 is resolved.
+production public key and credential handling are unchanged. Clean hosted workflow
+38741390166 passed its build, isolated installer, signing and publication gates.
+The initial run 38740688235 failed at the pin agreement guard before signing;
+it is not successful acceptance evidence.
+
+Normal public release `windows-v1.105.0+9` is bound to source
+`f1bd3dd3c067172c21ca32ba3846e76b9026c7b1` and reviewed core
+`4b17755738ec51bb9e94a83e65ef972b8b52260a`. Independent anonymous downloads
+verified checksums, pinned Ed25519 identities, source/module provenance, all 417
+extracted payload members, the unchanged upstream 1.105.0 base and fork sequence
+9. Installer SHA-256:
+`9370dd05078e2d0c9031be0d2a6e53bd0083f862fbe45e710e1d12cd8f24549c`.
+Executables/installer remain not Authenticode-signed. Public verification evidence:
+`D:/Tools/taild-stage10-validation-20261013/release-9/public-verification.json`.
+
+Approved broker request `431f197bcc2d47b8a144b7020c7b20a1` installed +9 in place
+and exited 0 without reboot. Installed payload hashes, node and addresses,
+Tailnet Lock signing identity, service configuration, DNS/resolver preferences,
+public and own MagicDNS resolution passed continuity comparison. Physical-profile
+inspection verified unchanged settings, retained sampled pre-update source
+identities, WAL and the application index. Both collectors committed new completed
+source runs (traffic revision 16083, DNS 16078; pre-install revision 15871).
+
+The installed Release GUI, without Debug hooks, presented populated provider
+geography/outcomes and a nonempty Applications table. UIA observer readiness was
+11.17s on Overview attachment and 28.89s after Applications navigation; these are
+observed control-readiness intervals, not startup or physical-presentation timings.
+Close/reopen left the owner collector running. Initial index observation preceded
+initializer completion; subsequent physical inspection confirmed initialization.
+Failed observer attempts used incorrect heading predicates and are not counted
+as passing evidence. Successful receipts: `after-9.json`, `physical-after.json`
+and `installed-ui.json` under
+`D:/Tools/taild-stage10-validation-20261013/live-update-9`.
+
+R15d's authorized public/local delivery acceptance is satisfied. Existing B12
+final updater/recovery/lifecycle reconciliation remains open; Stage 10 stays ACTIVE.
+The user's subsequent map-spacing question is diagnosed as the map grid area
+spanning the country/outcome rows while its graphic has fixed 340px height; this
+diagnosis does not authorize or claim another layout patch.
 
 Sources of truth: [initial specification](SPECIFICATION.md) for R01–R07 and
 [remaining-product specification](PRODUCT-SPECIFICATION.md) for R08–R18.

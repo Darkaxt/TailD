@@ -40,8 +40,9 @@ expired for this benchmark. The additive index took 39.32 seconds and about
 470 MB on that snapshot at first initialization; subsequent queries reuse it.
 
 Current coverage/equivalence, correction/deletion, large-integer, shared-revision
-and full backend contract checks pass. This source correction is not an installed
-or published update; Stage 10's delivery acceptance remains separate.
+and full backend contract checks pass. Source acceptance did not itself publish
+or install an update. The subsequently authorized +9 delivery is recorded in
+[the Stage 10 ledger](IMPLEMENTATION-PLAN.md#october-15-authorized-delivery).
 
 Authoritative requirements: PRODUCT-SPECIFICATION R10, R11a–b and R08's metrics
 boundary. This document records implementation choices and verification, not
