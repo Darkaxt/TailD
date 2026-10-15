@@ -136,9 +136,9 @@ def run(shell, output):
             page.locator('.incident-recent-controls input[type=checkbox]').uncheck()
             entered=threading.Event();release=threading.Event();original=session.collector.dispatch;searches=[]
             def held_query(request,**kwargs):
-                queries=request.get('body',{}).get('queries',[])
-                if request.get('op')=='view-query' and queries:searches.append(queries[0].get('search'))
-                if request.get('op')=='view-query' and queries and queries[0].get('search')=='alpha':
+                search=request.get('body',{}).get('search')
+                if request.get('op')=='recent-dns':searches.append(search)
+                if request.get('op')=='recent-dns' and search=='alpha':
                     entered.set();release.wait()
                 return original(request,**kwargs)
             session.collector.dispatch=held_query

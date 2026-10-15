@@ -53,6 +53,7 @@ internal static class Program
     }
 }
 
+internal enum OwnerLane { Analytics, Device, Policy, Recent }
 internal sealed class OwnerBridge : IDisposable
 {
     private NamedPipeClientStream? pipe;
@@ -60,29 +61,33 @@ internal sealed class OwnerBridge : IDisposable
     private readonly SemaphoreSlim serial=new(1);
     private readonly HashSet<Task> requests=[];
     private readonly uint expectedPid;
-    private readonly bool localOnly;
+    private readonly OwnerLane lane;
     private bool connected;
     [DllImport("kernel32.dll",SetLastError=true)]
     private static extern bool GetNamedPipeServerProcessId(Microsoft.Win32.SafeHandles.SafePipeHandle handle,out uint pid);
     [DllImport("kernel32.dll",CharSet=CharSet.Unicode,SetLastError=true)]
     private static extern Microsoft.Win32.SafeHandles.SafePipeHandle CreateFile(string name,uint access,uint share,
         IntPtr security,uint disposition,uint flags,IntPtr template);
-    public static bool IsLocal(string op)=>op is "connectivity-read" or "connectivity-edit" or "connectivity-reset" or "connectivity-about";
-    public OwnerBridge(string instance,uint pid,bool localOnly=false)
+    public static OwnerLane LaneFor(string op)=>op switch {
+        "connectivity-read" or "connectivity-edit" or "connectivity-reset" or "connectivity-about"=>OwnerLane.Device,
+        "management-read" or "management-prepare" or "management-apply" or "management-cancel"=>OwnerLane.Policy,
+        "recent-dns"=>OwnerLane.Recent,_=>OwnerLane.Analytics};
+    public OwnerBridge(string instance,uint pid,OwnerLane lane=OwnerLane.Analytics)
     {
-        expectedPid=pid;this.localOnly=localOnly;
-        if(localOnly)instance="settings-"+Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(Encoding.ASCII.GetBytes(instance))).ToLowerInvariant()[..32];
+        expectedPid=pid;this.lane=lane;
+        if(lane!=OwnerLane.Analytics)instance=(lane switch {OwnerLane.Device=>"settings-",OwnerLane.Policy=>"policy-",_=>"recent-"})+
+            Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(Encoding.ASCII.GetBytes(instance))).ToLowerInvariant()[..32];
         name="\\\\.\\pipe\\Darkaxt.TailD."+instance;
     }
     public async Task<JsonElement> Request(string op,JsonElement body,Action<JsonElement>? progress=null)
     {
-        if(localOnly!=IsLocal(op))throw new InvalidDataException();
+        if(lane!=LaneFor(op))throw new InvalidDataException();
         // Native allowlist: renderer cannot request a session token, arbitrary
         // SQL, path, shell command, source access or arbitrary filesystem operation.
         if(op is not ("state" or "configure" or "pause" or "resume" or "refresh" or "credential" or "shutdown" or "window-closed" or
             "credential-remove" or "view-query" or "view-catalog" or "saved-query" or "export-query" or "retention" or "delete" or "delete-snapshots" or "cleanup" or
             "management-read" or "management-prepare" or "management-apply" or "management-cancel" or
-            "connectivity-read" or "connectivity-edit" or "connectivity-reset" or "connectivity-about"))
+            "connectivity-read" or "connectivity-edit" or "connectivity-reset" or "connectivity-about" or "recent-dns"))
             throw new InvalidDataException();
         var completion=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         lock(requests)requests.Add(completion.Task);
@@ -100,7 +105,7 @@ internal sealed class OwnerBridge : IDisposable
                 pipe=new NamedPipeClientStream(PipeDirection.InOut,true,true,handle);
                 if(!GetNamedPipeServerProcessId(handle,out var pid)||pid!=expectedPid)
                     throw new UnauthorizedAccessException();
-                if(!localOnly)await Exchange("{\"op\":\"window-opened\"}"u8.ToArray());
+                if(lane==OwnerLane.Analytics)await Exchange("{\"op\":\"window-opened\"}"u8.ToArray());
                 connected=true;
             }
             // Lifecycle exact operations deliberately omit body for protocol ACK hooks.
@@ -146,13 +151,14 @@ internal sealed class CollectionWindow : Form
     private readonly WebView2 view=new(){Dock=DockStyle.Fill};
     private readonly OwnerBridge bridge;
     private readonly OwnerBridge settingsBridge;
+    private readonly OwnerBridge policyBridge;
+    private readonly OwnerBridge recentBridge;
     private readonly string userData;
     private readonly Dictionary<string,string> options;
     private readonly string instance;
     private bool disposingWindow;
     private bool closingWindow;
-    private int active;
-    private int activeSettings;
+    private readonly int[] active=new int[4];
     private static readonly JsonElement Empty=JsonSerializer.SerializeToElement(new{});
     private const string Origin="https://taild.local/index.html";
     [DllImport("dwmapi.dll")]
@@ -169,7 +175,9 @@ internal sealed class CollectionWindow : Form
     }
     public CollectionWindow(string instance,uint pid,string data,Dictionary<string,string> supplied)
     {
-        bridge=new OwnerBridge(instance,pid);settingsBridge=new OwnerBridge(instance,pid,true);userData=data;options=supplied;this.instance=instance;
+        bridge=new OwnerBridge(instance,pid);settingsBridge=new OwnerBridge(instance,pid,OwnerLane.Device);
+        policyBridge=new OwnerBridge(instance,pid,OwnerLane.Policy);recentBridge=new OwnerBridge(instance,pid,OwnerLane.Recent);
+        userData=data;options=supplied;this.instance=instance;
         Text="TailD · Network analytics";Width=1440;Height=900;MinimumSize=new Size(800,600);
         Icon=System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath);
         StartPosition=FormStartPosition.CenterScreen;BackColor=Color.FromArgb(31,30,30);
@@ -257,7 +265,7 @@ internal sealed class CollectionWindow : Form
     private async void Message(object? sender,CoreWebView2WebMessageReceivedEventArgs e)
     {
         if(e.Source!=Origin||disposingWindow||closingWindow)return;
-        long id=0;bool admitted=false,local=false;
+        long id=0;bool admitted=false;OwnerLane lane=OwnerLane.Analytics;
         try
         {
             if(Encoding.UTF8.GetByteCount(e.WebMessageAsJson)>65536)throw new InvalidDataException();
@@ -268,10 +276,10 @@ internal sealed class CollectionWindow : Form
                 throw new InvalidDataException();
             id=root.GetProperty("id").GetInt64();var op=root.GetProperty("op").GetString()!;
             var body=root.GetProperty("body");if(body.ValueKind!=JsonValueKind.Object)throw new InvalidDataException();
-            local=OwnerBridge.IsLocal(op);
-            admitted=local?Interlocked.Increment(ref activeSettings)<=2:Interlocked.Increment(ref active)<=4;
-            if(!admitted){if(local)Interlocked.Decrement(ref activeSettings);else Interlocked.Decrement(ref active);throw new BridgeError("backpressure");}
-            if(op=="shutdown"){closingWindow=true;await settingsBridge.Drain();}
+            lane=OwnerBridge.LaneFor(op);
+            admitted=Interlocked.Increment(ref active[(int)lane])<=(lane==OwnerLane.Analytics?4:2);
+            if(!admitted){Interlocked.Decrement(ref active[(int)lane]);throw new BridgeError("backpressure");}
+            if(op=="shutdown"){closingWindow=true;await DrainControls();}
             JsonElement data;
 #if DEBUG
             // Owned validation captures the real zoomed WebView surface. CDP
@@ -283,7 +291,8 @@ internal sealed class CollectionWindow : Form
                 data=JsonSerializer.SerializeToElement(new{png=Convert.ToBase64String(png.ToArray())});
             }else
 #endif
-            data=op=="open-product-link"?OpenProductLink(body):op=="export-query"?await Export(body):await (local?settingsBridge:bridge).Request(op,body,partial=>{
+            data=op=="open-product-link"?OpenProductLink(body):op=="export-query"?await Export(body):await
+                (lane switch {OwnerLane.Device=>settingsBridge,OwnerLane.Policy=>policyBridge,OwnerLane.Recent=>recentBridge,_=>bridge}).Request(op,body,partial=>{
                 if(!view.IsDisposed&&!disposingWindow)view.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(new{id,ok=true,progress=true,data=partial}));
             });
             view.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(new{id,ok=true,data}));
@@ -291,7 +300,7 @@ internal sealed class CollectionWindow : Form
         }
         catch(Exception error){if(!view.IsDisposed)view.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(new{
             id,ok=false,state=error is BridgeError known?known.State:error is InvalidDataException?"invalid-command":"unavailable"}));}
-        finally{if(admitted){if(local)Interlocked.Decrement(ref activeSettings);else Interlocked.Decrement(ref active);}}
+        finally{if(admitted)Interlocked.Decrement(ref active[(int)lane]);}
     }
     private static JsonElement OpenProductLink(JsonElement body)
     {
@@ -338,25 +347,26 @@ internal sealed class CollectionWindow : Form
             revision=result.GetProperty("revision").GetInt64(),row_count=result.GetProperty("row_count").GetInt64(),
             coverage_incomplete=result.GetProperty("coverage_incomplete").GetBoolean()});
     }
+    private Task DrainControls()=>Task.WhenAll(settingsBridge.Drain(),policyBridge.Drain(),recentBridge.Drain());
     private async void ClosingWindow(object? sender,FormClosingEventArgs e)
     {
         if(disposingWindow)return;
         if(closingWindow){e.Cancel=true;return;}
         closingWindow=true;
         e.Cancel=true;Enabled=false;Hide();
-        try{await settingsBridge.Drain();await bridge.Request("window-closed",Empty);}
+        try{await DrainControls();await bridge.Request("window-closed",Empty);}
         catch(Exception){ /* Broken pipe: runtime owns terminal/disabled cleanup. */ }
         disposingWindow=true;Close();
     }
     private async Task FailAndClose()
     {
         closingWindow=true;
-        try{await settingsBridge.Drain();await bridge.Request("window-closed",Empty);}catch(Exception){}
+        try{await DrainControls();await bridge.Request("window-closed",Empty);}catch(Exception){}
         disposingWindow=true;Close();
     }
     protected override void Dispose(bool disposing)
     {
-        if(disposing){view.Dispose();settingsBridge.Dispose();bridge.Dispose();}
+        if(disposing){view.Dispose();settingsBridge.Dispose();policyBridge.Dispose();recentBridge.Dispose();bridge.Dispose();}
         base.Dispose(disposing);
     }
 }

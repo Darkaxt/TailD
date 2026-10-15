@@ -4,6 +4,12 @@ import {readFileSync,existsSync} from 'node:fs';
 
 const read=name=>readFileSync(new URL('../src/'+name,import.meta.url),'utf8');
 
+test('category marks keep equal optical padding in unchanged navigation hit targets',()=>{
+  const css=read('styles.css');
+  assert.match(css,/\.nav-link>svg,\.nav-link>taild-brand-mark\{width:22px;height:22px/);
+  assert.ok(!/\.rail \.category-root:first-child taild-brand-mark\{width:28px/.test(css),'Tailscale uses a larger icon box');
+});
+
 test('navigation and product headers use bundled marks, not TD or the generic provider icon',()=>{
   const main=read('main.ts');
   assert.doesNotMatch(main,/>TD<\/span>/);

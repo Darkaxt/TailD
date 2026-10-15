@@ -938,6 +938,37 @@ version and payload before installation; verify device identity/signing ability,
 custom resolver, public/MagicDNS, live collector and installed UI after it. Preserve
 the previous verified release for rollback. No provider-policy or tailnet mutation.
 
+### October 15 incident loading and navigation icon correction — R26
+
+Recent DNS must read the current endpoint's retained resolutions independently of
+both pending dashboard aggregation and remote policy retrieval. Source diagnosis:
+the local 15-minute read returned 81 rows in 33.47ms; the live READ policy snapshot
+took 4150.22ms. The current UI gates its entire resolutions panel on that remote
+snapshot, and the native command pipe queues it behind analytics. Remove both
+dependencies, retaining original operations through completion. Reuse the same
+owner-authenticated pipe transport with fixed policy and recent-DNS lanes in the
+same collector; no new service, general RPC, credential exposure or timeout retry.
+Recent DNS requests are fixed read-only, current-account/endpoint scoped, latest
+100 observations over the last 15 minutes with bounded search. Policy reads/actions
+remain serialized separately; confirmation, fresh shared-profile checks and exact
+mutation/readback guards remain unchanged. Recent data and its search/refresh stay
+usable during policy reads/failures; actions remain disabled until current policy
+validates the event profile. A genuine empty response differs from loading/error.
+Use the existing themed loading dots in a centered translucent recent-panel layer
+while its first read is pending, and clear independent policy progress feedback.
+Respect reduced motion; navigation and already loaded recent data are not inert.
+Remove the special 28px navigation Tailscale mark override: all category icon boxes
+are centered 22px within the unchanged 40px hit targets. Preserve artwork/branding.
+
+Stage 10 acceptance: reproduce held-policy/held-analytics blockage before fixing;
+actual native transport proves recent rows, search and local controls complete while
+both operations remain held; errors/profile/account isolation and graceful shutdown
+pass; actual served loading state and equal icon bounds verified at desktop, narrow
+and app-local 150% zoom; focused regressions/builds and READ-only live measurements;
+commit/sync. Corrective release/deployment continues the owner's unfinished approved
+delivery, with independent artifact verification and installed acceptance. No policy
+write, Android deployment or unrelated refactoring. B12 stays open.
+
 ## 15. Stage mapping and verification boundaries
 
 | Stage | Required scope | Status at specification creation |

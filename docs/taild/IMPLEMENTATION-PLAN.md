@@ -1,5 +1,34 @@
 # TailD staged execution
 
+October 15 R26 incident loading/icon correction: Stage 10 is the single **ACTIVE**
+stage. B32 (internal advancement blocker) now has its source/native workflow verified;
+signed delivery and installed acceptance remain pending. Root cause was the shared
+analytics/policy queue plus snapshot-gated Recent DNS template (live local read
+33.47ms/81 rows versus READ policy 4150.22ms). Fixed authenticated operation lanes
+within the existing collector now keep recent observations, device controls, policy
+and analytics independent, preserving fixed allowlists and exact request draining.
+Real native-served UI verifies rows/search before held policy/analytics release,
+visible centered animation, policy-failure independence, guarded incident writes,
+coalesced search, category navigation, 560px layout and native 150% zoom. All category
+icons measure 22px in 40px targets with equal 9px margins. Backend contracts,
+frontend tests/typecheck, Angular production and native Debug/Release pass; Release
+CDP/validation hooks are absent. Closure assessment found no required consolidation:
+transport reuse remains in existing owners, with no new service/retry/timeout/RPC.
+Live account-bound read is physically read-only (31.6ms); no provider mutation.
+Evidence: D:/Tools/taild-stage10-validation-20261013/incident-r26.
+B33 (external pre-existing data impediment, investigation ACTIVE): pre-install
+history integrity failed: DNS table root 13, page 811782, cell 356, rowid 232587 out
+of order; a subsequent DNS source scan reports SQLITE_CORRUPT. This is not an index
+that can simply be rebuilt. Installed +12 payload, node/signer, custom resolver,
+public DNS and MagicDNS checks pass up to this failed history gate. Do not replace,
+delete or silently recreate history; preserve a consistent original recovery
+snapshot, determine recoverability and obtain direction before any potentially
+lossy replacement. This condition blocks installed data-preservation acceptance,
+not the independently verified native fixture workflows. No later stage or tracked
+deferral. B31 +12 publication/installation succeeded (workflow 38797175559, source
+42264219e0180450948d6fe2c696639aa8097df8; independently verified public payload,
+broker c463d9ba095d438d9a539380a9302527 exit0). B12 unchanged.
+
 October 15 R25 delivery: Stage 10 remains the single **ACTIVE** stage. The owner
 explicitly authorizes signed release and local in-place deployment of verified
 `b45aeb6` product changes. B31 (internal advancement blocker): publication, independent

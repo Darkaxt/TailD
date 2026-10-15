@@ -17,6 +17,9 @@ import controld
 import ingestion
 import reader
 import connectivity
+import management
+try:import recent_dns
+except ImportError:recent_dns=None
 from test_connectivity import DaemonFixture
 import test_glasswire
 
@@ -55,6 +58,38 @@ class RuntimeTest(unittest.TestCase):
         finally:
             release.set();worker.join();client.close()
 
+    def test_recent_dns_independent_of_held_policy_and_analytics(self):
+        self.assertIsNotNone(recent_dns,'Independent fixed recent-DNS route is missing')
+        self.collector.connectivity.call=DaemonFixture()
+        self.collector.command('configure',{'provider':{'account_scope':'local','endpoint':'device','account_type':'personal','instance':'europe'}})
+        from test_management import snapshot
+        policy_entered,policy_release,query_entered,query_release=(threading.Event() for _ in range(4))
+        original=analytics.Analytics._query;results=[];errors=[]
+        def held_policy(*args):policy_entered.set();policy_release.wait();return snapshot()
+        def held_query(engine,request,*args,**kwargs):
+            if request['kind']=='traffic':query_entered.set();query_release.wait()
+            return original(engine,request,*args,**kwargs)
+        policy_client=reader.PipeClient(management.instance_name(self.collector.instance))
+        recent_client=reader.PipeClient(recent_dns.instance_name(self.collector.instance))
+        def policy():
+            try:results.append(policy_client.request({'op':'management-read','body':{}}))
+            except BaseException as error:errors.append(error)
+        workers=[threading.Thread(target=policy),threading.Thread(target=self.query)]
+        try:
+            with patch.object(self.collector.management,'_read',held_policy),patch.object(analytics.Analytics,'_query',held_query):
+                for worker in workers:worker.start()
+                policy_entered.wait();query_entered.wait()
+                data=recent_client.request({'op':'recent-dns','body':{}})
+                self.assertEqual(data['endpoint'],'device');self.assertEqual(data['account'],'local')
+                self.assertIsInstance(data['rows'],list)
+                self.assertFalse(policy_release.is_set());self.assertFalse(query_release.is_set())
+                with self.assertRaises(reader.ReaderError):recent_client.request({'op':'view-query','body':{}})
+        finally:
+            policy_release.set();query_release.set()
+            for worker in workers:worker.join()
+            policy_client.close();recent_client.close()
+        self.assertEqual(errors,[])
+
     def setUp(self):
         isolated=patch.object(runtime.live_dns,'Stream',IsolatedLiveStream)
         isolated.start();self.addCleanup(isolated.stop)
@@ -81,12 +116,35 @@ class RuntimeTest(unittest.TestCase):
         self.collector.start()
         self.addCleanup(self.collector.close)
 
-    def test_local_settings_lane_preserves_native_owner_authentication(self):
-        self.collector.local_control.owner_sid='S-1-5-19'
-        client=reader.PipeClient(connectivity.instance_name(self.collector.instance))
+    def test_control_lanes_preserve_native_owner_authentication(self):
+        for label,namer,operation in (('settings',connectivity.instance_name,'connectivity-read'),
+                ('policy',management.instance_name,'management-read'),('recent',recent_dns.instance_name,'recent-dns')):
+            with self.subTest(lane=label):
+                self.collector.control_lanes[label][0].owner_sid='S-1-5-19'
+                client=reader.PipeClient(namer(self.collector.instance))
+                try:
+                    with self.assertRaises(reader.ReaderError):client.request({'op':operation,'body':{}})
+                finally:client.close()
+
+    def test_close_drains_inflight_recent_read(self):
+        self.collector.command('configure',{'provider':{'account_scope':'local','endpoint':'device','account_type':'personal','instance':'europe'}})
+        entered,release,stopping,returned=(threading.Event() for _ in range(4));errors=[]
+        original=recent_dns.read;server,owned_thread=self.collector.control_lanes['recent'];stop=server.stop
+        client=reader.PipeClient(recent_dns.instance_name(self.collector.instance))
+        def held(*args):entered.set();release.wait();return original(*args)
+        def read():
+            try:client.request({'op':'recent-dns','body':{}})
+            except reader.ReaderError:pass # Shutdown closes the transport, then drains its worker.
+            except BaseException as error:errors.append(type(error).__name__)
+        def stopping_server():stop();stopping.set()
+        def close():self.collector.close();returned.set()
+        worker=threading.Thread(target=read);closer=threading.Thread(target=close)
         try:
-            with self.assertRaises(reader.ReaderError):client.request({'op':'connectivity-read','body':{}})
-        finally:client.close()
+            with patch.object(recent_dns,'read',held),patch.object(server,'stop',stopping_server):
+                worker.start();entered.wait();closer.start();stopping.wait()
+                self.assertFalse(returned.is_set());release.set();worker.join();closer.join()
+            self.assertFalse(owned_thread.is_alive());self.assertTrue(returned.is_set());self.assertEqual(errors,[])
+        finally:release.set();worker.join();closer.join();client.close()
 
     def test_close_joins_inflight_local_read_before_returning(self):
         entered,release,stopping,returned= (threading.Event() for _ in range(4))
@@ -100,16 +158,16 @@ class RuntimeTest(unittest.TestCase):
             try:client.request({'op':'connectivity-read','body':{}})
             except reader.ReaderError:pass # Explicit collector shutdown closes its transport.
             except BaseException as error:errors.append(type(error).__name__)
-        original=self.collector.local_control.stop
+        server,local_thread=self.collector.control_lanes['settings'];original=server.stop
         def stop():original();stopping.set()
         def close():self.collector.close();returned.set()
         worker=threading.Thread(target=read);closer=threading.Thread(target=close)
         try:
-            with patch.object(self.collector.local_control,'stop',stop):
+            with patch.object(server,'stop',stop):
                 worker.start();entered.wait();closer.start();stopping.wait()
                 self.assertFalse(returned.is_set(),'Close abandoned the owned local read')
                 release.set();worker.join();closer.join()
-            self.assertTrue(returned.is_set());self.assertFalse(self.collector.local_thread.is_alive())
+            self.assertTrue(returned.is_set());self.assertFalse(local_thread.is_alive())
             self.assertEqual(errors,[])
         finally:
             release.set();worker.join();closer.join();client.close()

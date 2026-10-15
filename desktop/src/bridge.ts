@@ -2,7 +2,7 @@
 interface WebView {postMessage(value:unknown):void;addEventListener(type:string,fn:(event:MessageEvent)=>void):void}
 const webview=(window as unknown as {chrome?:{webview:WebView}}).chrome?.webview;
 let sequence=0;
-const pending=new Map<number,{local:boolean;resolve:(value:unknown)=>void;reject:(error:Error)=>void;progress?:(value:unknown)=>void}>();
+const pending=new Map<number,{lane:string;resolve:(value:unknown)=>void;reject:(error:Error)=>void;progress?:(value:unknown)=>void}>();
 const errors:Record<string,string>={
   'connectivity-unavailable':'The local Tailscale service is unavailable or incompatible. Reload to check its current state.',
   'connectivity-denied':'This setting is controlled by system policy or the active account. No change was made.',
@@ -44,10 +44,11 @@ webview?.addEventListener('message',event=>{
 });
 export function command<T=unknown>(op:string,body:unknown={},progress?:(value:unknown)=>void):Promise<T>{
   if(!webview)return Promise.reject(new Error('Open TailD using its desktop launcher.'));
-  const local=['connectivity-read','connectivity-edit','connectivity-reset','connectivity-about'].includes(op);
-  if([...pending.values()].filter(request=>request.local===local).length>=(local?2:4))return Promise.reject(new Error('An operation is already pending.'));
+  const lane=['connectivity-read','connectivity-edit','connectivity-reset','connectivity-about'].includes(op)?'device':
+    ['management-read','management-prepare','management-apply','management-cancel'].includes(op)?'policy':op==='recent-dns'?'recent':'analytics';
+  if([...pending.values()].filter(request=>request.lane===lane).length>=(lane==='analytics'?4:2))return Promise.reject(new Error('An operation is already pending.'));
   const id=++sequence;
   return new Promise<T>((resolve,reject)=>{
-    pending.set(id,{local,resolve:value=>resolve(value as T),reject,progress});webview.postMessage({id,op,body});
+    pending.set(id,{lane,resolve:value=>resolve(value as T),reject,progress});webview.postMessage({id,op,body});
   });
 }

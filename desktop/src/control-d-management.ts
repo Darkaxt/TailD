@@ -12,7 +12,7 @@ type RecordValue=Record<string,any>;
   imports:[CommonModule,FormsModule,DashboardWidgetComponent,Evidence],template:`
   <section class="incident-workspace" aria-label="Control D incident management" [attr.aria-busy]="busy()">
     <div class="error" role="alert" *ngIf="error()">{{error()}}</div>
-    <div class="incident-progress" role="status" *ngIf="busy()"><span class="progress-pulse"></span>{{activity()}}</div>
+    <div class="incident-progress" role="status" *ngIf="busy()"><div class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>{{activity()}}</div>
     <div role="status" class="hint" *ngIf="notice()">{{notice()}}</div>
     <app-dashboard-widget label="Control D · incident workspace" brand="controld" id="management-binding">
       <div class="incident-binding">
@@ -26,21 +26,24 @@ type RecordValue=Record<string,any>;
         <div class="incident-endpoints"><span class="filter-pill" *ngFor="let d of affected()">{{d.name}}</span></div>
         <p class="hint">Browsing uses READ access. Explicit changes use the separate Write credential. Allow creates a Bypass rule and can override filter blocks.</p></details>
     </app-dashboard-widget>
-    <app-dashboard-widget label="Recent DNS · incident resolutions" brand="controld" id="management-recent" *ngIf="snapshot()&&section==='recent'">
+    <app-dashboard-widget label="Recent DNS · incident resolutions" brand="controld" id="management-recent" *ngIf="section==='recent'">
       <div class="incident-recent-controls"><label>Search resolutions<input id="incident-dns-search" [ngModel]="dnsSearch" placeholder="Domain / decision" (ngModelChange)="searchChanged($event)"></label>
         <label class="incident-confirm"><input type="checkbox" [(ngModel)]="observe"> Follow recent activity</label>
-        <button id="incident-dns-refresh" [disabled]="reading()||busy()" (click)="recent()">{{reading()?'Reading…':'Refresh DNS'}}</button>
+        <button id="incident-dns-refresh" [disabled]="reading()" (click)="recent()">{{reading()?'Reading…':'Refresh DNS'}}</button>
         <span class="badge" [class.good]="liveState()==='connected'">Live stream: {{liveState()}}</span></div>
       <p class="hint">Latest 100 stored observations in the last 15 minutes for the selected endpoint. Streaming follows the collection binding, not this selection. Gaps do not mean zero activity.</p>
+      <div class="recent-content" [attr.aria-busy]="reading()">
+      <div class="recent-loading" *ngIf="reading()&&!recentRows().length" role="status" id="recent-loading"><div class="loading-dialog"><div class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></div><strong>Reading recent DNS</strong><span>Reading this endpoint's local observations</span></div></div>
+      <div *ngIf="recentError()" class="error" role="alert">{{recentError()}}</div>
       <div class="table-scroll incident-table"><table><thead><tr><th>Time</th><th>Question</th><th>Decision / reason</th><th>Profile</th><th>Incident actions</th></tr></thead><tbody>
         <tr *ngFor="let r of recentRows()"><td>{{time(r.timestamp)}}</td><td>{{r.question}} <small>{{r.type}}</small></td><td><strong>{{r.outcome}}</strong><p>{{reason(r)}}</p>
           <details><summary>Decision details</summary><p class="hint">Classification: {{categories(r).join(', ')||'Not supplied'}}</p><p class="hint">Category labels describe the domain; the provider trigger above identifies the decision cause. Names from current policy are display labels, not historical policy proof.</p><taild-evidence [data]="r.fact" /></details></td><td>{{r.profile}}</td>
-          <td class="actions"><button (click)="incident(r,0)" [disabled]="busy()||!!preview()||r.profile!==snapshot()?.profile">Block</button>
-            <button (click)="incident(r,1)" [disabled]="busy()||!!preview()||r.profile!==snapshot()?.profile">Allow</button>
-            <button (click)="editQuestion(r)" [disabled]="busy()||!!preview()||r.profile!==snapshot()?.profile">Edit rule</button></td></tr>
+          <td class="actions"><button (click)="incident(r,0)" [disabled]="busy()||!snapshot()||!!preview()||r.profile!==snapshot()?.profile">Block</button>
+            <button (click)="incident(r,1)" [disabled]="busy()||!snapshot()||!!preview()||r.profile!==snapshot()?.profile">Allow</button>
+            <button (click)="editQuestion(r)" [disabled]="busy()||!snapshot()||!!preview()||r.profile!==snapshot()?.profile">Edit rule</button></td></tr>
       </tbody></table></div>
-      <p class="empty-state" *ngIf="!recentRows().length&&!reading()">No stored resolutions in this endpoint's recent window. Check its last activity and the collection binding; this is not proof of no DNS traffic.</p>
-      <p class="hint">Actions are disabled when a historical event's profile differs from the currently enforced profile.</p>
+      <p class="empty-state" *ngIf="!recentRows().length&&!reading()&&!recentError()">No stored resolutions in this endpoint's recent window. Check its last activity and the collection binding; this is not proof of no DNS traffic.</p>
+      </div><p class="hint">Actions require current policy verification and a matching event profile. Policy loading does not block reading resolutions.</p>
     </app-dashboard-widget>
     <app-dashboard-widget *ngIf="preview() as p" label="Review policy change" id="management-preview">
       <h2>{{p.change.delete?'Delete rule':p.change.kind==='rule'?(p.change.do===1?'Allow · explicit Bypass':'Block'):'Update '+p.change.kind}} · {{p.change.hostname || p.change.id}}</h2>
@@ -107,11 +110,11 @@ export class ControlDManagement implements OnDestroy {
   @Input() section:'recent'|'policy'='recent';@Output() sectionChange=new EventEmitter<void>();
   tabs=['Rules','Filters','Services','Profile Options'];tab=signal('Rules');snapshot=signal<RecordValue|null>(null);
   preview=signal<RecordValue|null>(null);busy=signal(false);reading=signal(false);error=signal('');notice=signal('');activity=signal('');
-  recentRows=signal<RecordValue[]>([]);liveState=signal('not observed');policyHistory=signal<RecordValue|null>(null);
+  recentRows=signal<RecordValue[]>([]);recentError=signal('');liveState=signal('not observed');policyHistory=signal<RecordValue|null>(null);
   endpoint='';hostname='';ruleAction=0;comment='';ruleSearch='';serviceSearch='';dnsSearch='';confirmed=false;observe=true;
   private disposed=false;private timer?:number;private generation=0;private pendingRecent=false;private knownDevices:RecordValue[]=[];
   constructor(){void this.load();this.schedule()}
-  devices(){return this.knownDevices}
+  devices(){return this.knownDevices.length?this.knownDevices:this.endpoint?[{PK:this.endpoint,name:'Collection endpoint'}]:[]}
   affected(){return this.snapshot()?.affected_endpoints||[]}
   profileName(){return (this.snapshot()?.resources?.profiles?.data?.profiles||[]).find((p:RecordValue)=>p.PK===this.snapshot()?.profile)?.name||this.snapshot()?.profile}
   resourceState(kind:string){return this.snapshot()?.resources?.[kind]?.state||'unavailable'}
@@ -130,9 +133,10 @@ export class ControlDManagement implements OnDestroy {
   }
   async load(){if(this.busy())return;this.busy.set(true);this.activity.set('Reading current Control D policy…');this.error.set('');this.preview.set(null);this.confirmed=false;this.generation++;
     this.snapshot.set(null);this.recentRows.set([]);
+    await this.recent();
+    if(this.disposed){this.busy.set(false);return}
     try{const s=await command<RecordValue>('management-read',this.endpoint?{endpoint:this.endpoint}:{});if(!this.disposed)this.accept(s)}
     catch(e){if(!this.disposed)this.error.set((e as Error).message)}finally{this.busy.set(false)}
-    if(!this.disposed&&this.snapshot())await this.recent();
   }
   async prepare(change:RecordValue){if(this.busy()||this.preview()||!this.snapshot()||this.endpoint!==this.snapshot()?.endpoint)return;this.busy.set(true);this.activity.set('Checking account, current policy and affected endpoints…');this.error.set('');this.notice.set('');
     try{const p=await command<RecordValue>('management-prepare',{endpoint:this.endpoint,change});if(!this.disposed){this.preview.set(p);this.confirmed=false;requestAnimationFrame(()=>document.getElementById('management-confirm')?.focus())}}
@@ -148,13 +152,11 @@ export class ControlDManagement implements OnDestroy {
   }
   async cancel(){if(this.busy())return;this.preview.set(null);this.confirmed=false;try{await command('management-cancel')}catch(e){this.error.set((e as Error).message)}}
   searchChanged(value:string){this.dnsSearch=value;this.recentRows.set([]);void this.recent()}
-  async recent(){if(this.disposed||this.busy()||!this.snapshot())return;if(this.reading()){this.pendingRecent=true;return;}
-    this.pendingRecent=false;this.reading.set(true);const generation=this.generation,endpoint=this.endpoint,search=this.dnsSearch;
-    try{const end=new Date(),start=new Date(end.getTime()-900000);const result=await command<RecordValue>('view-query',{queries:[{
-      kind:'dns',view:'facts',start:start.toISOString(),end:end.toISOString(),scope:{endpoint},limit:100,
-      ...(search?{search}:{}),order_by:[{field:'timestamp',direction:'desc'}]}]});
-      const state=await command<RecordValue>('state');if(!this.disposed&&generation===this.generation&&search===this.dnsSearch){this.recentRows.set(result.results[0].data.rows||[]);this.liveState.set(state.sources?.dns_live?.state||'not available')}}
-    catch(e){if(!this.disposed&&generation===this.generation&&search===this.dnsSearch)this.error.set((e as Error).message)}finally{this.reading.set(false);if(this.pendingRecent&&!this.disposed)void this.recent()}
+  async recent(){if(this.disposed)return;if(this.reading()){this.pendingRecent=true;return;}
+    this.pendingRecent=false;this.reading.set(true);this.recentError.set('');const generation=this.generation,endpoint=this.endpoint,search=this.dnsSearch;
+    try{const result=await command<RecordValue>('recent-dns',{...(endpoint?{endpoint}:{}),...(search?{search}:{})});
+      if(!this.disposed&&generation===this.generation&&search===this.dnsSearch){this.endpoint=result.endpoint;this.recentRows.set(result.rows);this.liveState.set(result.live_state)}}
+    catch(e){if(!this.disposed&&generation===this.generation&&search===this.dnsSearch)this.recentError.set((e as Error).message)}finally{this.reading.set(false);if(this.pendingRecent&&!this.disposed)void this.recent()}
   }
   async history(){try{const end=new Date();const result=await command<RecordValue>('view-query',{queries:[{kind:'policy',view:'facts',start:new Date(end.getTime()-7*86400000).toISOString(),end:end.toISOString(),scope:{endpoint:this.endpoint},limit:100}]});this.policyHistory.set(result.results[0])}catch(e){this.error.set((e as Error).message)}}
   private schedule(){if(this.disposed)return;this.timer=window.setTimeout(async()=>{if(this.observe&&!document.hidden)await this.recent();this.schedule()},5000)}

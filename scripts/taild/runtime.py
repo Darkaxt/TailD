@@ -30,6 +30,7 @@ import lifecycle
 import live_dns
 import management
 import connectivity
+import recent_dns
 import reader
 
 
@@ -236,11 +237,11 @@ class LocalAPI:
         self.loop.call_soon_threadsafe(self.loop.stop)
         self.thread.join()
 
-class ConnectivitySource:
-    """Same owner authentication, fixed local controls, no history/lifecycle RPC."""
-    def __init__(self,collector):self.collector=collector
+class FixedControlSource:
+    """Same owner authentication; each pipe admits only its fixed product operations."""
+    def __init__(self,collector,operations):self.collector=collector;self.operations=operations
     def dispatch(self,request):
-        if not isinstance(request,dict) or request.get('op') not in connectivity.OPERATIONS:
+        if not isinstance(request,dict) or request.get('op') not in self.operations:
             raise RuntimeError('invalid-command')
         return self.collector.dispatch(request)
 
@@ -259,9 +260,7 @@ class Collector:
         self.thread = None
         self.store = None
         self.api = None
-        self.local_control = None
-        self.local_thread = None
-        self.local_error = None
+        self.control_lanes = {}
         self.mutex = None
         self.start_error = None
         self.closing = False
@@ -321,14 +320,17 @@ class Collector:
             raise RuntimeError('startup-failed') from None
         try:
             self.api = LocalAPI(self)
-            self.local_control=reader.PipeServer(connectivity.instance_name(self.instance),owner,ConnectivitySource(self))
-            def serve_local():
-                try:self.local_control.serve()
-                except BaseException as error:self.local_error=type(error).__name__
-                finally:self.local_control.ready.set()
-            self.local_thread=threading.Thread(target=serve_local,name='TailD local settings control')
-            self.local_thread.start();self.local_control.ready.wait()
-            if self.local_error:raise RuntimeError('startup-failed')
+            for label,namer,operations in (('settings',connectivity.instance_name,connectivity.OPERATIONS),
+                    ('policy',management.instance_name,management.OPERATIONS),('recent',recent_dns.instance_name,recent_dns.OPERATIONS)):
+                server=reader.PipeServer(namer(self.instance),owner,FixedControlSource(self,operations));errors=[]
+                def serve_control(server=server,errors=errors):
+                    try:server.serve()
+                    except BaseException as error:errors.append(type(error).__name__)
+                    finally:server.ready.set()
+                thread=threading.Thread(target=serve_control,name='TailD '+label+' control')
+                thread.start();self.control_lanes[label]=(server,thread)
+                server.ready.wait()
+                if errors:raise RuntimeError('startup-failed')
             self.lifecycle = lifecycle.WindowsLifecycle(self._wake)
             self.lifecycle.start()
         except BaseException:
@@ -370,11 +372,21 @@ class Collector:
             return self.session()
         if request == {'op':'shutdown'}:
             return {'state':'stopping'}
-        if request['op'] not in ('state','configure','pause','resume','refresh','query','delete','cleanup','credential','credential-remove','window-opened','window-closed',*desktop_api.OPERATIONS,*management.OPERATIONS,*connectivity.OPERATIONS):
+        if request['op'] not in ('state','configure','pause','resume','refresh','query','delete','cleanup','credential','credential-remove','window-opened','window-closed',*desktop_api.OPERATIONS,*management.OPERATIONS,*connectivity.OPERATIONS,*recent_dns.OPERATIONS):
             raise RuntimeError('invalid-command')
         try:
             op=request['op'];body=request.get('body') or {}
             if not isinstance(body,dict):raise RuntimeError('invalid-command')
+            if op=='recent-dns':
+                with self.condition:
+                    if self.closing or self.store is None:raise RuntimeError('stopping')
+                    provider=dict(self.config['provider']) if self.config['provider'] else None
+                    store=self.store;live=self.sources['dns_live']['state']
+                view=store.read_view(now=self.now())
+                try:
+                    try:return recent_dns.read(view,body,provider,live)
+                    except ValueError as error:raise RuntimeError(str(error)) from None
+                finally:view.close()
             if op in connectivity.OPERATIONS:
                 with self.condition:
                     if self.closing:raise RuntimeError('stopping')
@@ -978,8 +990,8 @@ class Collector:
         with self.condition:
             self.closing = True
             self.condition.notify()
-        if self.local_control is not None:self.local_control.stop()
-        if self.local_thread is not None:self.local_thread.join()
+        for server,_ in self.control_lanes.values():server.stop()
+        for _,thread in self.control_lanes.values():thread.join()
         if self.lifecycle is not None:
             self.lifecycle.close()
         if self.thread is not None:

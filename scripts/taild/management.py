@@ -13,6 +13,9 @@ import credentials
 
 OPERATIONS=frozenset(('management-read','management-prepare','management-apply','management-cancel'))
 
+def instance_name(instance):
+    return 'policy-'+hashlib.sha256(instance.encode('ascii')).hexdigest()[:32]
+
 
 class ManagementError(ValueError):
     pass
