@@ -8,6 +8,7 @@ import shutil
 import ssl
 import sys
 import urllib.request
+import package_sqlite
 
 RUNTIME_DISTRIBUTIONS=('pywin32','pyinstaller','cryptography','cffi','pycparser',
     'aiohttp','aiohappyeyeballs','aiosignal','attrs','frozenlist','multidict','propcache','yarl','idna')
@@ -15,6 +16,12 @@ RUNTIME_DISTRIBUTIONS=('pywin32','pyinstaller','cryptography','cffi','pycparser'
 
 def collect(output,nuget):
     output=Path(output);records=[]
+    sqlite_notice=output/'sqlite-runtime.json'
+    sqlite_record=json.loads(sqlite_notice.read_bytes())
+    if sqlite_record['version']!=package_sqlite.VERSION or sqlite_record['dll_sha256']!=package_sqlite.DLL_SHA256:
+        raise ValueError('SQLite notice does not match the pinned bundled runtime')
+    records.append({'component':'SQLite','version':sqlite_record['version'],'notice':sqlite_notice.name,
+        'sha256':hashlib.sha256(sqlite_notice.read_bytes()).hexdigest()})
     def copy(source,name,component,version):
         source=Path(source).resolve(strict=True);target=output/name
         target.parent.mkdir(parents=True,exist_ok=True)

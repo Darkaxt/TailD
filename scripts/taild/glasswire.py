@@ -15,6 +15,7 @@ import sys
 import json
 
 import controld
+import package_sqlite
 
 
 class GlassWireError(RuntimeError):
@@ -167,6 +168,7 @@ def decode_application(blob):
 
 
 def _connect(path):
+    package_sqlite.require_runtime()
     connection = sqlite3.connect(Path(path).resolve().as_uri() + '?mode=ro', uri=True)
     try:
         connection.execute('PRAGMA query_only=ON')

@@ -12,6 +12,7 @@ import stat
 import subprocess
 
 import controld
+import package_sqlite
 
 
 class HistoryError(RuntimeError):
@@ -131,6 +132,7 @@ def private_directory(path):
 
 class History:
     def __init__(self, directory, *, now=None, retention_days=None):
+        package_sqlite.require_runtime()
         self.directory = private_directory(directory)
         self.path = self.directory / 'history.sqlite3'
         if self.path.exists() and (self.path.is_symlink() or self.path.stat().st_nlink != 1):

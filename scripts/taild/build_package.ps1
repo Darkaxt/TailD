@@ -45,6 +45,7 @@ try {
     Invoke-Checked $Python @('-B','-m','PyInstaller','--distpath',$payload,
         '--workpath',(Join-Path $out 'freeze-work'),(Join-Path $repo 'desktop/TailD.spec'))
     $package=Join-Path $payload 'TailD'
+    Invoke-Checked $Python @('-B',(Join-Path $PSScriptRoot 'package_sqlite.py'),'--package',$package)
     if($IncludeConnectivity){
         $connectivityBuild=Join-Path $out 'connectivity-build'
         & (Join-Path $PSScriptRoot 'build_connectivity.ps1') -Output $connectivityBuild -Python $Python -Subversion $Subversion -PublicKey $(if($FixturePublicKey){$FixturePublicKey}else{'Vq5UrOc4cj4reJmuVdRJ9YFiSRuax9qua/F/WpyW+bE='})
@@ -58,7 +59,7 @@ try {
         "-p:Version=$version","-p:FileVersion=$upstream.$Subversion",'-p:IncludeSourceRevisionInInformationalVersion=false',
         "-p:BaseIntermediateOutputPath=$out/dotnet-obj/","-p:BaseOutputPath=$out/dotnet-bin/",'--output',(Join-Path $package 'desktop'),'--nologo')
     $licenseRoot=Join-Path $package 'licenses'
-    New-Item -ItemType Directory -Path $licenseRoot | Out-Null
+    New-Item -ItemType Directory -Path $licenseRoot -Force | Out-Null
     Copy-Item -LiteralPath (Join-Path $repo 'LICENSE') -Destination (Join-Path $licenseRoot 'inherited-core-BSD.txt')
     Copy-Item -LiteralPath (Join-Path $repo 'desktop/NOTICE.md') -Destination (Join-Path $licenseRoot 'NOTICE.md')
     Invoke-Checked $Python @('-B',(Join-Path $PSScriptRoot 'package_notices.py'),'--output',$licenseRoot,

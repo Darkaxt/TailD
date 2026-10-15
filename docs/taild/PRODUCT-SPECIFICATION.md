@@ -978,6 +978,31 @@ retention choice. Verify new database integrity, actual ingestion and recent DNS
 reads before resuming corrective release/deployment. This revises preservation
 of old test observations only, not the remaining data/identity contracts.
 
+### R27 — Safe bundled SQLite and recurring history integrity
+
+The October 16 installed check reproduces corruption after an initially clean,
+authorized test-history reload. Both shipped and development runtimes contain
+SQLite 3.50.4. SQLite's upstream WAL-reset advisory confirms this is an affected
+version; specific attribution of these files to that race remains unproven.
+Ship a pinned official Windows amd64 SQLite runtime containing the fix, verified
+against its published archive digest and recorded in the signed payload inventory.
+Do not replace global Python/SQLite installations or weaken WAL/read-only views,
+single-writer ownership, confirmation/identity guards or integrity checks. A frozen
+product must reject an unexpected unsafe SQLite runtime before touching history.
+Verify ABI/query/source compatibility, source/frozen lifecycle and complete real
+cold acquisition followed by reopen/integrity checks using the fixed runtime.
+Include a private representative replay above the observed failure size with
+concurrent read-only snapshots; do not upload private captured facts as CI fixtures.
+Test observations may be reloaded under the owner's explicit testing authorization;
+runtime configuration, credentials, node/signer and resolver remain preserved.
+Do not claim the corruption's cause fixed merely from a dependency version change.
+R26's independently verified UI corrections remain intact; any subsequent corrective
+release/deployment requires the same signed-artifact and installed acceptance gates.
+This belongs to the existing ACTIVE Stage 10, not a new parallel stage.
+
+Primary evidence: https://www.sqlite.org/wal.html#walreset and
+https://www.sqlite.org/download.html. Use an immutable digest, not a latest URL.
+
 ## 15. Stage mapping and verification boundaries
 
 | Stage | Required scope | Status at specification creation |

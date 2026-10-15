@@ -1,5 +1,38 @@
 # TailD staged execution
 
+October 16 R27 recurrent-history investigation: Stage 10 remains the single
+**ACTIVE** stage. +13 is published and installed (workflow 38805532580, exact
+source a419b036e4c5d0cb5eee403e5a6d04f695c8338e; public verification and broker
+f4d54cc353bb45e28d0cee2fdb1b8c63 exit0). B34 (internal acceptance blocker): the
+fresh test database subsequently fails integrity again (DNS root 13 points to an
+invalid page). Official hash-verified SQLite 3.54 independently rejects it, so
+this is not just an old-reader false alarm. +13 installed acceptance is NOT passed.
+Analytics collection is paused again; VPN, identity and resolver are unchanged.
+Both the developer Python and frozen package contain SQLite 3.50.4. SQLite's
+primary WAL advisory identifies that version as affected by its fixed WAL-reset
+corruption race. This is a candidate explanation, not a proven causal attribution
+for these particular files. Remove that confirmed unsafe runtime dependency,
+then compare complete cold ingestion/reopen integrity under the patched runtime
+before any further history reset/release claim. The owner has authorized reloading
+testing observations; retain configuration/credentials and the original recovery
+snapshot. B32 remains open for installed UI/data verification; B12 unchanged.
+R27 source integration now pins official SQLite 3.54.0 (archive SHA3-256
+f5fb500c73a3afd89976386bb8e4fdc8b5b65c052e187fb1ada1f5de034cd45b;
+DLL SHA256 5ca6a16bdd2c5a5037b1e3a942d9ac1c66efe2def902b202d44774680a8a4656),
+stages it before package inventory/signing and includes its runtime notice.
+Frozen history/source opens reject a different runtime before database access.
+Backend contracts pass under the patched ABI; actual Windows staging verifies the
+official DLL. Real isolated cold acquisition imported 69,105 traffic and 980 DNS
+facts with live-probe observation and two concurrent read-only consumers, then
+passed graceful shutdown/reopen integrity. This proves one complete resource-
+bounded acquisition pass, NOT complete seven-day backfill or the historical cause.
+The initial probe correctly reported GlassWire unavailable because the paused
+installed owner retained its exclusive reader pipe; it was gracefully stopped
+before the sole-owner probe, rather than weakening IPC ownership.
+Remaining B34 gates: replay above the observed failure volume, frozen package/
+installer verification, then authorized fresh test-history and installed source/UI
+acceptance. No new global runtime, additional service, retry, timeout or deferral.
+
 October 15 R26 incident loading/icon correction: Stage 10 is the single **ACTIVE**
 stage again. The owner explicitly accepts reloading the corrupt testing database;
 B33 is resolved by the verified replacement below.
