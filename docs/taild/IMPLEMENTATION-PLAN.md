@@ -1,5 +1,13 @@
 # TailD staged execution
 
+October 15 R25 delivery: Stage 10 remains the single **ACTIVE** stage. The owner
+explicitly authorizes signed release and local in-place deployment of verified
+`b45aeb6` product changes. B31 (internal advancement blocker): publication, independent
+download verification and installed acceptance remain pending. Resolve through the
+repository's isolated signing/installer workflow, preserving node/signer, resolver,
+credentials, history and rollback payload. No new feature or Android deployment.
+B12 remains open; this bounded delivery does not close overall Stage 10.
+
 October 15 R25 local-control correction: Stage 10 remains the single **ACTIVE**
 stage. R25 is **COMPLETE**, B30 resolved. Two sequential gpt-6.1-sol Low QA reviews
 identified the shared native/pipe queue, analytics loading/inert state, sequential

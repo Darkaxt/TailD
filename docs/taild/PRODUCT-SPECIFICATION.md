@@ -931,8 +931,12 @@ same-user authentication and graceful lane/request shutdown pass; malformed,
 profile-conflict and operational-state regressions pass; actual native desktop,
 narrow and 150% screenshots plus measured initial-read/tab-navigation timings;
 read-only installed-daemon compatibility and focused build/security/packaging
-checks; commit/sync. Only the explicitly requested device resolver restoration
-above is authorized; no provider-policy mutation or new release/deployment.
+checks; commit/sync. The owner's subsequent "go ahead deploy when ready" authorizes
+the signed normal Windows release and in-place local installation of this verified
+correction. Independently verify public signatures, checksums, exact source/core,
+version and payload before installation; verify device identity/signing ability,
+custom resolver, public/MagicDNS, live collector and installed UI after it. Preserve
+the previous verified release for rollback. No provider-policy or tailnet mutation.
 
 ## 15. Stage mapping and verification boundaries
 
