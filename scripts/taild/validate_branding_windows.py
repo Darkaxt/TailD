@@ -32,8 +32,8 @@ def assert_artwork(page):
         assert node['geometry']['width']>0 and node['geometry']['height']>0,node
         assert node['viewBox']==('0 0 26 26' if node['brand']=='tailscale' else '0 0 44 33'),node
     assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),'Horizontal page overflow'
-    assert page.locator('.rail .brand').inner_text()==''
-    assert page.locator('.rail .brand circle').count()==9
+    assert page.locator('#category-tailscale').inner_text()==''
+    assert page.locator('#category-tailscale circle').count()==9
     expect(page.get_by_role('button',name='Control D',exact=True)).to_have_count(1)
     expect(page.locator('#nav-3 taild-brand-mark')).to_have_attribute('data-brand','controld')
     rail=page.locator('#nav-3').bounding_box();mark=page.locator('#nav-3 taild-brand-mark').bounding_box()
@@ -72,18 +72,22 @@ def run(shell,output):
                 nodes=assert_artwork(page)
                 capture_preview(session,directory/'overview.png')
                 for index,title in enumerate(('Overview','Applications','Activity','Control D','Sources & health','Settings')):
-                    page.get_by_role('button',name=title,exact=True).click();settled(page)
-                    expect(page.locator('#nav-'+str(index))).to_have_attribute('aria-current','page')
-                    expect(page.locator('.page-heading h1')).to_have_text(title)
+                    if title=='Control D':page.locator('#nav-3').click();settled(page)
+                    else:
+                        page.locator('#category-analytics').click();settled(page)
+                        page.locator('#nav-'+str(index)).click();settled(page)
+                    expect(page.locator('#nav-recent-dns' if title=='Control D' else '#nav-'+str(index))).to_have_attribute('aria-current','page')
+                    expect(page.locator('.page-heading h1')).to_have_text('Recent DNS' if title=='Control D' else 'Collection settings' if title=='Settings' else title)
                     if title=='Control D':
                         page.wait_for_function("()=>document.querySelector('.incident-workspace')?.getAttribute('aria-busy')==='false'")
                         expect(page.locator('.incident-binding h2')).to_have_text('Shared')
                         expect(page.locator('.section-title taild-brand-mark')).to_have_attribute('data-brand','controld')
-                        expect(page.locator('.incident-workspace app-dashboard-widget>h2 taild-brand-mark')).to_have_count(3)
+                        expect(page.locator('.incident-workspace app-dashboard-widget>h2 taild-brand-mark')).to_have_count(2)
+                        page.locator('#nav-policy').click();settled(page)
                         for tab in ('Rules','Filters','Services','Profile Options'):
                             page.get_by_role('button',name=tab,exact=True).click()
                             expect(page.locator('.incident-tabs button.active')).to_have_text(tab)
-                        nodes=assert_artwork(page)
+                        page.locator('#nav-recent-dns').click();settled(page);nodes=assert_artwork(page)
                         colors=page.locator('#nav-3').evaluate('e=>({fg:getComputedStyle(e).color,bg:getComputedStyle(e).backgroundColor})')
                         assert contrast(colors)>=3,colors
                         capture_preview(session,directory/'control-d.png')
@@ -98,7 +102,7 @@ def run(shell,output):
                     page.wait_for_function("()=>document.querySelector('.incident-workspace')?.getAttribute('aria-busy')==='false'")
                     assert_artwork(page)
                     page.screenshot(path=str(directory/'control-d-560.png'))
-                    page.locator('#nav-0').click();settled(page);assert_artwork(page)
+                    page.locator('#category-analytics').click();settled(page);assert_artwork(page)
                     page.screenshot(path=str(directory/'overview-560.png'))
                 assert not errors,errors
                 requests+=page.evaluate("performance.getEntriesByType('resource').map(e=>e.name)")

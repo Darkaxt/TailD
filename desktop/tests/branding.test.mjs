@@ -7,8 +7,8 @@ const read=name=>readFileSync(new URL('../src/'+name,import.meta.url),'utf8');
 test('navigation and product headers use bundled marks, not TD or the generic provider icon',()=>{
   const main=read('main.ts');
   assert.doesNotMatch(main,/>TD<\/span>/);
-  assert.match(main,/<taild-brand-mark brand="controld" \*ngIf="item==='Control D';else navigationIcon"/);
-  assert.match(main,/class="brand"[^>]*>[\s\S]*?<taild-brand-mark brand="tailscale"/);
+  assert.match(main,/id="nav-3"[\s\S]*?<taild-brand-mark brand="controld"/);
+  assert.match(main,/id="category-tailscale"[^>]*>[\s\S]*?<taild-brand-mark brand="tailscale"/);
   assert.match(main,/class="eyebrow product-brand"[^>]*><taild-brand-mark brand="tailscale"/);
   assert.match(main,/[Ii]ndependent TailDNS fork/);
 });

@@ -18,7 +18,9 @@ internal sealed class BridgeError(string state) : Exception
         "read-only-confirmation-required" or "invalid-command" or "stopping" or
         "management-conflict" or "management-invalid-change" or "management-denied" or "management-rate-limited" or
         "management-write-rejected" or "management-outcome-unknown" or "management-account-mismatch" or
-        "management-read-credential-required" or "management-write-credential-required" or "management-resource-unavailable" ? state:"unavailable";
+        "management-read-credential-required" or "management-write-credential-required" or "management-resource-unavailable" or
+        "connectivity-unavailable" or "connectivity-denied" or "connectivity-conflict" or "connectivity-confirm-required" or
+        "connectivity-invalid-resolver" or "connectivity-outcome-unknown" ? state:"unavailable";
 }
 
 internal static class Program
@@ -74,7 +76,8 @@ internal sealed class OwnerBridge : IDisposable
         // SQL, path, shell command, source access or arbitrary filesystem operation.
         if(op is not ("state" or "configure" or "pause" or "resume" or "refresh" or "credential" or "shutdown" or "window-closed" or
             "credential-remove" or "view-query" or "view-catalog" or "saved-query" or "export-query" or "retention" or "delete" or "delete-snapshots" or "cleanup" or
-            "management-read" or "management-prepare" or "management-apply" or "management-cancel"))
+            "management-read" or "management-prepare" or "management-apply" or "management-cancel" or
+            "connectivity-read" or "connectivity-edit" or "connectivity-reset" or "connectivity-about"))
             throw new InvalidDataException();
         await serial.WaitAsync();
         try
@@ -266,7 +269,7 @@ internal sealed class CollectionWindow : Form
                 data=JsonSerializer.SerializeToElement(new{png=Convert.ToBase64String(png.ToArray())});
             }else
 #endif
-            data=op=="export-query"?await Export(body):await bridge.Request(op,body,partial=>{
+            data=op=="open-product-link"?OpenProductLink(body):op=="export-query"?await Export(body):await bridge.Request(op,body,partial=>{
                 if(!view.IsDisposed&&!disposingWindow)view.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(new{id,ok=true,progress=true,data=partial}));
             });
             view.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(new{id,ok=true,data}));
@@ -275,6 +278,17 @@ internal sealed class CollectionWindow : Form
         catch(Exception error){if(!view.IsDisposed)view.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(new{
             id,ok=false,state=error is BridgeError known?known.State:error is InvalidDataException?"invalid-command":"unavailable"}));}
         finally{if(admitted)Interlocked.Decrement(ref active);}
+    }
+    private static JsonElement OpenProductLink(JsonElement body)
+    {
+        if(body.EnumerateObject().Count()!=1||!body.TryGetProperty("target",out var target))throw new InvalidDataException();
+        var url=target.GetString() switch {
+            "project"=>"https://github.com/Darkaxt/TailD",
+            "releases"=>"https://github.com/Darkaxt/TailD/releases",
+            "licenses"=>"https://github.com/Darkaxt/TailD/blob/main/desktop/NOTICE.md",
+            _=>throw new InvalidDataException()};
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url){UseShellExecute=true});
+        return JsonSerializer.SerializeToElement(new{opened=true});
     }
     private async Task<JsonElement> Export(JsonElement body)
     {

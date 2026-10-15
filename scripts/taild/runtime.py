@@ -29,6 +29,7 @@ import ingestion
 import lifecycle
 import live_dns
 import management
+import connectivity
 import reader
 
 
@@ -268,6 +269,7 @@ class Collector:
         self.stop_after_window_receipt = False
         self.window_attached = False
         self.management = management.Management()
+        self.connectivity = connectivity.Connectivity(cli)
         self.live_stream = None
         self.live_thread = None
         self.live_attempt_revision = None
@@ -348,11 +350,15 @@ class Collector:
             return self.session()
         if request == {'op':'shutdown'}:
             return {'state':'stopping'}
-        if request['op'] not in ('state','configure','pause','resume','refresh','query','delete','cleanup','credential','credential-remove','window-opened','window-closed',*desktop_api.OPERATIONS,*management.OPERATIONS):
+        if request['op'] not in ('state','configure','pause','resume','refresh','query','delete','cleanup','credential','credential-remove','window-opened','window-closed',*desktop_api.OPERATIONS,*management.OPERATIONS,*connectivity.OPERATIONS):
             raise RuntimeError('invalid-command')
         try:
             op=request['op'];body=request.get('body') or {}
             if not isinstance(body,dict):raise RuntimeError('invalid-command')
+            if op in connectivity.OPERATIONS:
+                with self.condition:
+                    if self.closing:raise RuntimeError('stopping')
+                return self.connectivity.dispatch(op,body)
             if op in management.OPERATIONS:
                 with self.condition:
                     if self.closing:raise RuntimeError('stopping')
@@ -375,6 +381,8 @@ class Collector:
                     return desktop_api.DesktopAPI(view).dispatch(op,body,on_result=on_result)
                 finally:view.close()
             return self.command(request['op'], request.get('body'))
+        except connectivity.ConnectivityError as error:
+            raise RuntimeError(str(error)) from None
         except management.ManagementError as error:
             raise RuntimeError(str(error)) from None
         except controld.ControlDError as error:

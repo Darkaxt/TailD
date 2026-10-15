@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-import {Component,OnDestroy,signal} from '@angular/core';
+import {Component,OnDestroy,Input,Output,EventEmitter,signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {command} from './bridge';
@@ -26,7 +26,7 @@ type RecordValue=Record<string,any>;
         <div class="incident-endpoints"><span class="filter-pill" *ngFor="let d of affected()">{{d.name}}</span></div>
         <p class="hint">Browsing uses READ access. Explicit changes use the separate Write credential. Allow creates a Bypass rule and can override filter blocks.</p></details>
     </app-dashboard-widget>
-    <app-dashboard-widget label="Recent DNS · incident resolutions" brand="controld" id="management-recent" *ngIf="snapshot()">
+    <app-dashboard-widget label="Recent DNS · incident resolutions" brand="controld" id="management-recent" *ngIf="snapshot()&&section==='recent'">
       <div class="incident-recent-controls"><label>Search resolutions<input id="incident-dns-search" [ngModel]="dnsSearch" placeholder="Domain / decision" (ngModelChange)="searchChanged($event)"></label>
         <label class="incident-confirm"><input type="checkbox" [(ngModel)]="observe"> Follow recent activity</label>
         <button id="incident-dns-refresh" [disabled]="reading()||busy()" (click)="recent()">{{reading()?'Reading…':'Refresh DNS'}}</button>
@@ -51,10 +51,10 @@ type RecordValue=Record<string,any>;
       <div class="actions"><button id="management-apply" (click)="apply()" [disabled]="busy()||!confirmed">Apply change</button>
         <button (click)="cancel()" [disabled]="busy()">Cancel</button></div>
     </app-dashboard-widget>
-    <nav class="incident-tabs" aria-label="Profile sections" *ngIf="snapshot()">
+    <nav class="incident-tabs" aria-label="Profile sections" *ngIf="snapshot()&&section==='policy'">
       <button *ngFor="let t of tabs" [attr.aria-pressed]="tab()===t" [class.active]="tab()===t" (click)="tab.set(t)">{{t}}</button>
     </nav>
-    <app-dashboard-widget *ngIf="snapshot()" [label]="tab()" brand="controld" id="management-policy">
+    <app-dashboard-widget *ngIf="snapshot()&&section==='policy'" [label]="tab()" brand="controld" id="management-policy">
       <fieldset class="incident-controls" [disabled]="busy()||!!preview()">
         <ng-container *ngIf="tab()==='Rules'">
           <form class="incident-rule-form" (ngSubmit)="prepareRule()">
@@ -100,10 +100,11 @@ type RecordValue=Record<string,any>;
       </fieldset>
       <details><summary>Provider policy evidence · unavailable categories included</summary><taild-evidence [data]="snapshot()?.resources" /></details>
     </app-dashboard-widget>
-    <details *ngIf="snapshot()"><summary>Captured policy history</summary><button [disabled]="busy()" (click)="history()">Read retained snapshots</button>
+    <details *ngIf="snapshot()&&section==='policy'"><summary>Captured policy history</summary><button [disabled]="busy()" (click)="history()">Read retained snapshots</button>
       <taild-evidence [data]="policyHistory()" /></details>
   </section>`})
 export class ControlDManagement implements OnDestroy {
+  @Input() section:'recent'|'policy'='recent';@Output() sectionChange=new EventEmitter<void>();
   tabs=['Rules','Filters','Services','Profile Options'];tab=signal('Rules');snapshot=signal<RecordValue|null>(null);
   preview=signal<RecordValue|null>(null);busy=signal(false);reading=signal(false);error=signal('');notice=signal('');activity=signal('');
   recentRows=signal<RecordValue[]>([]);liveState=signal('not observed');policyHistory=signal<RecordValue|null>(null);
@@ -138,7 +139,7 @@ export class ControlDManagement implements OnDestroy {
     catch(e){if(!this.disposed)this.error.set((e as Error).message)}finally{this.busy.set(false)}
   }
   prepareRule(){void this.prepare({kind:'rule',hostname:this.hostname.trim(),do:this.ruleAction,status:1,comment:this.comment})}
-  editRule(r:RecordValue){this.hostname=r.PK;this.ruleAction=r.action?.do===0?0:r.action?.do===1?1:-1;this.comment=r.comment||'';this.tab.set('Rules');requestAnimationFrame(()=>document.getElementById('incident-hostname')?.focus())}
+  editRule(r:RecordValue){this.hostname=r.PK;this.ruleAction=r.action?.do===0?0:r.action?.do===1?1:-1;this.comment=r.comment||'';this.tab.set('Rules');this.sectionChange.emit();requestAnimationFrame(()=>document.getElementById('incident-hostname')?.focus())}
   editQuestion(r:RecordValue){this.editRule(this.resource('rules').find(rule=>rule.PK===r.question)||{PK:r.question,action:{do:1}})}
   incident(r:RecordValue,action:number){void this.prepare({kind:'rule',hostname:r.question,do:action,status:1,comment:'TailD incident'})}
   async apply(){const p=this.preview();if(!p||!this.confirmed||this.busy())return;this.busy.set(true);this.activity.set('Applying once, then reading back policy…');this.error.set('');

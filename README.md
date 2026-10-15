@@ -28,11 +28,18 @@ The screenshots contain no real accounts, browsing history or personal applicati
 | Policy inspection | READ snapshots of clients, rules, filters, services, groups, options and restrictions—with unavailable capabilities kept visible. |
 | Local history | Opt-in independent collectors, ingestion progress, pause/resume, retention and deletion, coverage gaps, corrections and private JSON/CSV exports. |
 | TailDNS connectivity | Inherited DNS improvements, MagicDNS-aware resolution, the Windows tray, matching daemon/CLI, and installer/updater integration. |
+| Device control | Category-specific Connection, Preferences and DNS resolver pages; autosaved tray preferences, exit-node controls, and a persistent bottom-left About page. |
 
 Control D remains responsible for its DNS filtering. GlassWire and Windows keep
 their firewall roles. TailD does not install another packet-filtering engine or
 change firewall policy. Control D policy changes require an explicit preview and
 confirmation, using a separate Write credential; collection remains READ-only.
+
+The sidebar keeps Tailscale, Control D and Analytics category icons visible while
+showing only the selected category's pages. Control D opens on recent DNS activity;
+profile policy is a separate tab. The tray remains available for account sign-in
+and Taildrop. These navigation/control additions are on development main; see
+the release-versus-development distinction below.
 
 ### Resolve DNS incidents without opening the browser
 

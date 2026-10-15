@@ -64,10 +64,9 @@ def run(shell, output):
             expect(page.locator('#management-binding .incident-endpoints .filter-pill')).to_have_count(2)
             page.locator('.incident-scope-details>summary').click()
             expect(page.locator('#management-recent')).to_contain_text('Filter / list · Ads & Trackers (ads)')
-            incident_geometry=page.evaluate('''()=>({recent:document.querySelector('#management-recent').getBoundingClientRect().top,
-              policy:document.querySelector('#management-policy').getBoundingClientRect().top,
-              tabs:document.querySelector('.incident-tabs').getBoundingClientRect().top})''')
-            assert incident_geometry['recent']<incident_geometry['tabs']<incident_geometry['policy'],incident_geometry
+            incident_geometry=page.evaluate('''()=>({recent:document.querySelector('#management-recent').getBoundingClientRect().top})''')
+            expect(page.locator('#management-policy')).to_have_count(0)
+            expect(page.locator('.incident-tabs')).to_have_count(0)
             page.screenshot(path=str(output/'incident-first.png'))
             page.locator('#management-recent').get_by_text('Decision details',exact=True).click()
             expect(page.locator('#management-recent')).to_contain_text('Classification: Technology')
@@ -79,6 +78,7 @@ def run(shell, output):
             page.locator('#management-confirm').check();page.locator('#management-apply').click()
             page.wait_for_function("()=>document.querySelector('.incident-workspace')?.getAttribute('aria-busy')==='false'")
             assert len(writes)==1
+            page.locator('#nav-policy').click();settled(page)
             expect(page.locator('#management-policy')).to_contain_text('blocked-example.invalid')
             page.locator('#incident-hostname').fill('example.invalid')
             page.locator('#incident-preview-rule').click()
@@ -132,6 +132,7 @@ def run(shell, output):
             page.wait_for_function("()=>document.querySelector('.incident-workspace')?.getAttribute('aria-busy')==='false'")
             # One pending recent read coalesces explicit search changes, even
             # with Follow off. Stale results cannot appear under the new text.
+            page.locator('#nav-recent-dns').click();settled(page)
             page.locator('.incident-recent-controls input[type=checkbox]').uncheck()
             entered=threading.Event();release=threading.Event();original=session.collector.dispatch;searches=[]
             def held_query(request,**kwargs):
@@ -149,6 +150,7 @@ def run(shell, output):
                 assert page.locator('#management-recent tbody tr').count()==0
                 assert 'beta' in searches,searches
             finally:release.set();session.collector.dispatch=original
+            page.locator('#nav-policy').click();settled(page)
             # Active text/background contrast from the actual served assets.
             colors=page.locator('.incident-tabs button.active').evaluate('e=>({fg:getComputedStyle(e).color,bg:getComputedStyle(e).backgroundColor})')
             def luminance(value):
@@ -165,7 +167,7 @@ def run(shell, output):
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
             page.screenshot(path=str(output/'management-560.png'))
             receipt={'ok':True,'url':page.url,'actual_native_pipe_manager':True,
-                'recent_before_policy':True,'recent_incident_guarded_apply':True,
+                'recent_default_and_policy_separate':True,'recent_incident_guarded_apply':True,
                 'incident_layout':incident_geometry,
                 'provider_fixture_only':True,'production_mutations':False,'confirmed_writes':len(writes),
                 'shared_profile_conflict_rejected':True,'map_geometry':geometry,'narrow_width':850,

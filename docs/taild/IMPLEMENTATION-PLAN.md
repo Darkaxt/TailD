@@ -1,5 +1,25 @@
 # TailD staged execution
 
+October 15 R24 category navigation/control migration: Stage 10 is the single
+**ACTIVE** stage. Scope already_authorized includes category-exclusive tabs,
+Tailscale main/preferences/resolver controls and persistent bottom-left About.
+R24 is **COMPLETE** and B29 resolved. Persistent category roots expose only their
+own pages; Control D defaults to Recent DNS and preserves selected-domain edits
+when switching to Profile policy. Tailscale Connection, Preferences and DNS
+resolver use fixed owning-user CLI/LocalAPI operations, with autosave, policy
+locks, stale-state refusal, explicit disconnect/reset confirmation and readback.
+Exit-node advertisement preserves existing subnet routes. About replaces READ
+at bottom-left and shows version/provenance/attribution with fixed product links.
+Native-served production assets pass integrated isolated-daemon workflows,
+keyboard/focus checks, 560px layouts and 100%/150% app-local zoom; screenshots
+were inspected. Real installed-daemon read-only compatibility passes; no live
+settings were changed. Backend/frontend, packaged-entrypoint and desktop contracts,
+Angular production and native Debug builds pass. No new core pin, service, shell
+RPC, elevation, credentials or mutation retry. The inherited prefs API has no
+atomic profile CAS; the documented preflight/readback limitation remains explicit.
+Evidence: D:/Tools/taild-stage10-validation-20261013/categories-r24.
+No later stage, tracked deferral, release or deployment. B12 unchanged.
+
 October 15 R23 incident-first page: Stage 10 remains the single **ACTIVE** stage.
 Scope is already_authorized: compact context -> recent DNS -> guarded policy
 actions/editor. R23 is **COMPLETE** and B28 resolved: native-served DOM/screenshot

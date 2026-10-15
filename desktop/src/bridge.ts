@@ -4,6 +4,12 @@ const webview=(window as unknown as {chrome?:{webview:WebView}}).chrome?.webview
 let sequence=0;
 const pending=new Map<number,{resolve:(value:unknown)=>void;reject:(error:Error)=>void;progress?:(value:unknown)=>void}>();
 const errors:Record<string,string>={
+  'connectivity-unavailable':'The local Tailscale service is unavailable or incompatible. Reload to check its current state.',
+  'connectivity-denied':'This setting is controlled by system policy or the active account. No change was made.',
+  'connectivity-conflict':'The active profile or settings changed. Reload before making another change.',
+  'connectivity-confirm-required':'Confirm this disruptive network action first.',
+  'connectivity-invalid-resolver':'Use an HTTPS DNS hostname and path, without credentials, query parameters or fragments.',
+  'connectivity-outcome-unknown':'The change could not be confirmed. Reload to inspect current settings; nothing was retried.',
   'management-conflict':'The profile or its affected devices changed. Reload and preview the change again.',
   'management-invalid-change':'That change is invalid or targets an unavailable resource.',
   'management-denied':'Control D denied access. Check permissions and profile lock state.',

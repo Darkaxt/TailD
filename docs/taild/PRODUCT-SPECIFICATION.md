@@ -848,6 +848,49 @@ same guarded preview/apply path. Policy tabs, direct rule editing and conflict
 guards continue to work. Integrate R22 branding without reverting its geometry,
 accessibility or offline asset contract. No new release/deployment is requested.
 
+### October 15 category navigation and Tailscale controls — R24
+
+The owner requests collapsible product categories: persistent Tailscale and
+Control D icons, with only the selected category's pages shown. Keep Analytics
+as its own category for the existing cross-source dashboard, Applications,
+Activity, Sources & health and collection settings. Tailscale exposes Connection,
+Preferences and DNS resolver pages. Control D exposes Recent DNS and Profile
+policy (its existing Rules/Filters/Services/Profile Options). Cross-page incident
+actions must reach the correct category and preserve edit/confirmation state.
+About replaces READ at the bottom-left, accessible from every category. This
+refines R23's combined-page ordering into separate Recent DNS / Profile policy
+tabs; recent resolutions remain Control D's default landing page.
+
+Bring the tray's five preferences, reset-to-defaults and custom resolver controls
+into the custom Tailscale pages, alongside device/peer status, connect/disconnect,
+exit-node choice, LAN access and Run as exit node (preserving advertised subnets).
+Preserve the tray, account/authentication,
+Taildrop, updater, signer and node identity; this is not removal of tray features
+or migration to a new VPN service. Changes use the existing owning-user daemon
+LocalAPI through the installed fixed CLI, not a generic renderer shell/RPC or
+another privileged service. Keep exact masked preference semantics and system
+policy restrictions. Only explicit user controls mutate network settings;
+opening/navigating pages never does. Autosave ordinary preferences, confirm
+reset/disconnect, validate resolver input and pin its update to the loaded profile.
+Reject stale profile/setting snapshots; read back successful changes, report
+uncertain/rejected outcomes without automatic mutation retries or elevation.
+Never return private preference keys, LocalAPI credentials or unrestricted daemon
+responses to the renderer. The inherited generic prefs API has no atomic profile
+compare-and-swap: use fresh snapshot preflight and profile/readback checks, and
+report concurrent/uncertain outcomes honestly rather than claiming atomicity.
+Resolver writes retain the daemon's explicit ProfileID guard.
+About shows product/version/provenance, independent
+fork attribution and fixed project/releases/license destinations.
+
+Stage 10 owns R24. Acceptance: category exclusivity and persistent roots/About;
+actual native control -> authenticated pipe -> typed backend -> isolated daemon
+boundary -> readback, including denied/stale/reset/resolver/exit-node cases;
+real installed-daemon read-only compatibility check without network mutations;
+desktop/narrow/150% rendered navigation, keyboard focus and screenshots; existing
+analytics/incident behavior preserved; focused security/packaging regressions and
+build verification; commit/sync. No release or installed-client deployment is
+authorized by this refinement.
+
 ## 15. Stage mapping and verification boundaries
 
 | Stage | Required scope | Status at specification creation |

@@ -51,6 +51,18 @@ footer{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin
 .provider-brand,.source-label.provider-brand{display:inline-flex;gap:7px}.provider-brand taild-brand-mark{font-size:18px;color:#d0e4f3}
 app-dashboard-widget>h2 taild-brand-mark{font-size:20px;color:#d0e4f3}
 .page-heading{margin-bottom:16px}.heading-status{display:flex;align-items:center;gap:12px}.revision{font-size:11px;color:var(--text-tertiary)}
+.category-root:first-child{margin-bottom:12px}.rail .category-root:first-child taild-brand-mark{width:28px;height:28px}
+.rail .rail-bottom{margin-top:auto;margin-bottom:0;flex-shrink:0}
+.category-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px;padding-bottom:16px;border-bottom:1px solid var(--cards-tertiary)}
+.category-tabs button{background:transparent;border-color:transparent;color:var(--text-secondary)}
+.category-tabs button.active{background:var(--cards-tertiary);border-color:var(--info-blue);color:var(--text-primary)}
+.connectivity-workspace{display:grid;gap:16px;min-width:0}.connectivity-toolbar,.resolver-state{display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+.connectivity-workspace label{display:flex;flex-direction:column;gap:8px}.connectivity-workspace .row{gap:16px}
+.device-name{font-size:24px;font-weight:500;margin:0}.device-addresses{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.device-addresses code{background:var(--cards-primary);padding:8px;border-radius:4px}
+.connectivity-confirm{padding:20px;border:1px solid var(--info-yellow);border-radius:6px;background:var(--cards-secondary)}
+.about-identity{display:flex;align-items:center;gap:20px;padding:16px 0}.about-identity taild-brand-mark{font-size:64px}.about-identity h2{font-size:30px;margin:0}
+.about-facts{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px 24px;margin:16px 0}.about-facts dd{margin:0;overflow-wrap:anywhere}.about-facts dt{color:var(--text-tertiary)}
 .shared-scope{position:sticky;top:0;z-index:10;background:var(--background);display:flex;gap:12px;align-items:end;
   flex-wrap:wrap;border-top:1px solid var(--cards-tertiary);border-bottom:1px solid var(--cards-tertiary);padding:12px 0}
 fieldset.shared-scope{margin:0;min-width:0;border-left:0;border-right:0}

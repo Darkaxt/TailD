@@ -17,9 +17,10 @@ import {mergeProgress,BatchProgress} from './progressive-batch';
 import {ControlDManagement} from './control-d-management';
 import {resolutionReason,resolutionCategories} from './resolution-reason';
 import {BrandMark} from './brand-mark';
+import {Connectivity,About} from './connectivity';
+import {Category,Page,categoryPages,categoryForPage} from './navigation';
 
 type Kind='traffic'|'dns'|'correlations';
-type Page='Overview'|'Applications'|'Activity'|'Control D'|'Sources & health'|'Settings';
 type Fact=Record<string,any>;
 interface Query {kind:string;view:string;start:string;end:string;scope:Record<string,string>;
   where?:Predicate;search?:string;group_by?:string[];order_by?:{field:string;direction:string}[];
@@ -37,23 +38,23 @@ const fields:Record<Kind,string[]>={
   dns:['question','type','endpoint','profile','client','action','outcome','reason','reason_value','protocol','provider_country','provider_asn','source','id','timestamp']};
 
 @Component({selector:'taild-app',standalone:true,
-  imports:[CommonModule,FormsModule,Collection,DashboardWidgetComponent,CircularBarChartComponent,SfngNetqueryLineChartComponent,Evidence,IngestionNotice,WorldMapComponent,ControlDManagement,BrandMark],
+  imports:[CommonModule,FormsModule,Collection,DashboardWidgetComponent,CircularBarChartComponent,SfngNetqueryLineChartComponent,Evidence,IngestionNotice,WorldMapComponent,ControlDManagement,BrandMark,Connectivity,About],
   template:`
   <button class="skip-link" (click)="skipContent()">Skip to analytics content</button>
   <div class="screen-reader-progress" role="status" aria-live="polite" aria-atomic="true">{{busy()?(pendingBatch()?'Some analytics panels are ready. Reading the remaining panels.':'Loading analytics…'):ready()?'Analytics view ready.':''}}</div>
-  <nav class="rail" aria-label="TailD navigation"><span class="brand" role="img" aria-label="TailD · independent Tailscale fork" title="TailD · independent Tailscale fork"><taild-brand-mark brand="tailscale" /></span>
-    <button *ngFor="let item of pages;let i=index" [id]="'nav-'+i" class="nav-link" [class.active]="page()===item" [disabled]="!catalog()"
-      [attr.aria-label]="item" [attr.aria-current]="page()===item?'page':null" [title]="item" (click)="navigate(item)">
-      <taild-brand-mark brand="controld" *ngIf="item==='Control D';else navigationIcon" />
-      <ng-template #navigationIcon><svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons[i]" fill="none" stroke="currentColor" stroke-width="1.6" /></svg></ng-template></button>
-    <span class="rail-bottom" title="Read-only analytics">READ</span></nav>
+  <nav class="rail" aria-label="TailD navigation">
+    <button id="category-tailscale" class="nav-link category-root" [class.active]="category()==='tailscale'" aria-label="Tailscale" title="Tailscale" [attr.aria-expanded]="category()==='tailscale'&&page()!=='About'" [attr.aria-controls]="page()==='About'?null:'category-pages'" (click)="selectCategory('tailscale')"><taild-brand-mark brand="tailscale" /></button>
+    <button id="nav-3" class="nav-link category-root" [class.active]="category()==='controld'" aria-label="Control D" title="Control D" [attr.aria-expanded]="category()==='controld'&&page()!=='About'" [attr.aria-controls]="page()==='About'?null:'category-pages'" (click)="selectCategory('controld')"><taild-brand-mark brand="controld" /></button>
+    <button id="category-analytics" class="nav-link category-root" [class.active]="category()==='analytics'" aria-label="Analytics" title="Analytics" [attr.aria-expanded]="category()==='analytics'&&page()!=='About'" [attr.aria-controls]="page()==='About'?null:'category-pages'" (click)="selectCategory('analytics')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18v16H3zM7 16v-4M12 16V8M17 16v-6" fill="none" stroke="currentColor" stroke-width="1.6" /></svg></button>
+    <button id="nav-about" class="nav-link rail-bottom" [class.active]="page()==='About'" [attr.aria-current]="page()==='About'?'page':null" aria-label="About TailD" title="About TailD" (click)="navigate('About')"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6" /><path d="M12 11v6M12 7v1" stroke="currentColor" stroke-width="2" /></svg></button></nav>
   <main id="analytics-main" tabindex="-1" class="analytics-shell" [attr.aria-busy]="busy()" [attr.data-revision]="displayBatch()?.revision" [attr.data-ready]="ready()">
-    <header class="page-heading"><div><div class="eyebrow product-brand"><taild-brand-mark brand="tailscale" /><span>TailD / Network analytics</span></div><h1 class="section-title"><taild-brand-mark brand="controld" *ngIf="page()==='Control D'" />{{page()}}</h1>
-      <p>{{page()==='Control D'?'Resolve DNS incidents · review shared-profile changes before applying.':page()==='Applications'&&application()!==undefined?appName(application()):'Observed facts. Honest gaps. Your network stays unchanged.'}}</p></div>
-      <div class="heading-status"><span class="badge" [class.good]="runtime()?.state==='collecting'">{{runtime()?.state||'Connecting'}}</span>
+    <header class="page-heading"><div><div class="eyebrow product-brand"><taild-brand-mark brand="tailscale" /><span>TailD / {{page()==='About'?'About':category()==='tailscale'?'Device control':category()==='controld'?'Control D':'Network analytics'}}</span></div><h1 class="section-title"><taild-brand-mark brand="controld" *ngIf="category()==='controld'&&page()!=='About'" />{{pageTitle()}}</h1>
+      <p>{{category()==='tailscale'&&page()!=='About'?'Manage the existing device · explicit changes, preserved identity.':category()==='controld'&&page()!=='About'?'Resolve DNS incidents · review shared-profile changes before applying.':page()==='Applications'&&application()!==undefined?appName(application()):'Observed facts. Honest gaps. Your network stays unchanged.'}}</p></div>
+      <div class="heading-status" *ngIf="category()!=='tailscale'&&page()!=='About'"><span class="badge" [class.good]="runtime()?.state==='collecting'">{{runtime()?.state||'Connecting'}}</span>
       <span class="revision" *ngIf="displayBatch() as b">Revision {{b.revision}}{{pendingBatch()?' · loading panels':''}}</span></div></header>
-    <taild-ingestion-notice *ngIf="page()!=='Settings'&&page()!=='Overview'" [state]="runtime()" [catalog]="catalog()" [start]="start" [end]="end" />
-    <fieldset class="shared-scope" aria-label="Shared analytics scope" [disabled]="busy()" *ngIf="page()!=='Control D'&&catalog() as c">
+    <nav id="category-pages" class="category-tabs" aria-label="Category pages" *ngIf="page()!=='About'"><button *ngFor="let item of categoryPages()" [id]="item.id" [class.active]="page()===item.page" [attr.aria-current]="page()===item.page?'page':null" (click)="navigate(item.page)">{{item.label}}</button></nav>
+    <taild-ingestion-notice *ngIf="category()!=='tailscale'&&page()!=='About'&&page()!=='Settings'&&page()!=='Overview'" [state]="runtime()" [catalog]="catalog()" [start]="start" [end]="end" />
+    <fieldset class="shared-scope" aria-label="Shared analytics scope" [disabled]="busy()" *ngIf="category()==='analytics'&&page()!=='About'&&catalog() as c">
       <label>Host scope<select id="scope-host" [(ngModel)]="host" (change)="hostChanged()"><option value="">All recorded hosts</option>
         <option *ngFor="let value of hosts()" [value]="value">{{value}}</option></select></label>
       <label>Observed node · traffic only<select id="scope-device" [(ngModel)]="device" (change)="scopeChanged()"><option value="">All / historical binding unknown</option>
@@ -73,7 +74,7 @@ const fields:Record<Kind,string[]>={
         <button id="available-history" (click)="availableHistory()" [disabled]="busy()">Latest retained hour</button></div>
     </fieldset>
     <div *ngIf="error()" id="analytics-error" class="error" role="alert">{{error()}}</div>
-    <div class="filter-tags" [attr.inert]="busy()?'':null" *ngIf="application()!==undefined || predicates.length || search">
+    <div class="filter-tags" [attr.inert]="busy()?'':null" *ngIf="category()==='analytics'&&page()!=='About'&&(application()!==undefined || predicates.length || search)">
       <span class="filter-pill" *ngIf="application()!==undefined">Application: {{appName(application())}}<button aria-label="Remove application scope" (click)="clearApplication()">×</button></span>
       <span class="filter-pill" *ngFor="let filter of predicates;let i=index">{{predicateLabel(filter)}}<button [attr.aria-label]="'Remove filter '+(i+1)" (click)="removeFilter(i)">×</button></span>
       <span class="filter-pill" *ngIf="search">Search: {{search}}<button aria-label="Remove search" (click)="clearSearch()">×</button></span>
@@ -212,7 +213,9 @@ const fields:Record<Kind,string[]>={
         <button id="open-query" [disabled]="busy()||!savedSelection" (click)="openSaved()">Open</button><button [disabled]="busy()||!savedSelection" (click)="removeSaved()">Remove</button></div>
     </section>
 
-    <taild-control-d *ngIf="page()==='Control D'" />
+    <taild-control-d *ngIf="category()==='controld'&&page()!=='About'" [section]="page()==='Control D policy'?'policy':'recent'" (sectionChange)="navigate('Control D policy')" />
+    <taild-connectivity *ngIf="category()==='tailscale'&&page()!=='About'" [view]="page()" />
+    <taild-about *ngIf="page()==='About'" />
     <section *ngIf="page()==='Sources & health'" class="grid">
       <app-dashboard-widget label="Live runtime" class="wide"><div class="status-table" *ngFor="let item of runtimeSources()"><span>{{item.name}}</span><span class="badge" [class.warn]="item.value.state!=='collecting'">{{item.value.state}}</span><taild-evidence [data]="item.value" /></div></app-dashboard-widget>
       <app-dashboard-widget label="History coverage & lag" class="wide"><details *ngFor="let source of summary()?.source_health.sources" class="policy-snapshot"><summary>{{source.kind}} · {{source.id}} · complete through {{source.complete_through||'Unknown'}}</summary><taild-evidence [data]="source" /></details></app-dashboard-widget>
@@ -231,13 +234,13 @@ const fields:Record<Kind,string[]>={
           <p id="history-status" role="status" *ngIf="notice()">{{notice()}}</p>
       </app-dashboard-widget>
     </section>
-    </div><footer><span>TailD · independent TailDNS fork · local READ analytics</span><span>Queries and exports preserve UTC scope, revision and unknowns.</span></footer>
+    </div><footer><span>TailD · independent TailDNS fork · device control & local analytics</span><span>Queries and exports preserve UTC scope, revision and unknowns.</span></footer>
   </main>`})
 class App {
-  pages:Page[]=['Overview','Applications','Activity','Control D','Sources & health','Settings'];
-  icons=['M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z','M3 7h18v14H3zM7 7V3h10v4M3 12h18',
-    'M2 12h5l3-8 4 16 3-8h5','','M3 4h18v16H3zM7 16v-4M12 16V8M17 16v-6',
-    'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2'];
+  category=signal<Category>('analytics');
+  categoryPages(){return categoryPages[this.category()]}
+  selectCategory(category:Category){void this.navigate(categoryPages[category][0].page)}
+  pageTitle(){return this.page()==='Control D'?'Recent DNS':this.page()==='Control D policy'?'Profile policy':this.page()==='Settings'?'Collection settings':this.page()}
   kinds:Kind[]=['traffic','dns','correlations'];page=signal<Page>('Overview');runtime=signal<State|null>(null);
   catalog=signal<Catalog|null>(null);batch=signal<Batch|null>(null);busy=signal(false);error=signal('');notice=signal('');ready=signal(false);
   pendingBatch=signal<Batch|null>(null);displayBatch=computed(()=>this.pendingBatch()||this.batch());
@@ -320,7 +323,7 @@ class App {
     try{
       if(newTime){if(this.range!=='custom')this.setTime();this.pageIndex=0;this.cursors=[undefined]}
       if(!/^\d{4}-\d\d-\d\dT.*Z$/.test(this.start)||!/^\d{4}-\d\d-\d\dT.*Z$/.test(this.end)||Date.parse(this.start)>=Date.parse(this.end))throw new Error('Use ascending RFC 3339 UTC timestamps ending in Z.');
-      if(this.page()==='Control D'){this.batch.set(null);this.ready.set(true);return;}
+      if(this.page()==='About'||this.category()==='tailscale'||this.category()==='controld'){this.batch.set(null);this.ready.set(true);return;}
       if(this.page()==='Settings'){
         this.catalog.set(await command<Catalog>('view-catalog'));this.runtime.set(await command<State>('state'));this.batch.set(null);this.ready.set(true);return;
       }
@@ -359,7 +362,7 @@ class App {
       this.pendingBatch.set(null);this.finishOperation();
     }
   }
-  async navigate(page:Page){this.page.set(page);this.notice.set('');
+  async navigate(page:Page){this.page.set(page);const category=categoryForPage(page);if(category)this.category.set(category);this.notice.set('');
     this.pageIndex=0;this.cursors=[undefined];
     if(page==='Applications'){this.kind='traffic';this.group=''}
     if(this.busy()){this.loadingGeneration++;this.queuedNavigation=true;this.pendingBatch.set(null);this.batch.set(null);return}
