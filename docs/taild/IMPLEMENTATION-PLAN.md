@@ -58,6 +58,13 @@ The initial UIA probe's Windows PowerShell Unicode-title decoding and transient
 UIA-node failures were probe defects, corrected without an application patch.
 Deployment evidence: management-10/live-update/after-10.json, installed-ui.json,
 provider.json and frozen.json beneath the durable validation directory above.
+Cleanup uses reviewed exact-file tickets, preserving published/recovery evidence.
+The installer left only two empty directories at
+`C:/Users/darka/AppData/Local/Temp/is-CVAGSD4X3E.tmp` and its `{app}` child.
+The helper attempted removal and reported both locked; `icacls` independently
+shows the owner-user has RX only while Administrators/SYSTEM have full control.
+No files remain there. The uncompleted ticket was revoked, not falsely reported
+as applied; no ACL change or extra administrator action was introduced for 0 B.
 
 ## Current correction — 2026-10-15
 
