@@ -1,5 +1,30 @@
 # TailD staged execution
 
+October 16 R29 ACTIVE within the sole ACTIVE Stage 10. B36 resolved in source:
++15's generated overlay hash 8f38d6c7489d5b64f9954fd78518c08180e4bc33f13812d90346f28fc91c0088
+matches the exact CP1252 decode / UTF-8 CRLF emission. UTF-8 input is now explicit
+for every local Go overlay. The regression fails under simulated Windows ANSI
+decoding before the change and passes after it; exact inherited-core integration
+also passes. Native Windows EnumWindows identity/minimize/restore regression
+passes against the fixed generated overlay and fails against the corrupted title.
+Serialized/rapid-launch and foreground-denial contracts pass. No test targets the
+installed GUI after the owner's leave-for-today instruction; +15 remains installed
+and is NOT claimed fixed locally. The only refactoring extracts the existing
+restore operation for direct native regression; no new service/IPC/fallback.
+The user now authorizes Tailscale activity trackers after this popup correction,
+and requires stopping before final deployment. Record R30 before implementation.
+
+Original B36 diagnosis: +15's
+generated tray overlay matches CP1252/CRLF transformation of UTF-8 source; the
+wrong window title launches a second process into the busy collector pipe.
+Explicit UTF-8 and native same-window activation are verified as above; the
+right-click handler is unchanged. B37 (internal): inspect and correct
+bandwidth card geometry and map-related grid holes, then verify the complete
+native-served layout at required sizes/states. Both block R29 acceptance; no
+deferrals or new stage. Sequence: close activation defect first, then layout and
+source documentation, integrated verification/reconciliation, commit/sync. No
+new release/deployment authority is inferred; broader B12 remains open.
+
 October 16 R28 +15 delivery verified under the owner's "install it" authorization.
 Stage 10 remains the sole ACTIVE stage for broader B12. Workflow 38820000299
 passed every gate at exact source 0e55ab92258e10fcd079bde2606a8c7eb1c44c07.

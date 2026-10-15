@@ -68,14 +68,14 @@ def recovery_overlay(source):
 
 def create(core,output):
     core=core.resolve(strict=True)
-    if not core.name.endswith('-'+PIN) or (core/'VERSION.txt').read_text().strip()!='1.105.0':
+    if not core.name.endswith('-'+PIN) or (core/'VERSION.txt').read_text(encoding='utf-8').strip()!='1.105.0':
         raise ValueError('Review TailD overlay against the new inherited core pin before building')
     # Read/transform all inputs before creating output; drift is a build failure,
     # not an invitation to weaken source matching or modify the shared cache.
     sources={name:(core/name).read_text(encoding='utf-8') for name in SOURCE_FILES}
     for name,source in list(sources.items()):
         if name=='clientupdate/taildnsupdate/start_windows.go':
-            sources[name]=(Path(__file__).parent/'core-overlay/start_windows.go').read_text()
+            sources[name]=(Path(__file__).parent/'core-overlay/start_windows.go').read_text(encoding='utf-8')
         elif name=='cmd/taildns-ipn/main_windows.go':
             if source.count('ProductName: "TailDNS"')!=1:raise ValueError('Tray identity drift')
             sources[name]=source.replace('ProductName: "TailDNS"','ProductName: "TailD"')
@@ -106,9 +106,9 @@ def create(core,output):
             sources[name]=source.replace('TailDNS','TailD')
     output.mkdir(parents=True,exist_ok=False)
     replacements={}
-    sources['cmd/taildns-installer/taild_resume_windows.go']=(Path(__file__).parent/'core-overlay/resume_windows.go').read_text()
+    sources['cmd/taildns-installer/taild_resume_windows.go']=(Path(__file__).parent/'core-overlay/resume_windows.go').read_text(encoding='utf-8')
     for name in ('desktop_windows.go','desktop_windows_test.go'):
-        sources['cmd/taildns-ipn/taild_'+name]=(Path(__file__).parent/'core-overlay'/name).read_text()
+        sources['cmd/taildns-ipn/taild_'+name]=(Path(__file__).parent/'core-overlay'/name).read_text(encoding='utf-8')
     for name,source in sources.items():
         target=output/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_text(source,encoding='utf-8')
         replacements[str(core/name)]=str(target.resolve())

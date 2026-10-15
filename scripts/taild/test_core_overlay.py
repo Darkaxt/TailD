@@ -4,11 +4,29 @@ import os
 from pathlib import Path
 import unittest
 import uuid
+from unittest.mock import patch
 import core_overlay
 import core_manifest
 
 
 class CoreOverlayTest(unittest.TestCase):
+    def test_local_overlay_unicode_is_independent_of_windows_ansi_code_page(self):
+        root=Path(os.environ['TAILD_PACKAGE_TEST_OUTPUT'])/uuid.uuid4().hex
+        core=root/('core-'+core_overlay.PIN);core.mkdir(parents=True)
+        (core/'VERSION.txt').write_text('1.105.0',encoding='utf-8')
+        read=Path.read_text
+        def legacy_read(path,*args,encoding=None,**kwargs):
+            return read(path,*args,encoding=encoding or 'cp1252',**kwargs)
+        # Isolate inherited transforms, not the real local Go input/output path.
+        with patch.object(core_overlay,'SOURCE_FILES',()),patch.object(Path,'read_text',legacy_read):
+            overlay=core_overlay.create(core,root/'overlay')
+        replacements=json.loads(overlay.read_text(encoding='utf-8'))['Replace']
+        for name in ('desktop_windows.go','desktop_windows_test.go','resume_windows.go'):
+            emitted=Path(replacements[str(core/'cmd'/('taildns-installer' if name=='resume_windows.go' else 'taildns-ipn')/('taild_'+name))])
+            expected=(Path(core_overlay.__file__).parent/'core-overlay'/name).read_text(encoding='utf-8')
+            self.assertEqual(emitted.read_text(encoding='utf-8'),expected,
+                'ANSI decoding changes the identity used to find the existing window')
+
     def test_reviewed_build_pins_match_inherited_module(self):
         root=Path(__file__).resolve().parents[2]
         replace=next(line for line in (root/'go.mod').read_text().splitlines()

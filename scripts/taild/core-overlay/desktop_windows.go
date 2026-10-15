@@ -141,15 +141,19 @@ func focusDesktopWindow() (bool, error) {
 		}
 		return false, nil
 	}
+	return activateDesktopWindow(search.window, search.pid)
+}
+
+func activateDesktopWindow(window uintptr, pid uint32) (bool, error) {
 	var currentPID uint32
-	desktopPID.Call(search.window, uintptr(unsafe.Pointer(&currentPID)))
-	if currentPID != search.pid {
+	desktopPID.Call(window, uintptr(unsafe.Pointer(&currentPID)))
+	if currentPID != pid {
 		return false, nil
 	}
-	if minimized, _, _ := desktopIconic.Call(search.window); minimized != 0 {
-		desktopShow.Call(search.window, 9)
+	if minimized, _, _ := desktopIconic.Call(window); minimized != 0 {
+		desktopShow.Call(window, 9)
 	}
-	if focused, _, _ := desktopForeground.Call(search.window); focused == 0 {
+	if focused, _, _ := desktopForeground.Call(window); focused == 0 {
 		return true, errors.New("Windows denied foreground activation")
 	}
 	return true, nil

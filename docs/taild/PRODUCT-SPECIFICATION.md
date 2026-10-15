@@ -1041,6 +1041,25 @@ the installed identity, services, DNS and R28 browsing/refresh behavior. Do not
 reset history or change provider policy. Existing Stage 10 owns this delivery;
 broader B12 obligations remain unchanged.
 
+### R29 — Existing-window activation and dashboard geometry
+
+Tray activation must restore the same minimized native window without a second
+launcher, collector or error dialog. Preserve same-owner/path checks, ordinary
+close/reopen, rapid-click serialization and the right-click menu. Read every local
+Go overlay explicitly as UTF-8 so Windows ANSI code pages cannot change window
+identity. Verify generated source Unicode, the real minimized-window activation
+path, and no collector/settings/credential changes. The observed +15 overlay hash
+matches CP1252 transcoding with Windows CRLF output, confirming this build defect.
+
+Correct Bandwidth history geometry and remove unallocated grid holes after the
+map's independent-height correction. Preserve the Portmaster-derived widgets,
+Tailscale theme, source/unknown semantics, 560px minimum and 100%/150% app zoom.
+Anchor the fix in measured native-served layouts with populated and empty states.
+Document the actual Tailscale context contribution separately from GlassWire
+traffic bytes and Control D DNS/answer geography. Do not invent packet metrics.
+Existing Stage 10 owns this correction, verification and commit/sync. This bug
+report does not independently authorize another public release or deployment.
+
 ## 15. Stage mapping and verification boundaries
 
 | Stage | Required scope | Status at specification creation |
