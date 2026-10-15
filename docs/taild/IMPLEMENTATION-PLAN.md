@@ -29,9 +29,16 @@ bounded acquisition pass, NOT complete seven-day backfill or the historical caus
 The initial probe correctly reported GlassWire unavailable because the paused
 installed owner retained its exclusive reader pipe; it was gracefully stopped
 before the sole-owner probe, rather than weakening IPC ownership.
-Remaining B34 gates: replay above the observed failure volume, frozen package/
+The private replay now passes close/reopen integrity at 2,154,967,040 database
+bytes (above the observed failure volume), with representative stored inputs,
+synthetic scopes, concurrent physically read-only snapshots and no further provider
+requests. Legacy 3.50.4 -> 3.54.0 opening also preserves exact 64-bit counters and
+integrity. These are runtime/data verification, not proof of the historical race
+or production GUI presentation timing. Remaining B34 gates: frozen package/
 installer verification, then authorized fresh test-history and installed source/UI
-acceptance. No new global runtime, additional service, retry, timeout or deferral.
+acceptance. Evidence: release-13/sqlite-fixed-{live,volume}.json and
+sqlite-legacy-abi.json. No new global runtime, additional service, retry, timeout
+or deferral. R26 loading and equal-icon changes remain unchanged.
 
 October 15 R26 incident loading/icon correction: Stage 10 is the single **ACTIVE**
 stage again. The owner explicitly accepts reloading the corrupt testing database;
