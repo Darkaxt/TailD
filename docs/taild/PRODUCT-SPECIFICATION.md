@@ -1,6 +1,6 @@
 # TailD remaining-product specification
 
-Version 1.8, 2026-10-14. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.9, 2026-10-15. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
 
 ## 1. Authority, authorization and completion boundary
 
@@ -528,6 +528,40 @@ unobserved geography remains neutral, never fabricated routes/location. Keep
 country/ASN tables and unsupported firewall/SPN widgets excluded. Verify actual
 served assets at the existing representative viewports and app-local 150% zoom,
 held refresh/error recovery, duplicate names, country drill-down and exact export.
+
+October 15 correction (R15d; ACTIVE Stage 10, explicitly authorized): repair
+the indefinitely loading Overview panels and slow Applications page on grown
+real history. Reconcile run coverage from one revision-local preparation, rather
+than repeating per-attempt SQL scans for every bin. Application-only rankings
+must not evaluate unrelated DNS correlations. Preserve exact counters, ordering,
+correlation semantics, coverage gaps/deletions/late resolution and read revisions.
+
+Provide independent Control D answer-geography observations even when no local
+traffic/resolver binding exists. Default the coordinated country/map widgets to
+DNS decision counts; retain an explicit inferred-traffic-bytes mode. Label each
+metric, scope and missing metadata. DNS country selection opens matching DNS
+facts; traffic-country selection retains the existing inferred traffic explorer.
+Never present DNS counts as transferred bytes or infer a host/location from them.
+Classify only provider-verified action codes; retain raw actions and unknown codes,
+version the mapping and report the classified denominator/excluded unknowns.
+
+Acceptance: deterministic regressions reproduce the prior scan amplification,
+application correlation dependency and unknown-only outcomes; unchanged coverage
+and exact results reconcile against the previous evaluator on bounded fixtures.
+Benchmark the actual physical seven-day history through read-only snapshots,
+including Applications and progressive Overview, with no settings/retention change.
+Verify current native served widgets, country/outcome drill-down, loading/error/
+navigation/close and representative layout/scaling. Perform sequential bounded QA
+reviews of TailD-added lifecycle/IPC, ingestion/data and presentation code; triage
+concrete acceptance defects and verify repairs. No new release or installation is
+authorized by this correction request alone.
+
+The subsequent October 15 request additionally authorizes a capability-focused
+repository README and actual native dashboard screenshots. Capture an explicitly
+synthetic, reproducible demonstration fixture; publish no private account, domain,
+application or host data. Identify screenshots as development-main UI, distinguish
+shipped functionality from unreleased corrections and retain upstream licensing,
+attribution and the independent-fork identity.
 
 October 14 report-driven dashboard amendment (R15b; owned by ACTIVE Stage 10):
 use [the complete layout mapping](PORTMASTER-LAYOUT-MAP.md) to improve the

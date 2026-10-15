@@ -11,7 +11,7 @@ import {DashboardWidgetComponent} from './portmaster/panel';
 import {Bin,Consumer,CircularBarChartComponent,SfngNetqueryLineChartComponent,bytes,exact} from './portmaster/charts';
 import {Evidence} from './evidence';
 import {applicationName} from './application-label';
-import {WorldMapComponent} from './portmaster/world-map';
+import {WorldMapComponent,GeographyRow} from './portmaster/world-map';
 import {DEFAULT_TIME_RANGE,presetBounds} from './time-range';
 import {mergeProgress,BatchProgress} from './progressive-batch';
 
@@ -31,7 +31,7 @@ const numeric=new Set(['timestamp','destination_port','protocol_raw','inbound_by
 const fields:Record<Kind,string[]>={
   traffic:['application','application_path','destination_ip','destination_port','protocol_raw','total_bytes','inbound_bytes','outbound_bytes','source','correlation_state','context_state','destination_country','destination_asn','question','type','endpoint','profile','action','outcome','reason','client','id','timestamp'],
   correlations:['application','application_path','destination_ip','destination_port','protocol_raw','total_bytes','source','correlation_state','context_state','question','endpoint','profile','reason','id','timestamp'],
-  dns:['question','type','endpoint','profile','client','action','outcome','reason','reason_value','protocol','source','id','timestamp']};
+  dns:['question','type','endpoint','profile','client','action','outcome','reason','reason_value','protocol','provider_country','provider_asn','source','id','timestamp']};
 
 @Component({selector:'taild-app',standalone:true,
   imports:[CommonModule,FormsModule,Collection,DashboardWidgetComponent,CircularBarChartComponent,SfngNetqueryLineChartComponent,Evidence,IngestionNotice,WorldMapComponent],
@@ -50,7 +50,7 @@ const fields:Record<Kind,string[]>={
       <span class="revision" *ngIf="displayBatch() as b">Revision {{b.revision}}{{pendingBatch()?' · loading panels':''}}</span></div></header>
     <taild-ingestion-notice *ngIf="page()!=='Settings'&&page()!=='Overview'" [state]="runtime()" [catalog]="catalog()" [start]="start" [end]="end" />
     <fieldset class="shared-scope" aria-label="Shared analytics scope" [disabled]="busy()" *ngIf="catalog() as c">
-      <label>Host scope<select id="scope-host" [(ngModel)]="host" (change)="scopeChanged()"><option value="">All recorded hosts</option>
+      <label>Host scope<select id="scope-host" [(ngModel)]="host" (change)="hostChanged()"><option value="">All recorded hosts</option>
         <option *ngFor="let value of hosts()" [value]="value">{{value}}</option></select></label>
       <label>Observed node · traffic only<select id="scope-device" [(ngModel)]="device" (change)="scopeChanged()"><option value="">All / historical binding unknown</option>
         <option *ngFor="let value of nodes()" [value]="value">{{value}}</option></select></label>
@@ -123,12 +123,12 @@ const fields:Record<Kind,string[]>={
           <div class="rank-table"><button *ngFor="let item of correlation()" (click)="correlationScope(item.name)"><span>{{item.name}}</span><span>{{format(item.bytes)}}</span><small>{{item.count}} buckets</small></button></div>
           <p class="hint">A unique temporal candidate is an inference. Cache, TTL and process-to-domain origin are unproven.</p>
         </app-dashboard-widget>
-        <app-dashboard-widget label="DNS outcomes · provider codes unverified" class="half" id="dashboard-outcomes" [class.panel-pending]="!dnsSummary()">
+        <app-dashboard-widget label="DNS outcomes · Control D decisions" class="half" id="dashboard-outcomes" [class.panel-pending]="!dnsSummary()">
           <p class="hint">Observed decision categories for the selected endpoint.</p>
-          <div class="partition" aria-label="DNS outcome distribution"><ng-container *ngFor="let item of outcomes()"><button *ngIf="item.count>0" [attr.data-outcome]="item.name" [style.flex-grow]="item.count" (click)="outcomeScope(item.name)" [attr.aria-label]="item.name+': '+item.count+' decisions'">{{item.name}}</button></ng-container></div>
-          <div class="rank-table"><ng-container *ngFor="let item of outcomes()"><button *ngIf="item.count>0" (click)="outcomeScope(item.name)"><span>{{item.name}}</span><span>{{item.count}}</span></button></ng-container></div>
+          <div class="partition" aria-label="DNS outcome distribution"><ng-container *ngFor="let item of outcomes()"><button *ngIf="item.count>0" [attr.data-outcome]="item.name" [style.flex-grow]="item.count" (click)="outcomeScope(item.name)" [attr.aria-label]="outcomeLabel(item.name)+': '+item.count+' decisions'">{{outcomeLabel(item.name)}}</button></ng-container></div>
+          <div class="rank-table"><ng-container *ngFor="let item of outcomes()"><button *ngIf="item.count>0" (click)="outcomeScope(item.name)"><span>{{outcomeLabel(item.name)}}</span><span>{{item.count}}</span></button></ng-container></div>
           <p class="hint" *ngIf="!dnsSummary()?.dns_activity.events">No DNS decisions observed in this scope.</p>
-          <p class="hint">Block rate unavailable until action meanings are verified. Unknown does not mean allowed.</p>
+          <p class="hint" *ngIf="dnsSummary()?.dns_outcomes as outcomes">{{outcomes.classified_denominator}} classified successful decisions · {{outcomes.excluded_failed}} failed · {{outcomes.excluded_unknown}} unknown. Unknown does not mean bypassed.</p>
         </app-dashboard-widget>
         <app-dashboard-widget label="DNS questions · selected endpoint" class="half" id="dashboard-questions" [class.panel-pending]="!dnsSummary()">
           <div class="rank-table"><button *ngFor="let item of questions().slice(0,12)" (click)="questionScope(item.value)"><span>{{item.value||'Unknown question'}}</span><span>{{item.events}} decisions</span></button></div>
@@ -139,19 +139,20 @@ const fields:Record<Kind,string[]>={
         <app-dashboard-widget label="Destinations · exact bucket bytes" class="half" id="dashboard-destinations" *ngIf="application()===undefined" [class.panel-pending]="!summary()">
           <div class="rank-table"><button *ngFor="let item of destinations().slice(0,12)" (click)="destinationScope(item.value)"><span>{{item.value||'Unknown destination'}}</span><span>{{format(item.total_bytes)}}</span></button></div>
         </app-dashboard-widget>
-        <app-dashboard-widget label="Answer countries / ASN · inferred" class="half" id="dashboard-countries" [class.panel-pending]="!summary()">
-          <p class="hint">Unique temporal candidates · highlight a country to locate it on the map.</p>
-          <div class="country-tiles"><button *ngFor="let item of s.geography_asn.countries" class="country-tile" [attr.data-country]="item.value||'unknown'"
+        <app-dashboard-widget [label]="geographyMode()==='dns'?'Answer countries / ASN · DNS decisions':'Answer countries / ASN · inferred traffic'" class="half" id="dashboard-countries" [class.panel-pending]="!geographyReady()">
+          <label class="geography-selector">Geography metric<select id="geography-mode" [ngModel]="geographyMode()" (ngModelChange)="geographyMode.set($event)"><option value="dns">Control D DNS decisions</option><option value="traffic">Inferred traffic bytes</option></select></label>
+          <p class="hint">{{geographyMode()==='dns'?'Independent endpoint scope · provider-reported answer geography, not traffic bytes.':'Unique temporal candidates · inferred bytes, not measured routes.'}} Highlight a country to locate it on the map.</p>
+          <div class="country-tiles"><button *ngFor="let item of geographyCountries()" class="country-tile" [attr.data-country]="item.value||'unknown'"
               (mouseenter)="highlightedCountry.set(item.value)" (mouseleave)="highlightedCountry.set(null)"
               (focus)="highlightedCountry.set(item.value)" (blur)="highlightedCountry.set(null)"
-              [title]="countryName(item.value)+': '+item.total_bytes+' inferred bytes'" (click)="geographyScope('destination_country',item.value)">
-              <span class="country-code" aria-hidden="true">{{item.value||'?'}}</span><span class="country-name">{{countryName(item.value)}}</span><span>{{format(item.total_bytes)}}</span></button></div>
-          <details class="geography-data"><summary>Exact country / ASN data</summary><div class="table-scroll"><table><caption>Control D single-answer metadata; not measured routes</caption><thead><tr><th>Country</th><th>Candidate bytes</th></tr></thead>
-            <tbody><tr *ngFor="let item of s.geography_asn.countries"><td><button class="identity-link" (click)="geographyScope('destination_country',item.value)">{{item.value||'Unknown'}}</button></td><td [title]="item.total_bytes+' bytes'">{{format(item.total_bytes)}}</td></tr></tbody></table>
-            <table><thead><tr><th>Answer ASN</th><th>Candidate bytes</th></tr></thead><tbody><tr *ngFor="let item of s.geography_asn.asns"><td><button class="identity-link" (click)="geographyScope('destination_asn',item.value)">{{item.value||'Unknown'}}</button></td><td>{{format(item.total_bytes)}}</td></tr></tbody></table></div></details>
+              [title]="countryName(item.value)+': '+geographyValue(item)" (click)="selectGeography('country',item.value)">
+              <span class="country-code" aria-hidden="true">{{item.value||'?'}}</span><span class="country-name">{{countryName(item.value)}}</span><span>{{geographyValue(item)}}</span></button></div>
+          <details class="geography-data"><summary>Exact country / ASN data</summary><div class="table-scroll"><table><caption>Control D answer metadata; not measured routes or device location</caption><thead><tr><th>Country</th><th>{{geographyMode()==='dns'?'DNS decisions':'Inferred bytes'}}</th></tr></thead>
+            <tbody><tr *ngFor="let item of geographyCountries()"><td><button class="identity-link" (click)="selectGeography('country',item.value)">{{item.value||'Unknown'}}</button></td><td>{{geographyValue(item)}}</td></tr></tbody></table>
+            <table><thead><tr><th>Answer ASN</th><th>{{geographyMode()==='dns'?'DNS decisions':'Inferred bytes'}}</th></tr></thead><tbody><tr *ngFor="let item of geographyAsns()"><td><button class="identity-link" (click)="selectGeography('asn',item.value)">{{item.value||'Unknown'}}</button></td><td>{{geographyValue(item)}}</td></tr></tbody></table></div></details>
         </app-dashboard-widget>
-        <app-dashboard-widget label="Answer-country map · inferred" class="half" id="dashboard-map" [class.panel-pending]="!summary()">
-          <taild-world-map *ngIf="summary()" [data]="s.geography_asn.countries" [highlightedCountry]="highlightedCountry()" (selectCountry)="geographyScope('destination_country',$event)" />
+        <app-dashboard-widget [label]="geographyMode()==='dns'?'Answer-country map · DNS decisions':'Answer-country map · inferred traffic'" class="half" id="dashboard-map" [class.panel-pending]="!geographyReady()">
+          <taild-world-map *ngIf="geographyReady()" [metric]="geographyMode()==='dns'?'decisions':'traffic'" [data]="geographyCountries()" [highlightedCountry]="highlightedCountry()" (selectCountry)="selectGeography('country',$event)" />
         </app-dashboard-widget>
       </div>
     </ng-container>
@@ -256,6 +257,12 @@ class App {
   group='';order='timestamp:desc';pageIndex=0;cursors:(string|undefined)[]=[undefined];savedName='';savedSelection='';retentionDays=7;deleteKind='traffic';confirmDelete=false;
   private lastQuery:Query|null=null;private loadingGeneration=0;private queuedNavigation=false;
   highlightedCountry=signal<string|null>(null);private countryNames=new Intl.DisplayNames(['en'],{type:'region'});
+  geographyMode=signal<'dns'|'traffic'>('dns');
+  geographyReady=computed(()=>!!(this.geographyMode()==='dns'?this.dnsSummary():this.summary()));
+  geographyCountries=computed<GeographyRow[]>(()=>this.geographyMode()==='dns'?this.dnsSummary()?.geography_asn.provider_decisions.country||[]:this.summary()?.geography_asn.countries||[]);
+  geographyAsns=computed<Fact[]>(()=>this.geographyMode()==='dns'?this.dnsSummary()?.geography_asn.provider_decisions.asn||[]:this.summary()?.geography_asn.asns||[]);
+  geographyValue(item:Fact){return this.geographyMode()==='dns'?item.events+' decisions':this.format(item.total_bytes)}
+  outcomeLabel(name:string){return ({allow:'Bypassed',block:'Blocked',redirect:'Redirected',failed:'Request failed',other:'Other',unknown:'Unknown'} as Record<string,string>)[name]||name}
   countryName(value:string|null){return value&&/^[A-Z]{2}$/.test(value)?this.countryNames.of(value)||value:value||'Unknown geography'}
   format=bytes;hosts=computed(()=>[...new Set((this.catalog()?.sources||[]).filter(s=>s.kind==='traffic').map(s=>s.scope))]);
   accounts=computed(()=>[...new Set(this.providerSources().map(s=>s.scope))]);
@@ -356,8 +363,7 @@ class App {
       this.ready.set(true);
       if(focused)requestAnimationFrame(()=>document.getElementById(focused)?.focus());
     }catch(e){if(generation===this.loadingGeneration)this.error.set((e as Error).message)}finally{
-      this.pendingBatch.set(null);this.busy.set(false);
-      if(this.queuedNavigation){this.queuedNavigation=false;void this.refresh()}
+      this.pendingBatch.set(null);this.finishOperation();
     }
   }
   async navigate(page:Page){this.page.set(page);this.notice.set('');
@@ -366,6 +372,8 @@ class App {
     if(this.busy()){this.loadingGeneration++;this.queuedNavigation=true;this.pendingBatch.set(null);this.batch.set(null);return}
     await this.scopeChanged();}
   async scopeChanged(){this.pageIndex=0;this.cursors=[undefined];await this.refresh()}
+  finishOperation(){this.busy.set(false);if(this.queuedNavigation){this.queuedNavigation=false;void this.refresh()}}
+  hostChanged(){if(this.device&&!this.nodes().includes(this.device))this.device='';void this.scopeChanged()}
   timeChanged(){if(this.range!=='custom')this.setTime();void this.scopeChanged()}
   customTime(){this.range='custom';void this.scopeChanged()}
   accountChanged(){this.endpoint='';void this.scopeChanged()}
@@ -384,6 +392,9 @@ class App {
   questionScope(value:string|null){this.independentDns();this.constrain({field:'question',op:'eq',value});this.explore('dns')}
   candidateQuestionScope(value:string){this.constrain({field:'question',op:'eq',value});this.explore('traffic')}
   geographyScope(field:string,value:string|null){this.constrain({field,op:'eq',value});this.explore('traffic')}
+  selectGeography(field:'country'|'asn',value:string|null){if(this.geographyMode()==='dns'){
+    this.independentDns();this.constrain({field:'provider_'+field,op:'eq',value});this.explore('dns');
+  }else this.geographyScope('destination_'+field,value)}
   correlationScope(value:string){this.constrain({field:'correlation_state',op:'eq',value});this.explore('correlations')}
   outcomeScope(value:string){this.independentDns();this.constrain({field:'outcome',op:'eq',value});this.explore('dns')}
   binScope(bin:Bin){this.start=bin.scope_start||bin.start;this.end=bin.scope_end||bin.end;this.range='custom';this.explore('traffic')}
@@ -412,16 +423,16 @@ class App {
   async exportFacts(format:'json'|'csv'){if(!this.lastQuery||!this.batch()||this.busy())return;this.busy.set(true);this.error.set('');
     try{const result=await command<Fact>('export-query',{query:this.lastQuery,revision:this.batch()!.revision,format});
       this.notice.set(result.cancelled?'Export cancelled.':`Saved ${result.name}: ${result.row_count} facts, revision ${result.revision}${result.coverage_incomplete?' · partial coverage':''}.`)}
-    catch(e){this.error.set((e as Error).message)}finally{this.busy.set(false)}}
+    catch(e){this.error.set((e as Error).message)}finally{this.finishOperation()}}
   async saveQuery(){if(!this.lastQuery)return;const query={...this.lastQuery};
     if(this.group){query.view='groups';query.group_by=[this.group];delete query.limit;query.order_by=[{field:'count',direction:'desc'}]}
     this.busy.set(true);try{this.saved.set((await command<{queries:Saved[]}>('saved-query',{action:'save',name:this.savedName.trim(),query})).queries);this.notice.set('Saved locally. No account data uploaded.')}
-    catch(e){this.error.set((e as Error).message)}finally{this.busy.set(false)}}
+    catch(e){this.error.set((e as Error).message)}finally{this.finishOperation()}}
   async openSaved(){const saved=this.saved().find(s=>s.name===this.savedSelection);if(!saved)return;const q=saved.query;
     this.application.set(undefined);this.start=q.start;this.end=q.end;this.range='custom';this.host=q.scope.host||'';this.device=q.scope.device||'';this.account=q.scope.account||'';this.endpoint=q.scope.endpoint||'';
     this.kind=q.kind as Kind;this.field=fields[this.kind][0];this.search=q.search||'';this.predicates=q.where?[q.where]:[];this.combine='all';this.group=q.view==='groups'?q.group_by?.[0]||'':'';
     this.order=q.view==='facts'&&q.order_by?`${q.order_by[0].field}:${q.order_by[0].direction}`:'timestamp:desc';await this.scopeChanged()}
-  async removeSaved(){this.busy.set(true);try{this.saved.set((await command<{queries:Saved[]}>('saved-query',{action:'remove',name:this.savedSelection})).queries);this.savedSelection=''}catch(e){this.error.set((e as Error).message)}finally{this.busy.set(false)}}
+  async removeSaved(){this.busy.set(true);try{this.saved.set((await command<{queries:Saved[]}>('saved-query',{action:'remove',name:this.savedSelection})).queries);this.savedSelection=''}catch(e){this.error.set((e as Error).message)}finally{this.finishOperation()}}
   resourceEntries(value:Fact){return Object.entries(value||{}).map(([name,value])=>({name,value:value as Fact}))}
   policyIdentity(policy:Fact){const {resources,...identity}=policy;return identity}
   async retentionChanged(){if(this.busy())return;if(!Number.isInteger(this.retentionDays)||this.retentionDays<1||this.retentionDays>3650){this.error.set('Retention must be 1–3650 days.');return}

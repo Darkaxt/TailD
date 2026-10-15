@@ -374,7 +374,17 @@ def main(argv=None):
                 if journal is not None and journal['phase'] not in ('complete','recovered'):
                     delivery.journal_manifest(journal,'new')
                     updater.graceful_stop({'owner_sid':journal['owner_sid'],'local_data':journal['local_data']})
-                else:updater.graceful_stop(updater.owner())
+                else:
+                    installed=manifest.verify(app_directory(),installed=True)
+                    metadata=json.loads((app_directory()/'installation.json').read_bytes())
+                    if installed['schema']=='taild-package-v1' and not metadata.get('local_data'):
+                        # v1 did not persist LocalAppData. Use only the original
+                        # unelevated owner's explicit setup receipt, never the
+                        # administrator's profile or a guessed profile path.
+                        if metadata['owner_sid']!=args.owner or local_data is None:
+                            raise manifest.PackageError('installed-owner-location-unavailable')
+                        updater.graceful_stop({'owner_sid':args.owner,'local_data':local_data})
+                    else:updater.graceful_stop(updater.owner())
             delivery.prepare(args.candidate,args.owner,local_data)
         else:prepare(args.candidate,args.owner)
     elif args.operation=='finish':

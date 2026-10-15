@@ -45,7 +45,7 @@ def populate(directory):
          'query_window':traffic['query_window'],'truncated':False,'rows':[
            {'source':'controld-activity-csv','raw':{'timestamp':history.utc(history.instant(r['timestamp_utc'])-1000000),
             'endpointId':'synthetic-endpoint','question':'synthetic.invalid','answers':r['destination_ip'],
-            'rrType':'A','action':'unverified-code','trigger':'synthetic-reason','answerCountryCode':'DE','answerASN':'64500'}} for r in rows]}
+            'rrType':'A','action':('-1','0','1','2','3','unverified-code')[i%6],'trigger':'synthetic-reason','answerCountryCode':'DE','answerASN':'64500'}} for i,r in enumerate(rows)]}
     with_store.import_dns(dns,'synthetic-account','synthetic-endpoint')
     engine=analytics.Analytics(with_store)
     engine.record_context('synthetic-host',{'source':'taildns-cli-readonly','captured_at_utc':START,'observed_until_utc':END,
@@ -144,6 +144,19 @@ def export_ui(session,format,destination):
     assert destination.is_file()
 
 
+def capture_preview(session,destination):
+    """Actual WebView surface, not CDP's incorrect native-zoom clip or desktop occlusion."""
+    import base64
+    encoded=session.page.evaluate('''()=>new Promise((resolve,reject)=>{
+      const id=910001;const receive=e=>{if(e.data.id!==id)return;
+        chrome.webview.removeEventListener('message',receive);
+        if(e.data.ok)resolve(e.data.data.png);else reject(new Error('Validation capture failed'))};
+      chrome.webview.addEventListener('message',receive);
+      chrome.webview.postMessage({id,op:'validation-capture',body:{}})})''')
+    png=base64.b64decode(encoded,validate=True);assert png.startswith(b'\x89PNG\r\n\x1a\n')
+    destination.write_bytes(png)
+
+
 def duplicate_executable_drilldown(page):
     from playwright.sync_api import expect
     for path,count in (('C:\\Synthetic\\normal.exe',42),('D:\\Other\\normal.exe',41)):
@@ -166,6 +179,7 @@ def dashboard_workflow(session,output):
     counts=page.locator('#dashboard-dns-trend tbody tr').evaluate_all('(rows)=>rows.map(r=>Number(r.cells[1].textContent))')
     assert sum(counts)==expected==125
     original_revision=page.locator('main').get_attribute('data-revision')
+    page.locator('#geography-mode').select_option('dns')
     tile=page.locator('.country-tile[data-country="DE"]');tile.focus()
     expect(page.locator('taild-world-map path[data-country="DE"]')).to_have_class('observed highlighted')
     assert page.locator('main').get_attribute('data-revision')==original_revision
@@ -242,6 +256,27 @@ def run(shell,output,real_history,policy_history):
         assert page.locator('.consumer-name',has_text='normal.exe').count()==2
         assert page.locator('.consumer-name',has_text='C:\\Synthetic').count()==0
         assert {p.split(' · ')[0] for p in page.locator('.consumer',has_text='normal.exe').evaluate_all('(nodes)=>nodes.map(n=>n.title)')}=={'C:\\Synthetic\\normal.exe','D:\\Other\\normal.exe'}
+        expect(page.locator('#geography-mode')).to_have_value('dns')
+        expect(page.locator('.country-tile[data-country="DE"]')).to_contain_text('125 decisions')
+        expect(page.locator('#dashboard-outcomes')).to_contain_text('Blocked')
+        germany=page.locator('taild-world-map path[data-country="DE"]')
+        germany.focus();germany.press('Enter');settled(page)
+        expect(page.locator('.filter-tags')).to_contain_text('provider_country eq DE')
+        expect(page.locator('#fact-count')).to_have_text('125 facts')
+        export_ui(session,'json',output/'provider-country-evidence.json')
+        provider_export=json.loads((output/'provider-country-evidence.json').read_text())
+        assert all(r['provider_country']=='DE' for r in provider_export['result']['data']['rows'])
+        page.get_by_role('button',name='Remove filter 1',exact=True).click();settled(page)
+        page.locator('#nav-0').click();settled(page)
+        page.locator('#dashboard-outcomes .rank-table button').filter(has_text='Blocked').click();settled(page)
+        expect(page.locator('.filter-tags')).to_contain_text('outcome eq block')
+        expect(page.locator('#fact-count')).to_have_text('21 facts')
+        export_ui(session,'json',output/'blocked-decision-evidence.json')
+        blocked=json.loads((output/'blocked-decision-evidence.json').read_text())
+        assert all(r['fact']['raw']['action']=='0' and r['outcome']=='block' for r in blocked['result']['data']['rows'])
+        page.get_by_role('button',name='Remove filter 1',exact=True).click();settled(page)
+        page.locator('#nav-0').click();settled(page)
+        page.locator('#geography-mode').select_option('traffic')
         # Real synthetic answer metadata has one unique preceding candidate for
         # early buckets, and many later ambiguous buckets. Only inferred bytes
         # are highlighted, never unobserved countries or routes.
@@ -359,7 +394,10 @@ def run(shell,output,real_history,policy_history):
         expect(page.locator('#traffic-toggle')).to_be_visible();page.locator('#traffic-toggle').check()
         expect(page.locator('#autosave-status')).to_have_text('Settings save automatically')
         page.locator('#refresh').click();expect(page.locator('#autosave-status')).to_have_text('Settings save automatically')
-        expect(page.locator('#traffic-status')).to_have_text('unavailable')
+        # Refresh acknowledges acquisition, not completion. Observe the source's
+        # terminal state through its actual health projection; the five-second
+        # health cadence must not race an assertion with the same deadline.
+        page.wait_for_function("()=>document.querySelector('#traffic-status')?.textContent==='unavailable'",timeout=0)
         page.screenshot(path=str(output/'stale-source.png'),full_page=True)
         page.locator('#traffic-toggle').uncheck();expect(page.locator('#autosave-status')).to_have_text('Settings save automatically')
         missing.close()
@@ -391,16 +429,10 @@ def run(shell,output,real_history,policy_history):
         page.screenshot(path=str(output/'activity-native-150-percent.png'),full_page=True)
         page.locator('#nav-0').click();settled(page)
         page.screenshot(path=str(output/'overview-native-150-percent.png'),full_page=True)
-        # CDP full-page screenshots apply a clip with different coordinates at
-        # native WebView2 zoom. Preserve an independent OS capture of the actual
-        # owned window as the visual scaling authority, without stealing focus.
-        import win32gui,win32process
-        owned=[]
-        win32gui.EnumWindows(lambda w,_:owned.append(w) if win32process.GetWindowThreadProcessId(w)[1]==zoomed.native.pid and win32gui.IsWindowVisible(w) else None,None)
-        assert len(owned)==1
-        capture=Path(os.environ['USERPROFILE'])/'.codex/skills/screenshot/scripts/take_screenshot.ps1'
-        subprocess.run(['powershell','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',str(capture),
-            '-WindowHandle',str(owned[0]),'-Path',str(output/'overview-native-150-percent-window.png')],check=True,capture_output=True)
+        page.locator('h1').scroll_into_view_if_needed()
+        capture_preview(zoomed,output/'overview-native-150-percent-surface.png')
+        page.locator('#dashboard-countries').scroll_into_view_if_needed()
+        capture_preview(zoomed,output/'geography-native-150-percent-surface.png')
         reports.append(zoom_snapshot)
         zoomed.close();sessions.remove(zoomed)
 
@@ -423,7 +455,9 @@ def run(shell,output,real_history,policy_history):
         assert page.locator('#application-table .identity-link').count()>0
         page.locator('#application-table .identity-link').first.click();settled(page)
         page.get_by_role('button',name='Inspect application activity',exact=True).click();settled(page)
-        assert page.locator('.fact-entry').count()>0
+        # Wait for the feature's mounted row, not just the shell's busy flag.
+        page.wait_for_function("()=>!!document.querySelector('.fact-entry')",timeout=0)
+        expect(page.locator('.fact-entry').first).to_be_visible()
         page.locator('.fact-entry > summary').first.click()
         page.screenshot(path=str(output/'real-activity-evidence.png'),full_page=True)
         page.get_by_role('button',name='Remove application scope',exact=True).click();settled(page)
@@ -445,10 +479,12 @@ def run(shell,output,real_history,policy_history):
             'compound_filters':True,'saved_scope_restart':True,'stable_pagination':True,'concurrent_revision_rejected':True,
             'literal_source_text':True,'formula_safe_csv':True,'physical_windows_150_percent_scaling':False,
             'native_app_local_zoom_percent':150,'zoom_css_viewport':zoom_snapshot['viewport'],
+            'native_webview_capture_preview':True,'os_capture_used_for_zoom_acceptance':False,
             'zoom_keyboard_and_overflow_verified':True,'lazy_compact_candidate_evidence':True,
             'installed_client_changed':False,'snapshots':reports,'source_history_opened_read_only':True,'actual_policy_rendered':actual_policy,
             'dashboard_six_summaries':True,'dns_series_count_and_native_export':True,'clipped_dns_bin_scope':True,
             'country_focus_without_query':True,'source_context_navigation':True,'portmaster_layout_relationships':True,
+            'provider_country_decisions_default_and_native_export':True,'inferred_traffic_mode_retained':True,'documented_outcome_widgets':True,
             'build_sha256':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in [shell,shell.with_suffix('.dll'),*(shell.parent/'ui').glob('*.js'),*(shell.parent/'ui').glob('*.css')]}}
         (output/'analytics-validation.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
         print(json.dumps({k:v for k,v in report.items() if k!='snapshots'}))

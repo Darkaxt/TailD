@@ -18,7 +18,10 @@ import join
 import ingestion
 import controld
 
-VERSION='taild-metrics-v2'
+VERSION='taild-metrics-v3'
+OUTCOME_VERSION='controld-action-v1'
+# https://docs.controld.com/docs/log-field-reference, Control D action enum.
+OUTCOMES={'-1':'failed','0':'block','1':'allow','2':'redirect','3':'redirect'}
 CORRELATION_VERSION='same-endpoint-answer-ip-preceding-context-v1'
 CONTEXT_FIELDS=frozenset(('source','captured_at_utc','observed_until_utc','coverage_method',
     'node_id','user_id','os','backend_state','dns_accepted','local_override','resolver_endpoint',
@@ -26,7 +29,7 @@ CONTEXT_FIELDS=frozenset(('source','captured_at_utc','observed_until_utc','cover
     'magic_dns_suffix','split_dns_routes','search_domains','resolver_event_coverage','resolver_applied','profile_id',
     'capture_consistency'))
 COMMON_FIELDS={'id':str,'timestamp':int,'source':str,'scope':str}
-DNS_FIELDS={'endpoint':str,'question':str,'type':str,'action':str,'reason':str,'reason_value':str,
+DNS_FIELDS={'endpoint':str,'question':str,'type':str,'action':str,'reason':str,'reason_value':str,'provider_country':str,'provider_asn':str,
             'profile':str,'outcome':str,'protocol':str,'client':str}
 TRAFFIC_FIELDS={'application':str,'application_path':str,'destination_ip':str,'destination_port':int,
                 'protocol_raw':int,'inbound_bytes':int,'outbound_bytes':int,'total_bytes':int,
@@ -53,6 +56,12 @@ def answer_metadata(raw):
     country,asn=raw.get('answerCountryCode'),raw.get('answerASN')
     return {'answer_country':country if isinstance(country,str) and re.fullmatch('[A-Z]{2}',country) else None,
             'answer_asn':asn if isinstance(asn,str) and asn.isascii() and asn.isdecimal() else None}
+
+
+def provider_metadata(raw):
+    country,asn=raw.get('answerCountryCode'),raw.get('answerASN')
+    return {'provider_country':country if isinstance(country,str) and re.fullmatch('[A-Z]{2}',country) else None,
+            'provider_asn':asn if isinstance(asn,str) and asn.isascii() and asn.isdecimal() else None}
 
 
 def unsupported_answer(raw):
@@ -256,9 +265,9 @@ class Analytics:
             else:
                 raw=fact['raw']
                 value.update(endpoint=row['endpoint'],question=row['question'],type=raw.get('rrType'),
-                             action=raw.get('action'),reason=raw.get('trigger'),profile=raw.get('profileId'),outcome='unknown',
+                             action=raw.get('action'),reason=raw.get('trigger'),profile=raw.get('profileId'),outcome=OUTCOMES.get(raw.get('action'),'unknown'),
                              protocol=raw.get('protocol'),reason_value=raw.get('triggerValue'),client=raw.get('clientId'),
-                             **answer_metadata(raw))
+                             **answer_metadata(raw),**provider_metadata(raw))
             yield value
 
     def _correlations(self,traffic,dns,contexts,age,scope):
@@ -430,16 +439,19 @@ class Analytics:
         if any(isinstance(v,str) and len(v)>1024 for v in values):
             raise QueryError('Predicate text budget exceeded')
 
-    def _coverage(self,kind,a,b,scope,where=None):
+    def _coverage(self,kind,a,b,scope,where=None,*,cache=None):
+        cache={} if cache is None else cache
         field='host' if kind=='traffic' else 'account'
-        sources=[r[0] for r in self.store.db.execute('SELECT id,metadata FROM sources WHERE kind=?',(kind,))
+        source_key=('sources',kind)
+        if source_key not in cache:cache[source_key]=list(self.store.db.execute('SELECT id,metadata FROM sources WHERE kind=?',(kind,)))
+        sources=[r[0] for r in cache[source_key]
                  if (not scope.get(field) or json.loads(r[1])['scope']==scope[field])
                  and (kind!='dns' or not scope.get('endpoint') or json.loads(r[1]).get('endpoint')==scope['endpoint'])
                  and self._source_matches({'source':r[0],'scope':json.loads(r[1])['scope'],
                                            'endpoint':json.loads(r[1]).get('endpoint')},where,kind)]
         detail=[]
         for source in sources:
-            item=self.store._coverage(kind,a,b,source)
+            item=self.store._coverage(kind,a,b,source,cache=cache)
             detail.extend(item['sources'])
         return {'incomplete':not detail or any(d['gaps'] or d['deletion_scopes'] or any(not x['resolved'] for x in d['incomplete_attempts']) for d in detail),
                 'sources':detail,'snapshot_limit':'separate-source-transactions; later corrections possible'}
@@ -458,7 +470,7 @@ class Analytics:
                 request.get('max_age_seconds',300),history.packed(request.get('where')),request.get('search',''))
 
     def _unbound_aggregates(self,request,contexts,requests):
-        """SQL reduction only when no observed context can produce candidates.
+        """Covering-index reduction when no observed context can produce candidates.
 
         This is not a cached/approximate rollup. Aggregate rows carry exact weights
         and are consumed only inside the caller's read transaction. Evidence/id,
@@ -475,50 +487,72 @@ class Analytics:
             return None
         siblings=[q for q in requests if q['kind'] in ('traffic','correlations') and self._aggregate_family(q)==self._aggregate_family(request)]
         if any(q['view'] not in ('summary','series','groups') for q in siblings):return None
-        columns={'application':"CASE WHEN app.path IS NOT NULL AND app.path!='' THEN f.application END",
-                 'application_path':'app.path','destination_ip':'f.destination','destination_port':'f.port',
-                 'protocol_raw':"json_extract(f.data,'$.protocol_raw')",'source':'f.source',
-                 'scope':"json_extract(s.metadata,'$.scope')"}
+        columns={'application','application_path','destination_ip','destination_port','protocol_raw','source','scope'}
         derived={'correlation_state','context_state','device','destination_country','destination_asn'}
-        fields={'application','application_path','destination_ip'}
+        fields={'application','application_path'}
+        # Application-only rankings need presence for exact usable/unmatched
+        # counts, not one intermediate group per remote IP. Summaries retain
+        # the full destination domain for their independent metrics.
+        fields.add('destination_ip' if any(q['view']=='summary' or 'destination_ip' in q.get('group_by',[]) for q in siblings)
+                   else '_destination_observed')
         for q in siblings:
             if any(f not in columns and f not in derived for f in q.get('group_by',[])):return None
             fields.update(f for f in q.get('group_by',[]) if f in columns)
         a,b=history.bounds(request['start'],request['end']);scope=request.get('scope',{})
-        clause='f.time>=? AND f.time<?';params=[a,b]
-        if scope.get('host'):clause+=" AND json_extract(s.metadata,'$.scope')=?";params.append(scope['host'])
-        if where:
-            clause+=' AND '+columns['application']+' IS ?';params.append(where['value'])
+        clause='time>=? AND time<?';params=[a,b]
+        if scope.get('host'):clause+=" AND source IN (SELECT id FROM sources WHERE json_extract(metadata,'$.scope')=?)";params.append(scope['host'])
         steps=[q.get('bin_seconds',60) for q in siblings if q['view']=='series']
         step=math.gcd(*steps)*1000000 if steps else None
+        # Hash narrow canonical values rather than sorting every wide fact into
+        # SQLite's temporary B-tree. Paths are resolved once per executable;
+        # timestamp/source/identity ordering is retained only per aggregate.
+        fields.discard('application_path')
+        fields.discard('application')
+        if 'scope' in fields:fields.discard('scope');fields.add('source')
         fields=sorted(fields)
-        projection=[columns[f]+' AS '+f for f in fields]
-        if step:projection.append('(f.time / ? - (f.time % ? < 0))*? AS tick');params=[step,step,step,*params]
-        group=fields+(['tick'] if step else [])
-        # SQLite SUM overflows signed 64-bit even though canonical counters are
-        # valid. Return decimal text from a small exact aggregate, never REAL.
-        class ExactSum:
-            def __init__(self):self.value=0
-            def step(self,value):self.value+=value
-            def finalize(self):return str(self.value)
-        self.store.db.create_aggregate('taild_exact_sum',1,ExactSum)
-        sql=('SELECT '+','.join(projection)+',count(*) AS weight,max(f.time) AS timestamp,'
-             'taild_exact_sum(f.inbound) AS incoming,taild_exact_sum(f.outbound) AS outgoing '
-             'FROM traffic f JOIN sources s ON s.id=f.source LEFT JOIN applications app ON app.id=f.application '
-             'WHERE '+clause+' GROUP BY '+','.join(group)+
-             # Preserve canonical first-occurrence order for equal rankings.
-             # Shift valid RFC3339 timestamps to year-1-relative microseconds,
-             # then fixed-width text has the same ordering as (time,source,id).
-             " ORDER BY min(printf('%020d',f.time+62135596800000000)||f.source||f.identity)")
+        columns={'destination_ip':'destination','destination_port':'port',
+            'protocol_raw':"json_extract(data,'$.protocol_raw')",'source':'source',
+            '_destination_observed':"destination IS NOT NULL AND destination!=''"}
+        sql=('SELECT time,source,identity,inbound,outbound,'+','.join(columns[field] for field in fields)+
+             ' FROM traffic INDEXED BY traffic_application_time WHERE application IS ? AND '+clause)
         def reduced():
-            for record in self.store.db.execute(sql,params):
-                row={f:record[f] for f in fields};incoming=int(record['incoming']);outgoing=int(record['outgoing'])
-                row.update(timestamp=record['timestamp'],inbound_bytes=incoming,outbound_bytes=outgoing,
-                    total_bytes=incoming+outgoing,_weight=record['weight'],candidates=[],device=None,
-                    correlation_state='unmatched' if row['application_path'] and row['destination_ip'] else 'unusable',
-                    context_state='historical-binding-unknown',destination_country=None,destination_asn=None)
-                yield row
-        return reduced
+            applications=dict(self.store.db.execute('SELECT id,path FROM applications'))
+            sources={r[0]:json.loads(r[1])['scope'] for r in self.store.db.execute("SELECT id,metadata FROM sources WHERE kind='traffic'")}
+            values=[]
+            # Exact executable/range seeks keep the temporary grouping local to
+            # one executable, instead of spilling millions of wide rows. This
+            # also keeps a short selected interval a range seek, not a full scan.
+            for application,path in [*applications.items(),(None,None)]:
+                if where and (application if path else None)!=where['value']:continue
+                aggregates={};cursor=self.store.db.execute(sql,[application,*params]);cursor.row_factory=None
+                for record in cursor:
+                    timestamp,source,identity,incoming,outgoing=record[:5]
+                    key=record[5:]+((timestamp//step,) if step else ())
+                    value=aggregates.get(key)
+                    if value is None:
+                        aggregates[key]=[(timestamp,source,identity),timestamp,1,incoming,outgoing]
+                    else:
+                        value[2]+=1;value[3]+=incoming;value[4]+=outgoing
+                        if timestamp>value[1]:value[1]=timestamp
+                        if timestamp<=value[0][0]:
+                            first=(timestamp,source,identity)
+                            if first<value[0]:value[0]=first
+                for key,(first,timestamp,weight,incoming,outgoing) in aggregates.items():
+                    row=dict(zip(fields,key));row.update(application=application if path else None,application_path=path)
+                    if 'source' in row:row['scope']=sources[row['source']]
+                    destination=row.pop('_destination_observed',row.get('destination_ip'))
+                    row.update(timestamp=timestamp,inbound_bytes=incoming,outbound_bytes=outgoing,total_bytes=incoming+outgoing,
+                        _weight=weight,_first=first,candidates=[],device=None,
+                        correlation_state='unmatched' if path and destination else 'unusable',
+                        context_state='historical-binding-unknown',destination_country=None,destination_asn=None)
+                    values.append(row)
+            return sorted(values,key=lambda row:row['_first'])
+        prepared_rows=None
+        def prepared():
+            nonlocal prepared_rows
+            if prepared_rows is None:prepared_rows=reduced()
+            return iter(prepared_rows)
+        return prepared
 
     def _query(self,request,revision,prepared=None):
         kind=request.get('kind')
@@ -529,17 +563,26 @@ class Analytics:
         scope=request.get('scope',{})
         age=request.get('max_age_seconds',300)
         cache=prepared if prepared is not None else {}
+        contexts=[];reduced=None
+        if kind in ('traffic','correlations') and view!='health':
+            context_key=('context-input',a-age*1000000,b,scope.get('host'))
+            if context_key not in cache:
+                cache[context_key]=self._load('context',a-age*1000000,b,{'host':scope['host']} if scope.get('host') else {})
+            contexts=cache[context_key]
+            reduced=self._unbound_aggregates(request,contexts,cache.get('requests',[request]))
         key=('traffic' if kind=='correlations' else kind,view=='health',a,b,age,history.packed(scope))
         if kind in ('traffic','correlations'):
             key+= (view=='facts',history.packed(request.get('where')),request.get('search',''))
         if key not in cache:
             dns_key=('dns-input',a-age*1000000,b,history.packed({k:v for k,v in scope.items() if k in ('account','endpoint')}))
-            if view!='health' and kind in ('traffic','correlations','dns'):
+            # Unbound application/series reductions cannot produce DNS
+            # candidates. Only summaries need independent provider metrics.
+            summary_needed=any(q['view']=='summary' and self._aggregate_family(q)==self._aggregate_family(request)
+                               for q in cache.get('requests',[request]))
+            if view!='health' and (kind=='dns' or kind in ('traffic','correlations') and (not reduced or summary_needed)):
                 if dns_key not in cache:cache[dns_key]=self._load('dns',a-age*1000000,b,scope)
                 dns=cache[dns_key]
             else:dns=[]
-            contexts=self._load('context',a-age*1000000,b,{'host':scope['host']} if scope.get('host') else {}) if view!='health' else []
-            reduced=self._unbound_aggregates(request,contexts,cache.get('requests',[request])) if kind in ('traffic','correlations') else None
             traffic=[] if reduced else self._load('traffic',a,b,scope,allow_stream=view in ('summary','groups','series')) if view!='health' and kind in ('traffic','correlations') else []
             if view=='health':rows=[]
             elif reduced:rows=reduced
@@ -569,21 +612,22 @@ class Analytics:
         if view=='facts':rows=sorted(rows,key=lambda r:(r['timestamp'],r['id']))
         for order in reversed(request.get('order_by',[]) if view=='facts' else []):
             rows.sort(key=lambda r:(r.get(order['field']) is None,r.get(order['field'])),reverse=order['direction']=='desc')
-        traffic_coverage=self._coverage('traffic',a,b,scope,request.get('where') if kind!='dns' else None)
-        dns_coverage=self._coverage('dns',a,b,scope,request.get('where') if kind=='dns' else None)
+        coverage_cache=cache.setdefault('coverage',{})
+        traffic_coverage=self._coverage('traffic',a,b,scope,request.get('where') if kind!='dns' else None,cache=coverage_cache)
+        dns_coverage=self._coverage('dns',a,b,scope,request.get('where') if kind=='dns' else None,cache=coverage_cache)
         coverage={'traffic':traffic_coverage,'dns':dns_coverage,'context_event_coverage':'unavailable',
                   'incomplete':traffic_coverage['incomplete'] if kind in ('traffic','correlations') else dns_coverage['incomplete'] if kind=='dns' else not rows}
         if view=='summary':
             projections=[]
             if streamed:
                 for q in cache.get('requests',[]):
-                    if q['kind'] in ('traffic','correlations') and q['view'] in ('series','groups') and self._aggregate_family(q)==self._aggregate_family(request):
+                    if q['kind'] in ('traffic','correlations') and q['view'] in ('groups','series') and self._aggregate_family(q)==self._aggregate_family(request):
                         item={'query':q,'values':{}}
                         cache[('aggregate',history.packed(q))]=item;projections.append(item)
             def observe(row):
                 for item in projections:self._aggregate_row(item['query'],item['values'],row)
             data=self._summary([] if kind=='dns' else rows,list(rows) if kind=='dns' else [d for d in dns if d['timestamp']>=a],a,b,scope,
-                observe=observe if projections else None,health_cache=cache.setdefault('health',{}))
+                observe=observe if projections else None,health_cache=cache.setdefault('health',{}),coverage_cache=coverage_cache)
             for item in projections:item.update(count=selected_count,unknown_device_buckets=unknown_device_buckets)
         elif view=='series':
             step=request.get('bin_seconds',60)*1000000
@@ -597,13 +641,13 @@ class Analytics:
                 selected=aggregates.get(left,{'events':0,'inbound_bytes':0,'outbound_bytes':0,'total_bytes':0})
                 inside_left,inside_right=max(a,left),min(b,right)
                 if kind=='dns':
-                    known=not self._coverage('dns',inside_left,inside_right,scope,request.get('where'))['incomplete']
+                    known=not self._coverage('dns',inside_left,inside_right,scope,request.get('where'),cache=coverage_cache)['incomplete']
                     bins.append({'start':history.utc(left),'end':history.utc(right),
                                  'scope_start':history.utc(inside_left),'scope_end':history.utc(inside_right),
                                  'events':selected['events'],'represented_microseconds':inside_right-inside_left,
                                  'coverage_incomplete':not known})
                     continue
-                known=not self._coverage('traffic',inside_left,inside_right,scope,request.get('where'))['incomplete'] and not (scope.get('device') and unknown_device_buckets)
+                known=not self._coverage('traffic',inside_left,inside_right,scope,request.get('where'),cache=coverage_cache)['incomplete'] and not (scope.get('device') and unknown_device_buckets)
                 totals={field:selected[field] for field in ('inbound_bytes','outbound_bytes','total_bytes')}
                 bins.append({'start':history.utc(left),'end':history.utc(right),**totals,
                              'scope_start':history.utc(inside_left),'scope_end':history.utc(inside_right),
@@ -652,7 +696,7 @@ class Analytics:
                                            g.get(order['field'],g['keys'].get(order['field']))),reverse=order['direction']=='desc')
             data={'groups':grouped}
         else:
-            data=self._summary([],[],a,b,scope,health_cache=cache.setdefault('health',{}))['source_health']
+            data=self._summary([],[],a,b,scope,health_cache=cache.setdefault('health',{}),coverage_cache=coverage_cache)['source_health']
         if scope.get('device') and unknown_device_buckets:
             traffic_coverage['incomplete']=True
             traffic_coverage['device_binding_unknown_buckets']=unknown_device_buckets
@@ -665,7 +709,7 @@ class Analytics:
             data['dns_activity']['filter_domain']='selected DNS facts' if kind=='dns' else 'independent account/endpoint UTC scope; query DNS separately for DNS-specific predicates'
         return {'revision':revision,'scope':scope,'start':history.utc(a),'end':history.utc(b),'coverage':coverage,
                 'value_state':value_state,'max_age_seconds':age,
-                'capabilities':{'policy':'stored-snapshot' if kind=='policy' and selected_count else 'not-collected','outcomes':'unverified-provider-mapping',
+                'capabilities':{'policy':'stored-snapshot' if kind=='policy' and selected_count else 'not-collected','outcomes':OUTCOME_VERSION,
                                 'verified_protocol':'unavailable','destination_geography_asn':'controld-single-answer-metadata'},
                 'aggregation_version':VERSION,'correlation_version':CORRELATION_VERSION,'data':data}
 
@@ -729,7 +773,7 @@ class Analytics:
         outgoing=sum(r.get('outbound_bytes',0) for r in rows)
         return {'inbound_bytes':incoming,'outbound_bytes':outgoing,'total_bytes':incoming+outgoing}
 
-    def _summary(self,rows,dns,a,b,scope,*,observe=None,health_cache=None):
+    def _summary(self,rows,dns,a,b,scope,*,observe=None,health_cache=None,coverage_cache=None):
         def counter():return {'bucket_count':0,'inbound_bytes':0,'outbound_bytes':0,'total_bytes':0}
         def add(value,row):
             value['bucket_count']+=row.get('_weight',1)
@@ -777,7 +821,7 @@ class Analytics:
                 'lag_domain':'as-of-now minus complete-through, not network activity',
                 'requested_lag_microseconds':max(0,requested-history.instant(item['complete_through'])) if requested and item['complete_through'] else None,
                 'attempt_states':[r['state'] for r in runs],
-                'coverage':self.store._coverage(item['kind'],a,b,item['id']),
+                'coverage':self.store._coverage(item['kind'],a,b,item['id'],cache=coverage_cache),
                 'age_since_last_success_microseconds':max(0,self.store.now-last) if last else None,
                 'as_of_utc':history.utc(self.store.now),
                 'unsupported_rows':unsupported.get(item['id'],0) if item['kind']=='traffic' else
@@ -785,17 +829,20 @@ class Analytics:
                                        for r in self.store.db.execute('SELECT data FROM dns INDEXED BY dns_time WHERE source=? AND time>=? AND time<?',(item['id'],a,b))),
                 'unsupported_rows_definition':'unsupported-address-family' if item['kind']=='traffic' else 'unsupported-answer-encoding'})
         health_cache[health_key]=health
-        geography={field:defaultdict(int) for field in ('answer_country','answer_asn')}
+        geography={field:defaultdict(int) for field in ('provider_country','provider_asn')}
         for decision in dns:
             for field,counts in geography.items():counts[decision[field]]+=1
+        counts={name:0 for name in ('allow','block','redirect','failed','other','unknown')}
+        for decision in dns:counts[decision['outcome']]+=1
+        denominator=sum(counts[name] for name in ('allow','block','redirect','other'))
         return {'data':{**{k:v for k,v in total.items() if k!='bucket_count'},'unit':'bytes','denominator':'canonical-traffic-buckets'},
             'application_activity':{'known_distinct':len(applications),
                                     'unknown_buckets':unknown_applications,'bucket_count':total['bucket_count']},
             'top_applications':ranking('application'),'top_destinations':ranking('destination_ip'),
             'dns_activity':{'events':len(dns),'groups':dns_groups,'denominator':'canonical-provider-decisions'},
-            'dns_outcomes':{'counts':{'allow':0,'block':0,'redirect':0,'other':0,'unknown':len(dns)},
-                            'classified_denominator':0,'excluded_unknown':len(dns),'block_rate':None,
-                            'capability':'unverified-provider-mapping'},
+            'dns_outcomes':{'counts':counts,'classified_denominator':denominator,'excluded_unknown':counts['unknown'],
+                            'excluded_failed':counts['failed'],'block_rate':counts['block']/denominator if denominator else None,
+                            'capability':OUTCOME_VERSION,'mapping_source':'https://docs.controld.com/docs/log-field-reference'},
             'dns_questions':{'distinct':len({d['question'] for d in dns}),'ranking':dns_groups['question'],'normalization_version':'raw-spelling-v1'},
             'correlation_coverage':classes,
             'candidate_domains':{'label':'inferred-not-exact-domain-usage',
@@ -807,8 +854,8 @@ class Analytics:
                 'countries':ranking('destination_country'),'asns':ranking('destination_asn'),
                 'unknown_bytes':rankings['destination_country'].get(None,{}).get('total_bytes',0),
                 'unknown_asn_bytes':rankings['destination_asn'].get(None,{}).get('total_bytes',0),
-                'provider_decisions':{'country':[{'value':v,'events':n} for v,n in sorted(geography['answer_country'].items(),key=lambda x:str(x[0]))],
-                                      'asn':[{'value':v,'events':n} for v,n in sorted(geography['answer_asn'].items(),key=lambda x:str(x[0]))]},
+                'provider_decisions':{'country':[{'value':v,'events':n} for v,n in sorted(geography['provider_country'].items(),key=lambda x:str(x[0]))],
+                    'asn':[{'value':v,'events':n} for v,n in sorted(geography['provider_asn'].items(),key=lambda x:str(x[0]))]},
                 'source_country_is_not_destination_country':True},
             'source_health':{'sources':health,'domain':'operational-not-network-activity'}}
 

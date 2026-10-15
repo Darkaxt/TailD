@@ -2,6 +2,47 @@
 
 Status: **COMPLETE**, 2026-10-08, for the assigned on-demand Stage 5 boundary.
 
+The Stage 5 evidence below is historical. The October 15 R15d correction updates
+the current metric version and provider semantics as follows.
+
+## October 15 dashboard correction
+
+Current metric version: `taild-metrics-v3`. Control D's documented action codes
+are mapped by `controld-action-v1`: -1 failed, 0 blocked, 1 bypassed, and 2/3
+redirected. Other codes remain unknown and their raw values remain available.
+The successful classified denominator excludes failed and unknown requests;
+neither is treated as allowed. Source: [Control D log field reference](https://docs.controld.com/docs/log-field-reference).
+
+Provider answer-country and ASN counts are independent DNS-decision metrics.
+Validated country and ASN fields need not imply one uniquely parsed answer IP.
+Inferred traffic-byte geography still requires the stricter unique temporal
+candidate and observed binding; provider/source-client geography is never used
+as destination geography. The UI defaults to DNS decisions and labels the two
+modes and their drill-downs separately.
+
+Coverage unions and unresolved acquisition gaps are prepared once per source,
+scope and horizon within the current read transaction, then clipped for each
+bin. They are not persistent caches. Simple unbound application queries read a
+covering `traffic_application_time` index and reduce narrow rows in memory,
+preserving exact Python integer sums, canonical ordering and correlation counts.
+Related summary/series/group requests share prepared rows at one revision;
+bound/complex queries retain the canonical correlation evaluator.
+
+A read-only snapshot of the handle-verified physical history at revision 15277
+contained 1,938,833 traffic records and 34,580 DNS decisions over the selected
+seven days. Applications completed in **9.77 seconds**; the five-query Overview
+batch completed in **28.66 seconds**, with DNS results available at 6.35 and
+9.81 seconds. These are machine-specific query timings, not native presentation
+or a universal latency promise. Independent canonical SQL reconciled all 121
+application groups, exact **117,328,977,275 bytes**, last observations, correlation
+counts, provider actions and country counts. No live facts were migrated or
+expired for this benchmark. The additive index took 39.32 seconds and about
+470 MB on that snapshot at first initialization; subsequent queries reuse it.
+
+Current coverage/equivalence, correction/deletion, large-integer, shared-revision
+and full backend contract checks pass. This source correction is not an installed
+or published update; Stage 10's delivery acceptance remains separate.
+
 Authoritative requirements: PRODUCT-SPECIFICATION R10, R11a–b and R08's metrics
 boundary. This document records implementation choices and verification, not
 weaker acceptance criteria. No desktop or continuous collector is implied.

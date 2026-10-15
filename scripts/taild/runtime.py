@@ -512,14 +512,14 @@ class Collector:
             raise
         return True
 
-    def _request_refresh(self, store, future):
+    def _request_refresh(self, store, future, *, wait=True):
         kinds=set()
         for kind in ('dns','traffic'):
             if (self.config[kind] and not self.paused and not self.closing and not self.write_error and
                     time.monotonic()>=self.not_before[kind]):
                 self._start_acquisition(store,kind,policy=kind=='dns')
                 kinds.add(kind)
-        if kinds:self.refresh_waiters.append((future,self.config_revision,kinds))
+        if kinds and wait:self.refresh_waiters.append((future,self.config_revision,kinds))
         else:future.set_result(self._state())
 
     def _finished_acquisition(self, store, kind):
@@ -752,8 +752,8 @@ class Collector:
             future.set_exception(RuntimeError('stopping'))
             return
         try:
-            if op=='refresh' and body=={}:
-                self._request_refresh(store,future)
+            if op=='refresh' and (body=={} or set(body)=={'wait'} and type(body['wait']) is bool):
+                self._request_refresh(store,future,wait=body.get('wait',True))
                 return
             future.set_result(self._execute(store,op,body))
         except (sqlite3.Error,OSError):

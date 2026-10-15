@@ -25,6 +25,7 @@ def run(shell,output):
             page.wait_for_function("()=>document.querySelector('#view-progress') && document.querySelector('#dashboard-dns-trend svg') && document.querySelector('#view-loading')===null")
             assert entered.is_set(),'Traffic was not actually held'
             expect(page.locator('main')).to_have_attribute('aria-busy','true')
+            assert page.locator('fieldset.shared-scope').evaluate('(node)=>getComputedStyle(node).opacity')=='1','Sticky controls reveal charts while disabled'
             expect(page.locator('#dns-card span')).to_have_text('125')
             expect(page.locator('#received-card span')).to_have_text('Loading…')
             expect(page.locator('.screen-reader-progress')).to_have_count(1)

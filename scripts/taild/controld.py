@@ -207,11 +207,12 @@ def policy_snapshot(token, endpoint, *, account_scope, organization=None):
     if not any(isinstance(p,dict) and p.get('PK')==profile for p in resources['profiles']['data']['profiles']):
         raise ControlDError('Endpoint profile is not in the selected account inventory')
     clients=selected[0].get('clients')
-    resources['clients']={'state':'available' if isinstance(clients,list) else 'unavailable',
+    valid_clients=isinstance(clients,list) and all(isinstance(client,dict) for client in clients)
+    resources['clients']={'state':'available' if valid_clients else 'incompatible' if isinstance(clients,list) else 'unavailable',
         'method':'GET','route':'/devices?last_activity=1','documentation':'https://docs.controld.com/reference/get_devices',
         'permission':'Read','validated_at_utc':utc_now().isoformat(),
-        'data':{'clients':clients} if isinstance(clients,list) else None,
-        'completeness':'returned-response-only' if isinstance(clients,list) else 'field-not-returned'}
+        'data':{'clients':clients} if valid_clients else None,
+        'completeness':'returned-response-only' if valid_clients else 'invalid-client-schema' if isinstance(clients,list) else 'field-not-returned'}
     if not isinstance(clients,list):
         region=resources['account']['data']['analytics_instance']
         if region:
@@ -297,7 +298,8 @@ def activity(token, account_type, instance, start, end=None, endpoint=None,
         try:
             reader = csv.DictReader(io.TextIOWrapper(response, encoding='utf-8-sig', newline=''))
             required = {'timestamp', 'endpointId', 'question', 'action'}
-            if not required.issubset(reader.fieldnames or []):
+            columns=reader.fieldnames or []
+            if len(columns)!=len(set(columns)) or not required.issubset(columns):
                 raise ControlDError('Invalid Control D decision CSV columns')
             for row in reader:
                 if None in row or any(row[column] is None for column in required):
@@ -312,11 +314,28 @@ def activity(token, account_type, instance, start, end=None, endpoint=None,
 
 
 def export_private(path, data):
-    output = Path(path).resolve()
+    output = Path(path).absolute()
     if output.is_relative_to(REPO_ROOT):
         raise ControlDError('Private exports must be outside the repository')
     try:
-        descriptor = os.open(output, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        if any(parent.is_symlink() or getattr(parent,'is_junction',lambda:False)() for parent in (output,*output.parents)):
+            raise OSError('Linked export destination')
+        if os.name=='nt':
+            import msvcrt,ntsecuritycon,pywintypes,win32api,win32con,win32file,win32security
+            token=win32security.OpenProcessToken(win32api.GetCurrentProcess(),win32con.TOKEN_QUERY)
+            try:sid=win32security.GetTokenInformation(token,win32security.TokenUser)[0]
+            finally:token.Close()
+            acl=win32security.ACL()
+            for principal in (sid,win32security.ConvertStringSidToSid('S-1-5-18'),win32security.ConvertStringSidToSid('S-1-5-32-544')):
+                acl.AddAccessAllowedAce(win32security.ACL_REVISION,ntsecuritycon.FILE_ALL_ACCESS,principal)
+            security=win32security.SECURITY_DESCRIPTOR();security.SetSecurityDescriptorOwner(sid,False)
+            security.SetSecurityDescriptorDacl(True,acl,False)
+            security.SetSecurityDescriptorControl(win32security.SE_DACL_PROTECTED,win32security.SE_DACL_PROTECTED)
+            attributes=pywintypes.SECURITY_ATTRIBUTES();attributes.SECURITY_DESCRIPTOR=security
+            try:handle=win32file.CreateFile(str(output),win32con.GENERIC_WRITE,0,attributes,win32con.CREATE_NEW,win32con.FILE_ATTRIBUTE_NORMAL,None)
+            except pywintypes.error:raise OSError('Private export creation failed') from None
+            descriptor=msvcrt.open_osfhandle(handle.Detach(),os.O_WRONLY)
+        else:descriptor = os.open(output, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         with os.fdopen(descriptor, 'w', encoding='utf-8') as stream:
             json.dump(data, stream, ensure_ascii=False, indent=2)
             stream.write('\n')

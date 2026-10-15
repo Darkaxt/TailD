@@ -1,5 +1,62 @@
 # TailD staged execution
 
+## Current correction — 2026-10-15
+
+Stage 10 is the single **ACTIVE** stage. R15d is already_authorized by the user's
+instruction to implement the diagnosed fixes, accelerate Applications and perform
+QA analyses, plus the README showcase request. Existing B12 remains; no later
+stage or delivery is opened.
+Compact execution: correct revision-local coverage and independent metric paths
+-> integrate DNS-geography/outcome widgets and drill-down -> bounded sequential
+QA, complete native/real-history verification -> reconciliation and commit.
+
+B18 resolved (R15c/R15d): revision-local coverage and covering-index narrow hash
+reduction preserve canonical totals and ordering. Physical-profile read-only
+snapshot revision 15277: 1,938,833 traffic records, 121 application groups and
+117,328,977,275 bytes independently reconciled. Seven-day Applications: 9.77s;
+complete Overview query batch: 28.66s, DNS results earlier at 6.35/9.81s. These
+are query timings on this machine, not universal native presentation guarantees.
+B19 resolved (R11/R15d): documented action mapping, independent DNS answer-country/
+ASN metrics and explicit inferred-byte mode pass canonical SQL comparisons and
+actual native country/outcome drill-down exports. Unknowns remain unknown.
+B20 resolved (R14/R15d): Refresh acknowledges acquisition without holding the
+serialized bridge until source exit. Native overflow receives explicit
+backpressure; four held requests settle, and Pause/actual window Close succeed
+before a held acquisition is released. No query cancellation/deadline added.
+B21 resolved (R14a/R15d): duplicate CSV headers are rejected; malformed embedded
+clients are incompatible; Windows CLI files receive a private DACL at creation
+without changing their parent. Native queued save/navigation and incompatible
+host/node clearing pass. Existing export, source and privacy contracts pass.
+B22 resolved (R17/R15d): v1 -> v2 uses only the matching original owner's explicit
+setup receipt for graceful stop. Signed fixtures verify upgrade/recovery state;
+different/missing owner location refuses before stop. No live installer claim.
+Tracked deferrals for this correction: none. No installed update/public release
+is implied by this implementation request.
+
+B23 source acceptance satisfied (R15d): capability-first README, four actual
+native synthetic-demo screenshots, release/main distinction, installation/trust
+boundaries and attribution. All 27 local documentation links resolve; image
+metadata is empty and displayed facts are synthetic. Remote synchronization is
+the remaining delivery action for this source correction, not a new release.
+
+Verification: final backend discovery passes (one platform skip), the added
+different-owner upgrade regression passes, frontend notice/type/build checks and
+Debug/Release native builds pass. Final actual-native analytics, progressive
+loading/error/close, lifecycle QA and time-range workflows pass. Real retained
+application -> activity -> native export reconciles 1,300 facts/75,142,766 bytes;
+live policy reads are not claimed. Native 150% app-local zoom fits at 949x574 CSS
+pixels; Debug CapturePreview is absent from Release. Initial assertions that
+raced asynchronous collection/DOM mounting were corrected to observe real state
+transitions; their failed attempts are not counted as acceptance evidence.
+Private evidence: D:/Tools/taild-stage10-validation-20261013/dashboard-correction-20261015.
+
+Refactoring assessment: one read transaction owns all prepared coverage/aggregate
+state; no persistent metric cache, duplicated reducer, timeout recovery or source
+policy write was added. No material consolidation finding remains in this scope.
+Current correction has no unresolved implementation acceptance gaps or deferrals.
+Stage 10 remains ACTIVE for its existing B12 live delivery/updater/recovery work;
+this source-only correction does not close that stage or authorize deployment.
+
 Sources of truth: [initial specification](SPECIFICATION.md) for R01–R07 and
 [remaining-product specification](PRODUCT-SPECIFICATION.md) for R08–R18.
 Stages 1–3 were authorized by the request to create the public TailD derivative,

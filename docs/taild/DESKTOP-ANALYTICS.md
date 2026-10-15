@@ -1,5 +1,31 @@
 # Desktop analytics — Stage 8 evidence
 
+## October 15 source correction and showcase
+
+R15d fixes repeated coverage reconciliation and unnecessary DNS work on unbound
+application rankings. Overview DNS widgets finish independently of the traffic
+reduction. Provider answer geography now defaults to DNS decision counts; inferred
+traffic bytes remain a separate selectable mode. Documented outcome codes replace
+the former all-unknown classification, retaining raw unknowns and correct
+denominators. Exact seven-day measurements and data reconciliation are recorded
+in [the metrics contract](METRICS-QUERY.md#october-15-dashboard-correction).
+
+The actual native host verifies progressive readiness, navigation during loading,
+partial-error recovery, country/outcome drill-down and private export. Separate
+QA reproductions cover queued navigation after save, incompatible host/node
+scope clearing, explicit backpressure receipts and Refresh/Pause/Close while
+collection work is held. Debug-only fixed-origin `validation-capture` uses
+WebView2 CapturePreview for native 150% app-local zoom evidence; it is excluded
+from the Release host. This avoids incorrect CDP screenshot cropping at native
+zoom and does not change Windows display scaling.
+
+The root README's four dashboard screenshots are actual native captures with
+clearly labeled synthetic facts: reserved example domains, TEST-NET addresses,
+generic executable paths and no real account or browsing data. Reproduce with
+`scripts/taild/capture_readme_windows.py` and an isolated Debug host. The screenshots
+show development main, not the currently published +8 installer. Existing
+Stage 10 delivery/updater criteria are not closed by these source checks.
+
 Stage 8 is COMPLETE for the source-built desktop, not an installed TailD release.
 Stage 9 owns toolchain-free packaging and isolated installer acceptance; Stage 10
 owns separately authorized publication, replacement and updater activation.

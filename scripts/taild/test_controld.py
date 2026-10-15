@@ -284,6 +284,20 @@ class ControlDTest(unittest.TestCase):
                 controld.activity('synthetic-token', 'organization', 'synthetic-org',
                                   '2026-10-07T07:00:00Z')
 
+    def test_duplicate_csv_columns_are_rejected_before_losing_raw_fields(self):
+        data=b'timestamp,endpointId,question,question,action\n2026-10-07T07:00:00Z,device,first.invalid,last.invalid,1\n'
+        with patch.object(controld,'_read',return_value=io.BytesIO(data)):
+            with self.assertRaises(controld.ControlDError):
+                controld.activity('synthetic-token','personal','synthetic-org','2026-10-07T07:00:00Z')
+
+    def test_malformed_embedded_clients_are_not_reported_available(self):
+        self.policy_responses()
+        self.responses['/devices?last_activity=1'][1]['body']['devices'][0]['clients']=['unsupported']
+        result=controld.policy_snapshot('synthetic-token','device',account_scope='account')
+        self.assertEqual(result['resources']['clients']['state'],'incompatible')
+        self.assertIsNone(result['resources']['clients']['data'])
+        self.assertFalse(any('/v2/client?' in r[0] for r in self.requests))
+
     def test_activity_slice_preserves_bounds_and_detects_truncation(self):
         csv = ('timestamp,endpointId,question,action,answers\n'
                '2026-10-07T07:00:00Z,synthetic-device,example.invalid,1,192.0.2.1\n'
@@ -310,13 +324,27 @@ class ControlDTest(unittest.TestCase):
     def test_private_export_does_not_overwrite_and_repo_output_is_refused(self):
         temp_root = 'D:/Temp' if os.name == 'nt' else None
         with tempfile.TemporaryDirectory(prefix='taild-export-test-', dir=temp_root) as directory:
-            output = Path(directory) / 'private.json'
+            import history
+            output = history.private_directory(Path(directory)/'private') / 'private.json'
             controld.export_private(output, {'synthetic': True})
             with self.assertRaises(controld.ControlDError):
                 controld.export_private(output, {'replaced': True})
             self.assertEqual(json.loads(output.read_text()), {'synthetic': True})
         with self.assertRaises(controld.ControlDError):
             controld.export_private(Path(controld.__file__).parent / 'private.json', {})
+
+    @unittest.skipUnless(os.name=='nt','Windows ACL contract')
+    def test_private_export_in_shared_parent_has_private_file_acl_without_changing_parent(self):
+        import win32security
+        with tempfile.TemporaryDirectory(prefix='taild-shared-export-',dir='D:/Temp') as directory:
+            output=Path(directory)/'private.json'
+            info=win32security.DACL_SECURITY_INFORMATION
+            before=bytes(win32security.GetFileSecurity(directory,info))
+            controld.export_private(output,{'private':'data'})
+            import history,reader
+            history._windows_private_object(output,reader.current_sid())
+            self.assertEqual(json.loads(output.read_text()),{'private':'data'})
+            self.assertEqual(bytes(win32security.GetFileSecurity(directory,info)),before)
 
 
 if __name__ == '__main__':

@@ -102,7 +102,7 @@ export class Collection implements OnDestroy {
     if(!this.busy()){try{this.state.set(await command<State>('state'))}catch(e){this.error.set((e as Error).message)}}
     this.scheduleHealth();},5000)}
   async run(op:string,body:unknown={}){if(this.busy())return;this.busy.set(true);this.error.set('');
-    try{this.state.set(await command<State>(op,body))}catch(e){this.error.set((e as Error).message)}finally{this.busy.set(false)}}
+    try{this.state.set(await command<State>(op,op==='refresh'?{wait:false}:body))}catch(e){this.error.set((e as Error).message)}finally{this.busy.set(false)}}
   configure(body:Partial<Settings>){return this.run('configure',body)}
   numberSetting(key:'traffic_seconds'|'dns_seconds',event:Event,min:number){const value=Number((event.target as HTMLInputElement).value);
     if(!Number.isInteger(value)||value<min||value>86400){this.error.set(`Use a whole number from ${min} to 86400 seconds.`);return}

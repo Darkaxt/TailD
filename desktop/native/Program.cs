@@ -238,8 +238,7 @@ internal sealed class CollectionWindow : Form
     private async void Message(object? sender,CoreWebView2WebMessageReceivedEventArgs e)
     {
         if(e.Source!=Origin||disposingWindow)return;
-        long id=0;
-        if(Interlocked.Increment(ref active)>4){Interlocked.Decrement(ref active);return;}
+        long id=0;bool admitted=false;
         try
         {
             if(Encoding.UTF8.GetByteCount(e.WebMessageAsJson)>65536)throw new InvalidDataException();
@@ -250,7 +249,20 @@ internal sealed class CollectionWindow : Form
                 throw new InvalidDataException();
             id=root.GetProperty("id").GetInt64();var op=root.GetProperty("op").GetString()!;
             var body=root.GetProperty("body");if(body.ValueKind!=JsonValueKind.Object)throw new InvalidDataException();
-            var data=op=="export-query"?await Export(body):await bridge.Request(op,body,partial=>{
+            admitted=Interlocked.Increment(ref active)<=4;
+            if(!admitted){Interlocked.Decrement(ref active);throw new BridgeError("backpressure");}
+            JsonElement data;
+#if DEBUG
+            // Owned validation captures the real zoomed WebView surface. CDP
+            // clips at CSS coordinates when native WebView2 zoom is enabled;
+            // desktop rectangle captures can instead contain another window.
+            if(op=="validation-capture"&&!body.EnumerateObject().Any()){
+                using var png=new MemoryStream();
+                await view.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png,png);
+                data=JsonSerializer.SerializeToElement(new{png=Convert.ToBase64String(png.ToArray())});
+            }else
+#endif
+            data=op=="export-query"?await Export(body):await bridge.Request(op,body,partial=>{
                 if(!view.IsDisposed&&!disposingWindow)view.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(new{id,ok=true,progress=true,data=partial}));
             });
             view.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(new{id,ok=true,data}));
@@ -258,7 +270,7 @@ internal sealed class CollectionWindow : Form
         }
         catch(Exception error){if(!view.IsDisposed)view.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(new{
             id,ok=false,state=error is BridgeError known?known.State:error is InvalidDataException?"invalid-command":"unavailable"}));}
-        finally{Interlocked.Decrement(ref active);}
+        finally{if(admitted)Interlocked.Decrement(ref active);}
     }
     private async Task<JsonElement> Export(JsonElement body)
     {

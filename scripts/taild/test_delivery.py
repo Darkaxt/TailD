@@ -27,7 +27,7 @@ class DeliveryTest(unittest.TestCase):
         for name in ('ensure_quiescent','reader_stop','reader_start','update_registration'):
             self.enterContext(patch.object(installer,name,return_value=False))
 
-    def candidate(self,sequence):
+    def candidate(self,sequence,*,schema='taild-package-v2'):
         root=self.root/('candidate-'+str(sequence));root.mkdir()
         names=['TailD.exe','TailD.Background.exe','TailD.Setup.exe','desktop/TailD.Desktop.exe','desktop/ui/index.html',
             '_internal/python314.dll','desktop/licenses/frontend-GPL-3.0.txt',
@@ -37,7 +37,7 @@ class DeliveryTest(unittest.TestCase):
             'inherited-core-LICENSE.txt','core-provenance.json')]
         for name in names:
             path=root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(('synthetic '+name+str(sequence)).encode())
-        data={'schema':'taild-package-v2','product':'TailD','upstream_version':'1.105.0','subversion':sequence,
+        data={'schema':schema,'product':'TailD','upstream_version':'1.105.0','subversion':sequence,
             'version':'1.105.0+'+str(sequence),'architecture':'windows-amd64','source_commit':'a'*40,
             'core_replace':'replace tailscale.com => github.com/Darkaxt/tailscale v1.103.0-pre.0.20261013063423-de6111f507ae',
             'history_schema':4,'authenticode':'not-signed','files':manifest.inventory(root)}
@@ -49,6 +49,30 @@ class DeliveryTest(unittest.TestCase):
         shutil.copytree(source,self.app)
         (self.app/'installation.json').write_text(json.dumps({'schema':'taild-installation-v1',
             'owner_sid':self.owner,'local_data':str(self.local),'highest_subversion':1}))
+
+    @unittest.skipUnless(os.name=='nt','Windows setup owner boundary')
+    def test_v1_upgrade_uses_explicit_original_owner_location_before_v2_transaction(self):
+        import updater
+        old,_=self.candidate(1,schema='taild-package-v1');new,_=self.candidate(2);self.installed(old)
+        (self.app/'installation.json').write_text(json.dumps({'schema':'taild-installation-v1','owner_sid':self.owner,'highest_subversion':1}))
+        owner_file=self.root/'owner.json';owner_file.write_text(json.dumps({'owner_sid':self.owner,'local_data':str(self.local)}))
+        with patch.object(installer.ctypes.windll.shell32,'IsUserAnAdmin',return_value=True),patch.object(updater,'graceful_stop') as stop:
+            installer.main(['prepare','--candidate',str(new),'--owner-file',str(owner_file)])
+        stop.assert_called_once_with({'owner_sid':self.owner,'local_data':str(self.local)})
+        self.assertEqual(delivery.read_journal()['phase'],'prepared')
+        self.assertEqual(delivery.read_journal()['local_data'],str(self.local))
+        self.assertEqual(manifest.verify(self.app.with_name('TailD.rollback'),installed=True)['schema'],'taild-package-v1')
+
+    @unittest.skipUnless(os.name=='nt','Windows setup owner boundary')
+    def test_v1_upgrade_refuses_different_original_owner_before_stopping_any_process(self):
+        import updater
+        old,_=self.candidate(1,schema='taild-package-v1');new,_=self.candidate(2);self.installed(old)
+        (self.app/'installation.json').write_text(json.dumps({'schema':'taild-installation-v1','owner_sid':self.owner,'highest_subversion':1}))
+        owner_file=self.root/'owner.json';owner_file.write_text(json.dumps({'owner_sid':'S-1-5-21-2000','local_data':str(self.local)}))
+        with patch.object(installer.ctypes.windll.shell32,'IsUserAnAdmin',return_value=True),patch.object(updater,'graceful_stop') as stop:
+            with self.assertRaises(manifest.PackageError):installer.main(['prepare','--candidate',str(new),'--owner-file',str(owner_file)])
+        stop.assert_not_called();self.assertIsNone(delivery.read_journal())
+        self.assertEqual(manifest.verify(self.app,installed=True)['schema'],'taild-package-v1')
 
     def test_interruption_after_core_activation_restores_previous_payload_and_floor(self):
         old,_=self.candidate(1);new,newdata=self.candidate(2);self.installed(old)

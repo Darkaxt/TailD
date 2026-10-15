@@ -315,6 +315,9 @@ class RuntimeTest(unittest.TestCase):
         self.server.source=GatedSource()
         def desktop():
             try:
+                # The native bridge is serial. An explicit refresh receipt must
+                # not hold it until an independent source finishes its I/O.
+                observed['refresh']=self.collector.dispatch({'op':'refresh','body':{'wait':False}})
                 observed['state']=self.collector.dispatch({'op':'state'})
                 observed['catalog']=self.collector.dispatch({'op':'view-catalog','body':{}})
                 observed['saved']=self.collector.dispatch({'op':'saved-query','body':{'action':'list'}})
@@ -332,6 +335,7 @@ class RuntimeTest(unittest.TestCase):
             worker.start()
             self.assertTrue(finished.wait(10),'Dashboard/close waited for the gated source read')
             self.assertFalse(errors,errors)
+            self.assertEqual(observed['refresh']['sources']['traffic']['state'],'collecting')
             self.assertTrue(observed['closed']['collector_continues'])
             self.assertEqual(observed['batch']['results'][0]['data']['total_count'],0)
             progress=observed['state']['sources']['traffic']['progress']

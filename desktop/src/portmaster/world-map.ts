@@ -7,15 +7,16 @@ import {geoMercator,geoPath,select} from 'd3';
 import {feature} from 'topojson-client';
 import type {Topology,GeometryCollection} from 'topojson-specification';
 import type {FeatureCollection,Geometry} from 'geojson';
-import {Consumer,bytes,exact} from './charts';
+import {bytes,exact} from './charts';
+export interface GeographyRow {value:string|null;total_bytes?:string;events?:number}
 
 @Component({selector:'taild-world-map',standalone:true,imports:[CommonModule],
-  template:`<div class="map-surface" [attr.data-map-ready]="ready()" role="group" aria-label="Inferred answer-country map"></div>
+  template:`<div class="map-surface" [attr.data-map-ready]="ready()" role="group" [attr.aria-label]="metric==='decisions'?'Provider answer-country decision map':'Inferred answer-country traffic map'"></div>
     <p class="hint" role="status" *ngIf="!ready()&&!failed()">Loading packaged country map…</p>
     <p class="hint" role="status" *ngIf="failed()">Country map unavailable. Use the country table.</p>
-    <div class="map-key"><span><i></i> Inferred candidate bytes</span><span>Unobserved countries stay neutral</span></div>
-    <p class="hint">Control D answer metadata · unique temporal candidates, not measured routes or device location.</p>
-    <p class="hint" *ngIf="unmapped()>0n">Unknown / unmapped: {{format(unmapped())}}. Retained in the country table.</p>`,
+    <div class="map-key"><span><i></i> {{metric==='decisions'?'Provider DNS decisions':'Inferred candidate bytes'}}</span><span>Unobserved countries stay neutral</span></div>
+    <p class="hint">{{metric==='decisions'?'Control D reported answer metadata · independent endpoint scope.':'Control D answer metadata · unique temporal traffic candidates.'}} Not measured routes or device location.</p>
+    <p class="hint" *ngIf="unmapped()>0n">Unknown / unmapped: {{quantityLabel(unmapped())}}. Retained in the country table.</p>`,
   styles:[`:host{display:block;min-width:0}.map-surface{height:340px;background:#1f1e1e;border-radius:4px;overflow:hidden}
     .map-key{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:12px 0;font-size:10px;color:var(--text-tertiary)}
     i{display:inline-block;width:8px;height:8px;background:#4b70cc;margin-right:5px}
@@ -27,11 +28,16 @@ import {Consumer,bytes,exact} from './charts';
 export class WorldMapComponent implements AfterViewInit {
   private element=inject(ElementRef<HTMLElement>);private destroy=inject(DestroyRef);private disposed=false;
   private countries:FeatureCollection<Geometry,{iso_a2:string;name:string}>|null=null;
-  private rows:Consumer[]=[];ready=signal(false);failed=signal(false);unmapped=signal(0n);format=bytes;
+  private rows:GeographyRow[]=[];ready=signal(false);failed=signal(false);unmapped=signal(0n);
+  private selectedMetric:'traffic'|'decisions'='traffic';
+  @Input() set metric(value:'traffic'|'decisions'){this.selectedMetric=value;this.render()}
+  get metric(){return this.selectedMetric}
+  quantity(row:GeographyRow){return exact(this.metric==='decisions'?row.events:row.total_bytes)}
+  quantityLabel(value:bigint){return this.metric==='decisions'?value+' decisions':bytes(value)}
   @Output() selectCountry=new EventEmitter<string>();
   private highlighted:string|null=null;
   @Input() set highlightedCountry(value:string|null){this.highlighted=value;this.highlight()}
-  @Input() set data(value:Consumer[]){this.rows=value||[];this.render()}
+  @Input() set data(value:GeographyRow[]){this.rows=value||[];this.render()}
   private highlight(){const value=this.highlighted;select(this.element.nativeElement).selectAll<SVGPathElement,unknown>('path[data-country]')
     .classed('highlighted',function(){return this.getAttribute('data-country')===value})}
   async ngAfterViewInit(){
@@ -52,8 +58,8 @@ export class WorldMapComponent implements AfterViewInit {
     const size=surface.getBoundingClientRect();if(!size.width||!size.height)return;
     const countries={...this.countries,features:this.countries.features.filter(c=>c.properties.iso_a2!=='AQ')};
     const codes=new Set(countries.features.map(c=>c.properties.iso_a2));
-    this.unmapped.set(this.rows.filter(r=>!r.value||!codes.has(r.value)).reduce((n,r)=>n+exact(r.total_bytes),0n));
-    const values=new Map(this.rows.filter(r=>r.value&&codes.has(r.value)).map(r=>[r.value,exact(r.total_bytes)]));
+    this.unmapped.set(this.rows.filter(r=>!r.value||!codes.has(r.value)).reduce((n,r)=>n+this.quantity(r),0n));
+    const values=new Map(this.rows.filter(r=>r.value&&codes.has(r.value)).map(r=>[r.value,this.quantity(r)]));
     const projection=geoMercator().rotate([0,0]).fitExtent([[8,8],[size.width-8,size.height-8]],countries);
     const path=geoPath().projection(projection);
     select(surface).selectAll('svg').remove();
@@ -63,10 +69,10 @@ export class WorldMapComponent implements AfterViewInit {
       .classed('observed',d=>(values.get(d.properties.iso_a2)||0n)>0n)
       .attr('tabindex',d=>(values.get(d.properties.iso_a2)||0n)>0n?0:null)
       .attr('role',d=>(values.get(d.properties.iso_a2)||0n)>0n?'button':null)
-      .attr('aria-label',d=>`${d.properties.name}: ${values.has(d.properties.iso_a2)?values.get(d.properties.iso_a2)+' inferred candidate bytes':'unobserved'}`)
+      .attr('aria-label',d=>`${d.properties.name}: ${values.has(d.properties.iso_a2)?this.quantityLabel(values.get(d.properties.iso_a2)!):'unobserved'}`)
       .on('click',(_,d)=>{if((values.get(d.properties.iso_a2)||0n)>0n)this.selectCountry.emit(d.properties.iso_a2)})
       .on('keydown',(event:KeyboardEvent,d)=>{if((event.key==='Enter'||event.key===' ')&&(values.get(d.properties.iso_a2)||0n)>0n){event.preventDefault();this.selectCountry.emit(d.properties.iso_a2)}});
-    paths.append('title').text(d=>`${d.properties.name} · ${values.has(d.properties.iso_a2)?values.get(d.properties.iso_a2)+' inferred bytes':'No geography observed'}`);
+    paths.append('title').text(d=>`${d.properties.name} · ${values.has(d.properties.iso_a2)?this.quantityLabel(values.get(d.properties.iso_a2)!):'No geography observed'}`);
     this.highlight();this.ready.set(true);
   }
 }

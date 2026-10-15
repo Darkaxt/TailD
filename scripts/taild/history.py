@@ -228,6 +228,7 @@ class History:
             # Additive, backwards-compatible indexes, not stored metrics or a
             # schema migration. Existing clients can still read the same facts.
             self.db.execute('CREATE INDEX IF NOT EXISTS traffic_dashboard ON traffic(time,application,destination,inbound,outbound,source,identity,port)')
+            self.db.execute('CREATE INDEX IF NOT EXISTS traffic_application_time ON traffic(application,time,destination,inbound,outbound,source,identity,port)')
             self.db.execute("CREATE INDEX IF NOT EXISTS traffic_unsupported_time_source ON traffic(time,source) WHERE json_extract(data,'$.destination_status')='unsupported-address-family'")
 
     def _bump(self):
@@ -423,39 +424,71 @@ class History:
         finally:
             self.db.execute('ROLLBACK')
 
-    def _coverage(self, kind, a, b, selected=None, endpoint=None):
-        sql='SELECT DISTINCT s.id,s.metadata FROM sources s JOIN runs r ON r.source=s.id WHERE s.kind=? AND r.end>? AND r.start<?'
-        params=[kind,a,b]
-        if selected:
-            sql+=' AND s.id=?'
-            params.append(selected)
-        sources=[r[0] for r in self.db.execute(sql,params)
-                 if endpoint is None or json.loads(r[1]).get('endpoint')==endpoint]
-        floor = self.db.execute('SELECT expiry_floor FROM settings').fetchone()[0]
+    @staticmethod
+    def _coverage_gaps(intervals,a,b):
+        cursor=a;gaps=[]
+        for x,y in intervals:
+            if y<=cursor:continue
+            if x>=b:break
+            if x>cursor:gaps.append((cursor,min(x,b)))
+            cursor=max(cursor,min(y,b))
+        if cursor<b:gaps.append((cursor,b))
+        return gaps
+
+    @staticmethod
+    def _coverage_union(intervals,x,y):
+        merged=[]
+        for left,right in intervals:
+            if right<x:merged.append((left,right))
+            elif y<left:
+                merged.append((x,y));x,y=left,right
+            else:x,y=min(x,left),max(y,right)
+        merged.append((x,y))
+        return merged
+
+    def _coverage(self, kind, a, b, selected=None, endpoint=None, *, cache=None):
+        # The caller owns this cache for ONE read transaction. Never persist it
+        # on History: ingestion and later revisions must see corrected runs.
+        cache={} if cache is None else cache
+        key=('runs',kind,selected,endpoint)
+        prepared=cache.get(key)
+        if prepared is None or a<prepared['start'] or b>prepared['end']:
+            low=min(a,prepared['start']) if prepared else a
+            high=max(b,prepared['end']) if prepared else b
+            floor=self.db.execute('SELECT expiry_floor FROM settings').fetchone()[0]
+            inputs=[]
+            for source,metadata in self.db.execute('SELECT id,metadata FROM sources WHERE kind=?',(kind,)):
+                if selected and source!=selected or endpoint is not None and json.loads(metadata).get('endpoint')!=endpoint:continue
+                runs=list(self.db.execute('SELECT start,end,state,revision FROM runs WHERE source=? AND end>? AND start<? ORDER BY revision',(source,low,high)))
+                complete=[r for r in reversed(runs) if r[2]=='complete']
+                covered=[];position=0;attempts=[]
+                for x,y,state,revision in reversed(runs):
+                    if state=='complete':continue
+                    while position<len(complete) and complete[position][3]>revision:
+                        left,right=complete[position][:2]
+                        covered=self._coverage_union(covered,left,right);position+=1
+                    unresolved=self._coverage_gaps(covered,max(x,low,floor),min(y,high))
+                    attempts.append((x,y,state,unresolved))
+                all_complete=[]
+                for x,y,_,_ in complete:all_complete=self._coverage_union(all_complete,x,y)
+                inputs.append((source,runs,all_complete,list(reversed(attempts))))
+            deleted=list(self.db.execute('SELECT source,start,end FROM suppressions WHERE kind=? AND end>? AND start<?',(kind,low,high)))
+            prepared={'start':low,'end':high,'floor':floor,'inputs':inputs,'deleted':deleted}
+            cache[key]=prepared
+        floor=prepared['floor']
         detail = []
-        for source in sources:
-            cursor, gaps = max(a, floor), []
+        for source,runs,complete,attempts in prepared['inputs']:
+            if not any(x<b and y>a for x,y,_,_ in runs):continue
+            gaps=[]
             if a < floor:
                 gaps.append({'start': utc(a), 'end': utc(min(b, floor)), 'reason': 'retention-expired'})
-            for x, y in self.db.execute("SELECT start,end FROM runs WHERE source=? AND state='complete' AND end>? AND start<? ORDER BY start,end", (source, a, b)):
-                x, y = max(a, floor, x), min(b, y)
-                if x > cursor:
-                    gaps.append({'start': utc(cursor), 'end': utc(x), 'reason': 'unobserved'})
-                cursor = max(cursor, y)
-            if cursor < b:
-                gaps.append({'start': utc(cursor), 'end': utc(b), 'reason': 'unobserved'})
-            attempts = []
-            for x, y, state, revision in self.db.execute("SELECT start,end,state,revision FROM runs WHERE source=? AND end>? AND start<? AND state!='complete' ORDER BY revision", (source, a, b)):
-                through = max(x, a, floor)
-                stop = min(y, b)
-                for ca, cb in self.db.execute("SELECT start,end FROM runs WHERE source=? AND state='complete' AND revision>? AND end>? AND start<? ORDER BY start,end", (source, revision, through, stop)):
-                    if ca > through:
-                        break
-                    through = max(through, cb)
-                attempts.append({'start': utc(x), 'end': utc(y), 'state': state, 'resolved': through >= stop})
-            deleted = self.db.execute('SELECT count(*) FROM suppressions WHERE kind=? AND (source IS NULL OR source=?) AND end>? AND start<?', (kind, source, a, b)).fetchone()[0]
-            detail.append({'source': source, 'gaps': gaps, 'incomplete_attempts': attempts, 'deletion_scopes': deleted})
-        return {'incomplete': not sources or any(r['gaps'] or any(not attempt['resolved'] for attempt in r['incomplete_attempts']) or r['deletion_scopes'] for r in detail),
+            gaps.extend({'start':utc(x),'end':utc(y),'reason':'unobserved'} for x,y in self._coverage_gaps(complete,max(a,floor),b))
+            selected_attempts=[{'start':utc(x),'end':utc(y),'state':state,
+                'resolved':not any(left<min(y,b) and right>max(x,a,floor) for left,right in unresolved)}
+                for x,y,state,unresolved in attempts if y>a and x<b]
+            deleted=sum(1 for owner,x,y in prepared['deleted'] if (owner is None or owner==source) and y>a and x<b)
+            detail.append({'source': source, 'gaps': gaps, 'incomplete_attempts': selected_attempts, 'deletion_scopes': deleted})
+        return {'incomplete': not detail or any(r['gaps'] or any(not attempt['resolved'] for attempt in r['incomplete_attempts']) or r['deletion_scopes'] for r in detail),
                 'sources': detail, 'snapshot_limit': 'separate source transactions; late corrections remain possible'}
 
     def health(self):

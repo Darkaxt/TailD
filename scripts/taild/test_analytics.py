@@ -1,5 +1,7 @@
 """Stage 5 tests use real private SQLite facts, not mocked query engines."""
 import copy
+from datetime import datetime
+import controld
 from pathlib import Path
 import tempfile
 import unittest
@@ -73,6 +75,14 @@ class AnalyticsTest(unittest.TestCase):
         self.assertEqual(result['results'][0]['data']['application_activity']['bucket_count'],len(facts))
         self.assertEqual(sum(g['count'] for g in result['results'][2]['data']['groups']),len(facts))
 
+    def test_unbound_application_rankings_do_not_read_unrelated_dns_facts(self):
+        request=self.request(view='groups',group_by=['application','application_path'])
+        with patch.object(self.engine,'_unbound_aggregates',return_value=None):expected=self.engine.batch([request])
+        with patch.object(self.engine,'_load',wraps=self.engine._load) as load:
+            actual=self.engine.batch([request])
+        self.assertEqual(actual,expected)
+        self.assertFalse(any(call.args[0]=='dns' for call in load.call_args_list))
+
     def test_progressive_batch_emits_dns_before_held_traffic_in_one_revision(self):
         queries=[self.request(),self.request(kind='dns'),self.request(view='series',bin_seconds=60),
                  self.request(kind='dns',view='series',bin_seconds=60)]
@@ -120,6 +130,41 @@ class AnalyticsTest(unittest.TestCase):
             self.assertEqual(health_read.call_count,1)
             self.engine.batch(queries)
             self.assertEqual(health_read.call_count,2)
+
+    def test_chart_coverage_preparation_does_not_query_each_attempt_per_bin(self):
+        source=self.store.db.execute("SELECT id FROM sources WHERE kind='traffic'").fetchone()[0]
+        a,b=history.bounds(START,END)
+        for i in range(40):
+            self.store.db.execute("INSERT INTO runs(source,start,end,state,collected,metadata) VALUES(?,?,?,'truncated',?,'{}')",(source,a,b,b))
+        sql=[];self.store.db.set_trace_callback(sql.append)
+        try:self.query(view='series',bin_seconds=10)
+        finally:self.store.db.set_trace_callback(None)
+        scans=[q for q in sql if 'FROM runs WHERE' in q]
+        self.assertLess(len(scans),20,'Coverage repeated per-attempt SQL for every graph bin')
+
+    def test_provider_outcomes_classify_only_documented_codes_and_filter_facts(self):
+        data=copy.deepcopy(self.dns)
+        data['rows']=[]
+        for code in ('-1','0','1','2','3','99','01'):
+            row=copy.deepcopy(self.dns['rows'][0]);row['raw']['action']=code;data['rows'].append(row)
+        self.store.db.execute('DELETE FROM dns');self.store.import_dns(data,'account','endpoint')
+        outcomes=self.query(kind='dns')['data']['dns_outcomes']
+        self.assertEqual(outcomes['counts'],{'allow':1,'block':1,'redirect':2,'failed':1,'other':0,'unknown':2})
+        self.assertEqual(outcomes['classified_denominator'],4)
+        self.assertEqual(outcomes['block_rate'],0.25)
+        blocked=self.query(kind='dns',view='facts',where={'field':'outcome','op':'eq','value':'block'})['data']['rows']
+        self.assertEqual([r['action'] for r in blocked],['0'])
+
+    def test_provider_geography_is_independent_of_traffic_binding_and_mixed_answers(self):
+        data=copy.deepcopy(self.dns)
+        data['rows'][0]['raw'].update(answers='198.51.100.2;198.51.100.3',answerCountryCode='DE',answerASN='64500')
+        self.store.db.execute('DELETE FROM dns');self.store.import_dns(data,'account','endpoint')
+        result=self.query(kind='dns')['data']['geography_asn']
+        self.assertEqual(result['provider_decisions']['country'],[{'value':'DE','events':1}])
+        self.assertEqual(self.query()['data']['geography_asn']['unknown_bytes'],self.query()['data']['data']['total_bytes'])
+        rows=self.query(kind='dns',view='facts',where={'field':'provider_country','op':'eq','value':'DE'})['data']['rows']
+        self.assertEqual(len(rows),1)
+        self.assertIsNone(rows[0]['answer_country'],'Mixed answers must not acquire inferred traffic geography')
 
     def test_seven_day_aggregates_stream_beyond_the_fact_page_budget(self):
         # Real SQLite rows, deliberately beyond the old materialization bound.
@@ -439,7 +484,7 @@ class AnalyticsTest(unittest.TestCase):
         output=self.store.directory/'metrics.json'
         args=['--history',str(self.store.directory),'query','--request-stdin','--output',str(output)]
         stdout=io.StringIO()
-        with patch('sys.stdin',io.StringIO(json.dumps([self.request(),self.request(view='facts')]))),contextlib.redirect_stdout(stdout):
+        with patch.object(controld,'utc_now',return_value=datetime.fromisoformat(END.replace('Z','+00:00'))),patch('sys.stdin',io.StringIO(json.dumps([self.request(),self.request(view='facts')]))),contextlib.redirect_stdout(stdout):
             self.assertEqual(analytics.main(args),0)
         self.assertNotIn('synthetic.exe',stdout.getvalue())
         self.assertNotIn('example.invalid',stdout.getvalue())

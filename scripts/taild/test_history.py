@@ -72,12 +72,13 @@ class HistoryTest(unittest.TestCase):
         self.ingest()
         before=self.query();revision=self.store.db.execute('SELECT revision FROM settings').fetchone()[0]
         indexes={r[1] for r in self.store.db.execute('PRAGMA index_list(traffic)')}
-        self.assertTrue({'traffic_dashboard','traffic_unsupported_time_source'}<=indexes)
+        self.assertTrue({'traffic_dashboard','traffic_application_time','traffic_unsupported_time_source'}<=indexes)
         self.assertEqual(self.store.db.execute('PRAGMA user_version').fetchone()[0],4)
         self.store.db.execute('DROP INDEX traffic_dashboard')
+        self.store.db.execute('DROP INDEX traffic_application_time')
         self.store.db.execute('DROP INDEX traffic_unsupported_time_source')
         self.store.close();self.store=history.History(self.home,now=NOW);self.addCleanup(self.store.close)
-        self.assertTrue({'traffic_dashboard','traffic_unsupported_time_source'}<={r[1] for r in self.store.db.execute('PRAGMA index_list(traffic)')})
+        self.assertTrue({'traffic_dashboard','traffic_application_time','traffic_unsupported_time_source'}<={r[1] for r in self.store.db.execute('PRAGMA index_list(traffic)')})
         self.assertEqual(self.store.db.execute('SELECT revision FROM settings').fetchone()[0],revision)
         self.assertEqual(self.query(),before)
 
@@ -314,6 +315,40 @@ store.import_traffic(payload['data'],'synthetic-host')
         self.assertTrue(self.store.query('dns',START,END)['coverage']['incomplete'])
         self.store.import_dns(self.dns(),'account','synthetic')
         self.assertFalse(self.store.query('dns',START,END)['coverage']['incomplete'])
+
+    def test_revision_local_coverage_matches_discrete_run_oracle_for_clipped_bins(self):
+        import random
+        self.store.import_dns(self.dns([]),'account','synthetic')
+        source=self.store.db.execute("SELECT id FROM sources WHERE kind='dns'").fetchone()[0]
+        self.store.db.execute('DELETE FROM runs')
+        base=history.instant(START);unit=1000000;floor=base+3*unit
+        self.store.db.execute('UPDATE settings SET expiry_floor=?',(floor,))
+        rng=random.Random(12);runs=[]
+        for revision in range(1,81):
+            left=rng.randrange(0,29);right=rng.randrange(left+1,31)
+            state=rng.choice(['complete','truncated','read-failed'])
+            runs.append((left,right,state,revision))
+            self.store.db.execute('INSERT INTO runs VALUES(?,?,?,?,?,?,?)',
+                (revision,source,base+left*unit,base+right*unit,state,base,'{}'))
+        cache={}
+        for left,right in [(0,30),*( (a,b) for a in range(30) for b in range(a+1,31))]:
+            actual=self.store._coverage('dns',base+left*unit,base+right*unit,cache=cache)
+            overlapping=[r for r in runs if r[0]<right and r[1]>left]
+            if not overlapping:
+                self.assertEqual(actual['sources'],[]);continue
+            detail=actual['sources'][0];gaps=[];cursor=max(left,3)
+            if left<3:gaps.append({'start':history.utc(base+left*unit),'end':history.utc(base+min(right,3)*unit),'reason':'retention-expired'})
+            for tick in range(max(left,3),right):
+                covered=any(a<=tick<b and state=='complete' for a,b,state,_ in runs)
+                if covered:
+                    if cursor<tick:gaps.append({'start':history.utc(base+cursor*unit),'end':history.utc(base+tick*unit),'reason':'unobserved'})
+                    cursor=tick+1
+            if cursor<right:gaps.append({'start':history.utc(base+cursor*unit),'end':history.utc(base+right*unit),'reason':'unobserved'})
+            attempts=[{'start':history.utc(base+a*unit),'end':history.utc(base+b*unit),'state':state,
+                'resolved':all(any(c<=tick<d and s=='complete' and rev>revision for c,d,s,rev in runs)
+                    for tick in range(max(a,left,3),min(b,right)))}
+                for a,b,state,revision in overlapping if state!='complete']
+            self.assertEqual(detail,{'source':source,'gaps':gaps,'incomplete_attempts':attempts,'deletion_scopes':0},(left,right))
 
     def test_bounded_provider_splits_preserve_equal_events_and_irreducible_gap(self):
         self.assertIsNotNone(ingestion,'On-demand ingestion command missing')

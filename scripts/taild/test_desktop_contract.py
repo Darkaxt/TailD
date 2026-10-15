@@ -67,7 +67,7 @@ class DesktopContractTest(unittest.TestCase):
         exported = api.dispatch('export-query',{'query':request,'revision':batch['revision'],'format':'csv'})
         rows = list(csv.DictReader(io.StringIO(exported['content'])))
         self.assertTrue(any(r['application_path'].startswith("'=") for r in rows))
-        self.assertTrue(all(r['aggregation_version']=='taild-metrics-v2' for r in rows))
+        self.assertTrue(all(r['aggregation_version']==analytics.VERSION for r in rows))
         self.assertTrue(all(r['scope'] for r in rows))
         self.assertEqual(sum(int(r['total_bytes']) for r in rows),2**53+54)
         self.assertTrue(exported['formula_safe'])
