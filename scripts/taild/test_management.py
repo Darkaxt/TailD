@@ -21,6 +21,7 @@ class ManagementTest(unittest.TestCase):
         self.current=snapshot();self.writes=[]
         self.manager=management.Management()
         self.addCleanup(patch.stopall)
+        patch('management.credentials.CredentialStore.__init__',return_value=None).start()
         patch('management.credentials.CredentialStore.read',return_value='synthetic').start()
         patch('management.controld._body',side_effect=lambda path,*a:
             {'options':[{'PK':'block_rfc1918','type':'toggle','default_value':0}]} if path=='/profiles/options' else {'PK':'account'}).start()

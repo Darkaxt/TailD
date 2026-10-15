@@ -20,11 +20,21 @@ import test_glasswire
 runtime = __import__('runtime') if importlib.util.find_spec('runtime') else None
 
 
+class IsolatedLiveStream:
+    """CSV/GlassWire tests own no network; real SSE has separate acceptance."""
+    def __init__(self):self.stopped=threading.Event()
+    def run(self,token,provider,on_event,on_connected):
+        on_connected();self.stopped.wait()
+    def cancel(self):self.stopped.set()
+
+
 @unittest.skipUnless(os.name == 'nt', 'Windows owning-user runtime')
 class RuntimeTest(unittest.TestCase):
     add_row = test_glasswire.GlassWireTest.add_row
 
     def setUp(self):
+        isolated=patch.object(runtime.live_dns,'Stream',IsolatedLiveStream)
+        isolated.start();self.addCleanup(isolated.stop)
         self.assertIsNotNone(runtime, 'Opt-in collector/query lifecycle is missing')
         test_glasswire.GlassWireTest.setUp(self)
         self.writer.close()

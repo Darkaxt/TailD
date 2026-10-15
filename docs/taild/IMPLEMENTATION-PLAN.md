@@ -27,6 +27,12 @@ Fresh backend suite passes after supplying its required owned fixture-output
 environment (the first invocation lacked that environment, not a code defect).
 Angular production and native Debug builds and frontend contracts pass.
 No production policy, installed binding or Android device was changed. Existing B12 is unchanged.
+Hosted Linux checks exposed test-isolation gaps: management tests mocked vault
+reads but not Windows-only construction, and portable CSV scheduling tests could
+start the newly added real SSE transport. The fixtures now isolate those external
+boundaries; production owner guards and the separate real SSE acceptance are
+unchanged. Packaging now includes and tests notice coverage for every pinned
+network-runtime distribution, including vendored notices.
 Tracked deferrals: none. No later stage is ACTIVE.
 
 ## Current correction — 2026-10-15

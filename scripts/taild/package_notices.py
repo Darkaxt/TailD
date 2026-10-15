@@ -9,6 +9,9 @@ import ssl
 import sys
 import urllib.request
 
+RUNTIME_DISTRIBUTIONS=('pywin32','pyinstaller','cryptography','cffi','pycparser',
+    'aiohttp','aiohappyeyeballs','aiosignal','attrs','frozenlist','multidict','propcache','yarl','idna')
+
 
 def collect(output,nuget):
     output=Path(output);records=[]
@@ -28,7 +31,7 @@ def collect(output,nuget):
     target=output/'openssl-3.5.7-LICENSE.txt'
     with target.open('xb') as f:f.write(license_text)
     records.append({'component':'CPython TLS OpenSSL','version':ssl.OPENSSL_VERSION,'notice':target.name,'sha256':digest})
-    for name in ('pywin32','pyinstaller','cryptography','cffi','pycparser'):
+    for name in RUNTIME_DISTRIBUTIONS:
         package=importlib.metadata.distribution(name)
         files=[p for p in package.files if '.dist-info/licenses/' in str(p).replace('\\','/')]
         if not files:raise ValueError('Missing distribution notices: '+name)

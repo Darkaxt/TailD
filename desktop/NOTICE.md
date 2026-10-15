@@ -75,3 +75,7 @@ required to reuse the Angular widgets. The Windows-only host uses the installed
 WebView2 runtime, navigation restrictions, an owner-authenticated fixed pipe and
 no browser-accessible token. This is a host dependency decision, not replacement
 of the requested widget design or reduction of TailDNS/core versions.
+
+The owning-user live DNS transport bundles pinned aiohttp and its declared
+dependencies. Their actual distribution licenses/notices, including aiohttp's
+vendored llhttp notice, are included in licenses/runtime-license-inventory.json.

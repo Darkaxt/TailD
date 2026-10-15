@@ -71,6 +71,8 @@ class SchedulingTest(unittest.TestCase):
         finally:release.set()
 
     def setUp(self):
+        isolated=patch.object(runtime.live_dns,'Stream',test_runtime.IsolatedLiveStream)
+        isolated.start();self.addCleanup(isolated.stop)
         test_glasswire.GlassWireTest.setUp(self)
         self.writer.close();(self.root/'stats').mkdir()
         self.stats=self.stats.replace(self.root/'stats'/self.stats.name)
