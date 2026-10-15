@@ -6,8 +6,9 @@ endpoint-scoped management/live-history and map correction; verify real provider
 and native UI workflows; run sequential bounded QA; publish, independently verify
 and install the complete update.
 
-B26 (internal advancement blocker): R19–R21 source integration and acceptance are
-verified; normal public release and installed-owner validation remain required.
+B26 resolved: R19–R21 source, real-boundary/native acceptance, public release and
+installed-owner validation are verified. This bounded update is **COMPLETE**;
+overall Stage 10 remains ACTIVE for its pre-existing B12 scope.
 Real READ association and all required Write actions/readback passed on an
 unassigned task-created profile, whose deletion and unchanged production policy
 were verified. Actual SSE -> SQLite -> typed query passed; an independent owning
@@ -44,8 +45,19 @@ source/core provenance, Ed25519 signatures and pinned key, installer SHA-256
 443 payload members, amd64 primary binaries, runtime notices and matching served
 frontend assets (HTML differs only by line endings). The downloaded frozen
 runtime also received real SSE, loaded live management policy, and exited cleanly
-without a window or provider writes. Actual local installation is pending the
-single queued broker action `9c853b0884d54a98be1b74e266a397e7`; do not duplicate it.
+without a window or provider writes. The original broker action
+`9c853b0884d54a98be1b74e266a397e7` completed elevated with installer exit 0.
+Installed +10 matches the signed payload. Both services run; authenticated node,
+addresses, tailnet-lock signer, DNS preferences, official GUI/wintun components,
+public DNS and MagicDNS continuity passed the captured before/after comparison.
+The actual installed Release window loaded live policy and all four management
+sections with enabled incident controls through UIA, without debug hooks or
+production policy writes. The collector reports live DNS connected; separate
+READ/Write credentials remain present and authenticate to the same account.
+The initial UIA probe's Windows PowerShell Unicode-title decoding and transient
+UIA-node failures were probe defects, corrected without an application patch.
+Deployment evidence: management-10/live-update/after-10.json, installed-ui.json,
+provider.json and frozen.json beneath the durable validation directory above.
 
 ## Current correction — 2026-10-15
 
