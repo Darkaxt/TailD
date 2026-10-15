@@ -42,6 +42,41 @@ Existing broad directories are rejected, not silently given new ACLs.
 
 ## Maintained READ capability matrix
 
+### Separate management credential (October 15)
+
+Explicit owner authorization adds a separate Windows vault target
+`Darkaxt/TailD/ControlD/WriteToken/v1`. The existing Read target and all collectors
+remain unchanged and selected by default. Register a Write token using hidden input:
+
+```powershell
+python -B scripts/taild/credentials.py set --permission write --confirm-write-access
+python -B scripts/taild/credentials.py status --permission write
+```
+
+`--token-stdin` supports an explicitly private non-echoed input pipe for authorized
+registration; tokens must never be literal command arguments, logged, or put in
+source/settings files. Status does not reveal the credential. A Write token grants
+account-wide Read/Write, not just one profile; no provider policy mutation is
+performed by credential registration. This does not implement management UI or
+change the READ integration's permitted operations.
+
+For authorized browser-assisted setup without clipboard history, run:
+
+```powershell
+python -B scripts/taild/credential_entry.py --confirm-write-access
+```
+
+The one-use entry URL is emitted only by the local command. Open it locally and
+enter the token; the listener binds only 127.0.0.1 on an OS-selected port. Exact
+Host/Origin, an unguessable entry path and CSRF header protect registration. The
+token must authenticate to the existing READ account before vault persistence;
+read-back and READ continuity are checked before success. The listener exits
+after the registration result. No startup entry, service, secret-bearing log or
+clipboard transfer is created. An existing Write entry refuses this creation-only
+flow; explicit hidden/STDIN replacement remains a separate CLI action.
+
+### Existing live READ coverage
+
 Verified 2026-10-13 using the already supplied READ credential. Every row is a
 GET, with no provider mutation, credential-bearing redirect, permission upgrade,
 browser cookie, account impersonation or failed-request retry. Policy reads are

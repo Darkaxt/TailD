@@ -2,6 +2,30 @@
 
 ## Current correction — 2026-10-15
 
+October 15 credential setup (R14b, already_authorized): Stage 10 remains the single
+ACTIVE stage. The owner confirmed creation of a separate account-wide Write token
+named `TailD Management`, with no IP restriction, and registration alongside READ.
+Scope: explicit Write vault target/CLI input -> provider token creation -> secure
+local registration -> read-back and read-only provider authentication, preserving
+READ and existing collector behavior -> focused verification and commit/sync.
+B25 resolved: provider UI confirms `TailD Management`, Write, no IP restriction.
+Distinct `Darkaxt/TailD/ControlD/WriteToken/v1` vault registration completed through
+the single-use loopback form, authenticated to the existing READ account, passed
+native read-back and preserved the exact READ credential. Both entries are
+configured; existing collectors retain READ by default. The form was closed and
+its original supervised process exited 0, releasing its listener. No clipboard,
+plaintext file, token argument/output, startup entry or profile-policy write was
+used. GET `/token` is denied (403) to API credentials, including Write; this is
+not bypassed and is not a failure of `/users` authentication. The provider UI,
+not a speculative API mutation probe, establishes the created permission.
+Focused credential, real HTTP origin/Host/capability/no-echo and Control D READ
+regressions pass. Refactoring assessment: one existing vault implementation serves
+both explicit entries; the one-use entry helper exists only for the authorized
+secret transfer, without a persistent server or general automation framework.
+No remaining acceptance gap or tracked deferral for this bounded setup. Existing
+B12 and overall Stage 10 remain open; no management UI, live-stream integration,
+new release or application deployment is claimed by credential registration.
+
 Stage 10 is the single **ACTIVE** stage. R15d is already_authorized by the user's
 instruction to implement the diagnosed fixes, accelerate Applications and perform
 QA analyses, plus the README showcase request. Existing B12 remains; no later

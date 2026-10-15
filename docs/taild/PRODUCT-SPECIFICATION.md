@@ -442,6 +442,24 @@ Control D READ token through the hidden local credential-entry flow for Stage 10
 Do not repeat it in command-line arguments, diagnostics, source, CI or public output;
 no other credential recovery, permission upgrade or provider write is authorized.
 
+October 15 authorized credential-setup amendment (R14b): the owner requested
+acquisition and registration of a separate Control D Write token, then explicitly
+confirmed `TailD Management`, account-wide Read/Write, with no allowed-IP
+restriction. Store it in a distinct owning-user Windows Credential Manager entry;
+preserve the existing READ entry and all collector defaults. The Write entry
+requires an explicit permission selector; replacement additionally requires
+confirmation of Write access. Hidden
+interactive input, explicit non-echoed stdin and a single-use loopback entry form
+are allowed. Loopback entry binds only 127.0.0.1 on an OS-selected port, requires
+an unguessable entry capability plus exact Origin/Host and CSRF checks, authenticates
+the token to the existing READ account before persistence, never logs requests,
+and closes after the registration result. Do not use clipboard history or files
+to transfer the secret. No token
+in argv, files, logs, source or output. Verify vault read-back, unchanged READ
+credential and provider authentication without changing any profile policy. This
+authorizes credential setup only; it does not silently turn existing READ flows
+into mutation clients or claim incident-management/live-stream UI implementation.
+
 R14c (runtime/UI): use an ACL-restricted authenticated named pipe for privileged
 reads with an allowlisted command/schema/path surface. No shell command, arbitrary
 file access or general SQL execution. Authenticate user ownership, not just PID
