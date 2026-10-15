@@ -980,7 +980,7 @@ write, Android deployment or unrelated refactoring. B12 stays open.
 | 7 | Opt-in continuous lifecycle and secure runtime; R13, remaining R14 | COMPLETE |
 | 8 | Portmaster-derived desktop layout/explorer/export; R08 layout, R15, R16 | COMPLETE |
 | 9 | Production packaging and local release-readiness; R17, R18 pre-delivery reconciliation | COMPLETE |
-| 10 | Authorized release, rollout, updater proof and final reconciliation; remaining R18 | ACTIVE; delivery/migration/updater authority granted |
+| 10 | Authorized release, rollout, updater proof and final reconciliation; remaining R18 | BLOCKED on B33 history recovery direction; delivery/migration/updater authority retained |
 
 Each stage's detailed acceptance obligations are in the ledger. Verification
 of an earlier implementation remains valid only for unchanged relevant code and

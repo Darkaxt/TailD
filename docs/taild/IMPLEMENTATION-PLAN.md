@@ -1,7 +1,7 @@
 # TailD staged execution
 
-October 15 R26 incident loading/icon correction: Stage 10 is the single **ACTIVE**
-stage. B32 (internal advancement blocker) now has its source/native workflow verified;
+October 15 R26 incident loading/icon correction: Stage 10 is **BLOCKED**, parked
+on B33; no implementation stage is ACTIVE. B32 (internal advancement blocker) has its source/native workflow verified;
 signed delivery and installed acceptance remain pending. Root cause was the shared
 analytics/policy queue plus snapshot-gated Recent DNS template (live local read
 33.47ms/81 rows versus READ policy 4150.22ms). Fixed authenticated operation lanes
@@ -16,14 +16,22 @@ CDP/validation hooks are absent. Closure assessment found no required consolidat
 transport reuse remains in existing owners, with no new service/retry/timeout/RPC.
 Live account-bound read is physically read-only (31.6ms); no provider mutation.
 Evidence: D:/Tools/taild-stage10-validation-20261013/incident-r26.
-B33 (external pre-existing data impediment, investigation ACTIVE): pre-install
+B33 (external pre-existing data impediment, requires owner recovery direction): pre-install
 history integrity failed: DNS table root 13, page 811782, cell 356, rowid 232587 out
 of order; a subsequent DNS source scan reports SQLITE_CORRUPT. This is not an index
 that can simply be rebuilt. Installed +12 payload, node/signer, custom resolver,
 public DNS and MagicDNS checks pass up to this failed history gate. Do not replace,
-delete or silently recreate history; preserve a consistent original recovery
-snapshot, determine recoverability and obtain direction before any potentially
-lossy replacement. This condition blocks installed data-preservation acceptance,
+delete or silently recreate history. A consistent original SQLite backup is retained
+at D:/Tools/taild-stage10-validation-20261013/release-13/history-before-recovery.sqlite3
+(3,410,407,424 bytes; SHA256 4c72296ef0a29d8afc0aec91a114044ce0f914e66d9d45187b0b5705cfd638b6).
+Only analytics acquisition is paused through its normal acknowledged action;
+VPN/DNS settings, credentials, node and collection binding are unchanged. Obtain
+owner direction allowing salvage/rebuild with possible unrecoverable DNS records,
+then validate the recovered copy before any replacement. This resolves the authority
+impediment; successful integrity/data-preservation verification resolves B33 itself.
+No new release or installation has occurred. Product changes 01275799d002a11f4e4a2719e6d3a7df20c8626a
+are synchronized to main with GitHub focused checks passing (38803207922).
+This condition blocks installed data-preservation acceptance,
 not the independently verified native fixture workflows. No later stage or tracked
 deferral. B31 +12 publication/installation succeeded (workflow 38797175559, source
 42264219e0180450948d6fe2c696639aa8097df8; independently verified public payload,
