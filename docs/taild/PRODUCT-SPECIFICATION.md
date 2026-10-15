@@ -563,6 +563,14 @@ application or host data. Identify screenshots as development-main UI, distingui
 shipped functionality from unreleased corrections and retain upstream licensing,
 attribution and the independent-fork identity.
 
+The subsequent explicit October 15 "Go ahead" authorizes publishing and deploying
+this verified correction on Beacon. Use the complete existing signed Windows
+pipeline, keep the pinned upstream base version and append the next monotonic
+TailD sequence. Independently verify public artifacts before the ordinary in-place
+installer. Preserve node/signing identity, DNS, opt-ins, credentials and history;
+verify installed dashboard/collector recovery. Retain the verified previous
+release for recovery. This does not close unrelated Stage 10 acceptance gaps.
+
 October 14 report-driven dashboard amendment (R15b; owned by ACTIVE Stage 10):
 use [the complete layout mapping](PORTMASTER-LAYOUT-MAP.md) to improve the
 dashboard, without expanding this request into other pages, collectors or delivery.

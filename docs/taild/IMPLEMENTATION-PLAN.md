@@ -59,6 +59,19 @@ Current correction has no unresolved implementation acceptance gaps or deferrals
 Stage 10 remains ACTIVE for its existing B12 live delivery/updater/recovery work;
 this source-only correction does not close that stage or authorize deployment.
 
+### October 15 authorized delivery
+
+The user's subsequent "Go ahead" explicitly authorizes publication and Beacon
+deployment of R15d, superseding the preceding source-only delivery boundary.
+Stage 10 remains the single ACTIVE stage. Current delivery acceptance: run the
+complete clean signed workflow with the next monotonic sequence; independently
+verify downloaded installer/envelopes, pinned identities, all extracted members,
+source/core provenance and unchanged upstream base; install in place through the
+administrator broker; verify installed payload, node/DNS/signing continuity,
+collector commits and actual dashboard readiness. Previous verified +8 remains
+the recovery release. No extra implementation stage or unrelated device access.
+These are active internal acceptance requirements, not a new approval checkpoint.
+
 Sources of truth: [initial specification](SPECIFICATION.md) for R01–R07 and
 [remaining-product specification](PRODUCT-SPECIFICATION.md) for R08–R18.
 Stages 1–3 were authorized by the request to create the public TailD derivative,
