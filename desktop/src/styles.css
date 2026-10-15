@@ -147,6 +147,8 @@ caption{text-align:left;font-size:11px;color:var(--text-tertiary);padding:8px}.i
 #dashboard-dns-trend{grid-area:dnstrend}#dashboard-collection{grid-area:collection}
 .incident-workspace{display:grid;gap:16px;min-width:0}.incident-binding{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
 .incident-binding label{min-width:240px;flex:1}.incident-binding h2{font-size:20px;margin:4px 0}
+.incident-scope-details>summary{padding:4px 0;font-size:12px;color:var(--text-tertiary)}
+#management-recent{border-top:2px solid var(--info-blue)}
 .incident-endpoints,.incident-recent-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
 .incident-tabs{display:flex;gap:8px;flex-wrap:wrap}.incident-tabs button.active{background:var(--info-blue);color:var(--background)}
 .incident-controls{border:0;padding:0;margin:0;min-width:0}.incident-rule-form{display:grid;grid-template-columns:2fr 1fr 2fr auto;gap:12px;align-items:end;margin-bottom:20px}

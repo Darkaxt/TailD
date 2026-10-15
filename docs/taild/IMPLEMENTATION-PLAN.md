@@ -1,5 +1,22 @@
 # TailD staged execution
 
+October 15 R23 incident-first page: Stage 10 remains the single **ACTIVE** stage.
+Scope is already_authorized: compact context -> recent DNS -> guarded policy
+actions/editor. R23 is **COMPLETE** and B28 resolved: native-served DOM/screenshot
+evidence puts recent resolutions before the policy tabs/editor. Shared-profile
+details expand from the compact context; all affected endpoints remain visible
+in mandatory action previews. A stored blocked resolution showed its filter/list
+and separate category, and its Allow action used the guarded preview/confirmation
+and read-back path. Direct rule edits, all four tabs, stale binding/shared-profile
+conflicts, unsupported-rule refusal and search coalescing passed against isolated
+provider fixtures. Fresh Angular/native builds and frontend contracts pass.
+Integrated R22 native navigation/marks, 560px layouts and app-local 150% zoom pass.
+Evidence: D:/Tools/taild-stage10-validation-20261013/incident-first-r23, with
+credential-free receipts and synthetic captures. No production provider mutation.
+Closure review found no required consolidation; existing behavior was reordered,
+not replaced with a separate editor or collection implementation.
+No new collection, permissions or deployment scope. No tracked deferrals.
+
 October 15 R22 branding: Stage 10 remains the single **ACTIVE** stage.
 Scope is already_authorized: Control D navigation/header/source branding and
 Tailscale artwork replacing TD marks, preserving TailD identity and behavior.

@@ -60,27 +60,43 @@ def run(shell, output):
             page.locator('#nav-3').click();settled(page)
             page.wait_for_function("()=>document.querySelector('.incident-workspace')?.getAttribute('aria-busy')==='false'")
             expect(page.locator('.incident-binding h2')).to_have_text('Shared')
-            expect(page.locator('.incident-endpoints').first.locator('.filter-pill')).to_have_count(2)
-            expect(page.locator('.incident-table').last).to_contain_text('Filter / list · Ads & Trackers (ads)')
-            page.locator('.incident-table').last.get_by_text('Decision details',exact=True).click()
-            expect(page.locator('.incident-table').last).to_contain_text('Classification: Technology')
-            page.locator('#incident-hostname').fill('example.invalid')
-            page.locator('#incident-preview-rule').click()
-            expect(page.locator('#management-preview')).to_be_visible()
+            page.locator('.incident-scope-details>summary').click()
+            expect(page.locator('#management-binding .incident-endpoints .filter-pill')).to_have_count(2)
+            page.locator('.incident-scope-details>summary').click()
+            expect(page.locator('#management-recent')).to_contain_text('Filter / list · Ads & Trackers (ads)')
+            incident_geometry=page.evaluate('''()=>({recent:document.querySelector('#management-recent').getBoundingClientRect().top,
+              policy:document.querySelector('#management-policy').getBoundingClientRect().top,
+              tabs:document.querySelector('.incident-tabs').getBoundingClientRect().top})''')
+            assert incident_geometry['recent']<incident_geometry['tabs']<incident_geometry['policy'],incident_geometry
+            page.screenshot(path=str(output/'incident-first.png'))
+            page.locator('#management-recent').get_by_text('Decision details',exact=True).click()
+            expect(page.locator('#management-recent')).to_contain_text('Classification: Technology')
+            # Recent-resolution actions use the existing guarded write workflow.
+            page.locator('#management-recent').get_by_role('button',name='Allow',exact=True).click()
+            expect(page.locator('#management-preview')).to_contain_text('Allow · explicit Bypass')
             expect(page.locator('#management-apply')).to_be_disabled()
             assert not writes
             page.locator('#management-confirm').check();page.locator('#management-apply').click()
             page.wait_for_function("()=>document.querySelector('.incident-workspace')?.getAttribute('aria-busy')==='false'")
             assert len(writes)==1
+            expect(page.locator('#management-policy')).to_contain_text('blocked-example.invalid')
+            page.locator('#incident-hostname').fill('example.invalid')
+            page.locator('#incident-preview-rule').click()
+            expect(page.locator('#management-preview')).to_be_visible()
+            expect(page.locator('#management-apply')).to_be_disabled()
+            assert len(writes)==1
+            page.locator('#management-confirm').check();page.locator('#management-apply').click()
+            page.wait_for_function("()=>document.querySelector('.incident-workspace')?.getAttribute('aria-busy')==='false'")
+            assert len(writes)==2
             expect(page.locator('.incident-workspace .error')).to_have_count(0)
-            expect(page.locator('.incident-table').first).to_contain_text('example.invalid')
+            expect(page.locator('#management-policy')).to_contain_text('example.invalid')
             # A shared-scope change between preview and Apply cannot mutate.
             page.locator('#incident-hostname').fill('conflict.invalid');page.locator('#incident-preview-rule').click()
             expect(page.locator('#management-preview')).to_be_visible()
             fixture['resources']['endpoints']['data']['devices'].pop()
             page.locator('#management-confirm').check();page.locator('#management-apply').click()
             expect(page.locator('.incident-workspace .error')).to_contain_text('changed')
-            assert len(writes)==1
+            assert len(writes)==2
             fixture['resources']['endpoints']['data']['devices'].append(
                 {'PK':'second','name':'Shared test device','profile':{'PK':'profile'}})
             page.locator('#management-reload').click()
@@ -98,7 +114,7 @@ def run(shell, output):
             page.locator('#management-reload').click()
             page.wait_for_function("()=>document.querySelector('.incident-workspace')?.getAttribute('aria-busy')==='false'")
             page.get_by_role('button',name='Rules',exact=True).click()
-            row=page.locator('.incident-table').first.locator('tr').filter(has_text='spoof.invalid')
+            row=page.locator('#management-policy tr').filter(has_text='spoof.invalid')
             expect(row.get_by_role('button',name='Disable',exact=True)).to_be_disabled()
             row.get_by_role('button',name='Replace action…',exact=True).click()
             expect(page.locator('#incident-preview-rule')).to_be_disabled()
@@ -130,7 +146,7 @@ def run(shell, output):
                 page.locator('#incident-dns-search').fill('beta')
                 release.set()
                 page.wait_for_function("()=>document.querySelector('#incident-dns-refresh')?.textContent?.trim()==='Refresh DNS'")
-                assert page.locator('.incident-table').last.locator('tbody tr').count()==0
+                assert page.locator('#management-recent tbody tr').count()==0
                 assert 'beta' in searches,searches
             finally:release.set();session.collector.dispatch=original
             # Active text/background contrast from the actual served assets.
@@ -149,6 +165,8 @@ def run(shell, output):
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
             page.screenshot(path=str(output/'management-560.png'))
             receipt={'ok':True,'url':page.url,'actual_native_pipe_manager':True,
+                'recent_before_policy':True,'recent_incident_guarded_apply':True,
+                'incident_layout':incident_geometry,
                 'provider_fixture_only':True,'production_mutations':False,'confirmed_writes':len(writes),
                 'shared_profile_conflict_rejected':True,'map_geometry':geometry,'narrow_width':850,
                 'failed_endpoint_clears_actions':True,'unsupported_rule_toggle_refused':True,

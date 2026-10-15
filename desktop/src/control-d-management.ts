@@ -14,7 +14,7 @@ type RecordValue=Record<string,any>;
     <div class="error" role="alert" *ngIf="error()">{{error()}}</div>
     <div class="incident-progress" role="status" *ngIf="busy()"><span class="progress-pulse"></span>{{activity()}}</div>
     <div role="status" class="hint" *ngIf="notice()">{{notice()}}</div>
-    <app-dashboard-widget label="Control D · incident workspace" brand="controld">
+    <app-dashboard-widget label="Control D · incident workspace" brand="controld" id="management-binding">
       <div class="incident-binding">
         <label>Endpoint<select id="management-endpoint" [(ngModel)]="endpoint" (change)="load()" [disabled]="busy()">
           <option *ngFor="let d of devices()" [value]="d.PK">{{d.name || d.PK}} · {{d.PK}}</option></select></label>
@@ -22,9 +22,25 @@ type RecordValue=Record<string,any>;
         <button id="management-reload" (click)="load()" [disabled]="busy()">Reload policy</button>
       </div>
       <p *ngIf="!snapshot()&&!busy()">Configure a READ credential and endpoint binding in Settings, then reload this page.</p>
-      <div *ngIf="snapshot()"><p class="hint">Profile policy affects every endpoint below, not only this computer. Endpoint selection here does not change DNS collection or your resolver.</p>
+      <details *ngIf="snapshot()" class="incident-scope-details"><summary>Shared profile · {{affected().length}} affected endpoint(s)</summary><p class="hint">Profile policy affects every endpoint below, not only this computer. Endpoint selection here does not change DNS collection or your resolver.</p>
         <div class="incident-endpoints"><span class="filter-pill" *ngFor="let d of affected()">{{d.name}}</span></div>
-        <p class="hint">Browsing uses READ access. Explicit changes use the separate Write credential. Allow creates a Bypass rule and can override filter blocks.</p></div>
+        <p class="hint">Browsing uses READ access. Explicit changes use the separate Write credential. Allow creates a Bypass rule and can override filter blocks.</p></details>
+    </app-dashboard-widget>
+    <app-dashboard-widget label="Recent DNS · incident resolutions" brand="controld" id="management-recent" *ngIf="snapshot()">
+      <div class="incident-recent-controls"><label>Search resolutions<input id="incident-dns-search" [ngModel]="dnsSearch" placeholder="Domain / decision" (ngModelChange)="searchChanged($event)"></label>
+        <label class="incident-confirm"><input type="checkbox" [(ngModel)]="observe"> Follow recent activity</label>
+        <button id="incident-dns-refresh" [disabled]="reading()||busy()" (click)="recent()">{{reading()?'Reading…':'Refresh DNS'}}</button>
+        <span class="badge" [class.good]="liveState()==='connected'">Live stream: {{liveState()}}</span></div>
+      <p class="hint">Latest 100 stored observations in the last 15 minutes for the selected endpoint. Streaming follows the collection binding, not this selection. Gaps do not mean zero activity.</p>
+      <div class="table-scroll incident-table"><table><thead><tr><th>Time</th><th>Question</th><th>Decision / reason</th><th>Profile</th><th>Incident actions</th></tr></thead><tbody>
+        <tr *ngFor="let r of recentRows()"><td>{{time(r.timestamp)}}</td><td>{{r.question}} <small>{{r.type}}</small></td><td><strong>{{r.outcome}}</strong><p>{{reason(r)}}</p>
+          <details><summary>Decision details</summary><p class="hint">Classification: {{categories(r).join(', ')||'Not supplied'}}</p><p class="hint">Category labels describe the domain; the provider trigger above identifies the decision cause. Names from current policy are display labels, not historical policy proof.</p><taild-evidence [data]="r.fact" /></details></td><td>{{r.profile}}</td>
+          <td class="actions"><button (click)="incident(r,0)" [disabled]="busy()||!!preview()||r.profile!==snapshot()?.profile">Block</button>
+            <button (click)="incident(r,1)" [disabled]="busy()||!!preview()||r.profile!==snapshot()?.profile">Allow</button>
+            <button (click)="editQuestion(r)" [disabled]="busy()||!!preview()||r.profile!==snapshot()?.profile">Edit rule</button></td></tr>
+      </tbody></table></div>
+      <p class="empty-state" *ngIf="!recentRows().length&&!reading()">No stored resolutions in this endpoint's recent window. Check its last activity and the collection binding; this is not proof of no DNS traffic.</p>
+      <p class="hint">Actions are disabled when a historical event's profile differs from the currently enforced profile.</p>
     </app-dashboard-widget>
     <app-dashboard-widget *ngIf="preview() as p" label="Review policy change" id="management-preview">
       <h2>{{p.change.delete?'Delete rule':p.change.kind==='rule'?(p.change.do===1?'Allow · explicit Bypass':'Block'):'Update '+p.change.kind}} · {{p.change.hostname || p.change.id}}</h2>
@@ -38,7 +54,7 @@ type RecordValue=Record<string,any>;
     <nav class="incident-tabs" aria-label="Profile sections" *ngIf="snapshot()">
       <button *ngFor="let t of tabs" [attr.aria-pressed]="tab()===t" [class.active]="tab()===t" (click)="tab.set(t)">{{t}}</button>
     </nav>
-    <app-dashboard-widget *ngIf="snapshot()" [label]="tab()" brand="controld">
+    <app-dashboard-widget *ngIf="snapshot()" [label]="tab()" brand="controld" id="management-policy">
       <fieldset class="incident-controls" [disabled]="busy()||!!preview()">
         <ng-container *ngIf="tab()==='Rules'">
           <form class="incident-rule-form" (ngSubmit)="prepareRule()">
@@ -83,22 +99,6 @@ type RecordValue=Record<string,any>;
         </ng-container>
       </fieldset>
       <details><summary>Provider policy evidence · unavailable categories included</summary><taild-evidence [data]="snapshot()?.resources" /></details>
-    </app-dashboard-widget>
-    <app-dashboard-widget label="Recent DNS · incident resolutions" brand="controld" *ngIf="snapshot()">
-      <div class="incident-recent-controls"><label>Search resolutions<input id="incident-dns-search" [ngModel]="dnsSearch" placeholder="Domain / decision" (ngModelChange)="searchChanged($event)"></label>
-        <label class="incident-confirm"><input type="checkbox" [(ngModel)]="observe"> Follow recent activity</label>
-        <button id="incident-dns-refresh" [disabled]="reading()||busy()" (click)="recent()">{{reading()?'Reading…':'Refresh DNS'}}</button>
-        <span class="badge" [class.good]="liveState()==='connected'">Live stream: {{liveState()}}</span></div>
-      <p class="hint">Latest 100 stored observations in the last 15 minutes for the selected endpoint. Streaming follows the collection binding, not this selection. Gaps do not mean zero activity.</p>
-      <div class="table-scroll incident-table"><table><thead><tr><th>Time</th><th>Question</th><th>Decision / reason</th><th>Profile</th><th>Incident actions</th></tr></thead><tbody>
-        <tr *ngFor="let r of recentRows()"><td>{{time(r.timestamp)}}</td><td>{{r.question}} <small>{{r.type}}</small></td><td><strong>{{r.outcome}}</strong><p>{{reason(r)}}</p>
-          <details><summary>Decision details</summary><p class="hint">Classification: {{categories(r).join(', ')||'Not supplied'}}</p><p class="hint">Category labels describe the domain; the provider trigger above identifies the decision cause. Names from current policy are display labels, not historical policy proof.</p><taild-evidence [data]="r.fact" /></details></td><td>{{r.profile}}</td>
-          <td class="actions"><button (click)="incident(r,0)" [disabled]="busy()||!!preview()||r.profile!==snapshot()?.profile">Block</button>
-            <button (click)="incident(r,1)" [disabled]="busy()||!!preview()||r.profile!==snapshot()?.profile">Allow</button>
-            <button (click)="editQuestion(r)" [disabled]="busy()||!!preview()||r.profile!==snapshot()?.profile">Edit rule</button></td></tr>
-      </tbody></table></div>
-      <p class="empty-state" *ngIf="!recentRows().length&&!reading()">No stored resolutions in this endpoint's recent window. Check its last activity and the collection binding; this is not proof of no DNS traffic.</p>
-      <p class="hint">Actions are disabled when a historical event's profile differs from the currently enforced profile.</p>
     </app-dashboard-widget>
     <details *ngIf="snapshot()"><summary>Captured policy history</summary><button [disabled]="busy()" (click)="history()">Read retained snapshots</button>
       <taild-evidence [data]="policyHistory()" /></details>

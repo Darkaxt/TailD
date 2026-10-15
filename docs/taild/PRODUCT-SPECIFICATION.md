@@ -830,6 +830,24 @@ clipping, horizontal page overflow, changed navigation or unreadable active stat
 Retain focused screenshot/DOM evidence. This request does not authorize another
 public release or installed-client replacement.
 
+### October 15 incident-first navigation refinement — R23
+
+The owner identifies recent allowed/blocked DNS activity, rather than the Rules
+editor, as the Control D page's main purpose. Stage 10 owns this authorized
+refinement. Keep a compact endpoint/enforced-profile context at the top, followed
+immediately by searchable recent resolutions with Follow, stream status, decisions,
+provider blocking reasons and Block / Allow / Edit actions. Rules, Filters,
+Services and Profile Options remain available below that primary incident panel.
+Retain shared-profile impact and explicit preview/confirmation before writes.
+Do not change collection binding, provider permissions, query scope or retention.
+
+Acceptance: actual native-served DOM and screenshots demonstrate recent DNS above
+policy tabs/editor at desktop and narrow width; a stored blocked resolution with
+its supplied filter/category is visible, and its incident action reaches the
+same guarded preview/apply path. Policy tabs, direct rule editing and conflict
+guards continue to work. Integrate R22 branding without reverting its geometry,
+accessibility or offline asset contract. No new release/deployment is requested.
+
 ## 15. Stage mapping and verification boundaries
 
 | Stage | Required scope | Status at specification creation |
