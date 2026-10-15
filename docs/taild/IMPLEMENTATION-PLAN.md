@@ -35,6 +35,18 @@ unchanged. Packaging now includes and tests notice coverage for every pinned
 network-runtime distribution, including vendored notices.
 Tracked deferrals: none. No later stage is ACTIVE.
 
+R19–R21 publication checkpoint: normal release **1.105.0+10**, exact source
+`6a1f5edb214a6339785f1a45b11c0c64bfaef1ef`, workflow `38766189258`, all jobs
+successful including isolated install/upgrade/rollback/uninstall. Independent
+public download verified the unchanged upstream base, +10 sequence, exact tag /
+source/core provenance, Ed25519 signatures and pinned key, installer SHA-256
+`dd9a62417ae23eeb116bb6a83e1f0eba2e6f832aec8add4fa7e76d3063ca61cc`,
+443 payload members, amd64 primary binaries, runtime notices and matching served
+frontend assets (HTML differs only by line endings). The downloaded frozen
+runtime also received real SSE, loaded live management policy, and exited cleanly
+without a window or provider writes. Actual local installation is pending the
+single queued broker action `9c853b0884d54a98be1b74e266a397e7`; do not duplicate it.
+
 ## Current correction — 2026-10-15
 
 October 15 credential setup (R14b, already_authorized): Stage 10 remains the single
