@@ -85,6 +85,51 @@ class ManagementTest(unittest.TestCase):
                     'kind':'filter','id':'ads','status':0}})
         self.assertEqual(self.writes,[])
 
+    def test_browsing_reuses_isolated_copy_and_explicit_refresh_reads_provider(self):
+        with patch('management.controld.policy_snapshot',side_effect=lambda *a,**k:copy.deepcopy(self.current)) as remote:
+            first=self.call('management-read',{})
+            first['resources']['profiles']['data']['profiles'][0]['name']='Local edit'
+            second=self.call('management-read',{})
+            self.assertEqual(remote.call_count,1)
+            self.assertEqual(second['resources']['profiles']['data']['profiles'][0]['name'],'Shared')
+            self.assertTrue(second['policy_cache']['reused'])
+            self.call('management-read',{'refresh':True})
+            self.assertEqual(remote.call_count,2)
+
+    def test_browsing_cache_does_not_cross_credentials_provider_or_endpoint(self):
+        with patch('management.controld.policy_snapshot',side_effect=lambda *a,**k:copy.deepcopy(self.current)) as remote:
+            self.call('management-read',{})
+            with patch('management.credentials.CredentialStore.read',return_value='rotated-synthetic'):
+                self.call('management-read',{})
+            self.provider['organization']='other'
+            self.call('management-read',{})
+            self.call('management-read',{'endpoint':'second'})
+            self.assertEqual(remote.call_count,4)
+            with patch('management.credentials.CredentialStore.read',return_value=None):
+                with self.assertRaisesRegex(management.ManagementError,'read-credential-required'):
+                    self.call('management-read',{})
+
+    def test_failed_refresh_discards_browsing_cache(self):
+        self.call('management-read',{})
+        with patch('management.controld.policy_snapshot',side_effect=management.ManagementError('management-denied')):
+            with self.assertRaisesRegex(management.ManagementError,'management-denied'):
+                self.call('management-read',{'refresh':True})
+        with patch('management.controld.policy_snapshot',side_effect=lambda *a,**k:copy.deepcopy(self.current)) as remote:
+            self.call('management-read',{})
+            self.assertEqual(remote.call_count,1)
+
+    def test_cached_browsing_never_replaces_fresh_preview_apply_and_readback(self):
+        with patch('management.controld.policy_snapshot',side_effect=lambda *a,**k:copy.deepcopy(self.current)) as remote:
+            self.call('management-read',{})
+            self.call('management-read',{})
+            self.assertEqual(remote.call_count,1)
+            preview=self.call('management-prepare',{'endpoint':'device','change':{
+                'kind':'rule','hostname':'cache-test.invalid','do':1,'status':1,'comment':''}})
+            self.assertEqual(remote.call_count,2)
+            self.call('management-apply',{'ticket':preview['ticket'],'confirm':True})
+            self.assertEqual(remote.call_count,4)
+            self.assertEqual(len(self.writes),1)
+
     def test_successful_http_without_matching_readback_is_not_applied(self):
         preview=self.call('management-prepare',{'endpoint':'device','change':{
             'kind':'filter','id':'ads','status':0}})

@@ -1007,6 +1007,32 @@ This belongs to the existing ACTIVE Stage 10, not a new parallel stage.
 Primary evidence: https://www.sqlite.org/wal.html#walreset and
 https://www.sqlite.org/download.html. Use an immutable digest, not a latest URL.
 
+### R28 — Session policy browsing and current public documentation
+
+Opening or revisiting Control D must reuse the existing collector's in-memory
+policy snapshot for the same exact account/provider/endpoint and READ credential.
+Read once when no matching snapshot exists; Reload policy explicitly fetches again.
+No TTL, timer-driven policy refresh, persistent cache, new service or write-token
+read for browsing. A credential/binding change or failed fresh read must prevent
+reuse of the previous snapshot. Returned snapshots must not share mutable state.
+Label reused browsing policy as cached; it does not establish historical causality
+or authorize a write. Prepare and Apply retain unconditional fresh policy/binding,
+shared-impact, confirmation, one-use and post-write readback checks. Recent DNS
+continues independently and its refresh button becomes an icon-only refresh control
+with a visible tooltip, accessible name, keyboard activation, existing disabled
+state and themed 36px-or-larger hit target. Assess other icon candidates, preserving
+explicit labels on unfamiliar, ambiguous or destructive actions.
+
+Refresh README screenshots from the actual current native-served assets, using
+only clearly disclosed synthetic facts and no private accounts/paths/credentials.
+Include current navigation, Recent DNS, connection/resolver, geography and activity
+views with reproducible capture provenance. Correct the verified public release
+reference (+14) and distinguish new source-only R28 behavior. Existing Stage 10
+owns this bounded correction; B12 stays open. Verify cache reuse/explicit reload,
+credential/provider isolation and fresh-write guards, native category revisits,
+icon accessibility/layout at 100%, 150% app zoom and narrow width, screenshot
+content and README links; commit/sync. No new release or deployment is implied.
+
 ## 15. Stage mapping and verification boundaries
 
 | Stage | Required scope | Status at specification creation |

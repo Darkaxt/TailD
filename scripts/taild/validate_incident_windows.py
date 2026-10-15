@@ -146,7 +146,8 @@ def run(shell, output):
                 page.locator('#incident-dns-search').fill('alpha');entered.wait()
                 page.locator('#incident-dns-search').fill('beta')
                 release.set()
-                page.wait_for_function("()=>document.querySelector('#incident-dns-refresh')?.textContent?.trim()==='Refresh DNS'")
+                page.wait_for_function("()=>document.querySelector('#incident-dns-refresh')?.getAttribute('aria-busy')==='false'",timeout=0)
+                expect(page.get_by_role('button',name='Refresh DNS',exact=True)).to_be_enabled()
                 assert page.locator('#management-recent tbody tr').count()==0
                 assert 'beta' in searches,searches
             finally:release.set();session.collector.dispatch=original

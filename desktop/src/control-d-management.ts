@@ -19,9 +19,10 @@ type RecordValue=Record<string,any>;
         <label>Endpoint<select id="management-endpoint" [(ngModel)]="endpoint" (change)="load()" [disabled]="busy()">
           <option *ngFor="let d of devices()" [value]="d.PK">{{d.name || d.PK}} · {{d.PK}}</option></select></label>
         <div><span class="eyebrow">Enforced profile</span><h2>{{snapshot()?profileName():'Not loaded'}}</h2><small>{{snapshot()?.profile}}</small></div>
-        <button id="management-reload" (click)="load()" [disabled]="busy()">Reload policy</button>
+        <button id="management-reload" (click)="load(true)" [disabled]="busy()">Reload policy</button>
       </div>
       <p *ngIf="!snapshot()&&!busy()">Configure a READ credential and endpoint binding in Settings, then reload this page.</p>
+      <p class="hint" *ngIf="snapshot()?.policy_cache?.reused">Session policy snapshot. Reload policy to see provider-side changes; every write is checked against fresh policy.</p>
       <details *ngIf="snapshot()" class="incident-scope-details"><summary>Shared profile · {{affected().length}} affected endpoint(s)</summary><p class="hint">Profile policy affects every endpoint below, not only this computer. Endpoint selection here does not change DNS collection or your resolver.</p>
         <div class="incident-endpoints"><span class="filter-pill" *ngFor="let d of affected()">{{d.name}}</span></div>
         <p class="hint">Browsing uses READ access. Explicit changes use the separate Write credential. Allow creates a Bypass rule and can override filter blocks.</p></details>
@@ -29,7 +30,7 @@ type RecordValue=Record<string,any>;
     <app-dashboard-widget label="Recent DNS · incident resolutions" brand="controld" id="management-recent" *ngIf="section==='recent'">
       <div class="incident-recent-controls"><label>Search resolutions<input id="incident-dns-search" [ngModel]="dnsSearch" placeholder="Domain / decision" (ngModelChange)="searchChanged($event)"></label>
         <label class="incident-confirm"><input type="checkbox" [(ngModel)]="observe"> Follow recent activity</label>
-        <button id="incident-dns-refresh" [disabled]="reading()" (click)="recent()">{{reading()?'Reading…':'Refresh DNS'}}</button>
+        <button id="incident-dns-refresh" class="icon-button" [disabled]="reading()" (click)="recent()" aria-label="Refresh DNS" [title]="reading()?'Reading recent DNS':'Refresh DNS'" [attr.aria-busy]="reading()"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 7v5h-5M4 17v-5h5M6.1 7a7 7 0 0 1 11.8-2L20 8M4 16l2.1 3A7 7 0 0 0 17.9 17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
         <span class="badge" [class.good]="liveState()==='connected'">Live stream: {{liveState()}}</span></div>
       <p class="hint">Latest 100 stored observations in the last 15 minutes for the selected endpoint. Streaming follows the collection binding, not this selection. Gaps do not mean zero activity.</p>
       <div class="recent-content" [attr.aria-busy]="reading()">
@@ -131,11 +132,11 @@ export class ControlDManagement implements OnDestroy {
     this.knownDevices=s.resources?.endpoints?.data?.devices||this.knownDevices;
     this.snapshot.set(s);this.endpoint=s.endpoint;
   }
-  async load(){if(this.busy())return;this.busy.set(true);this.activity.set('Reading current Control D policy…');this.error.set('');this.preview.set(null);this.confirmed=false;this.generation++;
+  async load(refresh=false){if(this.busy())return;this.busy.set(true);this.activity.set(refresh?'Reloading current Control D policy…':'Opening Control D policy snapshot…');this.error.set('');this.preview.set(null);this.confirmed=false;this.generation++;
     this.snapshot.set(null);this.recentRows.set([]);
     await this.recent();
     if(this.disposed){this.busy.set(false);return}
-    try{const s=await command<RecordValue>('management-read',this.endpoint?{endpoint:this.endpoint}:{});if(!this.disposed)this.accept(s)}
+    try{const s=await command<RecordValue>('management-read',{...(this.endpoint?{endpoint:this.endpoint}:{}),...(refresh?{refresh:true}:{})});if(!this.disposed)this.accept(s)}
     catch(e){if(!this.disposed)this.error.set((e as Error).message)}finally{this.busy.set(false)}
   }
   async prepare(change:RecordValue){if(this.busy()||this.preview()||!this.snapshot()||this.endpoint!==this.snapshot()?.endpoint)return;this.busy.set(true);this.activity.set('Checking account, current policy and affected endpoints…');this.error.set('');this.notice.set('');

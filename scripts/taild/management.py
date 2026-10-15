@@ -1,4 +1,5 @@
 """Explicit incident actions. READ browsing; separate Write vault, never retries."""
+import copy
 import hashlib
 import json
 import re
@@ -169,13 +170,27 @@ def verified(snapshot, change, expected_group=None):
 
 class Management:
     def __init__(self):
-        self.lock=threading.Lock();self.pending=None
+        self.lock=threading.Lock();self.pending=None;self.browsing=None
 
-    def _read(self, endpoint, provider):
-        token=credentials.CredentialStore().read()
-        if not token:raise ManagementError('management-read-credential-required')
-        return option_catalog(controld.policy_snapshot(token,endpoint,account_scope=provider['account_scope'],
+    def _read(self, endpoint, provider, reuse=False):
+        try:token=credentials.CredentialStore().read()
+        except credentials.CredentialError:
+            self.browsing=None
+            raise
+        if not token:
+            self.browsing=None
+            raise ManagementError('management-read-credential-required')
+        key=(json.dumps(provider,sort_keys=True),endpoint,hashlib.sha256(token.encode()).digest())
+        if reuse and self.browsing is not None and self.browsing[0]==key:
+            snapshot=copy.deepcopy(self.browsing[1]);snapshot['policy_cache']={'reused':True}
+            return snapshot
+        # A failed fresh read must not leave a previous policy reusable.
+        self.browsing=None
+        snapshot=option_catalog(controld.policy_snapshot(token,endpoint,account_scope=provider['account_scope'],
                                         organization=provider.get('organization')),token,provider.get('organization'))
+        self.browsing=(key,copy.deepcopy(snapshot))
+        snapshot['policy_cache']={'reused':False}
+        return snapshot
 
     def _write_token(self, provider):
         read=credentials.CredentialStore().read()
@@ -195,9 +210,12 @@ class Management:
         with self.lock:
             if op=='management-cancel' and not body:
                 self.pending=None;return {'cancelled':True}
-            if op=='management-read' and set(body)<= {'endpoint'}:
+            if op=='management-read' and set(body)<= {'endpoint','refresh'}:
+                if 'refresh' in body and type(body['refresh']) is not bool:
+                    raise ManagementError('management-invalid-change')
                 self.pending=None
-                snapshot=self._read(controld._identifier(body.get('endpoint') or provider['endpoint']),provider)
+                snapshot=self._read(controld._identifier(body.get('endpoint') or provider['endpoint']),provider,
+                                    not body.get('refresh',False))
                 snapshot['affected_endpoints']=affected(snapshot)
                 return snapshot
             if op=='management-prepare' and set(body)=={'endpoint','change'}:
@@ -218,6 +236,7 @@ class Management:
                 snapshot=self._read(pending['endpoint'],provider)
                 if fingerprint(snapshot)!=pending['fingerprint']:raise ManagementError('management-conflict')
                 method,route,payload=route_change(snapshot,pending['change'])
+                self.browsing=None
                 write(token,method,route,payload,provider.get('organization'))
                 try:
                     after=self._read(pending['endpoint'],provider)

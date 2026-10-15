@@ -13,7 +13,7 @@ DNS provider decided, and how strong the evidence linking them actually is.
 
 ![TailD Overview: received and sent traffic, application and DNS summaries, and DNS activity history](docs/taild/screenshots/overview.png)
 
-*Actual native TailD UI, captured from development main using synthetic demo data.
+*Actual native TailD UI, refreshed October 16, 2026 from development main using synthetic demo data.
 The screenshots contain no real accounts, browsing history or personal application paths.*
 
 ## What TailD brings together
@@ -43,6 +43,13 @@ and Taildrop. These navigation/control additions are available starting with
 
 ![TailD Tailscale category: existing device connection, exit-node controls and network devices](docs/taild/screenshots/connection.png)
 
+<details>
+<summary>Device DNS resolver</summary>
+
+![TailD DNS resolver: tailnet DNS enabled and custom override applied](docs/taild/screenshots/resolver.png)
+
+</details>
+
 ### Resolve DNS incidents without opening the browser
 
 Inspect the enforced profile and every endpoint it affects. Review blocked
@@ -52,11 +59,24 @@ or edit existing rules, filters, services and profile options.
 
 ![TailD Control D Recent DNS workspace with decisions and blocking reasons; Profile policy is a separate tab](docs/taild/screenshots/management.png)
 
+<details>
+<summary>Profile policy, separate from recent resolutions</summary>
+
+![TailD profile policy: rules, filters, services and profile options](docs/taild/screenshots/policy.png)
+
+</details>
+
 Writes are never retried automatically. Changed policy/bindings invalidate the
 preview; successful actions are read back. READ and Write credentials stay in
 separate owning-user Windows vault entries, never in the dashboard or repository.
 Live DNS streams persist independently of the window, with historical overlap
 reconciled without treating collection gaps as zero traffic.
+
+Development main reuses the collector's session policy snapshot when you revisit
+Control D. **Reload policy** explicitly fetches provider-side changes; credentials
+and endpoint/account bindings cannot share cached policy. Preview and Apply still
+check current policy independently. Recent DNS has its own compact refresh icon
+with keyboard support and an accessible label.
 
 ## Explore the network, not just a wall of counters
 
@@ -128,12 +148,13 @@ The executables and installer are **not Authenticode-signed**. Review the
 ### Release versus development main
 
 The latest verified public Windows release is
-[1.105.0+10](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B10).
-The screenshots were captured from development main using synthetic facts. The
-October 15 dashboard, provider-outcome/geography and Applications performance
-corrections they demonstrate are included in this public installer.
-The incident workspace, blocked-resolution trigger/category details, independent
-live-stream ingestion and corrected map spacing are included in this installer.
+[1.105.0+14](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B14).
+It includes category navigation, native device controls, independent Recent DNS
+loading, matching sidebar icon padding and the pinned SQLite 3.54.0 runtime.
+
+The October 16 screenshots use current development-main assets and synthetic
+facts. Session policy reuse and the compact DNS refresh icon are newer source
+changes, **not included in +14**. No newer public installer is claimed here.
 
 Stage 10 remains active for outstanding live delivery/updater acceptance; this
 README does not claim every deployment, recovery or lifecycle scenario is
@@ -180,7 +201,9 @@ python -B -m unittest discover -s scripts/taild -p 'test_*.py' -v
 Screenshot reproduction uses
 [scripts/taild/capture_readme_windows.py](scripts/taild/capture_readme_windows.py)
 with an isolated Debug host and a new scratch directory. It creates only
-synthetic facts and makes no provider requests.
+synthetic facts and makes no provider requests. The
+[capture provenance](docs/taild/screenshots/capture-provenance.json) records the
+actual served assets, screenshot hashes and policy-revisit verification.
 
 ## Attribution and license
 

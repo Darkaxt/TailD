@@ -1,5 +1,29 @@
 # TailD staged execution
 
+October 16 R28 verified: Stage 10 remains the sole **ACTIVE** stage for B12;
+B35 is resolved. Collector-local browsing reuse is scoped to the exact provider,
+endpoint and READ credential fingerprint. Explicit reload, changed credentials/
+scope and failed fresh reads cannot reuse old state. Deep-copy isolation and
+unconditional fresh Preview/Apply/readback guards pass focused regressions.
+Real READ-only validation: initial 13 provider requests / 4456.85ms; revisit zero
+provider requests / 8.42ms with identical policy fingerprint. These are source-side
+host measurements, not installed GUI/pixel timings; no provider policy was changed.
+Actual native-served assets verify category revisit, explicit reload, keyboard
+refresh, 36px labelled icon targets, 100%/150% app zoom and true 560 CSS-pixel
+layout. All eight publication-safe synthetic screenshots were visually inspected;
+README links, image/asset hashes and public +14/source-only distinction verified.
+Native guarded incident writes (isolated fixtures only), conflict rejection,
+failed-endpoint clearing, coalesced search and held-policy/analytics independence
+pass. The old incident diagnostic waited for removed button text; its predicate
+now observes aria-busy. The 150% capture diagnostic now converts host pixels to
+the specified CSS viewport rather than testing below the 560px minimum.
+Frontend tests/typecheck/production bundle and isolated locked native Debug build
+pass. Existing manager remains the sole cache owner: no new cache framework,
+service, TTL, retry, persistent data or necessary consolidation. Other icon
+candidates are recommendations, not required deferrals. Receipts are under
+D:/Tools/taild-stage10-validation-20261013/policy-readme-r28. Installed +14 remains
+unchanged; this correction authorizes commit/sync, not a new release/deployment.
+
 October 16 R26/R27 corrective delivery verified: Stage 10 remains **ACTIVE** only
 for the existing broader B12 rollout/updater obligations; B32 and B34 are resolved.
 Public +14 (workflow 38812388916, source

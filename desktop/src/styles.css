@@ -52,6 +52,8 @@ footer{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin
 app-dashboard-widget>h2 taild-brand-mark{font-size:20px;color:#d0e4f3}
 .page-heading{margin-bottom:16px}.heading-status{display:flex;align-items:center;gap:12px}.revision{font-size:11px;color:var(--text-tertiary)}
 .category-root:first-child{margin-bottom:12px}
+.icon-button{display:inline-flex;align-items:center;justify-content:center;width:36px;min-width:36px;height:36px;padding:7px;flex-shrink:0}
+.icon-button svg{width:20px;height:20px;display:block}
 .rail .rail-bottom{margin-top:auto;margin-bottom:0;flex-shrink:0}
 .category-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px;padding-bottom:16px;border-bottom:1px solid var(--cards-tertiary)}
 .category-tabs button{background:transparent;border-color:transparent;color:var(--text-secondary)}

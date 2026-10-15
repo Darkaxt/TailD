@@ -3,10 +3,14 @@
 No provider requests, credentials, installed-client control or real history reads.
 Requires the isolated Debug desktop host; output PNGs are intentional docs assets.
 """
-import argparse,hashlib,json
+import argparse,copy,hashlib,json
+from datetime import datetime,timezone
+from unittest.mock import patch
 from pathlib import Path
 from playwright.sync_api import sync_playwright,expect
-import analytics,history
+import analytics,history,connectivity
+from test_connectivity import DaemonFixture
+from test_management import snapshot as policy_fixture
 from validate_analytics_windows import NativeSession,settled,select_range,capture_preview
 
 START='2026-10-12T12:00:00Z'
@@ -64,14 +68,14 @@ def populate_demo(directory):
     return {'traffic_buckets':len(traffic),'dns_decisions':len(decisions),'applications':len(APPLICATIONS)}
 
 
-def run(shell,scratch,output):
+def run(shell,scratch,output,zoom=100):
     if scratch.exists():raise ValueError('Use new, exact task-owned scratch')
     history.private_directory(scratch);counts=populate_demo(scratch/'history')
     output.mkdir(parents=True,exist_ok=True)
-    names=('overview.png','geography.png','applications.png','activity.png')
+    names=('overview.png','geography.png','applications.png','activity.png','connection.png','resolver.png','management.png','policy.png')
     if any((output/name).exists() for name in names):raise ValueError('Refuse to replace existing screenshots without review')
     with sync_playwright() as playwright:
-        session=NativeSession(shell,scratch/'history',playwright)
+        session=NativeSession(shell,scratch/'history',playwright,zoom=zoom if zoom!=100 else None)
         try:
             page=session.page;page.set_viewport_size({'width':1440,'height':1000});settled(page);select_range(page,START,END)
             expect(page.locator('taild-world-map .map-surface')).to_have_attribute('data-map-ready','true')
@@ -86,8 +90,70 @@ def run(shell,scratch,output):
             page.locator('.fact-entry > summary').first.click()
             expect(page.locator('taild-evidence')).to_have_count(1)
             page.locator('#activity-explorer').scroll_into_view_if_needed();capture_preview(session,output/'activity.png')
+            daemon=DaemonFixture();daemon.profile['Name']='Demo account'
+            daemon.status['Self']['HostName']='Demo workstation'
+            session.collector.connectivity=connectivity.Connectivity(None,call=daemon)
+            page.locator('#category-tailscale').click()
+            page.wait_for_function("()=>document.querySelector('#connectivity-window')?.getAttribute('aria-busy')==='false'",timeout=0)
+            page.locator('h1').scroll_into_view_if_needed();capture_preview(session,output/'connection.png')
+            page.locator('#nav-resolver').click()
+            expect(page.locator('#connectivity-resolver')).to_have_value('https://dns.example.invalid/test')
+            capture_preview(session,output/'resolver.png')
+            session.collector.command('configure',{'provider':{'account_scope':'demo-account','endpoint':'demo-endpoint',
+                'account_type':'personal','instance':'acceptance'}})
+            fixture=policy_fixture();fixture.update(endpoint='demo-endpoint',profile='demo-profile')
+            fixture['resources']['profiles']['data']['profiles']=[{'PK':'demo-profile','name':'Demo privacy'}]
+            fixture['resources']['endpoints']['data']['devices']=[{'PK':'demo-endpoint','name':'Demo workstation','profile':{'PK':'demo-profile'}},
+                {'PK':'demo-tablet','name':'Demo tablet','profile':{'PK':'demo-profile'}}]
+            fixture['resources']['filters']['data']['filters'][0]['name']='Ads & Trackers'
+            fixture['resources']['rules']['data']['rules']=[{'PK':'ads.example.net','comment':'Demo incident',
+                'action':{'do':0,'status':1}}]
+            now=datetime.now(timezone.utc).isoformat()
+            for question,action in (('ads.example.net','0'),('updates.example.com','1'),('media.example.org','3')):
+                session.collector._commit(lambda question=question,action=action:session.collector.store.import_live_dns({
+                    'timestamp':now,'endpointId':'demo-endpoint','profileId':'demo-profile','question':question,
+                    'rrType':'A','action':action,'trigger':'filter' if action=='0' else '',
+                    'triggerValue':'ads' if action=='0' else '', 'categories':[{'categoryName':'Technology'}]},
+                    'demo-account','demo-endpoint',collected=now))
+            with patch('management.credentials.CredentialStore.read',return_value='synthetic-publication-read'), \
+                 patch('management.controld.policy_snapshot',side_effect=lambda *a,**k:copy.deepcopy(fixture)) as reads, \
+                 patch('management.option_catalog',side_effect=lambda snapshot,*a:snapshot):
+                page.locator('#nav-3').click()
+                page.wait_for_function("()=>document.querySelector('.incident-workspace')?.getAttribute('aria-busy')==='false'",timeout=0)
+                expect(page.locator('#management-recent tbody tr')).to_have_count(3)
+                expect(page.locator('#management-recent')).to_contain_text('Ads & Trackers')
+                page.locator('h1').scroll_into_view_if_needed();capture_preview(session,output/'management.png')
+                # Actual native/pipe/backend revisit must not perform another provider read.
+                page.locator('#category-tailscale').click();page.locator('#nav-3').click()
+                page.wait_for_function("()=>document.querySelector('.incident-workspace')?.getAttribute('aria-busy')==='false'",timeout=0)
+                expect(page.locator('#management-binding')).to_contain_text('Session policy snapshot')
+                assert reads.call_count==1,reads.call_count
+                refresh=page.get_by_role('button',name='Refresh DNS',exact=True)
+                expect(refresh).to_have_text('');expect(refresh).to_have_attribute('title','Refresh DNS')
+                refresh.focus();refresh.press('Enter')
+                expect(refresh).to_be_enabled();expect(page.locator('#management-recent tbody tr')).to_have_count(3)
+                icon=refresh.evaluate('e=>({width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height,svg:e.querySelector("svg").getAttribute("aria-hidden")})')
+                assert icon['width']>=36 and icon['height']>=36 and icon['svg']=='true',icon
+                page.locator('#nav-policy').click()
+                expect(page.locator('#management-policy')).to_contain_text('ads.example.net')
+                page.locator('h1').scroll_into_view_if_needed();capture_preview(session,output/'policy.png')
+                page.locator('#management-reload').click()
+                page.wait_for_function("()=>document.querySelector('.incident-workspace')?.getAttribute('aria-busy')==='false'",timeout=0)
+                assert reads.call_count==2,reads.call_count
+                page.locator('#nav-recent-dns').click()
+                # Native ZoomFactor consumes physical WebView pixels at 150%.
+                page.set_viewport_size({'width':round(560*zoom/100),'height':round(1000*zoom/100)})
+                refresh.scroll_into_view_if_needed();expect(refresh).to_be_visible()
+                narrow=page.evaluate('({width:innerWidth,scroll:document.documentElement.scrollWidth})')
+                assert narrow['width']==560 and narrow['scroll']<=narrow['width'],narrow
+                capture_preview(session,scratch/'narrow.png')
+                assert reads.call_count==2
+                assert daemon.writes==[]
             evidence={'synthetic_demo_only':True,'provider_requests':0,'installed_client_changed':False,
-                'native_served_url':page.url,'viewport':page.evaluate('({width:innerWidth,height:innerHeight})'),
+                'native_app_zoom':zoom,'capture_completed_at_utc':datetime.now(timezone.utc).isoformat(),
+                'native_served_url':page.url,'documentation_viewport':{'width':1440,'height':1000},
+                'narrow_css_width':560,'initial_policy_reads':1,'revisit_extra_policy_reads':0,'explicit_reload_reads':1,
+                'refresh_icon':icon,'remote_policy_fixture_only':True,'keyboard_refresh_verified':True,
                 'counts':counts,'assets_sha256':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in (shell.parent/'ui').glob('*.js')},
                 'screenshots_sha256':{name:hashlib.sha256((output/name).read_bytes()).hexdigest() for name in names}}
             (scratch/'capture-provenance.json').write_text(json.dumps(evidence,indent=2));print(json.dumps(evidence))
@@ -97,4 +163,5 @@ def run(shell,scratch,output):
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--shell',type=Path,required=True)
     parser.add_argument('--scratch',type=Path,required=True);parser.add_argument('--output',type=Path,required=True)
-    args=parser.parse_args();run(args.shell.resolve(strict=True),args.scratch,args.output)
+    parser.add_argument('--zoom',type=int,choices=(100,150),default=100)
+    args=parser.parse_args();run(args.shell.resolve(strict=True),args.scratch,args.output,args.zoom)

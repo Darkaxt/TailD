@@ -1,5 +1,30 @@
 # Desktop analytics — Stage 8 evidence
 
+## October 16 compact-action review and documentation refresh
+
+Keep the existing Tailscale-themed widgets and category organization. Refresh DNS
+is now icon-only: 36px hit target, 20px decorative glyph, accessible name/tooltip,
+ordinary keyboard activation and the existing disabled/loading behavior. No action
+semantics or navigation targets change.
+
+| Action area | Recommendation | Current scope |
+|---|---|---|
+| Recent DNS refresh | Standard refresh icon with tooltip/name | Implemented in R28 |
+| Analytics Refresh view; device Reload device | Good icon-only candidates in their explicitly labelled panels | Assessed only |
+| Reload policy | Keep its explicit label for now; distinguishes costly provider fetch from local DNS refresh | Unchanged |
+| Previous/Next; saved-query Remove | Chevron or small remove icon can work with page context and accessible names | Assessed only |
+| Exports, Connect/Disconnect, Pause/Resume | Retain text: format/state is important | Unchanged |
+| Block/Allow/Edit, Apply/Confirm, Reset/Delete/retention | Retain explicit labels: ambiguous or consequential actions | Unchanged |
+
+The previous navigation screenshots were committed October 15 at 22:07:52
+Europe/Bucharest (dacb1c0), after category reorganization (529331f at 21:04:33).
+R28 refreshes all eight public images from actual native-served current assets
+using disclosed synthetic data, including separate resolver and policy views.
+The reproduction script verifies the backend's single initial remote policy read,
+zero revisit reads, one explicit reload, keyboard refresh and narrow layout.
+Private installed-account screenshots are not published. The README separately
+identifies verified public +14 and source-only R28 behavior.
+
 ## October 15 source correction and showcase
 
 R15d fixes repeated coverage reconciliation and unnecessary DNS work on unbound
