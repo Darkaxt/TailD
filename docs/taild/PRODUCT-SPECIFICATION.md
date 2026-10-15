@@ -1033,6 +1033,14 @@ credential/provider isolation and fresh-write guards, native category revisits,
 icon accessibility/layout at 100%, 150% app zoom and narrow width, screenshot
 content and README links; commit/sync. No new release or deployment is implied.
 
+The subsequent October 16 "install it" explicitly authorizes publishing the next
+monotonic signed Windows release and installing R28 in place. Verify public
+signatures, exact source and payload inventory before execution; preserve login,
+Tailnet Lock signing ability, resolver, credentials and existing history. Verify
+the installed identity, services, DNS and R28 browsing/refresh behavior. Do not
+reset history or change provider policy. Existing Stage 10 owns this delivery;
+broader B12 obligations remain unchanged.
+
 ## 15. Stage mapping and verification boundaries
 
 | Stage | Required scope | Status at specification creation |

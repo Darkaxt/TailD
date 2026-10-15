@@ -1,5 +1,11 @@
 # TailD staged execution
 
+October 16 R28 delivery ACTIVE under the owner's "install it" authorization.
+Stage 10 remains the sole ACTIVE stage. Public signed release verification and
+in-place installed acceptance are required before claiming delivery. Preserve
+identity, credentials, custom resolver and history; no provider writes or reset.
+Source acceptance B35 remains satisfied; broader B12 stays open.
+
 October 16 R28 verified: Stage 10 remains the sole **ACTIVE** stage for B12;
 B35 is resolved. Collector-local browsing reuse is scoped to the exact provider,
 endpoint and READ credential fingerprint. Explicit reload, changed credentials/
