@@ -4,14 +4,15 @@ import {CommonModule} from '@angular/common';
 import {command} from './bridge';
 import {State} from './collection';
 import {describeIngestion,IngestionCatalog} from './ingestion-state';
+import {BrandMark} from './brand-mark';
 
-@Component({selector:'taild-ingestion-notice',standalone:true,imports:[CommonModule],template:`
+@Component({selector:'taild-ingestion-notice',standalone:true,imports:[CommonModule,BrandMark],template:`
   <section id="ingestion-notice" class="ingestion-notice" aria-label="History ingestion">
     <div class="ingestion-heading"><span class="ingestion-dot" [class.active]="description().active" aria-hidden="true"></span>
       <strong id="ingestion-status" role="status" aria-live="polite">{{description().title}}</strong>
       <span class="hint">Import activity is not proof of complete coverage.</span></div>
     <div class="ingestion-sources"><div *ngFor="let source of description().sources" [attr.id]="'ingestion-'+source.kind">
-      <span class="source-label">{{source.label}}</span><span class="ingestion-activity">{{source.activity}}</span>
+      <span class="source-label provider-brand"><taild-brand-mark brand="controld" *ngIf="source.kind==='dns'" />{{source.label}}</span><span class="ingestion-activity">{{source.activity}}</span>
       <small>Latest stored observation: {{source.latest || 'none yet'}}</small>
       <small class="ingestion-gap" *ngIf="source.outsideStoredData">No stored observations overlap the selected period yet; an empty graph does not prove zero activity.</small>
     </div></div>

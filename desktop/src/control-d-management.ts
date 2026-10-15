@@ -14,7 +14,7 @@ type RecordValue=Record<string,any>;
     <div class="error" role="alert" *ngIf="error()">{{error()}}</div>
     <div class="incident-progress" role="status" *ngIf="busy()"><span class="progress-pulse"></span>{{activity()}}</div>
     <div role="status" class="hint" *ngIf="notice()">{{notice()}}</div>
-    <app-dashboard-widget label="Control D · incident workspace">
+    <app-dashboard-widget label="Control D · incident workspace" brand="controld">
       <div class="incident-binding">
         <label>Endpoint<select id="management-endpoint" [(ngModel)]="endpoint" (change)="load()" [disabled]="busy()">
           <option *ngFor="let d of devices()" [value]="d.PK">{{d.name || d.PK}} · {{d.PK}}</option></select></label>
@@ -38,7 +38,7 @@ type RecordValue=Record<string,any>;
     <nav class="incident-tabs" aria-label="Profile sections" *ngIf="snapshot()">
       <button *ngFor="let t of tabs" [attr.aria-pressed]="tab()===t" [class.active]="tab()===t" (click)="tab.set(t)">{{t}}</button>
     </nav>
-    <app-dashboard-widget *ngIf="snapshot()" [label]="tab()">
+    <app-dashboard-widget *ngIf="snapshot()" [label]="tab()" brand="controld">
       <fieldset class="incident-controls" [disabled]="busy()||!!preview()">
         <ng-container *ngIf="tab()==='Rules'">
           <form class="incident-rule-form" (ngSubmit)="prepareRule()">
@@ -84,7 +84,7 @@ type RecordValue=Record<string,any>;
       </fieldset>
       <details><summary>Provider policy evidence · unavailable categories included</summary><taild-evidence [data]="snapshot()?.resources" /></details>
     </app-dashboard-widget>
-    <app-dashboard-widget label="Recent DNS · incident resolutions" *ngIf="snapshot()">
+    <app-dashboard-widget label="Recent DNS · incident resolutions" brand="controld" *ngIf="snapshot()">
       <div class="incident-recent-controls"><label>Search resolutions<input id="incident-dns-search" [ngModel]="dnsSearch" placeholder="Domain / decision" (ngModelChange)="searchChanged($event)"></label>
         <label class="incident-confirm"><input type="checkbox" [(ngModel)]="observe"> Follow recent activity</label>
         <button id="incident-dns-refresh" [disabled]="reading()||busy()" (click)="recent()">{{reading()?'Reading…':'Refresh DNS'}}</button>

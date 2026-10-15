@@ -14,6 +14,23 @@ resource inherited from the exact TailDNS core. Copyright Tailscale Inc. and
 Contributors; original executable/resource/hash provenance is recorded in
 `native/assets/README.md`. It is not a new TailD logo or a connection-state claim.
 
+The frontend's static Control D symbol in `src/brand-mark.ts` preserves the four
+path shapes and 44x33 viewBox of the company logo served at
+https://controld.com/ (aria-label `CONTROLD company logo`, retrieved 2026-10-15).
+Only wrapper/accessibility attributes and the fill are adapted to this UI.
+Copyright / trademarks CONTROL D, Inc.; used to identify the integration, not
+as TailD's own mark. The source website does not declare this artwork GPL.
+
+The nine-dot Tailscale mark is adapted from the inherited core's
+`client/web/src/assets/icons/tailscale-icon.svg` at
+`4b17755738ec51bb9e94a83e65ef972b8b52260a`: equivalent circles replace circular
+path outlines, repeated clip IDs are omitted and black becomes currentColor for
+dark-theme contrast. Dot positions, proportions and five dimmed dots are retained.
+Copyright Tailscale Inc. and Contributors; Tailscale trademarks remain their
+owners'. These mark attributions do not relicense trademark rights under GPL or
+claim endorsement. TailD's name and independent-fork notice remain visible.
+Both marks are bundled inline vectors, not remote assets or connectivity badges.
+
 Portmaster source: https://github.com/safing/portmaster at
 `bb6c44468a5d66bddb13bf3c43fcb2625c326ca9` (retrieved 2026-10-13).
 Paths below are relative to that repository. Imports are reviewed before copying.

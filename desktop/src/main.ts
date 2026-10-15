@@ -16,6 +16,7 @@ import {DEFAULT_TIME_RANGE,presetBounds} from './time-range';
 import {mergeProgress,BatchProgress} from './progressive-batch';
 import {ControlDManagement} from './control-d-management';
 import {resolutionReason,resolutionCategories} from './resolution-reason';
+import {BrandMark} from './brand-mark';
 
 type Kind='traffic'|'dns'|'correlations';
 type Page='Overview'|'Applications'|'Activity'|'Control D'|'Sources & health'|'Settings';
@@ -36,17 +37,18 @@ const fields:Record<Kind,string[]>={
   dns:['question','type','endpoint','profile','client','action','outcome','reason','reason_value','protocol','provider_country','provider_asn','source','id','timestamp']};
 
 @Component({selector:'taild-app',standalone:true,
-  imports:[CommonModule,FormsModule,Collection,DashboardWidgetComponent,CircularBarChartComponent,SfngNetqueryLineChartComponent,Evidence,IngestionNotice,WorldMapComponent,ControlDManagement],
+  imports:[CommonModule,FormsModule,Collection,DashboardWidgetComponent,CircularBarChartComponent,SfngNetqueryLineChartComponent,Evidence,IngestionNotice,WorldMapComponent,ControlDManagement,BrandMark],
   template:`
   <button class="skip-link" (click)="skipContent()">Skip to analytics content</button>
   <div class="screen-reader-progress" role="status" aria-live="polite" aria-atomic="true">{{busy()?(pendingBatch()?'Some analytics panels are ready. Reading the remaining panels.':'Loading analytics…'):ready()?'Analytics view ready.':''}}</div>
-  <nav class="rail" aria-label="TailD navigation"><span class="brand" title="TailD · independent fork">TD</span>
+  <nav class="rail" aria-label="TailD navigation"><span class="brand" role="img" aria-label="TailD · independent Tailscale fork" title="TailD · independent Tailscale fork"><taild-brand-mark brand="tailscale" /></span>
     <button *ngFor="let item of pages;let i=index" [id]="'nav-'+i" class="nav-link" [class.active]="page()===item" [disabled]="!catalog()"
       [attr.aria-label]="item" [attr.aria-current]="page()===item?'page':null" [title]="item" (click)="navigate(item)">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons[i]" fill="none" stroke="currentColor" stroke-width="1.6" /></svg></button>
+      <taild-brand-mark brand="controld" *ngIf="item==='Control D';else navigationIcon" />
+      <ng-template #navigationIcon><svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons[i]" fill="none" stroke="currentColor" stroke-width="1.6" /></svg></ng-template></button>
     <span class="rail-bottom" title="Read-only analytics">READ</span></nav>
   <main id="analytics-main" tabindex="-1" class="analytics-shell" [attr.aria-busy]="busy()" [attr.data-revision]="displayBatch()?.revision" [attr.data-ready]="ready()">
-    <header class="page-heading"><div><div class="eyebrow">TailD / Network analytics</div><h1>{{page()}}</h1>
+    <header class="page-heading"><div><div class="eyebrow product-brand"><taild-brand-mark brand="tailscale" /><span>TailD / Network analytics</span></div><h1 class="section-title"><taild-brand-mark brand="controld" *ngIf="page()==='Control D'" />{{page()}}</h1>
       <p>{{page()==='Control D'?'Resolve DNS incidents · review shared-profile changes before applying.':page()==='Applications'&&application()!==undefined?appName(application()):'Observed facts. Honest gaps. Your network stays unchanged.'}}</p></div>
       <div class="heading-status"><span class="badge" [class.good]="runtime()?.state==='collecting'">{{runtime()?.state||'Connecting'}}</span>
       <span class="revision" *ngIf="displayBatch() as b">Revision {{b.revision}}{{pendingBatch()?' · loading panels':''}}</span></div></header>
@@ -102,14 +104,14 @@ const fields:Record<Kind,string[]>={
             <button class="mini-stat" id="questions-card" (click)="explore('dns','question')"><label>Question groups</label><span>{{dnsSummary()?.dns_questions.distinct??'Unavailable'}}</span><small>Unknown names retained</small></button></div>
         </app-dashboard-widget>
         <app-dashboard-widget label="Collection & source context" id="dashboard-collection" *ngIf="page()==='Overview'">
-          <div class="source-priority"><span class="source-label">Control D</span><span class="hint">DNS decisions & policy</span></div>
+          <div class="source-priority"><span class="source-label provider-brand"><taild-brand-mark brand="controld" />Control D</span><span class="hint">DNS decisions & policy</span></div>
           <div class="dashboard-source-actions"><button id="dashboard-provider" (click)="navigate('Control D')">Control D details <span aria-hidden="true">→</span></button>
             <button id="dashboard-health" (click)="navigate('Sources & health')">Source health <span aria-hidden="true">→</span></button>
             <button id="dashboard-settings" (click)="navigate('Settings')">Manage collection <span aria-hidden="true">→</span></button></div>
           <taild-ingestion-notice primary="dns" [state]="runtime()" [catalog]="catalog()" [start]="start" [end]="end" />
           <p class="hint">READ only. GlassWire supplies application bytes; Control D supplies endpoint DNS decisions. Neither proves complete coverage.</p>
         </app-dashboard-widget>
-        <app-dashboard-widget label="DNS activity · canonical decisions" id="dashboard-dns-trend" [class.panel-pending]="!displayBatch()?.results?.[7]">
+        <app-dashboard-widget label="DNS activity · canonical decisions" brand="controld" id="dashboard-dns-trend" [class.panel-pending]="!displayBatch()?.results?.[7]">
           <p class="hint">Independent account/endpoint scope · select a bin to inspect its decisions.</p>
           <sfng-netquery-line-chart metric="decisions" [data]="dnsBins()" (select)="dnsBinScope($event)" />
         </app-dashboard-widget>
@@ -125,14 +127,14 @@ const fields:Record<Kind,string[]>={
           <div class="rank-table"><button *ngFor="let item of correlation()" (click)="correlationScope(item.name)"><span>{{item.name}}</span><span>{{format(item.bytes)}}</span><small>{{item.count}} buckets</small></button></div>
           <p class="hint">A unique temporal candidate is an inference. Cache, TTL and process-to-domain origin are unproven.</p>
         </app-dashboard-widget>
-        <app-dashboard-widget label="DNS outcomes · Control D decisions" class="half" id="dashboard-outcomes" [class.panel-pending]="!dnsSummary()">
+        <app-dashboard-widget label="DNS outcomes · Control D decisions" brand="controld" class="half" id="dashboard-outcomes" [class.panel-pending]="!dnsSummary()">
           <p class="hint">Observed decision categories for the selected endpoint.</p>
           <div class="partition" aria-label="DNS outcome distribution"><ng-container *ngFor="let item of outcomes()"><button *ngIf="item.count>0" [attr.data-outcome]="item.name" [style.flex-grow]="item.count" (click)="outcomeScope(item.name)" [attr.aria-label]="outcomeLabel(item.name)+': '+item.count+' decisions'">{{outcomeLabel(item.name)}}</button></ng-container></div>
           <div class="rank-table"><ng-container *ngFor="let item of outcomes()"><button *ngIf="item.count>0" (click)="outcomeScope(item.name)"><span>{{outcomeLabel(item.name)}}</span><span>{{item.count}}</span></button></ng-container></div>
           <p class="hint" *ngIf="!dnsSummary()?.dns_activity.events">No DNS decisions observed in this scope.</p>
           <p class="hint" *ngIf="dnsSummary()?.dns_outcomes as outcomes">{{outcomes.classified_denominator}} classified successful decisions · {{outcomes.excluded_failed}} failed · {{outcomes.excluded_unknown}} unknown. Unknown does not mean bypassed.</p>
         </app-dashboard-widget>
-        <app-dashboard-widget label="DNS questions · selected endpoint" class="half" id="dashboard-questions" [class.panel-pending]="!dnsSummary()">
+        <app-dashboard-widget label="DNS questions · selected endpoint" brand="controld" class="half" id="dashboard-questions" [class.panel-pending]="!dnsSummary()">
           <div class="rank-table"><button *ngFor="let item of questions().slice(0,12)" (click)="questionScope(item.value)"><span>{{item.value||'Unknown question'}}</span><span>{{item.events}} decisions</span></button></div>
           <p *ngIf="!questions().length" class="hint">No provider decisions observed in this scope.</p>
           <p class="hint" *ngIf="application()!==undefined">Independent endpoint DNS scope, not all queries from this application. Candidate questions are in its activity evidence.</p>
@@ -141,7 +143,7 @@ const fields:Record<Kind,string[]>={
         <app-dashboard-widget label="Destinations · exact bucket bytes" class="half" id="dashboard-destinations" *ngIf="application()===undefined" [class.panel-pending]="!summary()">
           <div class="rank-table"><button *ngFor="let item of destinations().slice(0,12)" (click)="destinationScope(item.value)"><span>{{item.value||'Unknown destination'}}</span><span>{{format(item.total_bytes)}}</span></button></div>
         </app-dashboard-widget>
-        <app-dashboard-widget [label]="geographyMode()==='dns'?'Answer countries / ASN · DNS decisions':'Answer countries / ASN · inferred traffic'" class="half" id="dashboard-countries" [class.panel-pending]="!geographyReady()">
+        <app-dashboard-widget [label]="geographyMode()==='dns'?'Answer countries / ASN · DNS decisions':'Answer countries / ASN · inferred traffic'" [brand]="geographyMode()==='dns'?'controld':null" class="half" id="dashboard-countries" [class.panel-pending]="!geographyReady()">
           <label class="geography-selector">Geography metric<select id="geography-mode" [ngModel]="geographyMode()" (ngModelChange)="geographyMode.set($event)"><option value="dns">Control D DNS decisions</option><option value="traffic">Inferred traffic bytes</option></select></label>
           <p class="hint">{{geographyMode()==='dns'?'Independent endpoint scope · provider-reported answer geography, not traffic bytes.':'Unique temporal candidates · inferred bytes, not measured routes.'}} Highlight a country to locate it on the map.</p>
           <div class="country-tiles"><button *ngFor="let item of geographyCountries()" class="country-tile" [attr.data-country]="item.value||'unknown'"
@@ -153,7 +155,7 @@ const fields:Record<Kind,string[]>={
             <tbody><tr *ngFor="let item of geographyCountries()"><td><button class="identity-link" (click)="selectGeography('country',item.value)">{{item.value||'Unknown'}}</button></td><td>{{geographyValue(item)}}</td></tr></tbody></table>
             <table><thead><tr><th>Answer ASN</th><th>{{geographyMode()==='dns'?'DNS decisions':'Inferred bytes'}}</th></tr></thead><tbody><tr *ngFor="let item of geographyAsns()"><td><button class="identity-link" (click)="selectGeography('asn',item.value)">{{item.value||'Unknown'}}</button></td><td>{{geographyValue(item)}}</td></tr></tbody></table></div></details>
         </app-dashboard-widget>
-        <app-dashboard-widget [label]="geographyMode()==='dns'?'Answer-country map · DNS decisions':'Answer-country map · inferred traffic'" class="half" id="dashboard-map" [class.panel-pending]="!geographyReady()">
+        <app-dashboard-widget [label]="geographyMode()==='dns'?'Answer-country map · DNS decisions':'Answer-country map · inferred traffic'" [brand]="geographyMode()==='dns'?'controld':null" class="half" id="dashboard-map" [class.panel-pending]="!geographyReady()">
           <taild-world-map *ngIf="geographyReady()" [metric]="geographyMode()==='dns'?'decisions':'traffic'" [data]="geographyCountries()" [highlightedCountry]="highlightedCountry()" (selectCountry)="selectGeography('country',$event)" />
         </app-dashboard-widget>
       </div>
@@ -194,7 +196,7 @@ const fields:Record<Kind,string[]>={
           <details class="fact-entry" *ngFor="let row of rows();trackBy:trackRow" [attr.data-fact-id]="row.id" [open]="selected()===row.id" (toggle)="rowToggled(row,$event)">
             <summary [attr.id]="'fact-'+row.id" class="fact-row"><span class="fact-identity"><strong [title]="kind==='dns'?row.question:row.application_path">{{kind==='dns'?row.question:processName(row.application_path)}}</strong>
                 <small>{{kind==='dns'?row.endpoint:(row.destination_ip||'Unknown address')+(row.destination_port?':'+row.destination_port:'')}}</small></span>
-              <span><span class="source-label">{{kind==='dns'?'Control D':'GlassWire'}}</span><small class="candidate-badge">{{row.correlation_state||row.reason||'Provider event'}}</small></span>
+              <span><span class="source-label provider-brand"><taild-brand-mark brand="controld" *ngIf="kind==='dns'" />{{kind==='dns'?'Control D':'GlassWire'}}</span><small class="candidate-badge">{{row.correlation_state||row.reason||'Provider event'}}</small></span>
               <span>{{utc(row.timestamp)}}<small>{{row.context_state||'Endpoint scope, not physical-host proof'}}</small></span>
               <span>{{kind==='dns'?(row.outcome||'Unknown'):format(row.total_bytes)}}<small>{{kind==='dns'?'Raw action: '+row.action:row.total_bytes+' bytes'}}</small></span></summary>
             <p *ngIf="kind==='dns'">{{dnsReason(row)}}</p><p class="hint" *ngIf="kind==='dns'">Classification: {{dnsCategories(row).join(', ')||'Not supplied'}} · descriptive categories are not the blocking cause.</p>
@@ -234,7 +236,7 @@ const fields:Record<Kind,string[]>={
 class App {
   pages:Page[]=['Overview','Applications','Activity','Control D','Sources & health','Settings'];
   icons=['M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z','M3 7h18v14H3zM7 7V3h10v4M3 12h18',
-    'M2 12h5l3-8 4 16 3-8h5','M4 4h16v16H4zM8 9h8M8 15h8','M3 4h18v16H3zM7 16v-4M12 16V8M17 16v-6',
+    'M2 12h5l3-8 4 16 3-8h5','','M3 4h18v16H3zM7 16v-4M12 16V8M17 16v-6',
     'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2'];
   kinds:Kind[]=['traffic','dns','correlations'];page=signal<Page>('Overview');runtime=signal<State|null>(null);
   catalog=signal<Catalog|null>(null);batch=signal<Batch|null>(null);busy=signal(false);error=signal('');notice=signal('');ready=signal(false);

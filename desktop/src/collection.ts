@@ -5,6 +5,7 @@ import {FormsModule} from '@angular/forms';
 import {DashboardWidgetComponent} from './portmaster/panel';
 import {SfngToggleSwitchComponent} from './portmaster/toggle';
 import {command} from './bridge';
+import {BrandMark} from './brand-mark';
 
 interface Source {[key:string]:unknown;state:string;last_success_utc?:string;status?:number}
 interface Settings {traffic:boolean;dns:boolean;traffic_seconds:number;dns_seconds:number;
@@ -13,10 +14,10 @@ interface Provider {account_scope:string;endpoint:string;account_type:string;ins
 export interface State {state:string;sources:Record<string,Source>;settings:Settings;queue_depth:number}
 
 @Component({selector:'taild-collection',standalone:true,
-  imports:[CommonModule,FormsModule,DashboardWidgetComponent,SfngToggleSwitchComponent],
+  imports:[CommonModule,FormsModule,DashboardWidgetComponent,SfngToggleSwitchComponent,BrandMark],
   template:`
     <section id="collection-window" [attr.aria-busy]="busy()">
-      <header><div><div class="eyebrow">TailD / Settings</div><h2 class="collection-title">Collection</h2>
+      <header><div><div class="eyebrow product-brand"><taild-brand-mark brand="tailscale" /><span>TailD / Settings</span></div><h2 class="collection-title">Collection</h2>
         <p>Local history. Explicit opt-in. Your network stays unchanged.</p></div>
         <span id="collector-status" role="status" class="badge" [class.good]="state()?.state==='collecting'"
           [class.warn]="isWarning(state()?.state)">{{state()?.state || 'Connecting'}}</span></header>
@@ -41,7 +42,7 @@ export interface State {state:string;sources:Record<string,Source>;settings:Sett
         </app-dashboard-widget>
         <app-dashboard-widget label="Sources & health">
           <div class="status-table" *ngFor="let source of sourceNames">
-            <div><div class="row-title">{{source==='traffic'?'GlassWire':source==='dns'?'Control D':'TailDNS context'}}</div>
+            <div><div class="row-title provider-brand"><taild-brand-mark brand="controld" *ngIf="source==='dns'" /><taild-brand-mark brand="tailscale" *ngIf="source==='context'" />{{source==='traffic'?'GlassWire':source==='dns'?'Control D':'TailDNS context'}}</div>
               <p class="hint" *ngIf="current.sources[source]?.last_success_utc as success">Last read {{success}}</p></div>
             <span [attr.id]="source+'-status'" class="badge" [class.good]="current.sources[source]?.state==='collecting'"
               [class.warn]="isWarning(current.sources[source]?.state)">{{current.sources[source]?.state || 'Unavailable'}}</span>
@@ -59,7 +60,7 @@ export interface State {state:string;sources:Record<string,Source>;settings:Sett
                 (change)="textSetting($event)"></label></div>
           <p class="hint">Missed opportunities coalesce. Reads never overlap or get killed to meet cadence.</p>
         </app-dashboard-widget>
-        <app-dashboard-widget label="Control D binding · read only">
+        <app-dashboard-widget label="Control D binding · read only" brand="controld">
           <div class="fields"><label class="field">Account scope
             <input id="provider-account" maxlength="128" [(ngModel)]="provider.account_scope" (blur)="bindProvider()" [disabled]="busy()"></label>
             <label class="field">Endpoint ID

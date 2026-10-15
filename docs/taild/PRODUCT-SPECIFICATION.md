@@ -810,6 +810,26 @@ confirmation/conflict/error flows and responsive map geometry; independent QA;
 fresh focused integration/build checks; independently verified public release and
 installed owner workflow preserving node identity, DNS, credentials and history.
 
+### October 15 provider/product branding refinement — R22
+
+The owner requests Control D artwork for its navigation tab, banners and titles,
+and Tailscale artwork in place of textual TD brand marks. Stage 10 owns this
+already-authorized visual change. Use the recognizable Control D symbol and
+Tailscale nine-dot mark consistently in navigation, page headers, provider panels
+and source labels. Preserve TailD's name, independent-fork notice, accessible
+control names, existing widgets, Tailscale charcoal/blue theme and all behavior.
+Brand artwork identifies products, not connection state or official endorsement.
+
+Bundle reviewed static vector geometry in the frontend; no remote logo requests,
+new runtime dependency, HTML injection or relaxed native origin/CSP is required.
+Record source provenance and trademark ownership separately from code licensing.
+At the existing 64px rail, marks fit the 40px navigation target; heading marks
+align with text and provider wordmarks keep their aspect ratio. Verify the actual
+native-served UI at desktop and 560px width, and app-local 150% zoom, with no logo
+clipping, horizontal page overflow, changed navigation or unreadable active state.
+Retain focused screenshot/DOM evidence. This request does not authorize another
+public release or installed-client replacement.
+
 ## 15. Stage mapping and verification boundaries
 
 | Stage | Required scope | Status at specification creation |

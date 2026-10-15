@@ -1,5 +1,25 @@
 # TailD staged execution
 
+October 15 R22 branding: Stage 10 remains the single **ACTIVE** stage.
+Scope is already_authorized: Control D navigation/header/source branding and
+Tailscale artwork replacing TD marks, preserving TailD identity and behavior.
+R22 is **COMPLETE** and B27 resolved: the real native-served production Angular
+assets show Control D's bundled four-petal artwork in navigation, section/panel
+headings, source banners and DNS geography; Tailscale's nine-dot mark replaces TD
+in the rail and product headings. TailD/fork identity and existing behavior remain.
+All six navigation destinations and four profile tabs pass via actual controls.
+Desktop, 560 CSS-pixel width and native 150% app-local zoom pass with no page
+overflow or clipped artwork; active provider icon contrast is 6.03:1. Screenshots
+were inspected. No remote assets, credentials, provider writes or native CSP
+changes. Fresh frontend contracts, production Angular and native Debug builds pass.
+The test harness required parent-directory creation, omission of an unsupported
+100% debug flag and subpixel-aware geometry assertions; no production workaround.
+Evidence: D:/Tools/taild-stage10-validation-20261013/branding-r22/branding.json
+and focused synthetic captures. Shared mark rendering serves the current repeated
+use cases; closure review found no required consolidation or new abstraction.
+Only R22 acceptance/commit/sync is in this bounded change; no release/deployment.
+No tracked deferrals. Existing Stage 10 B12 remains unchanged.
+
 October 15 incident management: Stage 10 remains the single **ACTIVE** stage.
 R19–R21 and publication/deployment are already_authorized. Execution: integrate
 endpoint-scoped management/live-history and map correction; verify real provider
