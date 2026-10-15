@@ -33,11 +33,13 @@ different/missing owner location refuses before stop. No live installer claim.
 Tracked deferrals for this correction: none. No installed update/public release
 is implied by this implementation request.
 
-B23 source acceptance satisfied (R15d): capability-first README, four actual
+B23 resolved (R15d): capability-first README, four actual
 native synthetic-demo screenshots, release/main distinction, installation/trust
 boundaries and attribution. All 27 local documentation links resolve; image
-metadata is empty and displayed facts are synthetic. Remote synchronization is
-the remaining delivery action for this source correction, not a new release.
+metadata is empty and displayed facts are synthetic. Source commit 2ec04c2 is
+synchronized to public main; GitHub read-back matches the README and all four
+image hashes. Exact-head focused CI run 38737550926 passes. This is source
+synchronization, not an installed update or a new release.
 
 Verification: final backend discovery passes (one platform skip), the added
 different-owner upgrade regression passes, frontend notice/type/build checks and
