@@ -969,6 +969,15 @@ commit/sync. Corrective release/deployment continues the owner's unfinished appr
 delivery, with independent artifact verification and installed acceptance. No policy
 write, Android deployment or unrelated refactoring. B12 stays open.
 
+October 15 recovery authorization: the owner explicitly accepts reloading the
+corrupted testing database and loss of its test observations. Replace only the
+history SQLite database after graceful collector shutdown and confirmed process
+exit; retain the consistent original recovery copy. Preserve runtime/provider
+configuration, vault credentials, node/signer, resolver, updater preference and
+retention choice. Verify new database integrity, actual ingestion and recent DNS
+reads before resuming corrective release/deployment. This revises preservation
+of old test observations only, not the remaining data/identity contracts.
+
 ## 15. Stage mapping and verification boundaries
 
 | Stage | Required scope | Status at specification creation |
@@ -980,7 +989,7 @@ write, Android deployment or unrelated refactoring. B12 stays open.
 | 7 | Opt-in continuous lifecycle and secure runtime; R13, remaining R14 | COMPLETE |
 | 8 | Portmaster-derived desktop layout/explorer/export; R08 layout, R15, R16 | COMPLETE |
 | 9 | Production packaging and local release-readiness; R17, R18 pre-delivery reconciliation | COMPLETE |
-| 10 | Authorized release, rollout, updater proof and final reconciliation; remaining R18 | BLOCKED on B33 history recovery direction; delivery/migration/updater authority retained |
+| 10 | Authorized release, rollout, updater proof and final reconciliation; remaining R18 | ACTIVE; B33 authorized test-data replacement verified, corrective delivery pending |
 
 Each stage's detailed acceptance obligations are in the ledger. Verification
 of an earlier implementation remains valid only for unchanged relevant code and

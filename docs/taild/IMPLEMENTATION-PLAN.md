@@ -1,7 +1,9 @@
 # TailD staged execution
 
-October 15 R26 incident loading/icon correction: Stage 10 is **BLOCKED**, parked
-on B33; no implementation stage is ACTIVE. B32 (internal advancement blocker) has its source/native workflow verified;
+October 15 R26 incident loading/icon correction: Stage 10 is the single **ACTIVE**
+stage again. The owner explicitly accepts reloading the corrupt testing database;
+B33 is resolved by the verified replacement below.
+B32 (internal advancement blocker) has its source/native workflow verified;
 signed delivery and installed acceptance remain pending. Root cause was the shared
 analytics/policy queue plus snapshot-gated Recent DNS template (live local read
 33.47ms/81 rows versus READ policy 4150.22ms). Fixed authenticated operation lanes
@@ -16,7 +18,7 @@ CDP/validation hooks are absent. Closure assessment found no required consolidat
 transport reuse remains in existing owners, with no new service/retry/timeout/RPC.
 Live account-bound read is physically read-only (31.6ms); no provider mutation.
 Evidence: D:/Tools/taild-stage10-validation-20261013/incident-r26.
-B33 (external pre-existing data impediment, requires owner recovery direction): pre-install
+B33 resolved (authorized test-history replacement): pre-install
 history integrity failed: DNS table root 13, page 811782, cell 356, rowid 232587 out
 of order; a subsequent DNS source scan reports SQLITE_CORRUPT. This is not an index
 that can simply be rebuilt. Installed +12 payload, node/signer, custom resolver,
@@ -24,15 +26,20 @@ public DNS and MagicDNS checks pass up to this failed history gate. Do not repla
 delete or silently recreate history. A consistent original SQLite backup is retained
 at D:/Tools/taild-stage10-validation-20261013/release-13/history-before-recovery.sqlite3
 (3,410,407,424 bytes; SHA256 4c72296ef0a29d8afc0aec91a114044ce0f914e66d9d45187b0b5705cfd638b6).
-Only analytics acquisition is paused through its normal acknowledged action;
-VPN/DNS settings, credentials, node and collection binding are unchanged. Obtain
-owner direction allowing salvage/rebuild with possible unrecoverable DNS records,
-then validate the recovered copy before any replacement. This resolves the authority
-impediment; successful integrity/data-preservation verification resolves B33 itself.
-No new release or installation has occurred. Product changes 01275799d002a11f4e4a2719e6d3a7df20c8626a
+The owner explicitly authorized reloading testing observations. The old collector
+exited gracefully; original files remain under the private history directory's
+corrupt-before-r26-20261015 folder, and the consistent D: snapshot stays intact.
+The new database started with zero facts, passes quick_check/WAL checks, retains
+7-day retention and unchanged runtime/provider configuration. Collection resumed;
+live Control D is connected. A unique real DoH query was independently found in
+the actual account-bound recent read (no synthetic history/provider-policy write).
+Node/signer, credentials, custom resolver, public DNS and MagicDNS pre-install
+verification all pass. The cause of the old on-disk corruption is not established;
+this authorized test-data replacement is not claimed as a corruption-cause fix.
+No new release or installation has occurred yet. Product changes 01275799d002a11f4e4a2719e6d3a7df20c8626a
 are synchronized to main with GitHub focused checks passing (38803207922).
-This condition blocks installed data-preservation acceptance,
-not the independently verified native fixture workflows. No later stage or tracked
+The authorized old-observation exception is recorded in R26; remaining installed
+preservation/delivery acceptance belongs to B32. No later stage or tracked
 deferral. B31 +12 publication/installation succeeded (workflow 38797175559, source
 42264219e0180450948d6fe2c696639aa8097df8; independently verified public payload,
 broker c463d9ba095d438d9a539380a9302527 exit0). B12 unchanged.
