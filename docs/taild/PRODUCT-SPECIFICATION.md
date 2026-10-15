@@ -888,8 +888,12 @@ boundary -> readback, including denied/stale/reset/resolver/exit-node cases;
 real installed-daemon read-only compatibility check without network mutations;
 desktop/narrow/150% rendered navigation, keyboard focus and screenshots; existing
 analytics/incident behavior preserved; focused security/packaging regressions and
-build verification; commit/sync. No release or installed-client deployment is
-authorized by this refinement.
+build verification; commit/sync. The refinement originally authorized no delivery.
+The owner's subsequent October 15 instruction authorizes publishing and deploying
+the complete verified R22–R24 update through the existing signed release and
+in-place installer path, preserving login, signing identity, credentials, history,
+source opt-ins and network preferences. Verify the public download and installed
+payload plus actual owning-user category/About workflows before claiming delivery.
 
 ## 15. Stage mapping and verification boundaries
 

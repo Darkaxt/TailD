@@ -1,5 +1,14 @@
 # TailD staged execution
 
+October 15 R22–R24 delivery: Stage 10 remains the single **ACTIVE** stage.
+The owner explicitly authorized release and local deployment after reconciliation.
+R22–R24 source/native acceptance is COMPLETE; this delivery remains ACTIVE until
+the complete signing workflow, independent public artifact verification, in-place
+installation and installed-owner category/About acceptance pass. Preserve the
+previous verified release/recovery payload and all existing identity/settings.
+No additional feature, device deployment or production policy mutation. B12's
+broader lifecycle/updater reconciliation is not closed by this bounded delivery.
+
 October 15 R24 category navigation/control migration: Stage 10 is the single
 **ACTIVE** stage. Scope already_authorized includes category-exclusive tabs,
 Tailscale main/preferences/resolver controls and persistent bottom-left About.

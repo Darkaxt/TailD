@@ -31,7 +31,7 @@ public static class TailDReleaseProbe {
             snapshot.Add(new {id=info.AutomationId,name=info.Name,role=info.ControlType.ProgrammaticName,
               enabled=info.IsEnabled,offscreen=info.IsOffscreen,focused=info.HasKeyboardFocus,
               bounds=new {x=bounds.X,y=bounds.Y,width=bounds.Width,height=bounds.Height,unit="physical px"}});
-            if(info.Name=="Settings"&&info.ControlType==ControlType.Button)nav=node;
+            if(info.AutomationId=="nav-5"&&info.Name=="Collection settings"&&info.ControlType==ControlType.Button)nav=node;
             if(info.Name=="Refresh view"&&info.IsEnabled)refresh=node;
             if(info.AutomationId=="received-card"&&info.ControlType==ControlType.Button&&info.IsEnabled)received=node;
             if(info.Name=="Stop collector & close"&&info.ControlType==ControlType.Button&&info.IsEnabled)stop=node;
