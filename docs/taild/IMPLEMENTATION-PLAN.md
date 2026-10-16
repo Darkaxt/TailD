@@ -23,15 +23,40 @@ upstream/core identity, AMD64 binaries, SQLite 3.54.0, production debug-hook
 absence and byte-exact native-verified JavaScript/CSS (HTML equal except CRLF).
 Installer: 117303862 bytes, SHA256
 bf8ce84fbd6064e1348080765f0a03a32329fb93906a1c5a7fb99be38087e4d8.
-The GitHub tag points to that exact source; no local installation was performed.
+The GitHub tag points to that exact source. The subsequent user instruction
+"deploy" authorizes local in-place installation. Broker request
+8261e6c23c6e4a43a1e39e98917c9a4e completed with elevated command/installer exits
+0. Local deployment acceptance COMPLETE: installed signed inventory/source and
+native-verified JS/CSS match +22; both services are Running, public/MagicDNS resolve
+and live DNS is connected. Node, addresses, node/signing/trusted keys, profile,
+preferences, credentials, resolver, recording settings and inherited installed
+components are preserved. History retains the same inode, SQLite 3.54.0, healthy
+quick_check and WAL. Traffic count stayed equal; DNS count fell by 43 while the
+seven-day retention cutoff and earliest retained observation advanced and new DNS
+arrived, consistent with ordinary rolling retention, not an inode replacement.
+The ordinary owning-user launcher opened/restored the same native window without
+a duplicate. This is Win32 activation and exact installed-asset proof, not a claim
+of production DOM debug readiness. Private receipts: D:/Tools/
+taild-stage10-validation-20261013/release-22/deployment.json and before/after audits.
 R34 has no remaining product blocker or tracked deferral. Broader desktop
 Stage 10/B12 remains ACTIVE; later Android/R33 work is unchanged.
 Task scratch cleanup passed reviewed transaction
 4dafd8a58813f3ed495e9ceda0e0513b: 727812591 bytes removed, ticket applied,
 no residual task root. Intentional verification receipts and synthetic captures
 remain at the evidence path above; release artifacts remain on GitHub.
+Deployment scratch has a separate external cleanup blocker: reviewed transaction
+58f99afe402c22b248ad8a03717438c7 removed all 117303862 file bytes, but four empty
+directory entries remain under D:/Temp/taild-deploy22-20261016. The helper reported
+two leaves locked; nonmutating DELETE-access checks returned Win32 error 5 (Access
+denied). Elevated cleanup request 3970cc4c3f144fe8864e5941e2ab73b7 was declined,
+with no command launched. Do not retry or bypass that decision. Cleanup is NOT
+COMPLETE; retained partial ticket
+410a9e46fa8a8577b08c9585ebe4fc983913beb38cf0190cbb8424eac67325c3 can only be
+resumed after new user authorization. This residual does not invalidate the
+verified deployment; broader Stage 10/B12 remains ACTIVE.
 No later implementation stage is opened. GitHub publication is explicitly
-authorized after verification; no local installation is requested.
+authorized after verification; local installation was subsequently authorized
+by the explicit "deploy" instruction.
 
 Closure assessment: the existing one-use management transaction remains the
 single policy-write path; row actions reuse it without opening a preview.

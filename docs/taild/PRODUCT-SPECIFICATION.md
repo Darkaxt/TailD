@@ -23,8 +23,13 @@ row profiles and changed shared-profile scope. Show pending/success/error inline
 never rewrite historical DNS decisions to imply the new policy applied earlier.
 Native validation must exercise searches, restored-window geometry, contextual
 buttons, dialog focus/keyboard dismissal, direct writes and conflict/failure paths.
-The user authorizes a GitHub release after verification; local installation is
-not requested by this amendment. Existing signed/public-artifact gates apply.
+The user authorizes a GitHub release after verification. After publication and
+independent public verification, the explicit instruction "deploy" additionally
+authorizes local in-place installation of +22. Preserve authenticated node and
+signing identity, preferences, credentials, resolver and existing history; verify
+installed package/source/assets, service health, public/MagicDNS and live DNS
+collection, then restore the ordinary owning-user desktop. Existing signed/public
+artifact and administrator-broker gates apply.
 
 October 16 R33 amendment: the user requires cross-platform app/IP traffic audit,
 equal-weight inferred domain attribution and explicit app blocking after the
