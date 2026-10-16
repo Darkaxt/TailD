@@ -13,6 +13,10 @@ After reviewing the verified change, the user explicitly authorized "Release and
 deploy +23". Publish the normal signed +23 release, independently verify its public
 installer/payload against the native-tested assets, then perform the ordinary
 in-place upgrade with the existing preservation and administrator-broker gates.
+The +23 upgrade recovered +22 after an executable lock and advanced the protected
+anti-replay floor to 23. The user then authorized "Release and deploy +24" for
+the same verified UI. Publish +24 with anti-replay protection intact and verify
+explicit process quiescence and exact executable access before the upgrade.
 
 October 16 R34 corrective scope: Recent DNS must remain usable in restored native
 windows, including 1440x900, 1280x800, 1024x768 and app-local 150% zoom. Preserve

@@ -15,8 +15,22 @@ native-verified frontend source matches the checkout. Evidence/synthetic capture
 D:/Tools/taild-stage10-validation-20261013/inline-actions-r35-20261017.
 No current-scope implementation blocker or deferral remains; broader Stage 10/B12
 is still ACTIVE. The user subsequently authorized release and local deployment
-as +23. Delivery acceptance remains pending signed release/public verification,
-the ordinary broker-approved in-place upgrade and preservation/readback checks.
+as +23. Release/public verification COMPLETE for +23 at source
+e3c078640d217fbe448ea4562d6c588251f0cb44, run 38977684748: eight gates passed;
+pinned signatures, all 444 payload members and exact native-tested UI verified.
+Deployment remains unresolved: an executable lock caused installer exit 5 and
+recovery restored verified +22, advancing highest_subversion to 23. A conditional
+attempt verified all TailD processes exited and exact executable DELETE access
+succeeded, then correctly refused sequence 23 replay. Original lock ownership
+was not established; no production workaround or anti-replay reset was applied.
+The +22 reader and ordinary collector/window were restored. Evidence:
+D:/Tools/taild-stage10-validation-20261013/release-23.
+The user explicitly authorized "Release and deploy +24". Delivery acceptance is
+pending +24 publication/public verification, explicit process quiescence,
+ordinary broker-approved upgrade and preservation/health readback. Unchanged
+isolated installer evidence from run 38977684748 may be reused only through the
+workflow exact-tree gate. This deployment gap is an advancement blocker within
+ACTIVE Stage 10, not a future-stage deferral.
 Closure review found no new write path, obsolete action-column path or material
 current-scope consolidation need.
 
