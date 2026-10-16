@@ -14,7 +14,9 @@ checks, frontend contracts and production Angular/native Debug builds passed;
 native-verified frontend source matches the checkout. Evidence/synthetic captures:
 D:/Tools/taild-stage10-validation-20261013/inline-actions-r35-20261017.
 No current-scope implementation blocker or deferral remains; broader Stage 10/B12
-is still ACTIVE. No new release or installation is claimed by this local result.
+is still ACTIVE. The user subsequently authorized release and local deployment
+as +23. Delivery acceptance remains pending signed release/public verification,
+the ordinary broker-approved in-place upgrade and preservation/readback checks.
 Closure review found no new write path, obsolete action-column path or material
 current-scope consolidation need.
 

@@ -9,6 +9,10 @@ icon, and Edit keeps its tool icon. Preserve accessible button names, descriptiv
 tooltips, keyboard focus, direct-action safety and the floating editor. Verify the
 actual native-served layout at restored sizes and 150% zoom, including narrow
 scroll reachability, with no changes to collection or provider-policy semantics.
+After reviewing the verified change, the user explicitly authorized "Release and
+deploy +23". Publish the normal signed +23 release, independently verify its public
+installer/payload against the native-tested assets, then perform the ordinary
+in-place upgrade with the existing preservation and administrator-broker gates.
 
 October 16 R34 corrective scope: Recent DNS must remain usable in restored native
 windows, including 1440x900, 1280x800, 1024x768 and app-local 150% zoom. Preserve
