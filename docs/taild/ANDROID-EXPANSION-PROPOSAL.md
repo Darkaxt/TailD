@@ -2,8 +2,8 @@
 
 Date: 2026-10-16. Status: planning and brainstorming only.
 
-This proposal does not activate implementation, modify the current Windows
-specification, close desktop Stage 10/B12, change a schedule, configure signing,
+This proposal does not activate implementation, close desktop Stage 10/B12,
+change a schedule, configure signing,
 publish a release, or authorize installation or provider-policy changes.
 Its proposed stages are all NOT STARTED.
 
@@ -13,7 +13,9 @@ Its proposed stages are all NOT STARTED.
   Implement TailD-specific Android features in this repository's inherited
   Android client; do not add them to Darkaxt/TailDNS first or create another app.
 - Expand Tailscale representation, basic Control D management and compatible
-  dashboards. No GlassWire/firewall integration or application traffic monitoring.
+  dashboards first. App/IP traffic auditing, equal-weight domain estimates and
+  app blocking are required later on both Windows and Android under
+  [R33's named F1–F3 stages](TRAFFIC-AUDIT-AND-BLOCKING-SPECIFICATION.md).
 - Prefer battery-conscious collection. Do not require an uninterrupted Android
   DNS stream to build historical DNS dashboards.
 - Correctly configured Control D resolvers already identify endpoints/clients.
@@ -82,11 +84,14 @@ labels; do not shrink a desktop table/sidebar into a phone screen.
 | Geography | Provider-supplied DNS-answer country/ASN counts with explicit missing coverage. Reuse offline map assets only when licensing and mobile layout fit; ranked country/ASN drill-down is required even without a map. |
 | History controls | One opt-in Collect analytics preference, retention, source freshness/coverage, explicit history deletion and scoped private export. Recording off preserves live controls and retained history. |
 
-Omit application bandwidth, process attribution, socket history, system-wide
-traffic totals and GlassWire correlation pages. DNS requests do not measure
-bytes, connections or which Android app issued a query. Tailscale-specific byte
-counters could be a separately specified extension, with explicit tunnel/peer and
-reset semantics; they are not part of this initial plan.
+For A1–A4, omit application bandwidth, process attribution, socket history,
+system-wide traffic totals and GlassWire correlation pages. DNS requests alone
+do not measure bytes, connections or which Android app issued a query. These
+exclusions are delivery ordering, not permanent rejection: the user requested
+app/IP auditing, traffic measurement through the existing Tailscale VPN, DNS
+association with equal-weight ambiguity handling and app blocking afterward.
+R33 records scope, source review, coverage limits and final acceptance for both
+platforms. Do not activate that extension during A1–A4.
 
 ## Device-aware DNS data flow
 
@@ -205,6 +210,12 @@ reconciliation with the existing desktop Stage 10 workload.
 | A2: Control D setup, history and basic management | NOT STARTED | Explicit device/client resolver binding -> READ inventory/history -> matching Recent DNS facts -> selected domain policy preview -> separately authorized write -> verified provider readback. Cover shared profiles, wrong account, stale preview, unknown outcome, unknown schemas and server denial. |
 | A3: Compatible dashboard and battery lifecycle | NOT STARTED | Committed scoped history -> count/trend/domain/geography or local-activity panel -> exact drill-down -> matching private export. Verify backfill/overlap/retention, recording off, visible-only optional stream, process death and delayed work without blocking connection/navigation. |
 | A4: TailD Android distribution and migration readiness | NOT STARTED | Clean current-source build -> protected existing signer -> independent APK verification -> authorized in-place test -> retained identity/data/VPN/TailDrop/SleepManager -> compatible recovery/update transition. Publication and device deployment require their applicable explicit authority. |
+
+Required tracked deferrals: F1 (Windows app/IP audit and weighted domains), F2
+(Android equivalent) and F3 (explicit app blocking on both), owned by
+[R33](TRAFFIC-AUDIT-AND-BLOCKING-SPECIFICATION.md#named-stages-and-tracked-deferrals).
+They begin only after the preceding desktop/Android acceptance prerequisites;
+they do not excuse any incomplete A1–A4 criterion or authorize implementation now.
 
 Develop each slice as a complete feature before its acceptance validation. Focused
 contract tests should cover normalization, exact counts, state changes and safe

@@ -1,5 +1,29 @@
 # TailD staged execution
 
+## October 16 required later scope — R33
+
+Current desktop Stage 10 remains the single ACTIVE implementation stage. The
+user requests completing the other Android features before adding app/IP traffic
+auditing, equal-weight domain estimates and app blocking on either platform.
+Android A1–A4 and this deferred extension are planning only, not implementation
+activation. Preserve every current Stage 10/B12 acceptance requirement.
+
+Authoritative future scope and acceptance:
+[TRAFFIC-AUDIT-AND-BLOCKING-SPECIFICATION.md](TRAFFIC-AUDIT-AND-BLOCKING-SPECIFICATION.md).
+
+| Required tracked deferral / owning later stage | Status | Prerequisites and verification |
+| --- | --- | --- |
+| F1 — Windows app/IP audit and weighted domain view | NOT STARTED | Existing desktop Stage 10 and Android A1–A4 acceptance satisfied; later implementation authorized. Real source/path -> measured app/IP evidence -> DNS candidates -> equal-weight estimate -> matching drill-down/export with exact once-only counters and unknown coverage. |
+| F2 — Android app/IP audit and weighted domain view | NOT STARTED | F1 COMPLETE. Real existing Tailscale packet path -> supported app/UID observation -> IP/counters -> local/provider DNS candidates -> weighted native views/export; version/route/lifecycle and unchanged VPN/DNS verification. |
+| F3 — Explicit app traffic blocking on both platforms | NOT STARTED | F1 and F2 COMPLETE. Exact app/scope preview/confirmation -> authorized rule -> real block -> verified state -> unblock/recovery on both platforms, preserving unrelated rules and existing VPN. |
+
+These later criteria do not prevent current Stage 10 or A1–A4 acceptance and
+cannot excuse an unmet criterion in them. R33 is incomplete until F1–F3 all pass.
+No schedule change, privileged backend, code import, device policy or deployment
+is performed or authorized by recording this ledger entry.
+
+## Current desktop Stage 10 evidence
+
 October 16 R32 corrective delivery acceptance COMPLETE within ACTIVE Stage 10.
 Normal release **1.105.0+21** at exact source
 d2173ff4d91c1c8b0908dbc173fd32b287e25698 passed all eight release jobs in

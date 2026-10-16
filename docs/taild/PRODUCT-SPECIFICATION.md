@@ -1,6 +1,14 @@
 # TailD remaining-product specification
 
-Version 1.9, 2026-10-15. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.10, 2026-10-16. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+
+October 16 R33 amendment: the user requires cross-platform app/IP traffic audit,
+equal-weight inferred domain attribution and explicit app blocking after the
+other Android features. The authoritative deferred scope, source evidence and
+named F1–F3 acceptance stages are in
+[TRAFFIC-AUDIT-AND-BLOCKING-SPECIFICATION.md](TRAFFIC-AUDIT-AND-BLOCKING-SPECIFICATION.md).
+This is specification/roadmap authority only; implementation and live changes are
+not activated. Current desktop Stage 10/B12 and Android A1–A4 acceptance are unchanged.
 
 ## 1. Authority, authorization and completion boundary
 
@@ -283,6 +291,11 @@ Rates below describe sampled/bucketed data, not instantaneous link utilization.
 | Candidate-domain traffic | Bytes from unique-candidate buckets, explicitly labeled inferred, plus separate ambiguous/unmatched byte totals | Never distribute a bucket's bytes to every candidate or call the result exact domain usage. |
 | Geography / ASN | Provider-reported answer metadata or independently validated destination metadata, with source label | Source location is not destination location; mixed answers or mismatched candidate IPs cannot assign a destination country. Unknown remains a group. |
 | Source health | Last successful read, requested/complete-through time, lag, gaps, truncation, errors and unsupported counts | Operational counters, not network activity or a privacy/security score. |
+
+R33 defines a separate, later equal-weight domain estimate that allocates each
+fact's bytes once across distinct eligible DNS candidates. It must have its own
+algorithm/version and explicit estimated label; it does not retroactively alter
+this stage's unique-only candidate-domain metric or measured source totals.
 
 Unavailable metrics: per-socket/PID bytes, live connection count/lifetime, DNS
 latency, blocked/saved bytes, payload inspection, encryption/security verdicts and
@@ -1255,3 +1268,24 @@ Provider-denied/private unsupported interfaces are not bypassed. Internal GlassW
 compatibility is a maintained empirical contract, not a promised public SDK.
 Required unknown/unavailable handling is part of product correctness, not a way
 to mark missing required UI, ingestion or metric calculations complete.
+
+## 17. Required later cross-platform traffic audit and blocking — R33
+
+The October 16 user instruction adds app/IP traffic auditing and explicit app
+blocking for both Windows and Android after the Android A1–A4 feature set. Prefer
+measurement inside the existing Tailscale VPN and local resolver; supplement it
+with separately scoped source facts as needed. Tailscale's configured routes
+define coverage; managing DNS does not imply every public Internet flow is tunneled.
+Use the user's equal-weight `1/N` candidate model where DNS/IP evidence is
+ambiguous. A conditional estimate is not exact domain-byte measurement.
+
+[R33's specification](TRAFFIC-AUDIT-AND-BLOCKING-SPECIFICATION.md) owns F1 Windows
+audit/weighted views, F2 Android audit/weighted views and F3 app blocking on both.
+All are NOT STARTED. Their final verification and dependencies are explicit there.
+They are required tracked deferrals, not current Stage 10 blockers. The existing
+firewall-enforcement/non-interception exclusions apply to current delivery;
+R33 permits only its later explicitly scoped auditing/enforcement work after
+activation. TLS decryption, fabricated certainty, arbitrary global rule resets
+and automatic policy changes remain outside scope. No current code, provider,
+device, privilege, routing, schedule or release change is authorized by this
+planning amendment.
