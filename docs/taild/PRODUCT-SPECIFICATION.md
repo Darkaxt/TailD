@@ -1052,8 +1052,12 @@ scope/generation isolation, visible progress and real terminal errors; do not
 mask stalled/corrupt history with a timeout, empty result or perpetual overlay.
 Investigate and correct the reported dashboard failure before acceptance.
 
-Offline peers must not advertise TailDrop availability: show Offline without
-an availability claim; unknown presence remains explicitly unconfirmed. Control
+Offline peers must not advertise TailDrop availability. October 16 clarification:
+the only visible TailDrop labels are exactly `TailDrop · Enabled` and
+`TailDrop · Disabled`, with no trailing period. Unknown/transient eligibility and
+offline or unknown-presence peers have no TailDrop badge or detail value. Presence
+alone shows Offline/Unknown. Online available targets map to Enabled; explicit
+capability, OS, peer-API or ownership restrictions map to Disabled. Control
 D Recent DNS and Profile policy should use the remaining viewport height, with
 one appropriate content scroller rather than a fixed 480px table leaving unused
 space. Keep headers/actions usable at 100%, app-local 150% and 560px minimum.

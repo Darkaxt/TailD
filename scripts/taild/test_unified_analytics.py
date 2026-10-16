@@ -61,7 +61,7 @@ class LiveInventoryTest(unittest.TestCase):
         row=control.read()['peers'][0]
         self.assertEqual(row['last_seen'],'2026-10-15T12:00:00Z')
         self.assertEqual(row['owner'],'test@example.invalid')
-        self.assertEqual(row['taildrop'],'Offline')
+        self.assertIsNone(row['taildrop'])
         self.assertEqual(row['routes'],['10.9.0.0/16'])
         self.assertEqual(row['ssh'],'Advertised')
         self.assertNotIn('sshHostKeys',json.dumps(row))
@@ -78,8 +78,8 @@ class LiveInventoryTest(unittest.TestCase):
         daemon=DaemonFixture();daemon.status['Peer']['x'].update(Online=None,LastSeen='0001-01-01T00:00:00Z')
         row=connectivity.Connectivity(None,call=daemon).read()['peers'][0]
         self.assertIsNone(row['online']);self.assertIsNone(row['last_seen'])
-        self.assertEqual(row['taildrop'],'Presence unknown')
-        self.assertIn('unconfirmed',row['taildrop_reason'])
+        self.assertIsNone(row['taildrop'])
+        self.assertIsNone(row['taildrop_reason'])
         self.assertEqual(row['ssh'],'Not reported')
 
 

@@ -37,3 +37,9 @@ test('first category boots immediately while Overview preloads independently',()
   assert.match(main,/overviewBatch/);
   assert.match(main,/refresh\(false,undefined,'Overview'\)/);
 });
+
+test('TailDrop exposes only known Enabled or Disabled labels and hides unknown',()=>{
+  const template=readFileSync(new URL('../src/connectivity.ts',import.meta.url),'utf8');
+  assert.match(template,/\*ngIf="peer.taildrop"[^>]*\[class.good\]="peer.taildrop==='Enabled'"/);
+  assert.match(template,/<dt \*ngIf="peer.taildrop">TailDrop<\/dt><dd \*ngIf="peer.taildrop">{{peer.taildrop}}<\/dd>/);
+});

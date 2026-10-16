@@ -14,6 +14,10 @@ def run(shell,output):
     for zoom in (100,150):
         root=output/str(zoom);root.mkdir();populate(root/'history')
         daemon=DaemonFixture();daemon.status['Peer']['x'].update(Online=False,TaildropTarget=1,OS='linux')
+        for name,presence,target in (('Enabled fixture',True,1),('Disabled fixture',True,4),('Unknown fixture',None,1)):
+            peer=copy.deepcopy(daemon.status['Peer']['x'])
+            peer.update(ID=name,HostName=name,Online=presence,TaildropTarget=target)
+            daemon.status['Peer'][name]=peer
         entered=threading.Event();release=threading.Event();hold={'active':True};calls={'summary':0}
         original=analytics.Analytics._query
         def query(engine,request,revision,prepared=None):
@@ -26,8 +30,13 @@ def run(shell,output):
             try:
                 page=session.page;page.set_default_timeout(0)
                 expect(page.locator('h1')).to_have_text('Connection')
-                expect(page.locator('#connection-devices')).to_contain_text('TailDrop · Offline')
+                expect(page.locator('#connection-devices')).not_to_contain_text('TailDrop · Offline')
                 expect(page.locator('#connection-devices')).not_to_contain_text('TailDrop · Available')
+                expect(page.locator('#connection-devices')).not_to_contain_text('Presence unknown')
+                expect(page.locator('#connection-devices')).to_contain_text('TailDrop · Enabled')
+                expect(page.locator('#connection-devices')).to_contain_text('TailDrop · Disabled')
+                expect(page.locator('#connection-devices tr').filter(has_text='Unknown fixture').locator('.device-badges')).not_to_contain_text('TailDrop')
+                capture_preview(session,root/'connection.png')
                 entered.wait() # Original actual background query is held, never cancelled.
                 origin=page.evaluate('performance.now()');page.locator('#nav-preferences').click()
                 page.wait_for_function("()=>document.querySelector('#analytics-toggle')&&!document.querySelector('#analytics-toggle').disabled")

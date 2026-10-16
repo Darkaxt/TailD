@@ -10,7 +10,7 @@ import {BrandMark} from './brand-mark';
 interface Preference {id:string;label:string;value:boolean;visible:boolean;editable:boolean}
 interface Peer {id:string;name:string;addresses:string[];online:boolean|null;exit:boolean;exit_selected:boolean;
   owner:string|null;os:string|null;last_seen:string|null;created:string|null;key_expiry:string|null;
-  tags:string[];routes:string[];taildrop:string;taildrop_reason:string|null;ssh:string;dns_name:string|null}
+  tags:string[];routes:string[];taildrop:'Enabled'|'Disabled'|null;taildrop_reason:string|null;ssh:string;dns_name:string|null}
 interface ConnectivityState {revision:string;profile:string;account:string;state:string;device:string;addresses:string[];
   preferences:Preference[];prefs:{WantRunning:boolean;ExitNodeID:string;ExitNodeAllowLANAccess:boolean;RunExitNode:boolean};
   resolver:{Configured:boolean;Endpoint:string;Applied:boolean;CaptivePortal:boolean;Reason:string};
@@ -43,11 +43,11 @@ interface ConnectivityState {revision:string;profile:string;account:string;state
           <div class="table-scroll"><table id="connection-devices"><thead><tr><th>Device / capabilities</th><th>Addresses</th><th>OS</th><th>Presence / last online</th></tr></thead><tbody>
             <tr *ngFor="let peer of visiblePeers()"><td><strong>{{peer.name}}</strong><small class="identity-id">{{peer.owner||'Owner not reported'}}</small>
               <div class="device-badges"><span class="badge" *ngIf="peer.exit">{{peer.exit_selected?'Selected exit node':'Exit node'}}</span><span class="badge" *ngIf="peer.routes.length">Subnet router</span>
-                <span class="badge" [class.good]="peer.taildrop==='Available'" [title]="peer.taildrop_reason||'Current send eligibility reported by this daemon'">TailDrop · {{peer.taildrop}}</span>
+                <span class="badge" *ngIf="peer.taildrop" [class.good]="peer.taildrop==='Enabled'" [title]="peer.taildrop_reason||'Current send eligibility reported by this daemon'">TailDrop · {{peer.taildrop}}</span>
                 <span class="badge" *ngIf="peer.ssh==='Advertised'">SSH advertised</span><span class="badge" *ngFor="let tag of peer.tags">{{tag}}</span></div>
               <details class="device-metadata"><summary>Details</summary><dl><dt>Device ID</dt><dd>{{peer.id}}</dd><dt>DNS name</dt><dd>{{peer.dns_name||'Not reported'}}</dd>
                 <dt>Registered</dt><dd>{{time(peer.created)}}</dd><dt>Key expiry</dt><dd>{{time(peer.key_expiry)}}</dd><dt>Reported subnet routes</dt><dd>{{peer.routes.join(' · ')||'None reported'}}</dd>
-                <dt>TailDrop</dt><dd>{{peer.taildrop_reason||peer.taildrop}}</dd><dt>SSH capability</dt><dd>{{peer.ssh}} · not a reachability test</dd></dl></details></td>
+                <dt *ngIf="peer.taildrop">TailDrop</dt><dd *ngIf="peer.taildrop">{{peer.taildrop}}</dd><dt>SSH capability</dt><dd>{{peer.ssh}} · not a reachability test</dd></dl></details></td>
               <td><code *ngFor="let address of peer.addresses" class="device-address">{{address}}</code></td><td>{{peer.os||'Not reported'}}</td>
               <td><span class="badge" [class.good]="peer.online===true">{{peer.online===true?'Online':peer.online===false?'Offline':'Unknown'}}</span>
                 <small class="identity-id">{{peer.online===true?'Online now':time(peer.last_seen)}}</small></td></tr></tbody></table></div>

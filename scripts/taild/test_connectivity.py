@@ -44,12 +44,19 @@ class DaemonFixture:
 
 
 class ConnectivityTest(unittest.TestCase):
-    def test_offline_or_unknown_presence_never_claims_taildrop_available(self):
-        for presence,label in ((False,'Offline'),(None,'Presence unknown')):
+    def test_offline_or_unknown_presence_has_no_taildrop_label(self):
+        for presence in (False,None):
             peer={'Online':presence,'TaildropTarget':1,'NoFileSharingReason':'Available'}
             actual=connectivity.peer_view(peer,{})
-            self.assertEqual(actual['taildrop'],label)
-            self.assertNotEqual(actual['taildrop_reason'],'Available')
+            self.assertIsNone(actual['taildrop'])
+            self.assertIsNone(actual['taildrop_reason'])
+
+    def test_taildrop_labels_are_enabled_disabled_or_hidden(self):
+        for target in range(11):
+            with self.subTest(target=target):
+                actual=connectivity.peer_view({'Online':True,'TaildropTarget':target},{})
+                expected='Enabled' if target==1 else 'Disabled' if target in (4,7,8,9) else None
+                self.assertEqual(actual['taildrop'],expected)
 
     def setUp(self):
         self.assertIsNotNone(connectivity,'Typed Tailscale desktop controls are missing')

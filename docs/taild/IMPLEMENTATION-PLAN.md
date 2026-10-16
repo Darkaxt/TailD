@@ -1,6 +1,24 @@
 # TailD staged execution
 
-October 16 R32 delivery ACTIVE within Stage 10 following the user's "deploy".
+October 16 R32 corrective delivery ACTIVE within Stage 10. The user clarified that
+TailDrop must show only Enabled/Disabled, unknown hidden, without trailing
+punctuation; the +20 Offline/Presence unknown badges do not satisfy that intent.
+Backend/UI contracts and native rendering now pass: exact Enabled/Disabled
+labels, no trailing period, no unknown/offline badge or detail value. The native
+Debug-served production bundle main-HRZIBEZP.js passed at 100%/150%, alongside
+the held-query navigation, caching and responsive layouts. Focused backend,
+frontend contracts, type checks and production Angular/native Debug builds pass.
+Signing, public verification and local corrective delivery remain required under
+the outstanding deploy request. +20's signed release and continuity passed (run
+38928024212; source a6eec4ab629427ab26079a08d011a43121923b97; installer
+eea479bbe5b5444d94665d600036444cb988c9e42f1a10b78c31dd758af6aaed).
+Both services, resolver, public/MagicDNS, credentials, preferences, identity and
+history integrity passed. The old live DNS stream had required one explicit
+analytics stop/start to reconnect before installation; final enabled settings
+were preserved. The installed UI automation was cancelled when the user clarified
+its label expectation; it is not a passing native UI acceptance result.
+
+October 16 R32 original delivery record following the user's "deploy".
 The first release run 38927619365 correctly refused signing because one earlier
 inventory test expected the superseded generic TailDrop label for unknown
 presence. The test now explicitly requires Presence unknown and an unconfirmed
@@ -8,7 +26,8 @@ reason; focused inventory/connectivity checks pass. Production code and the
 native-verified UI assets are unchanged. Publication, independent public download
 verification and installed continuity/UI acceptance remain required.
 
-October 16 R32 acceptance COMPLETE within the sole ACTIVE Stage 10. Startup is
+October 16 R32 pre-clarification verification record within ACTIVE Stage 10;
+TailDrop label acceptance is superseded by the correction above. Startup is
 Connection; Overview loads in the background and retains revision/scope-bound
 progress and completed results across category navigation. The native held-read
 workflow proves responsive Preferences, return without another summary read,
