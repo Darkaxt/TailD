@@ -15,8 +15,21 @@ include shared-scope changes, denied endpoint reads, unsupported action toggles,
 coalesced searches and 560px layout. Type checks, production Angular/native Debug
 builds and affected backend/frontend checks passed. Native receipt/synthetic
 screenshots: D:/Tools/taild-stage10-validation-20261013/recent-r34-20261016.
-Current advancement blocker: publish and independently verify the authorized
-signed GitHub release at this source. Stage 10 remains ACTIVE.
+R34 release acceptance COMPLETE: normal release **1.105.0+22**, exact source
+021a8f7f113fa0cb6cf58e629c8254e171ae4fd3, passed all eight release jobs in
+38961286789. Independent public download verification passed pinned Ed25519
+release/package/core signatures, all 444 payload members, checksums, exact
+upstream/core identity, AMD64 binaries, SQLite 3.54.0, production debug-hook
+absence and byte-exact native-verified JavaScript/CSS (HTML equal except CRLF).
+Installer: 117303862 bytes, SHA256
+bf8ce84fbd6064e1348080765f0a03a32329fb93906a1c5a7fb99be38087e4d8.
+The GitHub tag points to that exact source; no local installation was performed.
+R34 has no remaining product blocker or tracked deferral. Broader desktop
+Stage 10/B12 remains ACTIVE; later Android/R33 work is unchanged.
+Task scratch cleanup passed reviewed transaction
+4dafd8a58813f3ed495e9ceda0e0513b: 727812591 bytes removed, ticket applied,
+no residual task root. Intentional verification receipts and synthetic captures
+remain at the evidence path above; release artifacts remain on GitHub.
 No later implementation stage is opened. GitHub publication is explicitly
 authorized after verification; no local installation is requested.
 
