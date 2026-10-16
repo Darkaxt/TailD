@@ -29,7 +29,7 @@ The screenshots contain no real accounts, browsing history or personal applicati
 | Local history | Opt-in independent collectors, ingestion progress, pause/resume, retention and deletion, coverage gaps, corrections and private JSON/CSV exports. |
 | TailDNS connectivity | Inherited DNS improvements, MagicDNS-aware resolution, the Windows tray, matching daemon/CLI, and installer/updater integration. |
 | Device control | Category-specific Connection, Preferences and DNS resolver pages; autosaved tray preferences, exit-node controls, and a persistent bottom-left About page. |
-| Tailscale activity · development main | Opt-in visible-device presence history, connection/exit-node/DNS-recovery observations, and durable TailDrop metadata, independent of Control D and GlassWire. |
+| Tailscale activity | Opt-in visible-device presence history, connection/exit-node/DNS-recovery observations, and durable TailDrop metadata, independent of Control D and GlassWire. |
 
 Control D remains responsible for its DNS filtering. GlassWire and Windows keep
 their firewall roles. TailD does not install another packet-filtering engine or
@@ -51,14 +51,23 @@ and Taildrop. These navigation/control additions are available starting with
 
 </details>
 
-### Tailscale-native history · unreleased development main
+### Tailscale-native history
 
 The Tailscale category now includes **Devices**, **Activity** and **TailDrop**.
 Track reported device presence and connection changes, inspect resolver recovery
 events, and retain daemon-reported transfer results. Collection is opt-in and
 requires no Control D token or GlassWire installation.
+The trackers are available from **1.105.0+16**. Current source additionally separates
+offline last-contact times from snapshot reads and hides starting snapshots from
+the default change timeline.
 
 ![Development TailD Devices: synthetic online and offline peer observations](docs/taild/screenshots/devices.png)
+
+Offline peers show Tailscale's supplied **Last online** time, not the time this
+page read their status. Activity shows actual recorded changes and observation
+gaps; starting snapshots remain available through an explicit option.
+
+![TailD Tailscale activity: recorded offline-to-online change, with starting snapshots hidden](docs/taild/screenshots/tailscale-activity.png)
 
 <details>
 <summary>TailDrop history</summary>

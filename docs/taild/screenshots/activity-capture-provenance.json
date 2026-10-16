@@ -4,14 +4,18 @@
   "native_served_url": "https://taild.local/index.html",
   "native_app_zoom": 100,
   "capture_date_utc": "2026-10-16",
-  "release_status": "unreleased development main",
+  "release_status": "presence semantics correction in development main; original native trackers released in +16",
   "assets_sha256": {
-    "main-XB45REMH.js": "43933f0f038105dc76b9339dc3afb1aa5cfc76579af81c7fee7cad66190c0983",
+    "main-I24A73FR.js": "580f4493e69860955be7d1a2523df633e8050bc9fea25dd5ef739110c1cae017",
     "chunk-7CGTOI24.js": "d5ef5dccc1adeed80f7d34612e1934f6aa2f814a0ce0e1170dc7b10381d644de",
     "chunk-CA5NCUVR.js": "48d96f44b597af53d106d494da2f01cea43781415dcc1f8cc6bcc76330691b47"
   },
   "screenshots_sha256": {
-    "devices.png": "e8364100aaa330bec3aee7fabb2f3d68ef20cd846f7e563da127963ce4eb5451",
-    "taildrop.png": "f2b1e173fd8a5cc0ae992b6968b8477e97fb87a006aaf87351362fa73202e06b"
+    "devices.png": "dc86b66870d914051bf79f6651e90ce6b3db3d0309c796efb11c6b414e68ff81",
+    "taildrop.png": "477dd5fcc7cc857227206cd347ab405bd2ae068df1fc39073e9b906ed7421027",
+    "tailscale-activity.png": "0ca16ef56b9b49b29d4d2cca898e695c5fa1ce02bdf8bdd8b6b2025862046a8b"
+  },
+  "source_sha256": {
+    "tailscale_activity.py": "290356fadf27f123c0440ee7ca3c9687a9aaa2675c0d7affa3139fa4603a7145"
   }
 }

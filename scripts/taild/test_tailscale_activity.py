@@ -71,6 +71,40 @@ class ActivityTest(unittest.TestCase):
         self.assertIn('received-by-daemon',[r['result'] for r in rows])
         self.assertNotIn('PRIVATE',json.dumps(rows));self.assertNotIn('C:',json.dumps(rows))
 
+    def test_offline_snapshot_is_not_activity_or_last_online_contact(self):
+        status={'Peer':{'key':{'ID':'offline','HostName':'Tablet','Online':False,
+            'LastSeen':'2026-10-16T13:00:00+03:00'}}}
+        self.tracker.snapshot('a',status,{},NOW)
+        self.tracker.snapshot('a',status,{},LATER)
+        row=self.view('devices')['rows'][0]
+        self.assertEqual(row.get('last_seen'),'2026-10-16T10:00:00.000000000Z')
+        self.assertNotEqual(row['last_seen'],row['observed_at'])
+        self.assertEqual(self.view()['rows'],[],'An initial offline status is not device activity')
+        initial=activity.read(self.store,{'view':'events','include_baselines':True},LATER)
+        self.assertEqual(sum(e['type']=='peer-baseline' for e in initial['rows']),1)
+        status['Peer']['key'].update(Online=True)
+        self.tracker.snapshot('a',status,{},LATER)
+        self.assertIsNone(self.view('devices')['rows'][0].get('last_seen'))
+        events=self.view()['rows']
+        self.assertEqual(len(events),1)
+        self.assertEqual(events[0]['type'],'peer-presence')
+        self.assertEqual(events[0]['value']['from'],'offline')
+        self.assertEqual(events[0]['value']['to'],'online')
+        for value in (None,'invalid','0001-01-01T00:00:00Z'):
+            status['Peer']['key'].update(Online=False,LastSeen=value)
+            self.tracker.snapshot('a',status,{},LATER)
+            self.assertIsNone(self.view('devices')['rows'][0].get('last_seen'))
+
+    def test_baselines_do_not_crowd_real_changes_out_of_the_default_bounded_view(self):
+        self.snapshot();self.snapshot(online=False)
+        with self.store.transaction():
+            for i in range(220):self.tracker._event('a','peer-baseline',{'presence':'offline','id':str(i)},LATER)
+        rows=self.view()['rows']
+        self.assertEqual(len(rows),1)
+        self.assertEqual(rows[0]['type'],'peer-presence')
+        self.assertTrue(activity.read(self.store,{'view':'events','include_baselines':True},LATER)['truncated'])
+        with self.assertRaises(ValueError):activity.read(self.store,{'include_baselines':1},LATER)
+
     def test_failure_health_and_delete_replay_suppression(self):
         self.snapshot(health={'Warnings':{'local-dns-encrypted-recovery':{'Text':'PRIVATE'}}})
         self.snapshot(health={'Warnings':{}})

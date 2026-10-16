@@ -12,12 +12,18 @@ from validate_analytics_windows import NativeSession,populate,settled,capture_pr
 
 
 class FixtureStream:
+    current=None
     def __init__(self):self.stopped=threading.Event()
     def cancel(self):self.stopped.set()
+    def online(self):
+        self.status['Peer']['b']['Online']=True
+        self.receive('snapshot','fixture-profile',(self.status,{},None))
     def run(self,receive,connected):
-        receive('snapshot','fixture-profile',({'BackendState':'Running','Peer':{
+        FixtureStream.current=self;self.receive=receive
+        self.status={'BackendState':'Running','Peer':{
             'a':{'ID':'fixture-phone','HostName':'Fixture phone','OS':'android','Online':True},
-            'b':{'ID':'fixture-tablet','HostName':'Fixture tablet','OS':'android','Online':False}}},
+            'b':{'ID':'fixture-tablet','HostName':'Fixture tablet','OS':'android','Online':False,'LastSeen':'2026-10-13T09:00:00Z'}}}
+        receive('snapshot','fixture-profile',(self.status,
             {'Configured':True,'Applied':True,'CaptivePortal':False},{'Warnings':None}))
         receive('notify','fixture-profile',{'OutgoingFiles':[
             {'ID':'completed','Name':r'C:\private\Fixture sent.txt','PeerID':'fixture-phone','Started':END,
@@ -64,9 +70,22 @@ def run(shell,output,live=False,live_only=False):
                     page.locator('#activity-reload').click();ready(page)
                     expect(page.locator('#activity-source')).to_have_text('connected')
                     expect(page.locator('#tailscale-history-table tbody tr')).to_have_count(2)
+                    offline=page.locator('#tailscale-history-table tbody tr').filter(has_text='Fixture tablet')
+                    expect(offline.locator('td').nth(3)).to_have_text(page.evaluate("new Date('2026-10-13T09:00:00Z').toLocaleString()"))
+                    expect(page.locator('#tailscale-history-table tbody tr').filter(has_text='Fixture phone').locator('td').nth(3)).to_have_text('Online now')
+                    expect(page.locator('#tailscale-history-table thead')).to_contain_text('Last online')
                     capture_preview(session,root/'devices.png')
                     page.locator('#nav-tailscale-activity').click();ready(page)
+                    expect(page.locator('#tailscale-history-table')).to_contain_text('No changes recorded')
+                    page.locator('#activity-include-baselines').check();ready(page)
                     expect(page.locator('#tailscale-history-table')).to_contain_text('peer-baseline')
+                    expect(page.locator('#tailscale-history-table')).to_contain_text('already offline in starting snapshot')
+                    page.locator('#activity-include-baselines').uncheck();ready(page)
+                    expect(page.locator('#tailscale-history-table')).to_contain_text('No changes recorded')
+                    FixtureStream.current.online()
+                    page.locator('#activity-reload').click();ready(page)
+                    expect(page.locator('#tailscale-history-table')).to_contain_text('peer-presence')
+                    expect(page.locator('#tailscale-history-table')).not_to_contain_text('peer-baseline')
                     capture_preview(session,root/'activity.png')
                     page.locator('#nav-taildrop').click();ready(page)
                     expect(page.locator('#tailscale-history-table tbody tr')).to_have_count(3)
@@ -129,6 +148,7 @@ def run(shell,output,live=False,live_only=False):
                 # Private real observations stay only in this local evidence folder.
                 capture_preview(session,root/'devices-private.png')
                 page.locator('#nav-tailscale-activity').click();ready(page)
+                page.locator('#activity-include-baselines').check();ready(page)
                 expect(page.locator('#tailscale-history-table')).to_contain_text('peer-baseline')
                 page.locator('#activity-enabled').uncheck();ready(page)
                 reports.append({'real_read_only':True,'watch_connected':True,'native_visible_peer_rows':count,

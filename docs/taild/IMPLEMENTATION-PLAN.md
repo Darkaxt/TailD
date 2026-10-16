@@ -1,5 +1,46 @@
 # TailD staged execution
 
+October 16 delivery and presence-semantics correction: +16 is published from
+cd369cccac7d241d64ea0f5bc93b0fb598373540 (workflow 38832561398, all jobs successful)
+and installed in place (installer exit 0). Independent public verification covers
+444 members, pinned envelope/package/core signatures, source/core/upstream and
+amd64. Installer digest e1fbed8ff7f5207c74ff03f510317c2963f6db82f911785382e52f7100ed4eaa.
+Installed node/signer/preferences/credentials/custom resolver, public DNS and
+MagicDNS pass; both services run. Existing history identity is unchanged and
+quick_check=ok. DNS counts decreased while traffic grew; rolling seven-day expiry
+and complete source-range reconciliation invalidate a monotonic-count assertion;
+individual expired/reconciled rows were not captured in the baseline. No reset.
+Automatic updates restored to their original enabled setting. The actual installed
+tray callback restores the same minimized native window without a duplicate or
+popup; Devices renders 19 peers. The UIA observer's exact-name assumptions did not
+match Chromium's accessible status/cell text and were cancelled, not accepted as
+product failures or completed Activity/TailDrop acceptance.
+
+Stage 10 remains the sole ACTIVE stage. R30 presence correction verified in source:
+LastSeen passes through the existing store/read/native view; online and unavailable
+states are explicit. Starting snapshots are filtered before LIMIT by default,
+with an explicit inclusion control. Offline repetition, real reported changes,
+Go zero/malformed timestamps, legacy records and crowded baseline windows pass
+focused regressions. Native-served 100%/150% acceptance covers initial empty
+timeline, opt-in snapshots, simulated transition, Last online labels, transfers,
+keyboard, 560px layout and real READ-only daemon observation of 19 peers. No
+page errors; private receipt presence-semantics-20261016/activity.json. TypeScript,
+production Angular and native builds pass. Runtime checks passed except a single
+host connection-abort in unchanged negative-HTTP coverage; isolated reproduction
+then passed, with no timeout/retry workaround or production change. README gallery
+is refreshed with synthetic data only. Refactoring assessment: existing protocol,
+snapshot store, query and widgets suffice; no new infrastructure or deferral.
+Corrected release/public download/installed acceptance remain pending and block
+delivery; broader B12 remains unchanged.
+
+Original correction blocker (resolved in source): snapshot
+timestamps and starting offline states are presented as activity, and LastSeen is
+not carried through. Internal; resolve the complete collector/store/read/UI
+semantics correction and verify native populated/empty states before closing this
+increment. No extra stage, generalized abstraction or required deferral. Existing
+B12 remains unchanged. Public +16 remains the recoverable installed release while
+the correction is implemented; do not claim the semantics fix already deployed.
+
 October 16 R29/R30 implementation and verification reconciliation. Stage 10 is
 still the sole ACTIVE stage; broader B12 delivery/updater acceptance is unchanged.
 Authorization: the October 16 "lets deploy" instruction resumes delivery after

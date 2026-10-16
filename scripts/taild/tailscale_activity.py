@@ -112,8 +112,10 @@ class Tracker:
                 key=history.digest(['activity-device',profile,raw['ID']]);current.add(key)
                 old=self._get(key)
                 state='online' if raw.get('Online') is True else 'offline' if raw.get('Online') is False else 'unknown'
+                last_seen=started_at(raw.get('LastSeen')) if state=='offline' else None
+                if last_seen and last_seen.startswith('0001-'):last_seen=None  # Go zero time, not contact evidence.
                 item={'id':raw['ID'],'name':text(raw.get('HostName')) or text(raw.get('DNSName')) or raw['ID'],
-                    'os':text(raw.get('OS')),'presence':state,'observed_at':at}
+                    'os':text(raw.get('OS')),'presence':state,'observed_at':at,'last_seen':last_seen}
                 if baseline or old is None or old['presence']=='unknown' and state!='unknown':
                     self._event(profile,'peer-baseline',{k:item[k] for k in ('id','name','os','presence')},at)
                 if not baseline and old and old['presence']!='unknown' and old['presence']!=state:
@@ -193,15 +195,19 @@ class Tracker:
 
 
 def read(store,body,now):
-    if not isinstance(body,dict) or set(body)-{'view','profile','start','end','search'}:raise ValueError('invalid-query')
+    if not isinstance(body,dict) or set(body)-{'view','profile','start','end','search','include_baselines'}:raise ValueError('invalid-query')
     kind={'devices':'activity-device','events':'activity-event','transfers':'activity-transfer'}.get(body.get('view','events'))
     if not kind:raise ValueError('invalid-query')
     search=body.get('search','');profile=body.get('profile','')
     if text(search,128) is None or text(profile) is None:raise ValueError('invalid-query')
+    include_baselines=body.get('include_baselines',False)
+    if type(include_baselines) is not bool:raise ValueError('invalid-query')
     end=history.instant(body.get('end',now));start=history.instant(body.get('start',history.utc(end-7*86400*1000000)))
     if start>=end:raise ValueError('invalid-query')
     floor=retention_floor(store,now)
     args=[kind,max(start,floor),end];where='kind=? AND time>=? AND time<=?'
+    if kind=='activity-event' and not include_baselines:
+        where+=" AND json_extract(data,'$.type') NOT IN ('peer-baseline','baseline') AND coalesce(json_extract(data,'$.value.baseline'),0)=0"
     if profile:where+=' AND scope=?';args.append(profile)
     if search:where+=' AND instr(lower(data),lower(?))>0';args.append(search)
     rows=store.db.execute('SELECT scope,data FROM snapshots WHERE '+where+' ORDER BY time DESC,id LIMIT 201',args).fetchall()

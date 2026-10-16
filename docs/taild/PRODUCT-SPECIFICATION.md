@@ -1069,6 +1069,19 @@ authorizes the normal signed public Windows release and local laptop upgrade of
 the verified R29/R30 result, preserving identity, settings, history and rollback.
 It does not authorize Android deployment or unrelated provider/device changes.
 
+October 16 presence-semantics correction: an offline peer appearing in a status
+snapshot is not device activity at that timestamp. Preserve starting snapshots
+as provenance, but exclude them from the default Activity timeline with an
+explicit "Include starting snapshots" option. Default activity shows actual
+observed changes and observation gaps, never invented transitions before tracking.
+Devices must distinguish daemon-reported presence from LastSeen (the core's
+last control-plane contact, supplied only for offline peers). Show "Online now"
+for online peers, the supplied last-seen timestamp for offline peers, or unknown
+when absent/invalid. Never substitute the current snapshot timestamp for last
+online contact. Re-reading unchanged offline state must not create an activity
+entry. Verify offline baseline, repeated snapshot, true online/offline changes,
+legacy records without LastSeen and native rendered labels/empty state.
+
 Add opt-in Tailscale activity tracking to the existing owning-user collector,
 independent of GlassWire and Control D. Use supported READ-only LocalAPI status,
 IPN notification and custom resolver status interfaces. A cancellable Windows

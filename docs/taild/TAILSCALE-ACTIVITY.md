@@ -1,8 +1,8 @@
 # Tailscale activity and TailDrop
 
-Development main adds **Devices**, **Activity** and **TailDrop** to the Tailscale
-category. These additions and the minimized-window/layout corrections are not in
-the published 1.105.0+15 installer. Deployment remains intentionally stopped.
+Release **1.105.0+16** adds **Devices**, **Activity** and **TailDrop** to the
+Tailscale category, together with minimized-window/layout corrections. Development
+main additionally corrects offline last-contact and starting-snapshot semantics.
 
 Enable **Track Tailscale activity** on any of those pages. It is off by default,
 requires neither Control D credentials nor GlassWire, and keeps collecting when
@@ -19,8 +19,12 @@ The existing global collector pause/resume and retention controls still apply.
 
 ## Reading the history
 
-Devices shows the latest observation per visible peer and profile. Activity
-preserves baseline presence and subsequent reported transitions. Online means
+Devices shows daemon-reported presence per visible peer and profile. **Last online**
+is Tailscale's supplied last control-plane contact for offline peers, **Online now**
+for online peers, or explicitly unavailable for missing/legacy metadata. Reading
+an offline snapshot now is not device activity now. Activity defaults to observed
+changes and gaps; **Include starting snapshots** reveals initial state separately.
+Starting snapshots are retained as provenance, not fabricated transitions. Online means
 connected to the control plane, not necessarily reachable. Missing peers and
 subscription gaps become **unknown**, never fabricated offline transitions.
 Restart/reconnection starts a fresh baseline rather than filling an uptime gap.
