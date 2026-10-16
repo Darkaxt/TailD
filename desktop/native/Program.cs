@@ -165,15 +165,29 @@ internal sealed class CollectionWindow : Form
     private const string Origin="https://taild.local/index.html";
     [DllImport("dwmapi.dll")]
     private static extern int DwmSetWindowAttribute(IntPtr handle,int attribute,ref int value,int size);
+    [DllImport("user32.dll",CharSet=CharSet.Unicode,SetLastError=true)]
+    [return:MarshalAs(UnmanagedType.Bool)]
+    private static extern bool SetProp(IntPtr handle,string name,IntPtr value);
+    [DllImport("user32.dll",CharSet=CharSet.Unicode)]
+    private static extern IntPtr RemoveProp(IntPtr handle,string name);
     protected override void OnHandleCreated(EventArgs e)
     {
         base.OnHandleCreated(e);
+        // The owning-user launcher can identify this precise instance without
+        // opening the analytics pipe already held by this window.
+        if(!SetProp(Handle,"Darkaxt.TailD.Instance."+instance,(IntPtr)1))
+            throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
         // Match the reference shell's dark native theme while preserving Windows
         // resize, keyboard system-menu, minimize/maximize and accessibility.
         int dark=1,caption=0x1e1e1f,text=0xf6f7f9;
         DwmSetWindowAttribute(Handle,20,ref dark,sizeof(int));
         DwmSetWindowAttribute(Handle,35,ref caption,sizeof(int));
         DwmSetWindowAttribute(Handle,36,ref text,sizeof(int));
+    }
+    protected override void OnHandleDestroyed(EventArgs e)
+    {
+        RemoveProp(Handle,"Darkaxt.TailD.Instance."+instance);
+        base.OnHandleDestroyed(e);
     }
     public CollectionWindow(string instance,uint pid,string data,Dictionary<string,string> supplied)
     {

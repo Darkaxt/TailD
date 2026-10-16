@@ -1,5 +1,34 @@
 # TailD staged execution
 
+October 16 resumed +17 deployment: request cead897eb27c42db9f596c1237a3a9dc
+(ticket 22) completed with installer exit 0. Installed identity/source and full
+package verification pass; node, tailnet signing identity, credentials, resolver,
+settings and physical history identity are preserved. Public/MagicDNS resolution
+and live Control D collection pass; history quick_check=ok, WAL, DNS +85 and
+traffic unchanged across the upgrade. AutoUpdate.Apply restored to true after
+verification. The native Devices/Activity/TailDrop pages render the corrected
+labels and change-only timeline with tracking left off as before.
+
+R29 advancement blocker (internal; Stage 10 remains ACTIVE): normal shortcut
+reopening of that minimized native window still raises the packaged startup
+popup. Exact source reproduction confirms server_pid opens the analytics pipe
+already occupied by the existing window and fails with Windows error 231 before
+native singleton handling. Resolve by restoring only the same-owner, exact-shell,
+same-instance native window before collector discovery; no new collector, close
+notification, retries or timeout. Verify identity rejection, bypass of the occupied
+pipe and real frozen minimized-window activation before claiming this path fixed.
+The installed +17 VPN/collector is healthy; this is not an activation rollback.
+
+Source correction: the native HWND now publishes/removes its instance identity;
+the ordinary launcher checks that property plus exact shell path and owner SID,
+keeps the verified process handle through restoration, rechecks the HWND's PID
+and returns before collector discovery. Focused regressions cover the previously
+failing occupied-pipe path, owner/path/instance rejection and changed PID. Native
+Release compilation succeeds against locked dependencies in task-owned scratch.
+No startup timer, retries, new service or collection/configuration mutation was
+added. Real frozen activation still blocks installed acceptance; the next signed
+matching package will receive that check before completion. Broader B12 remains.
+
 October 16 +17 delivery: workflow 38835859897 passed all eight jobs at exact
 da9164323bb50ea1d3ca455aa4d55210ab65ba0d. Normal public release windows-v1.105.0+17
 is independently downloaded and verified: pinned signatures/checksums, 444 payload

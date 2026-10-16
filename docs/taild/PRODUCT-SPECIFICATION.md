@@ -1051,6 +1051,14 @@ identity. Verify generated source Unicode, the real minimized-window activation
 path, and no collector/settings/credential changes. The observed +15 overlay hash
 matches CP1252 transcoding with Windows CRLF output, confirming this build defect.
 
+October 16 normal-launch correction: the Start-menu/owning-user launcher must
+also restore the matching minimized native window before collector discovery.
+The existing window holds the analytics pipe; Windows pipe-busy error 231 is
+not a startup failure in this case. Bind activation to current owner SID, exact
+native executable and instance identity. Do not open another collector, send a
+window-closed notification for a restored window, retry an occupied pipe or use
+a timeout. Preserve the existing tray activation and first-launch paths.
+
 Correct Bandwidth history geometry and remove unallocated grid holes after the
 map's independent-height correction. Preserve the Portmaster-derived widgets,
 Tailscale theme, source/unknown semantics, 560px minimum and 100%/150% app zoom.
