@@ -1,6 +1,35 @@
 # TailD staged execution
 
-October 16 R32 corrective delivery ACTIVE within Stage 10. The user clarified that
+October 16 R32 corrective delivery acceptance COMPLETE within ACTIVE Stage 10.
+Normal release **1.105.0+21** at exact source
+d2173ff4d91c1c8b0908dbc173fd32b287e25698 passed all eight release jobs in
+38932747636. Independent public verification passed pinned Ed25519 envelope,
+package/core manifests, all 444 payload members, exact upstream 1.105.0/core pin,
+AMD64 executables, SQLite 3.54.0 and exact native-verified JS/CSS. Installer SHA256
+586e4d95ba692ae84366572bf0874dbbc91dc4d00c19a1ef2f99b8daa3a3eab3
+(117300906 bytes). Broker request 8bccc2b4b6094532a07370deb17ece8e completed
+with installer exit 0 and verified +20 to +21 continuity: both services Running,
+unchanged node/addresses/signing keys, credentials, preferences and resolver,
+public DNS/MagicDNS and live DNS connected. The same history inode remained in
+WAL with quick_check=ok, with continued traffic/DNS ingestion. The ordinary
+launcher restored the same minimized native window with exit 0 and no duplicate.
+An actual installed screenshot confirms Connection boot and an offline device
+without a TailDrop badge. The UIA child-tree observer was unavailable and is not
+claimed as semantic readiness evidence; native Debug rendering and exact public/
+installed assets provide the label/layout proof. Broader B12 remains open.
+
+Final scratch cleanup has an external Windows-permission blocker, not a product
+failure. Reviewed transaction 3a4e0401c80ba9c5ac877734dae3877c removed all
+776754804 file bytes, but four administrator-owned installer directories and
+three containing directory entries remain under the exact task root
+D:/Temp/taild-deployment20-20261016. Existing ticket
+8a86eb5ee1f7c6d4b2689e7a8cae22c40c02fe7e2618aba16d6e0cbb10c97d3d
+is partially applied. Broker request 8c4872fd527d43dabf62f7c579239cf7 awaits
+the operator's Accept before retrying that same ticket elevated, without ACL
+changes or application/data access. Cleanup is not claimed complete; observe
+the original queued request and verify applied state after the decision.
+
+The user clarified that
 TailDrop must show only Enabled/Disabled, unknown hidden, without trailing
 punctuation; the +20 Offline/Presence unknown badges do not satisfy that intent.
 Backend/UI contracts and native rendering now pass: exact Enabled/Disabled
@@ -8,8 +37,8 @@ labels, no trailing period, no unknown/offline badge or detail value. The native
 Debug-served production bundle main-HRZIBEZP.js passed at 100%/150%, alongside
 the held-query navigation, caching and responsive layouts. Focused backend,
 frontend contracts, type checks and production Angular/native Debug builds pass.
-Signing, public verification and local corrective delivery remain required under
-the outstanding deploy request. +20's signed release and continuity passed (run
+Signing, public verification and local corrective delivery passed as above.
+Previous +20's signed release and continuity passed (run
 38928024212; source a6eec4ab629427ab26079a08d011a43121923b97; installer
 eea479bbe5b5444d94665d600036444cb988c9e42f1a10b78c31dd758af6aaed).
 Both services, resolver, public/MagicDNS, credentials, preferences, identity and
@@ -23,8 +52,9 @@ The first release run 38927619365 correctly refused signing because one earlier
 inventory test expected the superseded generic TailDrop label for unknown
 presence. The test now explicitly requires Presence unknown and an unconfirmed
 reason; focused inventory/connectivity checks pass. Production code and the
-native-verified UI assets are unchanged. Publication, independent public download
-verification and installed continuity/UI acceptance remain required.
+native-verified UI assets were unchanged by that test correction. This historical
+delivery gap is resolved by the +20/+21 evidence above; its old TailDrop labels
+are superseded by the user's subsequent Enabled/Disabled-only clarification.
 
 October 16 R32 pre-clarification verification record within ACTIVE Stage 10;
 TailDrop label acceptance is superseded by the correction above. Startup is
