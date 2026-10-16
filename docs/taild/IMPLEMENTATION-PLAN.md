@@ -1,5 +1,30 @@
 # TailD staged execution
 
+## October 16 R34 correction within ACTIVE desktop Stage 10
+
+R34 in PRODUCT-SPECIFICATION.md owns restored-window Recent DNS reachability,
+decision-label search, contextual direct Block/Allow actions and the floating
+Edit dialog. Local implementation and verification passed: actual native window
+resizing at 100%/150%, searchable decision labels, contextual actions, dialog
+geometry/focus/Escape, explicit save, fresh prepare/apply/readback, conflict and
+uncertain-write rejection without retry, retained historical decisions and
+unchanged profile-review controls. The original table measured zero height at
+1264x761 and 1008x729 client sizes; the corrected list retains 160–196px minimum
+and grows into available space with internal scrolling. Profile regressions
+include shared-scope changes, denied endpoint reads, unsupported action toggles,
+coalesced searches and 560px layout. Type checks, production Angular/native Debug
+builds and affected backend/frontend checks passed. Native receipt/synthetic
+screenshots: D:/Tools/taild-stage10-validation-20261013/recent-r34-20261016.
+Current advancement blocker: publish and independently verify the authorized
+signed GitHub release at this source. Stage 10 remains ACTIVE.
+No later implementation stage is opened. GitHub publication is explicitly
+authorized after verification; no local installation is requested.
+
+Closure assessment: the existing one-use management transaction remains the
+single policy-write path; row actions reuse it without opening a preview.
+The editor's former navigation/inline form path is removed. No material
+current-scope consolidation or additional tracked deferral is required.
+
 ## October 16 required later scope — R33
 
 Current desktop Stage 10 remains the single ACTIVE implementation stage. The

@@ -1,6 +1,30 @@
 # TailD remaining-product specification
 
-Version 1.10, 2026-10-16. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.11, 2026-10-16. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+
+October 16 R34 corrective scope: Recent DNS must remain usable in restored native
+windows, including 1440x900, 1280x800, 1024x768 and app-local 150% zoom. Preserve
+a usable list area and scroll reachability rather than letting flex layout collapse
+the table. Search matches visible decision labels and canonical outcomes as well
+as domains, case-insensitively, under the existing endpoint/account/time bounds.
+A filtered empty result says no matches, not no stored activity.
+
+The user explicitly replaces incident-row preview/checkbox confirmation with
+direct Block/Allow buttons. Allowed rows show Block; blocked rows show Allow;
+other outcomes retain both. A compact accessible Edit tool icon sits beside them.
+Only Edit opens the rule details editor, as a floating dialog that does not resize
+or navigate away from the list. Save is explicit; dismiss restores focus and retains
+list/search/scroll state. Other profile-management writes retain their review,
+rendered in a floating dialog rather than consuming list space.
+
+Direct actions still use fresh account/profile/affected-endpoint checks, one-use
+transactions and verified policy readback; no automatic retries. Reject stale
+row profiles and changed shared-profile scope. Show pending/success/error inline;
+never rewrite historical DNS decisions to imply the new policy applied earlier.
+Native validation must exercise searches, restored-window geometry, contextual
+buttons, dialog focus/keyboard dismissal, direct writes and conflict/failure paths.
+The user authorizes a GitHub release after verification; local installation is
+not requested by this amendment. Existing signed/public-artifact gates apply.
 
 October 16 R33 amendment: the user requires cross-platform app/IP traffic audit,
 equal-weight inferred domain attribution and explicit app blocking after the

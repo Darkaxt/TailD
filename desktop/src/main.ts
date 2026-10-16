@@ -229,7 +229,7 @@ const fields:Record<Kind,string[]>={
         <button id="open-query" [disabled]="busy()||!savedSelection" (click)="openSaved()">Open</button><button [disabled]="busy()||!savedSelection" (click)="removeSaved()">Remove</button></div>
     </section>
 
-    <taild-control-d *ngIf="category()==='controld'&&page()!=='About'" [section]="page()==='Control D policy'?'policy':'recent'" (sectionChange)="navigate('Control D policy')" />
+    <taild-control-d *ngIf="category()==='controld'&&page()!=='About'" [section]="page()==='Control D policy'?'policy':'recent'" />
     <taild-connectivity *ngIf="['Connection','Preferences','DNS resolver'].includes(page())" [view]="page()" />
     <taild-analytics-preference *ngIf="page()==='Preferences'" />
     <taild-tailscale-activity *ngIf="['Tailscale activity','TailDrop'].includes(page())" [view]="page()" (preferences)="navigate('Preferences')" />

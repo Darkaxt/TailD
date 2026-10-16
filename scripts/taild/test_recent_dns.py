@@ -20,10 +20,10 @@ class RecentDNSTest(unittest.TestCase):
         clock=patch('recent_dns.controld.utc_now',return_value=self.now)
         clock.start();self.addCleanup(clock.stop)
 
-    def seed(self,question,seconds=1,account='current',endpoint='device'):
+    def seed(self,question,seconds=1,account='current',endpoint='device',action='0'):
         observed=(self.now-timedelta(seconds=seconds)).isoformat()
         self.store.import_live_dns({'timestamp':observed,'endpointId':endpoint,
-            'question':question,'rrType':'A','action':'0','profileId':'profile'},account,endpoint,collected=self.now.isoformat())
+            'question':question,'rrType':'A','action':action,'profileId':'profile'},account,endpoint,collected=self.now.isoformat())
 
     def read(self,body=None):
         with closing(self.store.read_view()) as view:
@@ -48,6 +48,24 @@ class RecentDNSTest(unittest.TestCase):
             result=self.read({'search':'blocked-example'})
         self.assertEqual([r['question'] for r in result['rows']],['blocked-example.invalid'])
         self.assertEqual(self.store.db.execute('SELECT revision FROM settings').fetchone()[0],revision)
+
+    def test_visible_decision_labels_and_canonical_values_are_searchable(self):
+        for name,action in [('deny.example','0'),('permit.example','1'),('reroute.example','2'),('error.example','-1'),('unclassified.example','99')]:
+            self.seed(name,action=action)
+        for text,expected in [('Blocked','deny.example'),('bLoCk','deny.example'),('Allowed','permit.example'),
+                              ('Bypass','permit.example'),('Redirected','reroute.example'),
+                              ('Request failed','error.example'),('Unknown','unclassified.example')]:
+            with self.subTest(text=text):
+                self.assertEqual([r['question'] for r in self.read({'search':text})['rows']],[expected])
+
+    def test_search_is_or_across_domain_and_decision_and_retains_scope(self):
+        self.seed('blocked-in-name.example',action='1')
+        self.seed('other.example',action='0')
+        self.seed('foreign.example',account='foreign',action='0')
+        self.seed('old.example',seconds=901,action='0')
+        self.assertEqual({r['question'] for r in self.read({'search':'Blocked'})['rows']},
+                         {'blocked-in-name.example','other.example'})
+        self.assertEqual(self.read({'search':'not-present'})['rows'],[])
 
     def test_unconfigured_or_untyped_requests_are_rejected(self):
         with closing(self.store.read_view()) as view:

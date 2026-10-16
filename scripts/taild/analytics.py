@@ -22,6 +22,7 @@ VERSION='taild-metrics-v3'
 OUTCOME_VERSION='controld-action-v1'
 # https://docs.controld.com/docs/log-field-reference, Control D action enum.
 OUTCOMES={'-1':'failed','0':'block','1':'allow','2':'redirect','3':'redirect'}
+OUTCOME_LABELS={'allow':'Allowed · Bypass','block':'Blocked','redirect':'Redirected','failed':'Request failed','unknown':'Unknown'}
 CORRELATION_VERSION='same-endpoint-answer-ip-preceding-context-v1'
 CONTEXT_FIELDS=frozenset(('source','captured_at_utc','observed_until_utc','coverage_method',
     'node_id','user_id','os','backend_state','dns_accepted','local_override','resolver_endpoint',
@@ -789,6 +790,7 @@ class Analytics:
     def _search(row,text):
         if not text: return True
         values=[row.get(f) for f in ('application_path','destination_ip','question','endpoint','reason','node_id','resolver_endpoint')]
+        if 'outcome' in row:values.extend((row['outcome'],OUTCOME_LABELS.get(row['outcome'],'Unknown')))
         values.extend(c['question'] for c in row.get('candidates',[]))
         return any(text.casefold() in v.casefold() for v in values if isinstance(v,str))
 

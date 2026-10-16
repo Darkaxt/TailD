@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-import {Component,OnDestroy,Input,Output,EventEmitter,signal} from '@angular/core';
+import {Component,OnDestroy,Input,ViewChild,ElementRef,signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {command} from './bridge';
@@ -13,7 +13,7 @@ type RecordValue=Record<string,any>;
   <section class="incident-workspace" aria-label="Control D incident management" [attr.aria-busy]="busy()">
     <div class="error" role="alert" *ngIf="error()">{{error()}}</div>
     <div class="incident-progress" role="status" *ngIf="busy()"><div class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>{{activity()}}</div>
-    <div role="status" class="hint" *ngIf="notice()">{{notice()}}</div>
+    <div role="status" class="hint incident-notice" *ngIf="notice()">{{notice()}}</div>
     <app-dashboard-widget label="Control D · incident workspace" brand="controld" id="management-binding">
       <div class="incident-binding">
         <label>Endpoint<select id="management-endpoint" [(ngModel)]="endpoint" (change)="load()" [disabled]="busy()">
@@ -39,13 +39,29 @@ type RecordValue=Record<string,any>;
       <div class="table-scroll incident-table"><table><thead><tr><th>Time</th><th>Question</th><th>Decision / reason</th><th>Profile</th><th>Incident actions</th></tr></thead><tbody>
         <tr *ngFor="let r of recentRows()"><td>{{time(r.timestamp)}}</td><td>{{r.question}} <small>{{r.type}}</small></td><td><strong class="decision-badge" [ngClass]="decisionClass(r.outcome)">{{decisionLabel(r.outcome)}}</strong><p>{{reason(r)}}</p>
           <details><summary>Decision details</summary><p class="hint">Classification: {{categories(r).join(', ')||'Not supplied'}}</p><p class="hint">Category labels describe the domain; the provider trigger above identifies the decision cause. Names from current policy are display labels, not historical policy proof.</p><taild-evidence [data]="r.fact" /></details></td><td>{{r.profile}}</td>
-          <td class="actions"><button (click)="incident(r,0)" [disabled]="busy()||!snapshot()||!!preview()||r.profile!==snapshot()?.profile">Block</button>
-            <button (click)="incident(r,1)" [disabled]="busy()||!snapshot()||!!preview()||r.profile!==snapshot()?.profile">Allow</button>
-            <button (click)="editQuestion(r)" [disabled]="busy()||!snapshot()||!!preview()||r.profile!==snapshot()?.profile">Edit rule</button></td></tr>
+          <td class="actions"><button *ngIf="r.outcome!=='block'" (click)="incident(r,0)" [disabled]="busy()||!snapshot()||r.profile!==snapshot()?.profile" title="Block this domain in the shared profile">Block</button>
+            <button *ngIf="r.outcome!=='allow'" (click)="incident(r,1)" [disabled]="busy()||!snapshot()||r.profile!==snapshot()?.profile" title="Allow this domain with a Bypass rule in the shared profile">Allow</button>
+            <button class="icon-button edit-rule-icon" (click)="editQuestion(r)" [disabled]="busy()||!snapshot()||r.profile!==snapshot()?.profile" [attr.aria-label]="'Edit rule for '+r.question" title="Edit rule"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m14 5 5 5M4 20l5-1L20 8a2.8 2.8 0 0 0-4-4L5 15l-1 5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" /></svg></button></td></tr>
       </tbody></table></div>
-      <p class="empty-state" *ngIf="!recentRows().length&&!reading()&&!recentError()">No stored resolutions in this endpoint's recent window. Check its last activity and the collection binding; this is not proof of no DNS traffic.</p>
+      <p class="empty-state" *ngIf="!recentRows().length&&!reading()&&!recentError()">{{dnsSearch?'No resolutions match this search in the selected endpoint’s recent window. Clear the search to see stored activity.':'No stored resolutions in this endpoint’s recent window. Check its last activity and the collection binding; this is not proof of no DNS traffic.'}}</p>
       </div><p class="hint">Actions require current policy verification and a matching event profile. Policy loading does not block reading resolutions.</p>
     </app-dashboard-widget>
+    <dialog #policyDialog class="incident-dialog" [attr.aria-label]="editing()?'Edit policy rule':'Review policy change'" (cancel)="dismiss($event)">
+    <div class="incident-dialog-header"><h2>{{editing()?'Edit policy rule':'Review policy change'}}</h2><button class="icon-button" aria-label="Close policy dialog" (click)="dismiss()" [disabled]="busy()">×</button></div>
+    <div *ngIf="error()" class="error" role="alert">{{error()}}</div>
+    <p *ngIf="busy()" role="status">{{activity()}}</p>
+    <div *ngIf="editing()">
+      <p>Profile {{profileName()}} · {{affected().length}} affected endpoint(s)</p>
+      <div class="incident-endpoints"><span class="filter-pill" *ngFor="let d of affected()">{{d.name}}</span></div>
+      <p class="hint">Saving changes this shared profile. Allow creates a Bypass rule and can override filter blocks.</p>
+      <form class="incident-rule-form" (ngSubmit)="prepareRule()">
+        <label>Hostname<input id="incident-hostname" name="hostname" [(ngModel)]="hostname" maxlength="253" required [disabled]="busy()"></label>
+        <label>Action<select name="ruleAction" [(ngModel)]="ruleAction" [disabled]="busy()"><option [ngValue]="-1" disabled>Choose Block or Bypass</option><option [ngValue]="0">Block</option><option [ngValue]="1">Allow · Bypass</option></select></label>
+        <label class="rule-comment">Comment<input id="incident-comment" name="comment" [(ngModel)]="comment" maxlength="64" [disabled]="busy()"></label>
+        <div class="actions"><button type="button" (click)="dismiss()" [disabled]="busy()">Cancel</button><button id="incident-save-rule" type="submit" [disabled]="busy()||!hostname.trim()||ruleAction<0">Save rule</button></div>
+      </form>
+      <taild-evidence [data]="editingRule()" />
+    </div>
     <app-dashboard-widget *ngIf="preview() as p" label="Review policy change" id="management-preview">
       <h2>{{p.change.delete?'Delete rule':p.change.kind==='rule'?(p.change.do===1?'Allow · explicit Bypass':'Block'):'Update '+p.change.kind}} · {{p.change.hostname || p.change.id}}</h2>
       <p>Profile {{p.profile}} · {{p.affected_endpoints.length}} affected endpoint(s)</p>
@@ -55,18 +71,14 @@ type RecordValue=Record<string,any>;
       <div class="actions"><button id="management-apply" (click)="apply()" [disabled]="busy()||!confirmed">Apply change</button>
         <button (click)="cancel()" [disabled]="busy()">Cancel</button></div>
     </app-dashboard-widget>
+    </dialog>
     <nav class="incident-tabs" aria-label="Profile sections" *ngIf="snapshot()&&section==='policy'">
       <button *ngFor="let t of tabs" [attr.aria-pressed]="tab()===t" [class.active]="tab()===t" (click)="tab.set(t)">{{t}}</button>
     </nav>
     <app-dashboard-widget *ngIf="snapshot()&&section==='policy'" [label]="tab()" brand="controld" id="management-policy">
       <fieldset class="incident-controls" [disabled]="busy()||!!preview()">
         <ng-container *ngIf="tab()==='Rules'">
-          <form class="incident-rule-form" (ngSubmit)="prepareRule()">
-            <label>Hostname<input id="incident-hostname" name="hostname" [(ngModel)]="hostname" placeholder="example.com" maxlength="253" required></label>
-            <label>Action<select name="ruleAction" [(ngModel)]="ruleAction"><option [ngValue]="-1" disabled>Choose Block or Bypass</option><option [ngValue]="0">Block</option><option [ngValue]="1">Allow · Bypass</option></select></label>
-            <label>Comment<input name="comment" [(ngModel)]="comment" maxlength="64"></label>
-            <button id="incident-preview-rule" type="submit" [disabled]="!hostname.trim()||ruleAction<0">Preview rule</button>
-          </form>
+          <button id="incident-new-rule" (click)="editRule({PK:'',action:{do:0}})">New rule</button>
           <label>Find rules<input id="management-rule-search" [(ngModel)]="ruleSearch" placeholder="Search hostnames"></label>
           <p class="hint" *ngIf="resourceState('rules')!=='available'">{{resourceState('rules')}} · rules cannot be edited.</p>
           <div class="table-scroll incident-table"><table><thead><tr><th>Hostname</th><th>Action</th><th>Enabled</th><th>Incident actions</th></tr></thead><tbody>
@@ -108,9 +120,10 @@ type RecordValue=Record<string,any>;
       <taild-evidence [data]="policyHistory()" /></details>
   </section>`})
 export class ControlDManagement implements OnDestroy {
-  @Input() section:'recent'|'policy'='recent';@Output() sectionChange=new EventEmitter<void>();
+  @Input() section:'recent'|'policy'='recent';@ViewChild('policyDialog') policyDialog?:ElementRef<HTMLDialogElement>;
   tabs=['Rules','Filters','Services','Profile Options'];tab=signal('Rules');snapshot=signal<RecordValue|null>(null);
   preview=signal<RecordValue|null>(null);busy=signal(false);reading=signal(false);error=signal('');notice=signal('');activity=signal('');
+  editing=signal(false);editingRule=signal<RecordValue|null>(null);
   recentRows=signal<RecordValue[]>([]);recentError=signal('');liveState=signal('not observed');policyHistory=signal<RecordValue|null>(null);
   endpoint='';hostname='';ruleAction=0;comment='';ruleSearch='';serviceSearch='';dnsSearch='';confirmed=false;observe=true;
   private disposed=false;private timer?:number;private generation=0;private pendingRecent=false;private knownDevices:RecordValue[]=[];
@@ -142,18 +155,33 @@ export class ControlDManagement implements OnDestroy {
     catch(e){if(!this.disposed)this.error.set((e as Error).message)}finally{this.busy.set(false)}
   }
   async prepare(change:RecordValue){if(this.busy()||this.preview()||!this.snapshot()||this.endpoint!==this.snapshot()?.endpoint)return;this.busy.set(true);this.activity.set('Checking account, current policy and affected endpoints…');this.error.set('');this.notice.set('');
-    try{const p=await command<RecordValue>('management-prepare',{endpoint:this.endpoint,change});if(!this.disposed){this.preview.set(p);this.confirmed=false;requestAnimationFrame(()=>document.getElementById('management-confirm')?.focus())}}
+    try{const p=await command<RecordValue>('management-prepare',{endpoint:this.endpoint,change});if(!this.disposed){this.preview.set(p);this.confirmed=false;this.openDialog('management-confirm')}}
     catch(e){if(!this.disposed)this.error.set((e as Error).message)}finally{this.busy.set(false)}
   }
-  prepareRule(){void this.prepare({kind:'rule',hostname:this.hostname.trim(),do:this.ruleAction,status:1,comment:this.comment})}
-  editRule(r:RecordValue){this.hostname=r.PK;this.ruleAction=r.action?.do===0?0:r.action?.do===1?1:-1;this.comment=r.comment||'';this.tab.set('Rules');this.sectionChange.emit();requestAnimationFrame(()=>document.getElementById('incident-hostname')?.focus())}
+  prepareRule(){void this.commitRule({kind:'rule',hostname:this.hostname.trim(),do:this.ruleAction,status:1,comment:this.comment})}
+  private openDialog(focus:string){requestAnimationFrame(()=>{if(this.disposed)return;const dialog=this.policyDialog?.nativeElement;if(dialog&&!dialog.open)dialog.showModal();document.getElementById(focus)?.focus()})}
+  async dismiss(event?:Event){event?.preventDefault();if(this.busy())return;this.policyDialog?.nativeElement.close();this.editing.set(false);this.editingRule.set(null);if(this.preview())await this.cancel()}
+  editRule(r:RecordValue){if(this.busy())return;this.hostname=r.PK;this.ruleAction=r.action?.do===0?0:r.action?.do===1?1:-1;this.comment=r.comment||'';this.editingRule.set(r);this.editing.set(true);this.openDialog('incident-hostname')}
   editQuestion(r:RecordValue){this.editRule(this.resource('rules').find(rule=>rule.PK===r.question)||{PK:r.question,action:{do:1}})}
-  incident(r:RecordValue,action:number){void this.prepare({kind:'rule',hostname:r.question,do:action,status:1,comment:'TailD incident'})}
+  incident(r:RecordValue,action:number){if(r.profile!==this.snapshot()?.profile)return;void this.commitRule({kind:'rule',hostname:r.question,do:action,status:1,comment:this.resource('rules').find(rule=>rule.PK===r.question)?.comment||'TailD incident'})}
+  private async commitRule(change:RecordValue){
+    const current=this.snapshot();if(this.busy()||!current||this.endpoint!==current.endpoint)return;
+    this.busy.set(true);this.error.set('');this.notice.set('');this.activity.set('Checking current policy, applying once and verifying…');
+    try{
+      const prepared=await command<RecordValue>('management-prepare',{endpoint:this.endpoint,change});
+      const ids=(rows:RecordValue[])=>rows.map(d=>d.id).sort().join('\n');
+      if(this.disposed||prepared.profile!==current.profile||ids(prepared.affected_endpoints)!==ids(current.affected_endpoints)){
+        await command('management-cancel');if(!this.disposed)throw new Error('The profile or its affected devices changed. Reload before making another change.');return;
+      }
+      const result=await command<RecordValue>('management-apply',{ticket:prepared.ticket,confirm:true});
+      if(!this.disposed){this.accept(result.snapshot);this.notice.set((change.do===1?'Bypass':'Block')+' rule applied for '+change.hostname+'; shared profile read back.');this.policyDialog?.nativeElement.close();this.editing.set(false);this.editingRule.set(null)}
+    }catch(e){if(!this.disposed)this.error.set((e as Error).message)}finally{this.busy.set(false)}
+  }
   async apply(){const p=this.preview();if(!p||!this.confirmed||this.busy())return;this.busy.set(true);this.activity.set('Applying once, then reading back policy…');this.error.set('');
     try{const result=await command<RecordValue>('management-apply',{ticket:p.ticket,confirm:true});if(!this.disposed){this.accept(result.snapshot);this.notice.set('Change applied and current policy read back.')}}
-    catch(e){if(!this.disposed)this.error.set((e as Error).message)}finally{this.preview.set(null);this.confirmed=false;this.busy.set(false)}
+    catch(e){if(!this.disposed)this.error.set((e as Error).message)}finally{this.policyDialog?.nativeElement.close();this.preview.set(null);this.confirmed=false;this.busy.set(false)}
   }
-  async cancel(){if(this.busy())return;this.preview.set(null);this.confirmed=false;try{await command('management-cancel')}catch(e){this.error.set((e as Error).message)}}
+  async cancel(){if(this.busy())return;this.policyDialog?.nativeElement.close();this.preview.set(null);this.confirmed=false;try{await command('management-cancel')}catch(e){this.error.set((e as Error).message)}}
   searchChanged(value:string){this.dnsSearch=value;this.recentRows.set([]);void this.recent()}
   async recent(){if(this.disposed)return;if(this.reading()){this.pendingRecent=true;return;}
     this.pendingRecent=false;this.reading.set(true);this.recentError.set('');const generation=this.generation,endpoint=this.endpoint,search=this.dnsSearch;

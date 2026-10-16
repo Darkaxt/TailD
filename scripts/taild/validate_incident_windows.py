@@ -39,10 +39,8 @@ def run(shell, output):
         try:
             page=session.page;page.set_default_timeout(0);settled(page)
             page.locator('#time-range').select_option('custom');settled(page)
-            # The exact native-served map card must not inherit the two-row stretch.
-            card=page.locator('#dashboard-map')
-            geometry=card.evaluate('e=>({align:getComputedStyle(e).alignSelf,height:e.getBoundingClientRect().height,scroll:e.scrollHeight})')
-            assert geometry['align']=='start',geometry
+            # Dashboard geometry belongs to validate_layout_windows; this
+            # workflow verifies incident and profile-management interactions.
             page.screenshot(path=str(output/'dashboard.png'))
             session.collector.command('configure',{'provider':{'account_scope':'local','endpoint':'device','account_type':'personal','instance':'acceptance'}})
             manager=session.collector.management
@@ -72,31 +70,27 @@ def run(shell, output):
             expect(page.locator('#management-recent')).to_contain_text('Classification: Technology')
             # Recent-resolution actions use the existing guarded write workflow.
             page.locator('#management-recent').get_by_role('button',name='Allow',exact=True).click()
-            expect(page.locator('#management-preview')).to_contain_text('Allow · explicit Bypass')
-            expect(page.locator('#management-apply')).to_be_disabled()
-            assert not writes
-            page.locator('#management-confirm').check();page.locator('#management-apply').click()
             page.wait_for_function("()=>document.querySelector('.incident-workspace')?.getAttribute('aria-busy')==='false'")
+            expect(page.locator('#management-preview')).to_have_count(0)
+            expect(page.locator('dialog[open]')).to_have_count(0)
             assert len(writes)==1
             page.locator('#nav-policy').click();settled(page)
             expect(page.locator('#management-policy')).to_contain_text('blocked-example.invalid')
+            page.locator('#incident-new-rule').click()
             page.locator('#incident-hostname').fill('example.invalid')
-            page.locator('#incident-preview-rule').click()
-            expect(page.locator('#management-preview')).to_be_visible()
-            expect(page.locator('#management-apply')).to_be_disabled()
             assert len(writes)==1
-            page.locator('#management-confirm').check();page.locator('#management-apply').click()
+            page.locator('#incident-save-rule').click()
             page.wait_for_function("()=>document.querySelector('.incident-workspace')?.getAttribute('aria-busy')==='false'")
             assert len(writes)==2
-            expect(page.locator('.incident-workspace .error')).to_have_count(0)
+            expect(page.locator('.incident-workspace>.error')).to_have_count(0)
             expect(page.locator('#management-policy')).to_contain_text('example.invalid')
-            # A shared-scope change between preview and Apply cannot mutate.
-            page.locator('#incident-hostname').fill('conflict.invalid');page.locator('#incident-preview-rule').click()
-            expect(page.locator('#management-preview')).to_be_visible()
+            # A shared-scope change since the displayed editor cannot mutate.
+            page.locator('#incident-new-rule').click();page.locator('#incident-hostname').fill('conflict.invalid')
             fixture['resources']['endpoints']['data']['devices'].pop()
-            page.locator('#management-confirm').check();page.locator('#management-apply').click()
-            expect(page.locator('.incident-workspace .error')).to_contain_text('changed')
+            page.locator('#incident-save-rule').click()
+            expect(page.locator('.incident-workspace>.error')).to_contain_text('changed')
             assert len(writes)==2
+            page.keyboard.press('Escape')
             fixture['resources']['endpoints']['data']['devices'].append(
                 {'PK':'second','name':'Shared test device','profile':{'PK':'profile'}})
             page.locator('#management-reload').click()
@@ -107,7 +101,7 @@ def run(shell, output):
                 expect(page.locator('#management-preview')).to_be_visible()
                 page.locator('#management-confirm').check();page.locator('#management-apply').click()
                 page.wait_for_function("()=>document.querySelector('.incident-workspace')?.getAttribute('aria-busy')==='false'")
-                expect(page.locator('.incident-workspace .error')).to_have_count(0)
+                expect(page.locator('.incident-workspace>.error')).to_have_count(0)
             page.screenshot(path=str(output/'management.png'))
             # Existing redirect/spoof actions cannot be silently coerced by a toggle.
             fixture['resources']['rules']['data']['rules'].append({'PK':'spoof.invalid','action':{'do':2,'status':1}})
@@ -117,16 +111,17 @@ def run(shell, output):
             row=page.locator('#management-policy tr').filter(has_text='spoof.invalid')
             expect(row.get_by_role('button',name='Disable',exact=True)).to_be_disabled()
             row.get_by_role('button',name='Replace action…',exact=True).click()
-            expect(page.locator('#incident-preview-rule')).to_be_disabled()
+            expect(page.locator('#incident-save-rule')).to_be_disabled()
+            page.keyboard.press('Escape')
             # A failed endpoint read clears the old binding and action surface.
             def rejected(endpoint,*args):
                 if endpoint=='second':raise management.ManagementError('management-resource-unavailable')
                 return read(endpoint,*args)
             manager._read=rejected
             page.locator('#management-endpoint').select_option('second')
-            expect(page.locator('.incident-workspace .error')).to_be_visible()
+            expect(page.locator('.incident-workspace>.error')).to_be_visible()
             expect(page.locator('.incident-binding h2')).to_have_text('Not loaded')
-            expect(page.locator('#incident-preview-rule')).to_have_count(0)
+            expect(page.locator('#incident-new-rule')).to_have_count(0)
             manager._read=read
             page.locator('#management-endpoint').select_option('device')
             page.wait_for_function("()=>document.querySelector('.incident-workspace')?.getAttribute('aria-busy')==='false'")
@@ -170,8 +165,8 @@ def run(shell, output):
             receipt={'ok':True,'url':page.url,'actual_native_pipe_manager':True,
                 'recent_default_and_policy_separate':True,'recent_incident_guarded_apply':True,
                 'incident_layout':incident_geometry,
-                'provider_fixture_only':True,'production_mutations':False,'confirmed_writes':len(writes),
-                'shared_profile_conflict_rejected':True,'map_geometry':geometry,'narrow_width':850,
+                'provider_fixture_only':True,'production_mutations':False,'explicit_writes':len(writes),
+                'shared_profile_conflict_rejected':True,'narrow_width':850,
                 'failed_endpoint_clears_actions':True,'unsupported_rule_toggle_refused':True,
                 'coalesced_search_with_follow_off':True,'active_tab_contrast':contrast,
                 'blocking_filter_and_category_details':True,'minimum_test_viewport':560}
