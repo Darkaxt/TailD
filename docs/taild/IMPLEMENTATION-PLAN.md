@@ -25,12 +25,44 @@ succeeded, then correctly refused sequence 23 replay. Original lock ownership
 was not established; no production workaround or anti-replay reset was applied.
 The +22 reader and ordinary collector/window were restored. Evidence:
 D:/Tools/taild-stage10-validation-20261013/release-23.
-The user explicitly authorized "Release and deploy +24". Delivery acceptance is
-pending +24 publication/public verification, explicit process quiescence,
-ordinary broker-approved upgrade and preservation/health readback. Unchanged
-isolated installer evidence from run 38977684748 may be reused only through the
-workflow exact-tree gate. This deployment gap is an advancement blocker within
-ACTIVE Stage 10, not a future-stage deferral.
+The user explicitly authorized "Release and deploy +24". Product release and
+deployment acceptance COMPLETE for **1.105.0+24**, exact source
+04176348bc7b4988601fb15c5969eea87db183d9, run **38979910317**. Every required
+release gate passed; unchanged isolated installer acceptance was reused from
+38977684748 only after the workflow's exact-tree check. Independent public
+verification passed pinned Ed25519 envelope/package/core signatures, checksums,
+all 444 payload members, production debug-hook absence and exact native-tested
+UI assets. Installer SHA256:
+fd457a09d53d1dd575c56973f0135296a6195733b4859e9eea3d311cc598660d.
+
+Accepted administrator request b6b086894dc0437892fc75c836e37115 and the ordinary
+installer both exited 0 after explicit process exit and exact file-access checks.
+Readback verified node/addresses, signing/trusted keys, profile, credentials,
+preferences, resolver and collection settings preserved; public/MagicDNS and
+both services healthy. Collector collecting and live DNS connected were checked
+after installation and again after ordinary window/launcher exit, then the single
+native window was reopened. Installed frontend bytes match native-tested assets.
+Installed UI verification is Win32 activation plus asset identity, not production
+DOM instrumentation or a real Control D policy write.
+
+A live read-only history audit reported malformed data before installation.
+No database repair/reset was applied. After graceful owner exit, a retained exact
+recovery snapshot and original quiescent integrity/count checks passed. Consistent
+quiescent before/after audits verified healthy WAL and the same history inode;
+new DNS/traffic observations arrived, traffic increased 853 rows, and DNS decreased
+403 with the seven-day expiry floor and earliest observation advancing. Exact
+live-read cause remains unestablished, as does the original +23 image-lock owner;
+these observations remain visible within broader B12, which is still ACTIVE.
+
+Evidence: D:/Tools/taild-stage10-validation-20261013/release-24. +23 disposable
+scratch cleanup completed. +24 cleanup removed all 390568366 file bytes, but four
+empty directory entries remain: the installed helper returned locked for the
+{app} leaf even in accepted administrator request 141bc609871342c1b2097bb605fb0277.
+Cleanup is externally blocked on that exact leaf becoming removable; its valid
+partial ticket c82f162f44edf291d49027262d1fbe17cd386f45f87966698f7e0bca4686103a
+is retained. No alternate deletion/ACL change was attempted. The previously
+declined +22 cleanup was not retried. This ancillary cleanup is not COMPLETE;
+the verified release/deployment result above does not claim all of Stage 10 closed.
 Closure review found no new write path, obsolete action-column path or material
 current-scope consolidation need.
 
