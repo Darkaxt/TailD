@@ -209,7 +209,11 @@ caption{text-align:left;font-size:11px;color:var(--text-tertiary);padding:8px}.i
 .incident-dialog .incident-rule-form{grid-template-columns:minmax(0,2fr) minmax(0,1fr);margin-top:16px}
 .incident-dialog .incident-rule-form .rule-comment,.incident-dialog .incident-rule-form .actions{grid-column:1/-1}
 .incident-dialog .incident-rule-form label{min-width:0}.incident-dialog .incident-rule-form .actions{justify-content:flex-end}
-.incident-notice{color:var(--info-green)}.incident-table .edit-rule-icon{width:32px;min-width:32px;height:32px;padding:6px}
+.incident-notice{color:var(--info-green)}
+.decision-heading{display:flex;align-items:center;gap:8px;width:max-content}
+.decision-actions{display:inline-flex;align-items:center;gap:6px}
+.decision-actions .icon-button{width:32px;min-width:32px;height:32px;padding:6px}
+.decision-action-allow{color:var(--info-green)}.decision-action-block{color:var(--info-red)}
 @media(max-width:850px){.incident-rule-form{grid-template-columns:1fr 1fr}.incident-binding label{min-width:0;width:100%}.incident-table td{max-width:220px}}
 @media(max-width:560px){.incident-rule-form{grid-template-columns:1fr}}
 #dashboard-stats .mini-stats-list{grid-template-columns:repeat(3,minmax(0,1fr))}

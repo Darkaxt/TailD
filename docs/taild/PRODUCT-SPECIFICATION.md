@@ -1,6 +1,14 @@
 # TailD remaining-product specification
 
-Version 1.11, 2026-10-16. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.12, 2026-10-17. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+
+October 17 R35: remove the separate Recent DNS incident-actions column. Each row
+has Time, Question, Decision / reason and Profile cells; put its contextual actions
+beside the decision badge. Allow uses a tick icon, Block a circle/slash forbid
+icon, and Edit keeps its tool icon. Preserve accessible button names, descriptive
+tooltips, keyboard focus, direct-action safety and the floating editor. Verify the
+actual native-served layout at restored sizes and 150% zoom, including narrow
+scroll reachability, with no changes to collection or provider-policy semantics.
 
 October 16 R34 corrective scope: Recent DNS must remain usable in restored native
 windows, including 1440x900, 1280x800, 1024x768 and app-local 150% zoom. Preserve

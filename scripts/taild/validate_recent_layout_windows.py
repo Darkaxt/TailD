@@ -22,6 +22,8 @@ def measure(page):
       return {viewport:{width:innerWidth,height:innerHeight,dpr:devicePixelRatio},
         list:rect(list),panel:rect(document.querySelector('#management-recent')),
         scroll:{height:list.scrollHeight,client:list.clientHeight},
+        decisions:[...document.querySelectorAll('#management-recent tbody .decision-heading')].slice(0,6).map(e=>({
+          badge:rect(e.querySelector('.decision-badge')),actions:rect(e.querySelector('.decision-actions'))})),
         overflow:document.documentElement.scrollWidth>innerWidth,
         mainOverflow:getComputedStyle(document.querySelector('main')).overflowY};}''')
 
@@ -79,6 +81,12 @@ def run(shell,output,diagnostic=False):
                 session.collector._commit(seed);page.locator('#nav-3').click();ready(page)
                 page.get_by_label('Follow recent activity',exact=True).uncheck()
                 expect(page.locator('#management-recent tbody tr')).to_have_count(36)
+                expect(page.locator('#management-recent thead th')).to_have_text(['Time','Question','Decision / reason','Profile'])
+                for row in page.locator('#management-recent tbody tr').all():
+                    expect(row.locator('td')).to_have_count(4)
+                    icons=row.locator('.decision-heading button')
+                    assert icons.count() in (2,3)
+                    assert icons.evaluate_all('(buttons)=>buttons.every(b=>!b.textContent.trim()&&b.querySelector("svg")&&b.getAttribute("aria-label")&&b.title)')
                 layouts=[]
                 for width,height in ((1424,861),(1264,761),(1008,729),(1904,1041),(884,701),(784,561)):
                     resize(session,width,height);layout=measure(page);layouts.append(layout)
@@ -86,12 +94,19 @@ def run(shell,output,diagnostic=False):
                     assert layout['list']['height']>=120,layout
                     assert layout['list']['height']<=max(220,layout['viewport']['height']),layout
                     assert layout['scroll']['height']>layout['scroll']['client'],layout
+                    for decision in layout['decisions']:
+                        badge,actions=decision['badge'],decision['actions']
+                        assert actions['x']>=badge['x']+badge['width']+7,decision
+                        assert abs((actions['y']+actions['height']/2)-(badge['y']+badge['height']/2))<1,decision
                     assert not layout['overflow'],layout
                     last=page.locator('#management-recent tbody tr').last
                     last.scroll_into_view_if_needed();expect(last).to_be_in_viewport()
                     page.locator('#incident-dns-search').scroll_into_view_if_needed()
                     expect(page.locator('#incident-dns-search')).to_be_in_viewport()
-                resize(session,1424,861);capture_preview(session,root/'restored.png')
+                resize(session,1424,861)
+                page.locator('#incident-dns-search').scroll_into_view_if_needed()
+                page.locator('#management-recent .incident-table').evaluate('e=>e.scrollTop=0')
+                capture_preview(session,root/'restored.png')
                 if diagnostic:
                     reports.append({'zoom':zoom,'layouts':layouts});continue
                 for text,count in [('Blocked',6),('Allowed',6),('bYpAsS',6),('Redirected',12),('Request failed',6),('Unknown',6)]:
@@ -103,6 +118,7 @@ def run(shell,output,diagnostic=False):
                 row=page.locator('#management-recent tbody tr');expect(row).to_have_count(1)
                 expect(row.get_by_role('button',name='Block',exact=True)).to_have_count(0)
                 expect(row.get_by_role('button',name='Allow',exact=True)).to_have_count(1)
+                expect(row.get_by_role('button',name='Allow',exact=True).locator('svg path')).to_have_attribute('d','m5 12 4 4L19 6')
                 before=measure(page);row.get_by_role('button',name='Edit rule for host-0.example',exact=True).click()
                 dialog=page.get_by_role('dialog',name='Edit policy rule',exact=True);expect(dialog).to_be_visible()
                 expect(page.locator('#incident-hostname')).to_be_focused()
@@ -110,7 +126,8 @@ def run(shell,output,diagnostic=False):
                 capture_preview(session,root/'edit-floating.png');page.keyboard.press('Escape')
                 expect(dialog).not_to_be_visible();expect(row.get_by_role('button',name='Edit rule for host-0.example',exact=True)).to_be_focused()
                 expect(page.locator('#incident-dns-search')).to_have_value('host-0.example')
-                before_reads=len(reads);row.get_by_role('button',name='Allow',exact=True).click();ready(page)
+                before_reads=len(reads);row.get_by_role('button',name='Allow',exact=True).focus()
+                row.get_by_role('button',name='Allow',exact=True).press('Enter');ready(page)
                 expect(page.locator('.incident-workspace>.incident-notice')).to_contain_text('Bypass rule applied')
                 assert len(writes)==1 and writes[-1]['payload']['do']==1,writes
                 assert len(reads)>=before_reads+3,reads
@@ -118,6 +135,7 @@ def run(shell,output,diagnostic=False):
                 expect(row.locator('.decision-badge')).to_have_text('Blocked')
                 page.locator('#incident-dns-search').fill('host-1.example');expect(row).to_have_count(1)
                 expect(row.get_by_role('button',name='Allow',exact=True)).to_have_count(0)
+                expect(row.get_by_role('button',name='Block',exact=True).locator('svg circle')).to_have_count(1)
                 row.get_by_role('button',name='Block',exact=True).click();ready(page)
                 assert len(writes)==2 and writes[-1]['payload']['do']==0,writes
                 row.get_by_role('button',name='Edit rule for host-1.example',exact=True).click()

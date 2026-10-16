@@ -1,5 +1,23 @@
 # TailD staged execution
 
+## October 17 R35 inline decision controls within ACTIVE desktop Stage 10
+
+R35 replaces the Recent DNS Actions column with tick/forbid/Edit icons beside
+the decision badge. R35 implementation acceptance COMPLETE: four actual rendered
+table columns; icon-only tick/forbid/Edit controls retain accessible names,
+tooltips and keyboard focus. Measured icon groups remain adjacent to the badge
+at six real restored native window sizes at both 100% and 150%, including narrow
+sizes; the existing table scroller handles constrained widths. Native workflow
+passes keyboard Allow, direct Block, floating Edit/save/Escape/focus, searches,
+conflict/uncertain-outcome rejection without retry and list reachability. Type
+checks, frontend contracts and production Angular/native Debug builds passed;
+native-verified frontend source matches the checkout. Evidence/synthetic captures:
+D:/Tools/taild-stage10-validation-20261013/inline-actions-r35-20261017.
+No current-scope implementation blocker or deferral remains; broader Stage 10/B12
+is still ACTIVE. No new release or installation is claimed by this local result.
+Closure review found no new write path, obsolete action-column path or material
+current-scope consolidation need.
+
 ## October 16 R34 correction within ACTIVE desktop Stage 10
 
 R34 in PRODUCT-SPECIFICATION.md owns restored-window Recent DNS reachability,
