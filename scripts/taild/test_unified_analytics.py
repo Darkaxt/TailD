@@ -78,7 +78,9 @@ class LiveInventoryTest(unittest.TestCase):
         daemon=DaemonFixture();daemon.status['Peer']['x'].update(Online=None,LastSeen='0001-01-01T00:00:00Z')
         row=connectivity.Connectivity(None,call=daemon).read()['peers'][0]
         self.assertIsNone(row['online']);self.assertIsNone(row['last_seen'])
-        self.assertEqual(row['taildrop'],'Not reported');self.assertEqual(row['ssh'],'Not reported')
+        self.assertEqual(row['taildrop'],'Presence unknown')
+        self.assertIn('unconfirmed',row['taildrop_reason'])
+        self.assertEqual(row['ssh'],'Not reported')
 
 
 if __name__=='__main__':unittest.main()

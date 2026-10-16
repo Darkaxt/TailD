@@ -1,5 +1,13 @@
 # TailD staged execution
 
+October 16 R32 delivery ACTIVE within Stage 10 following the user's "deploy".
+The first release run 38927619365 correctly refused signing because one earlier
+inventory test expected the superseded generic TailDrop label for unknown
+presence. The test now explicitly requires Presence unknown and an unconfirmed
+reason; focused inventory/connectivity checks pass. Production code and the
+native-verified UI assets are unchanged. Publication, independent public download
+verification and installed continuity/UI acceptance remain required.
+
 October 16 R32 acceptance COMPLETE within the sole ACTIVE Stage 10. Startup is
 Connection; Overview loads in the background and retains revision/scope-bound
 progress and completed results across category navigation. The native held-read

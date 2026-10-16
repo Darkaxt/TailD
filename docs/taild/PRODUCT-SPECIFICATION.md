@@ -1075,6 +1075,12 @@ production packaging build. Preserve VPN/DNS identity/settings, policy mutation
 review and signing/update/rollback contracts. Implementation and commit/sync are
 authorized; this amendment alone does not authorize another live installation.
 
+October 16 subsequent user instruction "deploy" authorizes R32's normal signed
+public release and in-place Windows installation, preserving identity, provider
+settings, credentials, analytics history and automatic-update preferences. Verify
+the exact public payload independently before installation and verify the actual
+installed services, DNS continuity and dashboard afterward. No Android changes.
+
 ### R31 — Unified analytics preference and live connection inventory
 
 October 16 user amendment, owned by the existing ACTIVE Stage 10: replace
