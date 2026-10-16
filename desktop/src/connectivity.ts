@@ -8,7 +8,9 @@ import {SfngToggleSwitchComponent} from './portmaster/toggle';
 import {BrandMark} from './brand-mark';
 
 interface Preference {id:string;label:string;value:boolean;visible:boolean;editable:boolean}
-interface Peer {id:string;name:string;addresses:string[];online:boolean;exit:boolean}
+interface Peer {id:string;name:string;addresses:string[];online:boolean|null;exit:boolean;exit_selected:boolean;
+  owner:string|null;os:string|null;last_seen:string|null;created:string|null;key_expiry:string|null;
+  tags:string[];routes:string[];taildrop:string;taildrop_reason:string|null;ssh:string;dns_name:string|null}
 interface ConnectivityState {revision:string;profile:string;account:string;state:string;device:string;addresses:string[];
   preferences:Preference[];prefs:{WantRunning:boolean;ExitNodeID:string;ExitNodeAllowLANAccess:boolean;RunExitNode:boolean};
   resolver:{Configured:boolean;Endpoint:string;Applied:boolean;CaptivePortal:boolean;Reason:string};
@@ -37,9 +39,20 @@ interface ConnectivityState {revision:string;profile:string;account:string;state
           <p class="hint">Only the selected route preference changes. Tailnet identity and signing keys are retained.</p>
         </app-dashboard-widget>
         <app-dashboard-widget label="Network devices" brand="tailscale" class="wide" *ngIf="s.show_peers">
-          <div class="table-scroll"><table><thead><tr><th>Device</th><th>Tailscale addresses</th><th>Status</th></tr></thead><tbody>
-            <tr *ngFor="let peer of s.peers"><td>{{peer.name}}</td><td>{{peer.addresses.join(' · ')}}</td><td><span class="badge" [class.good]="peer.online">{{peer.online?'Online':'Offline'}}</span></td></tr></tbody></table></div>
-          <p *ngIf="!s.peers.length" class="hint">No peer devices reported by the local daemon.</p>
+          <label class="search-input">Find a device<input id="device-search" [(ngModel)]="deviceSearch" placeholder="Name, owner, address or tag…"></label>
+          <div class="table-scroll"><table id="connection-devices"><thead><tr><th>Device / capabilities</th><th>Addresses</th><th>OS</th><th>Presence / last online</th></tr></thead><tbody>
+            <tr *ngFor="let peer of visiblePeers()"><td><strong>{{peer.name}}</strong><small class="identity-id">{{peer.owner||'Owner not reported'}}</small>
+              <div class="device-badges"><span class="badge" *ngIf="peer.exit">{{peer.exit_selected?'Selected exit node':'Exit node'}}</span><span class="badge" *ngIf="peer.routes.length">Subnet router</span>
+                <span class="badge" [class.good]="peer.taildrop==='Available'" [title]="peer.taildrop_reason||'Current send eligibility reported by this daemon'">TailDrop · {{peer.taildrop}}</span>
+                <span class="badge" *ngIf="peer.ssh==='Advertised'">SSH advertised</span><span class="badge" *ngFor="let tag of peer.tags">{{tag}}</span></div>
+              <details class="device-metadata"><summary>Details</summary><dl><dt>Device ID</dt><dd>{{peer.id}}</dd><dt>DNS name</dt><dd>{{peer.dns_name||'Not reported'}}</dd>
+                <dt>Registered</dt><dd>{{time(peer.created)}}</dd><dt>Key expiry</dt><dd>{{time(peer.key_expiry)}}</dd><dt>Reported subnet routes</dt><dd>{{peer.routes.join(' · ')||'None reported'}}</dd>
+                <dt>TailDrop</dt><dd>{{peer.taildrop_reason||peer.taildrop}}</dd><dt>SSH capability</dt><dd>{{peer.ssh}} · not a reachability test</dd></dl></details></td>
+              <td><code *ngFor="let address of peer.addresses" class="device-address">{{address}}</code></td><td>{{peer.os||'Not reported'}}</td>
+              <td><span class="badge" [class.good]="peer.online===true">{{peer.online===true?'Online':peer.online===false?'Offline':'Unknown'}}</span>
+                <small class="identity-id">{{peer.online===true?'Online now':time(peer.last_seen)}}</small></td></tr></tbody></table></div>
+          <p *ngIf="!visiblePeers().length" class="hint">No devices match this view.</p>
+          <p class="hint">Live local-daemon inventory · independent of analytics recording. Online means connected to the control plane, not ping reachability. Client versions, detailed OS versions and signing-node roles require additional admin metadata; missing values are not disabled features.</p>
         </app-dashboard-widget>
       </div>
       <app-dashboard-widget label="Device preferences" brand="tailscale" *ngIf="view==='Preferences'">
@@ -65,9 +78,13 @@ interface ConnectivityState {revision:string;profile:string;account:string;state
     </section>
   </section>`})
 export class Connectivity {
+  deviceSearch='';
   @Input() view='Connection';state=signal<ConnectivityState|null>(null);busy=signal(false);error=signal('');notice=signal('');confirming=signal<'reset'|'disconnect'|null>(null);endpoint='';
   constructor(){void this.load()}
   exitNodes(){return this.state()?.peers.filter(peer=>peer.exit)||[]}
+  visiblePeers(){const search=this.deviceSearch.trim().toLocaleLowerCase();return (this.state()?.peers||[]).filter(peer=>
+    !search||[peer.name,peer.owner,...peer.addresses,...peer.tags].some(value=>value?.toLocaleLowerCase().includes(search)))}
+  time(value:string|null){return value?new Date(value).toLocaleString():'Not reported in this live snapshot'}
   dnsAccepted(){return this.state()?.preferences.find(pref=>pref.id==='use-dns')?.value===true}
   async load(){if(this.busy())return;this.busy.set(true);this.error.set('');this.confirming.set(null);
     try{const s=await command<ConnectivityState>('connectivity-read');this.state.set(s);this.endpoint=s.resolver.Endpoint||''}

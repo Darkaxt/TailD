@@ -42,7 +42,7 @@ profile policy is a separate tab. The tray remains available for account sign-in
 and Taildrop. These navigation/control additions are available starting with
 **1.105.0+11**.
 
-![TailD Tailscale category: existing device connection, exit-node controls and network devices](docs/taild/screenshots/connection.png)
+![TailD Preferences: VPN settings and one Collect analytics recording preference](docs/taild/screenshots/preferences.png)
 
 <details>
 <summary>Device DNS resolver</summary>
@@ -53,15 +53,17 @@ and Taildrop. These navigation/control additions are available starting with
 
 ### Tailscale-native history
 
-The Tailscale category now includes **Devices**, **Activity** and **TailDrop**.
-Track reported device presence and connection changes, inspect resolver recovery
-events, and retain daemon-reported transfer results. Collection is opt-in and
-requires no Control D token or GlassWire installation.
-The trackers are available from **1.105.0+16**. **1.105.0+17** additionally separates
-offline last-contact times from snapshot reads and hides starting snapshots from
-the default change timeline.
+The **Connection** page includes a live, searchable device inventory with owners,
+addresses, OS, offline last contact, routes/tags, TailDrop eligibility and reported
+capability metadata. It works even when recording is off. **Activity** and
+**TailDrop** retain observed changes and daemon-reported transfer results.
+One **Collect analytics** preference under **Tailscale → Preferences** controls
+recording across available integrations. No Control D token or GlassWire
+installation is required for Tailscale observations. Irrelevant analytics widgets
+are hidden when their source is missing and no history exists; retained history
+stays available through outages and when recording is disabled.
 
-![Development TailD Devices: synthetic online and offline peer observations](docs/taild/screenshots/devices.png)
+![TailD Connection: live synthetic online and offline devices with capability metadata](docs/taild/screenshots/devices.png)
 
 Offline peers show Tailscale's supplied **Last online** time, not the time this
 page read their status. Activity shows actual recorded changes and observation
@@ -160,9 +162,11 @@ state and source progress remain explicit.
    preserves its authenticated state; do not manually delete its state or signing keys.
 3. Open **TailD** from Start or left-click its tray icon. Right-click opens the
    connectivity menu.
-4. In **Settings**, select the Control D account/endpoint and supply a **READ-only**
-   token for DNS collection. Enable application traffic collection if GlassWire
-   is installed. Collection is opt-in; viewing retained history does not enable it.
+4. In **Analytics → Collection settings**, select the Control D account/endpoint
+   and supply a **READ-only** token. Enable **Collect analytics** under
+   **Tailscale → Preferences**; compatible GlassWire traffic and configured
+   Control D DNS are selected automatically. Viewing retained history does not
+   enable recording, and recording never changes VPN/DNS preferences.
 5. For incident management, register a separate Write token using the documented
    [secure credential flow](docs/taild/POLICY-READS.md). No Write token is needed
    for analytics or live DNS collection.

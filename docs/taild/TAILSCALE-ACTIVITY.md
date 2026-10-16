@@ -1,12 +1,16 @@
 # Tailscale activity and TailDrop
 
-Release **1.105.0+16** adds **Devices**, **Activity** and **TailDrop** to the
-Tailscale category, together with minimized-window/layout corrections. Release
-**1.105.0+17** corrects offline last-contact and starting-snapshot semantics.
+The Tailscale **Connection** page includes the live device inventory. **Activity**
+and **TailDrop** show recorded history. Offline last-contact is distinct from the
+time TailD read a status snapshot; starting snapshots are not activity events.
 
-Enable **Track Tailscale activity** on any of those pages. It is off by default,
-requires neither Control D credentials nor GlassWire, and keeps collecting when
-the window closes. Turning it off stops observation without deleting history.
+Enable **Collect analytics** under **Tailscale → Preferences**. This single
+recording decision selects Tailscale observations plus available Control D and
+GlassWire integrations; Tailscale itself requires neither of those integrations.
+New installations are off by default. Previously enabled installations migrate
+to unified recording without a new persisted settings schema. Collection continues
+when the window closes. Turning it off stops recording without deleting history
+or preventing live devices and Control D policy management from working.
 The existing global collector pause/resume and retention controls still apply.
 
 | Source | Recorded information | What it does not establish |
@@ -19,7 +23,11 @@ The existing global collector pause/resume and retention controls still apply.
 
 ## Reading the history
 
-Devices shows daemon-reported presence per visible peer and profile. **Last online**
+Connection shows live daemon-reported presence, owner, addresses, OS, reported
+routes/tags, creation/key-expiry timestamps, advertised SSH evidence and TailDrop
+send eligibility/reason. Missing metadata is not proof a feature is disabled.
+The local status API omits client versions, detailed OS versions and signing-node
+roles; no extra administrative API credential is assumed. **Last online**
 is Tailscale's supplied last control-plane contact for offline peers, **Online now**
 for online peers, or explicitly unavailable for missing/legacy metadata. Reading
 an offline snapshot now is not device activity now. Activity defaults to observed

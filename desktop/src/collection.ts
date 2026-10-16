@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
-import {Component, signal, computed, OnDestroy} from '@angular/core';
+import {Component, signal, computed, OnDestroy,Output,EventEmitter} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
+import {FormsModule,NgModel} from '@angular/forms';
 import {DashboardWidgetComponent} from './portmaster/panel';
 import {SfngToggleSwitchComponent} from './portmaster/toggle';
 import {command} from './bridge';
@@ -11,10 +11,11 @@ interface Source {[key:string]:unknown;state:string;last_success_utc?:string;sta
 interface Settings {traffic:boolean;dns:boolean;activity:boolean;traffic_seconds:number;dns_seconds:number;
   host_scope:string;provider:Provider|null}
 interface Provider {account_scope:string;endpoint:string;account_type:string;instance:string;organization?:string}
-export interface State {state:string;sources:Record<string,Source>;settings:Settings;queue_depth:number}
+export interface State {state:string;sources:Record<string,Source>;settings:Settings;queue_depth:number;
+  analytics_enabled?:boolean;integration_ready?:{traffic:boolean;dns:boolean}}
 
 @Component({selector:'taild-collection',standalone:true,
-  imports:[CommonModule,FormsModule,DashboardWidgetComponent,SfngToggleSwitchComponent,BrandMark],
+  imports:[CommonModule,FormsModule,DashboardWidgetComponent,BrandMark],
   template:`
     <section id="collection-window" [attr.aria-busy]="busy()">
       <header><div><div class="eyebrow product-brand"><taild-brand-mark brand="tailscale" /><span>TailD / Settings</span></div><h2 class="collection-title">Collection</h2>
@@ -24,16 +25,9 @@ export interface State {state:string;sources:Record<string,Source>;settings:Sett
       <div *ngIf="error()" id="collection-error" class="error" role="alert">{{error()}}</div>
       <div class="grid" *ngIf="state() as current">
         <app-dashboard-widget label="Continuous collection">
-          <div class="row"><div><div class="row-title">Application traffic</div>
-            <p>Read GlassWire’s existing traffic buckets. No packet capture or firewall changes.</p></div>
-            <sfng-toggle name="Collect application traffic" controlId="traffic-toggle"
-              [ngModel]="current.settings.traffic" (ngModelChange)="configure({traffic:$event})"
-              [disabled]="busy()" /></div>
-          <div class="row"><div><div class="row-title">DNS activity</div>
-            <p>Read Control D activity for the explicitly selected endpoint. A READ token is required.</p></div>
-            <sfng-toggle name="Collect DNS activity" controlId="dns-toggle"
-              [ngModel]="current.settings.dns" (ngModelChange)="configure({dns:$event})"
-              [disabled]="busy() || !current.settings.provider" /></div>
+          <div class="row"><div><div class="row-title">Analytics {{enabled()?'enabled':'disabled'}}</div>
+            <p>One recording preference selects available sources: Control D DNS, GlassWire traffic and Tailscale activity. VPN and DNS settings are independent.</p></div>
+            <button id="collection-preferences" (click)="preferences.emit()">Preferences →</button></div>
           <div class="actions">
             <button id="pause-resume" class="primary" [disabled]="busy() || !enabled()" (click)="run(current.state==='paused'?'resume':'pause')">
               {{current.state==='paused'?'Resume collection':'Pause collection'}}</button>
@@ -89,6 +83,7 @@ export interface State {state:string;sources:Record<string,Source>;settings:Sett
       <footer><span>Owner-only local history · No provider writes</span><span id="autosave-status" role="status">{{busy()?'Applying…':'Settings save automatically'}}</span></footer>
     </section>`})
 export class Collection implements OnDestroy {
+  @Output() preferences=new EventEmitter<void>();
   state=signal<State|null>(null);busy=signal(false);error=signal('');
   enabled=computed(()=>!!(this.state()?.settings.traffic||this.state()?.settings.dns||this.state()?.settings.activity));
   sourceNames=['traffic','dns','activity','context'];
@@ -121,4 +116,26 @@ export class Collection implements OnDestroy {
     catch(e){this.error.set((e as Error).message)}finally{this.busy.set(false)}}
   isWarning(value?:string){return !!value&&!['collecting','disabled','paused','starting','point-observation'].includes(value)}
   ngOnDestroy(){this.disposed=true;window.clearTimeout(this.healthTimer)}
+}
+
+@Component({selector:'taild-analytics-preference',standalone:true,
+  imports:[CommonModule,FormsModule,DashboardWidgetComponent,SfngToggleSwitchComponent],template:`
+  <app-dashboard-widget label="Analytics" brand="tailscale">
+    <div class="row"><div><div class="row-title">Collect analytics</div>
+      <p>Record Tailscale activity, Control D DNS with your configured READ credential, and traffic from an available GlassWire reader.</p></div>
+      <sfng-toggle name="Collect analytics" controlId="analytics-toggle" [ngModel]="enabled()" #recordingControl="ngModel"
+        (ngModelChange)="configure($event,recordingControl)" [disabled]="busy()||!state()" /></div>
+    <p class="hint">Turning this off stops recording, not your VPN, live device list or Control D policy management. Retained history remains available.</p>
+    <p class="hint" id="analytics-preference-status" role="status">{{busy()?'Reading / saving recording preference…':enabled()?'Recording enabled · available integrations are selected automatically.':'Recording disabled · retained history only.'}}</p>
+    <p class="error" role="alert" *ngIf="error()">{{error()}}</p>
+  </app-dashboard-widget>`})
+export class AnalyticsPreference {
+  state=signal<State|null>(null);busy=signal(false);error=signal('');
+  enabled=computed(()=>this.state()?.analytics_enabled===true);
+  constructor(){void this.read()}
+  async read(){this.busy.set(true);try{this.state.set(await command<State>('analytics-state'))}
+    catch(e){this.error.set((e as Error).message)}finally{this.busy.set(false)}}
+  async configure(enabled:boolean,control:NgModel){if(this.busy())return;this.busy.set(true);this.error.set('');
+    try{this.state.set(await command<State>('analytics-configure',{enabled}))}
+    catch(e){control.reset(this.enabled());this.error.set((e as Error).message)}finally{this.busy.set(false)}}
 }

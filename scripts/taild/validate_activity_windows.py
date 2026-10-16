@@ -7,7 +7,8 @@ from datetime import datetime,timezone
 from pathlib import Path
 from unittest.mock import patch
 from playwright.sync_api import sync_playwright,expect
-import history,tailscale_activity,reader
+import history,tailscale_activity,reader,connectivity
+from test_connectivity import DaemonFixture
 from validate_analytics_windows import NativeSession,populate,settled,capture_preview,END
 
 
@@ -34,9 +35,22 @@ class FixtureStream:
         connected();self.stopped.wait()
 
 
+class UnavailableReader:
+    def discover(self,*args,**kwargs):raise reader.ReaderError('source-unavailable')
+
+
+def recording(page,enabled):
+    page.locator('#category-tailscale').click();page.locator('#nav-preferences').click()
+    page.wait_for_function("()=>document.querySelector('#analytics-toggle')&&!document.querySelector('#analytics-toggle').disabled",timeout=0)
+    page.locator('#analytics-toggle').set_checked(enabled)
+    page.wait_for_function("()=>document.querySelector('#analytics-toggle')&&!document.querySelector('#analytics-toggle').disabled",timeout=0)
+
+
 def ready(page,allow_error=False):
     page.wait_for_function("()=>document.querySelector('#tailscale-activity')?.getAttribute('aria-busy')==='false'",timeout=0)
-    if not allow_error:assert page.locator('#tailscale-activity .error').count()==0
+    if not allow_error:
+        error=page.locator('#tailscale-activity .error')
+        assert error.count()==0,error.inner_text() if error.count() else ''
 
 
 def geometry(page):
@@ -52,29 +66,55 @@ def run(shell,output,live=False,live_only=False):
             with patch.object(tailscale_activity,'Stream',FixtureStream):
                 session=NativeSession(shell,root/'history',playwright,zoom=150 if zoom==150 else None)
                 try:
+                    session.collector.reader=UnavailableReader()
+                    daemon=DaemonFixture()
+                    daemon.status['Peer']={
+                        'a':{'ID':'fixture-phone','HostName':'Fixture phone','OS':'android','Online':True,'TaildropTarget':1,
+                            'UserID':1,'TailscaleIPs':['100.64.0.2'],'DNSName':'phone.fixture.invalid.',
+                            'Tags':['tag:mobile'],'Created':'2026-01-01T00:00:00Z'},
+                        'b':{'ID':'fixture-tablet','HostName':'Fixture tablet','OS':'linux','Online':False,'TaildropTarget':5,
+                            'LastSeen':'2026-10-13T09:00:00Z','UserID':1,'TailscaleIPs':['100.64.0.3'],
+                            'DNSName':'tablet.fixture.invalid.','ExitNodeOption':True,'PrimaryRoutes':['192.168.50.0/24'],
+                            'CapMap':{'https://tailscale.com/cap/ssh':[]},'KeyExpiry':'2027-01-01T00:00:00Z',
+                            'NoFileSharingReason':'Peer is offline'}}
+                    session.collector.connectivity.call=daemon
                     page=session.page;page.set_default_timeout(0);errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
                     settled(page);before=geometry(page)
                     (root/'dashboard-geometry.json').write_text(json.dumps(before,indent=2),encoding='utf-8')
-                    page.locator('#category-tailscale').click();page.locator('#nav-devices').click();ready(page)
-                    expect(page.locator('#activity-enabled')).not_to_be_checked()
+                    page.locator('#category-tailscale').click()
+                    page.wait_for_function("()=>document.querySelectorAll('#connection-devices tbody tr').length===2",timeout=0)
+                    assert page.locator('#nav-devices').count()==0
+                    expect(page.locator('#connection-devices')).to_contain_text('TailDrop')
+                    recording(page,False)
+                    expect(page.locator('#analytics-toggle')).not_to_be_checked()
                     original=session.collector.dispatch
                     def deny(request,**kwargs):
-                        if request.get('op') in ('activity-configure','activity-delete'):raise reader.ReaderError('denied')
+                        if request.get('op') in ('analytics-configure','activity-delete'):raise reader.ReaderError('denied')
                         return original(request,**kwargs)
                     session.collector.dispatch=deny
-                    page.locator('#activity-enabled').check();ready(page,True)
-                    expect(page.locator('#tailscale-activity .error')).to_be_visible()
-                    expect(page.locator('#activity-enabled')).not_to_be_checked()
+                    recording(page,True)
+                    expect(page.locator('taild-analytics-preference .error')).to_be_visible()
+                    expect(page.locator('#analytics-toggle')).not_to_be_checked()
                     session.collector.dispatch=original
-                    page.locator('#activity-enabled').check();ready(page)
+                    recording(page,True)
+                    page.locator('#nav-tailscale-activity').click();ready(page)
                     page.locator('#activity-reload').click();ready(page)
                     expect(page.locator('#activity-source')).to_have_text('connected')
-                    expect(page.locator('#tailscale-history-table tbody tr')).to_have_count(2)
-                    offline=page.locator('#tailscale-history-table tbody tr').filter(has_text='Fixture tablet')
-                    expect(offline.locator('td').nth(3)).to_have_text(page.evaluate("new Date('2026-10-13T09:00:00Z').toLocaleString()"))
-                    expect(page.locator('#tailscale-history-table tbody tr').filter(has_text='Fixture phone').locator('td').nth(3)).to_have_text('Online now')
-                    expect(page.locator('#tailscale-history-table thead')).to_contain_text('Last online')
+                    page.locator('#nav-connection').click()
+                    page.wait_for_function("()=>document.querySelectorAll('#connection-devices tbody tr').length===2",timeout=0)
+                    offline=page.locator('#connection-devices tbody tr').filter(has_text='Fixture tablet')
+                    expect(offline.locator('td').nth(3)).to_contain_text(page.evaluate("new Date('2026-10-13T09:00:00Z').toLocaleString()"))
+                    expect(page.locator('#connection-devices tbody tr').filter(has_text='Fixture phone').locator('td').nth(3)).to_contain_text('Online now')
+                    expect(page.locator('#connection-devices thead')).to_contain_text('last online')
+                    expect(page.locator('#connection-devices')).to_contain_text('test@example.invalid')
+                    expect(page.locator('#connection-devices')).to_contain_text('100.64.0.3')
+                    expect(offline).to_contain_text('SSH advertised')
+                    page.locator('#device-search').fill('100.64.0.3')
+                    expect(page.locator('#connection-devices tbody tr')).to_have_count(1)
+                    page.locator('#device-search').fill('')
+                    page.locator('#connection-devices').scroll_into_view_if_needed()
                     capture_preview(session,root/'devices.png')
+                    page.screenshot(path=str(root/'connection-full.png'),full_page=True)
                     page.locator('#nav-tailscale-activity').click();ready(page)
                     expect(page.locator('#tailscale-history-table')).to_contain_text('No changes recorded')
                     page.locator('#activity-include-baselines').check();ready(page)
@@ -110,7 +150,8 @@ def run(shell,output,live=False,live_only=False):
                     page.wait_for_function("()=>document.querySelector('#collection-window')?.getAttribute('aria-busy')==='false'",timeout=0)
                     expect(page.locator('#activity-status').locator('..')).to_contain_text('Tailscale activity')
                     page.locator('#category-tailscale').click();page.locator('#nav-taildrop').click();ready(page)
-                    page.locator('#activity-enabled').uncheck();ready(page)
+                    recording(page,False)
+                    page.locator('#nav-taildrop').click();ready(page)
                     session.collector.dispatch=deny
                     page.locator('#activity-delete').click();page.locator('#activity-delete-confirm').click();ready(page,True)
                     expect(page.locator('#tailscale-activity .error')).to_be_visible()
@@ -120,7 +161,7 @@ def run(shell,output,live=False,live_only=False):
                     expect(page.locator('#tailscale-history-table')).to_contain_text('No transfers observed')
                     assert not session.collector.config['dns'] and not session.collector.config['traffic']
                     assert not errors,errors
-                    reports.append({'zoom':zoom,'url':page.url,'fixture_transfers':True,'opt_in_independence':True,
+                    reports.append({'zoom':zoom,'url':page.url,'fixture_transfers':True,'unified_recording_preference':True,
                         'keyboard':True,'responsive_560':True,'deletion':True,'mutation_failures_visible':True,'page_errors':errors,'dashboard_geometry':before})
                 finally:session.close()
         (output/'activity.json').write_text(json.dumps({'ok':False,'fixture_reports':reports,'live_pending':live},indent=2),encoding='utf-8')
@@ -128,6 +169,8 @@ def run(shell,output,live=False,live_only=False):
             root=output/'live-read-only';root.mkdir();populate(root/'history')
             session=NativeSession(shell,root/'history',playwright)
             try:
+                session.collector.reader=UnavailableReader()
+                session.collector.connectivity=connectivity.Connectivity(Path('C:/Program Files/Tailscale/tailscale.exe'))
                 session.collector.now=lambda:datetime.now(timezone.utc).isoformat()
                 reads=[];original=session.collector.dispatch
                 def audited(request,**kwargs):
@@ -138,19 +181,20 @@ def run(shell,output,live=False,live_only=False):
                     return result
                 session.collector.dispatch=audited
                 page=session.page;page.set_default_timeout(0);settled(page)
-                page.locator('#category-tailscale').click();page.locator('#nav-devices').click();ready(page)
-                page.locator('#activity-enabled').check();ready(page)
-                page.wait_for_function("()=>document.querySelector('#activity-source')?.textContent?.trim()==='connected'&&document.querySelectorAll('#tailscale-history-table .badge').length>0",timeout=0)
-                count=page.locator('#tailscale-history-table tbody tr').count()
+                page.locator('#category-tailscale').click()
+                page.wait_for_function("()=>document.querySelectorAll('#connection-devices tbody tr').length>0",timeout=0)
+                count=page.locator('#connection-devices tbody tr').count()
                 assert count>0
                 (root/'read-audit.json').write_text(json.dumps(reads,indent=2),encoding='utf-8')
-                assert page.locator('#tailscale-history-table .badge').count()==count
+                assert page.locator('#connection-devices .badge').count()>=count
                 # Private real observations stay only in this local evidence folder.
                 capture_preview(session,root/'devices-private.png')
+                recording(page,True)
                 page.locator('#nav-tailscale-activity').click();ready(page)
+                page.wait_for_function("()=>document.querySelector('#activity-source')?.textContent?.trim()==='connected'",timeout=0)
                 page.locator('#activity-include-baselines').check();ready(page)
                 expect(page.locator('#tailscale-history-table')).to_contain_text('peer-baseline')
-                page.locator('#activity-enabled').uncheck();ready(page)
+                recording(page,False)
                 reports.append({'real_read_only':True,'watch_connected':True,'native_visible_peer_rows':count,
                     'history_quick_check':session.collector._commit(lambda:session.collector.store.db.execute('PRAGMA quick_check').fetchone()[0]),
                     'no_device_or_policy_or_transfer_mutation':True})

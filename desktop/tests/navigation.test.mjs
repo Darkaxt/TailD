@@ -23,7 +23,8 @@ test('every existing page belongs to exactly one category, while About is global
 });
 
 test('native activity views belong only to Tailscale and do not mount device settings',()=>{
-  for(const page of ['Devices','Tailscale activity','TailDrop'])assert.equal(categoryForPage(page),'tailscale');
+  for(const page of ['Tailscale activity','TailDrop'])assert.equal(categoryForPage(page),'tailscale');
+  assert.ok(!Object.values(categoryPages).flat().some(item=>item.page==='Devices'),'Live inventory belongs on Connection');
   const main=readFileSync(new URL('../src/main.ts',import.meta.url),'utf8');
   assert.match(main,/taild-tailscale-activity/);
   assert.match(main,/\['Connection','Preferences','DNS resolver'\]\.includes\(page\(\)\)/);

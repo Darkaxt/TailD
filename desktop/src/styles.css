@@ -226,3 +226,17 @@ caption{text-align:left;font-size:11px;color:var(--text-tertiary);padding:8px}.i
   #dashboard-collection .ingestion-sources{grid-template-columns:1fr}}
 @media(max-width:560px){#dashboard-stats .mini-stats-list{grid-template-columns:repeat(2,minmax(0,1fr))}
   #dashboard-correlations .rank-table{grid-template-columns:1fr}}
+.dashboard-grid.no-dns{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-areas:'stats stats stats collection' 'body body body body'}
+.dashboard-grid.application-dashboard.no-dns{grid-template-areas:'stats stats stats stats' 'body body body body'}
+.dashboard-grid.no-sources{grid-template-areas:'collection collection collection collection' 'body body body body'}
+.source-availability-notice{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 16px;padding:12px 16px;background:var(--cards-secondary);border-radius:4px;color:var(--text-secondary)}
+#connection-devices{min-width:680px}#connection-devices th:first-child{width:44%}
+.connectivity-workspace .grid>*{min-width:0}
+.device-badges{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}.device-badges .badge{font-size:10px;padding:3px 6px}
+.device-address{display:block;white-space:nowrap}.device-metadata{margin:8px 0 0}.device-metadata summary{font-size:11px;color:var(--info-blue);cursor:pointer}
+.device-metadata dl{display:grid;grid-template-columns:minmax(80px,auto) minmax(0,1fr);gap:6px 12px;font-size:11px;line-height:1.5}
+.device-metadata dt{color:var(--text-tertiary)}.device-metadata dd{margin:0;overflow-wrap:anywhere}
+@media(max-width:1200px){.dashboard-grid.no-dns{grid-template-areas:'stats stats stats stats' 'collection collection collection collection' 'body body body body'}}
+@media(max-width:850px){.dashboard-grid.no-dns{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:'stats stats' 'collection collection' 'body body'}
+  .dashboard-grid.application-dashboard.no-dns{grid-template-areas:'stats stats' 'body body'}
+  .dashboard-grid.no-sources{grid-template-areas:'collection collection' 'body body'}}

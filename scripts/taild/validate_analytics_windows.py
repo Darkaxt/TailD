@@ -391,7 +391,8 @@ def run(shell,output,real_history,policy_history):
         # state without stopping/updating the user's GlassWire service.
         missing=reader.PipeClient('missing-'+uuid.uuid4().hex);session.collector.reader=missing
         page.locator('#nav-5').click();settled(page)
-        expect(page.locator('#traffic-toggle')).to_be_visible();page.locator('#traffic-toggle').check()
+        from validate_desktop_windows import set_recording
+        set_recording(page,True)
         expect(page.locator('#autosave-status')).to_have_text('Settings save automatically')
         page.locator('#refresh').click();expect(page.locator('#autosave-status')).to_have_text('Settings save automatically')
         # Refresh acknowledges acquisition, not completion. Observe the source's
@@ -399,7 +400,7 @@ def run(shell,output,real_history,policy_history):
         # health cadence must not race an assertion with the same deadline.
         page.wait_for_function("()=>document.querySelector('#traffic-status')?.textContent==='unavailable'",timeout=0)
         page.screenshot(path=str(output/'stale-source.png'),full_page=True)
-        page.locator('#traffic-toggle').uncheck();expect(page.locator('#autosave-status')).to_have_text('Settings save automatically')
+        set_recording(page,False);expect(page.locator('#autosave-status')).to_have_text('Settings save automatically')
         missing.close()
         page.locator('#retention-days').fill('14');page.locator('#retention-days').press('Tab')
         expect(page.locator('#history-status')).to_contain_text('Local history updated')

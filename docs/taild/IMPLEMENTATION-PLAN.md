@@ -1,5 +1,39 @@
 # TailD staged execution
 
+October 16 R31 ACTIVE within the sole ACTIVE Stage 10, already_authorized by the
+unified analytics/live inventory request and explicit next-release instruction.
+Compact execution: (1) implement the complete single-preference / adaptive-source
+/ live enriched Connection workflow, (2) verify its backend/native-rendered
+source-state and layout matrix plus migration/rollback compatibility, (3) commit
+and publish the next monotonic signed release, independently verify all assets,
+then stop before real deployment. No new ACTIVE stage or delegation is opened.
+R31 source acceptance verified: single preference with visible denied-write
+reversion; compatible legacy opt-in migration/opt-out and late provider binding;
+source-aware navigation, query selection and widgets, automatic recovery and
+retained history with recording disabled; live enriched peers independent of
+recording; metadata whitelist/unknowns; real READ-only daemon inventory (19 peers)
+and subscription; native-served 100%/150% and 560px source/layout matrix. The
+Connection narrow-table regression was reproduced (792px document at a 560px
+viewport) and corrected at the grid item's intrinsic minimum; the verified
+document widths are now 545px/550px, with table-local scrolling. Fixture navigation
+to live rows measured 195ms/58ms and Preferences 44ms/104ms; these are synthetic
+daemon fixture timings, not claims about every real machine. Full backend and
+frontend contracts pass; production Angular and native Debug builds pass.
+Native assets match current source; main-2HPNK6QJ.js SHA256 is
+c5aded2a715a986112751007a55103aae4dc3e79c8de558bef458e17487b4fbf.
+Refactoring reconciliation: reuse existing collector/control lanes and compatible
+source flags; remove duplicate Devices navigation and per-source UI toggles.
+No required consolidation gap or additional infrastructure is introduced.
+R31 advancement blockers (internal): signed publication, independent installer/
+payload/provenance verification and public frozen-entrypoint acceptance remain.
+They block release completion, not continued work. Broader B12 remains.
+Tracked deferrals: none. No installation prompt is authorized while the user is
+away; preparatory builds/package/public verification are explicitly required.
+Installed +18 is unchanged. AutoUpdate.Check remains true; AutoUpdate.Apply was
+temporarily changed from true to false before publication to enforce the user's
+stop-before-deployment instruction. Restore Apply=true after the later explicitly
+authorized, verified deployment; no installer approval is queued now.
+
 October 16 +18 delivery and R29 launcher acceptance: normal public release
 windows-v1.105.0+18 at exact source 19b5a4ce348616b98be201011783de843cda7018
 passed isolated signing workflow 38878244050 and independent pinned-signature,

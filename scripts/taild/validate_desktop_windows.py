@@ -51,8 +51,19 @@ def snapshot(page):
 def collection_controls(page):
     from playwright.sync_api import expect
     expect(page.locator('main')).to_have_attribute('aria-busy','false')
-    page.locator('#nav-5').click()
-    expect(page.locator('#traffic-toggle')).to_be_visible()
+    page.locator('#category-analytics').click();page.locator('#nav-5').click()
+    expect(page.locator('#collection-preferences')).to_be_visible()
+
+
+def preferences_controls(page):
+    page.locator('#category-tailscale').click();page.locator('#nav-preferences').click()
+    page.wait_for_function("()=>document.querySelector('#analytics-toggle')&&!document.querySelector('#analytics-toggle').disabled",timeout=0)
+
+
+def set_recording(page,enabled):
+    preferences_controls(page);page.locator('#analytics-toggle').set_checked(enabled)
+    page.wait_for_function("()=>document.querySelector('#analytics-toggle')&&!document.querySelector('#analytics-toggle').disabled",timeout=0)
+    collection_controls(page)
 
 
 def run(shell, output, packaged_launcher=None):
@@ -122,7 +133,7 @@ def run(shell, output, packaged_launcher=None):
             assert "script-src 'self'" in csp and "connect-src 'none'" in csp
             assert 'unsafe-eval' not in csp and "script-src 'self' 'unsafe-inline'" not in csp
             collection_controls(page)
-            expect(page.locator('#traffic-toggle')).not_to_be_checked()
+            preferences_controls(page);expect(page.locator('#analytics-toggle')).not_to_be_checked();collection_controls(page)
             for width,height in ((1440,900),(1280,800),(1024,768)):
                 page.set_viewport_size({'width':width,'height':height})
                 expect(page.locator('#stop-collector')).to_be_visible()
@@ -130,8 +141,9 @@ def run(shell, output, packaged_launcher=None):
                 assert measured['layout']['document_width']<=width,'Unexpected horizontal overflow'
                 reports.append(measured)
                 page.screenshot(path=str(output/f'controls-{width}x{height}.png'),full_page=True)
-            page.locator('#traffic-toggle').focus()
-            assert page.locator('#traffic-toggle').evaluate('(e)=>e===document.activeElement')
+            preferences_controls(page);page.locator('#analytics-toggle').focus()
+            assert page.locator('#analytics-toggle').evaluate('(e)=>e===document.activeElement')
+            collection_controls(page)
             # Fuzz the displayed source text without executing a backend action.
             # This is renderer injection evidence, not a claim of live vendor text.
             unsafe='<img src=x onerror="window.__taildInjection=1">'
@@ -145,8 +157,7 @@ def run(shell, output, packaged_launcher=None):
             page.reload()
             collection_controls(page)
             # Real event path: checkbox -> Angular CVA -> native allowlist -> owner pipe -> SQLite acquisition.
-            page.locator('#traffic-toggle').check()
-            expect(page.locator('#traffic-toggle')).to_be_checked()
+            set_recording(page,True)
             expect(page.locator('#autosave-status')).to_have_text('Settings save automatically')
             page.locator('#refresh').click()
             expect(page.locator('#autosave-status')).to_have_text('Settings save automatically')
@@ -190,7 +201,7 @@ def run(shell, output, packaged_launcher=None):
                 assert native.wait()==0
                 browser.close()
                 browser,page=open_ui(playwright,3)
-                expect(page.locator('#traffic-toggle')).to_be_checked()
+                preferences_controls(page);expect(page.locator('#analytics-toggle')).to_be_checked();collection_controls(page)
                 page.locator('#nav-0').click()
                 expect(page.locator('main')).to_have_attribute('aria-busy','false')
                 expect(page.locator('#ingestion-status')).to_have_text('Reading history')
@@ -204,7 +215,7 @@ def run(shell, output, packaged_launcher=None):
             assert not fixture.collector.closing
             assert fixture.query()[1]['results'][0]['data']['total_count']==1
             browser,page=open_ui(playwright,2)
-            expect(page.locator('#traffic-toggle')).to_be_checked()
+            preferences_controls(page);expect(page.locator('#analytics-toggle')).to_be_checked();collection_controls(page)
             page.locator('#stop-collector').click()
             assert native.wait()==0
             browser.close()

@@ -34,6 +34,13 @@ class IsolatedLiveStream:
     def cancel(self):self.stopped.set()
 
 
+class IsolatedActivityStream:
+    """Legacy migration tests must never subscribe to the installed daemon."""
+    def __init__(self):self.stopped=threading.Event()
+    def run(self,receive,connected):self.stopped.wait()
+    def cancel(self):self.stopped.set()
+
+
 @unittest.skipUnless(os.name == 'nt', 'Windows owning-user runtime')
 class RuntimeTest(unittest.TestCase):
     add_row = test_glasswire.GlassWireTest.add_row
@@ -140,6 +147,8 @@ class RuntimeTest(unittest.TestCase):
         self.assertEqual(errors,[])
 
     def setUp(self):
+        isolated_activity=patch.object(runtime.tailscale_activity,'Stream',IsolatedActivityStream)
+        isolated_activity.start();self.addCleanup(isolated_activity.stop)
         isolated=patch.object(runtime.live_dns,'Stream',IsolatedLiveStream)
         isolated.start();self.addCleanup(isolated.stop)
         self.assertIsNotNone(runtime, 'Opt-in collector/query lifecycle is missing')

@@ -15,6 +15,39 @@ from urllib.parse import urlsplit
 
 import core_manifest
 
+
+def peer_view(peer,users):
+    """Local status whitelist: never export node/SSH keys or capability payloads."""
+    string=lambda value:value if isinstance(value,str) and len(value)<=512 else None
+    strings=lambda value:[v for v in value if string(v)] if isinstance(value,list) else []
+    timestamp=lambda value:string(value) if string(value) and not value.startswith('0001-') else None
+    online=peer.get('Online') if type(peer.get('Online')) is bool else None
+    user=users.get(str(peer.get('UserID')),{})
+    caps=peer.get('CapMap') or {}
+    caps=set(caps) if isinstance(caps,dict) else set()
+    caps.update(strings(peer.get('Capabilities')))
+    target=peer.get('TaildropTarget')
+    taildrop={0:'Not reported',1:'Available',2:'Network map unavailable',3:'Tailscale not running',
+        4:'Not permitted',5:'Offline',6:'Peer information unavailable',7:'Unsupported OS',
+        8:'Peer API unavailable',9:'Different owner'}.get(target,'Not reported')
+    routes=strings(peer.get('PrimaryRoutes'))
+    for value in strings(peer.get('AllowedIPs')):
+        try:
+            network=ipaddress.ip_network(value)
+            if network.prefixlen and str(network.network_address) not in strings(peer.get('TailscaleIPs')) and value not in routes:
+                routes.append(value)
+        except ValueError:continue
+    return {'id':string(peer.get('ID')),'name':string(peer.get('HostName')) or string(peer.get('DNSName')),
+        'dns_name':string(peer.get('DNSName')),'addresses':strings(peer.get('TailscaleIPs')),
+        'online':online,'exit':peer.get('ExitNodeOption') is True,'exit_selected':peer.get('ExitNode') is True,
+        'owner':string(user.get('LoginName')) or string(user.get('DisplayName')),
+        'os':string(peer.get('OS')),'last_seen':timestamp(peer.get('LastSeen')) if online is False else None,
+        'created':timestamp(peer.get('Created')),'key_expiry':timestamp(peer.get('KeyExpiry')),
+        'expired':peer.get('Expired') if type(peer.get('Expired')) is bool else None,
+        'tags':strings(peer.get('Tags')),'routes':routes,
+        'taildrop':taildrop,'taildrop_reason':string(peer.get('NoFileSharingReason')),
+        'ssh':'Advertised' if 'https://tailscale.com/cap/ssh' in caps or peer.get('sshHostKeys') else 'Not reported'}
+
 OPERATIONS=('connectivity-read','connectivity-edit','connectivity-reset','connectivity-about')
 PREFERENCES=(
     ('allow-incoming','Allow incoming connections','ShieldsUp','EnableIncomingConnections'),
@@ -104,8 +137,7 @@ class Connectivity:
             raise ConnectivityError('connectivity-unavailable')
         if resolver['ProfileID']!=profile_id:raise ConnectivityError('connectivity-conflict')
         safe_resolver={key:resolver[key] for key in resolver_fields}
-        peers=[{'id':p.get('ID'),'name':p.get('HostName') or p.get('DNSName'),
-            'addresses':p.get('TailscaleIPs') or [],'online':bool(p.get('Online')),'exit':bool(p.get('ExitNodeOption'))}
+        peers=[peer_view(p,status.get('User') or {})
             for p in (status.get('Peer') or {}).values()]
         safe_prefs={key:prefs.get(key) for key in ('WantRunning','ExitNodeID','ExitNodeAllowLANAccess')}
         safe_prefs['AdvertiseRoutes']=prefs.get('AdvertiseRoutes') or []

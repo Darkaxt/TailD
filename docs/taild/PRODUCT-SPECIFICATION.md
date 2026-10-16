@@ -1041,6 +1041,49 @@ the installed identity, services, DNS and R28 browsing/refresh behavior. Do not
 reset history or change provider policy. Existing Stage 10 owns this delivery;
 broader B12 obligations remain unchanged.
 
+### R31 — Unified analytics preference and live connection inventory
+
+October 16 user amendment, owned by the existing ACTIVE Stage 10: replace
+per-source recording switches with one **Collect analytics** preference under
+Tailscale / Preferences. Sources are selected by available integrations, not by
+three independent user toggles. The existing compatible settings representation
+may retain internal source flags, but the product must present one recording
+decision. Preserve opted-out installations and existing credentials/bindings;
+an enabled legacy configuration migrates to the unified source-selection model.
+Disabling analytics stops new recording, not the VPN, resolver, Control D policy
+management, current peer reads or access to retained history. Credentials must
+never be inferred from the presence of a provider binding alone.
+
+Remove the separate Devices navigation tab and enrich Connection's existing live
+device table. Read from the local daemon independently of history collection:
+device/owner, addresses, OS, reported presence, offline LastSeen, TailDrop
+eligibility and reason, exit-node eligibility/selection, reported subnet routes,
+tags, creation/key expiry where supplied and advertised SSH evidence. Preserve
+tri-state/missing values and distinguish capabilities, eligibility and observed
+reachability. Do not invent client versions, detailed OS versions, signing-node
+roles, SSH enablement or expiry-disabled policy when local APIs omit them. The
+admin API offers additional fields but no new tailnet credential or account
+permission is assumed for this amendment.
+
+Adapt navigation, queries and widgets to source availability: no GlassWire means
+no irrelevant empty application/bandwidth widgets; no Control D credential/binding
+means no irrelevant empty DNS widgets. Retained data keeps its views accessible
+when a source is missing, paused or temporarily unavailable, with explicit stale/
+recording-off/source-health state. Keep setup and management discoverable. Refresh
+source availability on navigation/reload; do not cancel operations or discard
+history when availability changes. Preserve independent query/management lanes,
+the existing Tailscale/Portmaster theme, accessible icon/text controls and responsive
+100%/150%/narrow layouts.
+
+Acceptance: unified on/off and legacy migration, late provider/credential binding,
+missing/stopped/recovered source and retained-history states; live peers while
+recording is off; offline contact/capability/route/expiry privacy fixtures and real
+read-only daemon boundary; native-served layout/navigation and responsiveness;
+existing launcher restoration and installer/rollback contracts. User authorizes
+publishing the complete next normal signed release after verification and explicitly
+requires stopping before real local deployment. Build and independently verify the
+public installer/assets before stopping; do not launch an installation approval.
+
 ### R29 — Existing-window activation and dashboard geometry
 
 Tray activation must restore the same minimized native window without a second

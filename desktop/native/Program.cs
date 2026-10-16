@@ -70,7 +70,7 @@ internal sealed class OwnerBridge : IDisposable
         IntPtr security,uint disposition,uint flags,IntPtr template);
     public static OwnerLane LaneFor(string op)=>op switch {
         "connectivity-read" or "connectivity-edit" or "connectivity-reset" or "connectivity-about" or
-        "activity-read" or "activity-configure" or "activity-delete"=>OwnerLane.Device,
+        "activity-read" or "activity-configure" or "activity-delete" or "analytics-state" or "analytics-configure"=>OwnerLane.Device,
         "management-read" or "management-prepare" or "management-apply" or "management-cancel"=>OwnerLane.Policy,
         "recent-dns"=>OwnerLane.Recent,_=>OwnerLane.Analytics};
     public OwnerBridge(string instance,uint pid,OwnerLane lane=OwnerLane.Analytics)
@@ -89,7 +89,7 @@ internal sealed class OwnerBridge : IDisposable
             "credential-remove" or "view-query" or "view-catalog" or "saved-query" or "export-query" or "retention" or "delete" or "delete-snapshots" or "cleanup" or
             "management-read" or "management-prepare" or "management-apply" or "management-cancel" or
             "connectivity-read" or "connectivity-edit" or "connectivity-reset" or "connectivity-about" or "recent-dns" or
-            "activity-read" or "activity-configure" or "activity-delete"))
+            "activity-read" or "activity-configure" or "activity-delete" or "analytics-state" or "analytics-configure"))
             throw new InvalidDataException();
         var completion=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         lock(requests)requests.Add(completion.Task);

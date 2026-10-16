@@ -64,7 +64,8 @@ def run(shell,output):
                 entered.set();release.wait();return {'slice_attempts':0,'pending_windows':[],'interrupted':True}
             with patch.object(ingestion,'traffic_window',held_traffic):
                 page.locator('#nav-5').click();settled(page)
-                page.locator('#traffic-toggle').check();entered.wait()
+                from validate_desktop_windows import set_recording
+                set_recording(page,True);entered.wait()
                 expect(page.locator('#autosave-status')).to_have_text('Settings save automatically')
                 page.locator('#refresh').click()
                 expect(page.locator('#autosave-status')).to_have_text('Settings save automatically')

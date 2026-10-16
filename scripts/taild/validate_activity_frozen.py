@@ -24,7 +24,8 @@ def run(executable,output):
         client=reader.PipeClient(instance)
         initial=client.request({'op':'state'})
         assert not any(initial['settings'][key] for key in ('activity','traffic','dns'))
-        client.request({'op':'activity-configure','body':{'enabled':True}})
+        enabled=client.request({'op':'analytics-configure','body':{'enabled':True}})
+        assert enabled['analytics_enabled'] and enabled['settings']['traffic'] and enabled['settings']['activity']
         # File-change notifications are diagnostic observations, not polling,
         # time-based completion or permission to cancel the original operation.
         while True:
@@ -40,7 +41,9 @@ def run(executable,output):
         assert len(data['rows'])>0
         assert all(row['presence'] in ('online','offline','unknown') for row in data['rows'])
         state=client.request({'op':'state'})
-        assert not state['settings']['traffic'] and not state['settings']['dns']
+        assert state['settings']['traffic'] and not state['settings']['dns']
+        disabled=client.request({'op':'analytics-configure','body':{'enabled':False}})
+        assert not disabled['analytics_enabled'] and not any(disabled['settings'][key] for key in ('activity','traffic','dns'))
         client.request({'op':'shutdown'});client.close();client=None
         assert process.wait()==0
         store=history.History(home)
@@ -48,7 +51,7 @@ def run(executable,output):
             check=store.db.execute('PRAGMA quick_check').fetchone()[0];assert check=='ok'
         finally:store.close()
         report={'ok':True,'frozen_entrypoint':True,'read_only_daemon_subscription':True,
-            'visible_peers':len(data['rows']),'source_independence':True,'graceful_exit_code':process.returncode,
+            'visible_peers':len(data['rows']),'unified_recording_preference':True,'graceful_exit_code':process.returncode,
             'sqlite_quick_check':check,'sqlite_dll_sha256':hashlib.sha256((executable.parent/'_internal/sqlite3.dll').read_bytes()).hexdigest(),
             'executable_sha256':hashlib.sha256(executable.read_bytes()).hexdigest(),
             'source_sha256':{name:hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()

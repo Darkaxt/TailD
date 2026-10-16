@@ -44,7 +44,7 @@ webview?.addEventListener('message',event=>{
 });
 export function command<T=unknown>(op:string,body:unknown={},progress?:(value:unknown)=>void):Promise<T>{
   if(!webview)return Promise.reject(new Error('Open TailD using its desktop launcher.'));
-  const lane=['connectivity-read','connectivity-edit','connectivity-reset','connectivity-about','activity-read','activity-configure','activity-delete'].includes(op)?'device':
+  const lane=['connectivity-read','connectivity-edit','connectivity-reset','connectivity-about','activity-read','activity-configure','activity-delete','analytics-state','analytics-configure'].includes(op)?'device':
     ['management-read','management-prepare','management-apply','management-cancel'].includes(op)?'policy':op==='recent-dns'?'recent':'analytics';
   if([...pending.values()].filter(request=>request.lane===lane).length>=(lane==='analytics'?4:2))return Promise.reject(new Error('An operation is already pending.'));
   const id=++sequence;

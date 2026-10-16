@@ -75,6 +75,14 @@ def settings(value):
     return result
 
 
+def unified_settings(value):
+    """Migrate existing opt-in without a new on-disk schema or rollback hazard."""
+    result=settings(value)
+    enabled=any(result[k] for k in ('traffic','dns','activity'))
+    result.update(traffic=enabled,activity=enabled,dns=enabled and result['provider'] is not None)
+    return result
+
+
 class LocalAPI:
     """Event-driven loopback query API with explicit owned-I/O cancellation."""
     def __init__(self, collector):
@@ -273,6 +281,7 @@ class Collector:
                         'context':{'state':'not-configured' if cli is None else 'not-collected'}}
         self.not_before = {'traffic':0, 'dns':0}
         self._transient_token = None
+        self.traffic_available = False
         self.config_revision = 0
         self.acquisitions = {}
         self.refresh_waiters = []
@@ -325,7 +334,7 @@ class Collector:
             raise RuntimeError('startup-failed') from None
         try:
             self.api = LocalAPI(self)
-            for label,namer,operations in (('settings',connectivity.instance_name,(*connectivity.OPERATIONS,*tailscale_activity.OPERATIONS)),
+            for label,namer,operations in (('settings',connectivity.instance_name,(*connectivity.OPERATIONS,*tailscale_activity.OPERATIONS,'analytics-state','analytics-configure')),
                     ('policy',management.instance_name,management.OPERATIONS),('recent',recent_dns.instance_name,recent_dns.OPERATIONS)):
                 server=reader.PipeServer(namer(self.instance),owner,FixedControlSource(self,operations));errors=[]
                 def serve_control(server=server,errors=errors):
@@ -377,11 +386,14 @@ class Collector:
             return self.session()
         if request == {'op':'shutdown'}:
             return {'state':'stopping'}
-        if request['op'] not in ('state','configure','pause','resume','refresh','query','delete','cleanup','credential','credential-remove','window-opened','window-closed',*desktop_api.OPERATIONS,*management.OPERATIONS,*connectivity.OPERATIONS,*recent_dns.OPERATIONS,*tailscale_activity.OPERATIONS):
+        if request['op'] not in ('state','configure','analytics-state','analytics-configure','pause','resume','refresh','query','delete','cleanup','credential','credential-remove','window-opened','window-closed',*desktop_api.OPERATIONS,*management.OPERATIONS,*connectivity.OPERATIONS,*recent_dns.OPERATIONS,*tailscale_activity.OPERATIONS):
             raise RuntimeError('invalid-command')
         try:
             op=request['op'];body=request.get('body') or {}
             if not isinstance(body,dict):raise RuntimeError('invalid-command')
+            if op=='analytics-state':
+                if body:raise RuntimeError('invalid-command')
+                with self.condition:return self._state()
             if op=='activity-read':
                 with self.condition:
                     if self.closing or self.store is None:raise RuntimeError('stopping')
@@ -481,7 +493,12 @@ class Collector:
         state = ('stopping' if self.closing else 'write-error' if self.write_error else
                  'paused' if self.paused else 'disabled' if not enabled else
                  'collecting' if any(s in ('collecting','connected') for s in enabled) else 'starting' if 'starting' in enabled else 'stale')
+        try:has_read=bool(self._transient_token or credentials.CredentialStore().read())
+        except (credentials.CredentialError,ImportError):has_read=False
         return {'state':state,'sources':json.loads(json.dumps(self.sources)),
+                'analytics_enabled':any(self.config[k] for k in ('traffic','dns','activity')),
+                'integration_ready':{'dns':bool(self.config['provider'] and has_read),
+                    'traffic':self.traffic_available},
                 'queue_depth':len(self.queue),'settings':self.config,
                 'lifecycle':self.lifecycle.status() if self.lifecycle is not None else {'state':'starting'},
                 'credentials':'current-user-vault-optional','network_changes':False,
@@ -492,6 +509,11 @@ class Collector:
             raise RuntimeError('invalid-command')
         if op == 'state' and not body:
             return self._state()
+        if op=='analytics-configure':
+            if set(body)!={'enabled'} or type(body['enabled']) is not bool:raise RuntimeError('invalid-command')
+            enabled=body['enabled']
+            return self._execute(store,'configure',{'traffic':enabled,'activity':enabled,
+                'dns':enabled and self.config['provider'] is not None})
         if op=='activity-configure':
             if set(body)!={'enabled'} or type(body['enabled']) is not bool:raise RuntimeError('invalid-command')
             self._execute(store,'configure',{'activity':body['enabled']})
@@ -533,6 +555,8 @@ class Collector:
             self.config_revision += 1
             return {'configured':True,'storage':'user-vault' if body['persist'] else 'process-memory'}
         if op == 'configure':
+            if 'provider' in body and not any(k in body for k in ('traffic','dns','activity')):
+                body={**body,'dns':any(self.config[k] for k in ('traffic','dns','activity')) and body['provider'] is not None}
             updated = settings({**self.config, **body})
             if updated == self.config:
                 return self._state()
@@ -659,6 +683,7 @@ class Collector:
                 recent=ingestion.traffic_window(store,config['host_scope'],recent_start,end,
                     reader=self.reader,checkpoint=checkpoint,progress=report_progress,commit=self._commit,
                     max_slices=8,defer_budget=True)
+                self.traffic_available=True
                 progress=self._traffic_progress(config['host_scope'],start,end)
                 backfill=({'slice_attempts':0,'pending_windows':progress['pending_windows'],'interrupted':True}
                     if recent.get('interrupted') else ingestion.traffic_window(store,config['host_scope'],
@@ -731,8 +756,10 @@ class Collector:
                     self.write_error = True
         except reader.ReaderError as error:
             self.sources[kind] = {'state':error.state}
+            if kind=='traffic':self.traffic_available=False
         except (glasswire.GlassWireError,credentials.CredentialError,history.HistoryError,analytics.QueryError):
             self.sources[kind] = {'state':'incompatible-or-unavailable'}
+            if kind=='traffic':self.traffic_available=False
         except (sqlite3.Error,OSError):
             # SQLite transactions roll back their failed writes. Freeze further
             # writes until explicit resume; never advance a checkpoint or evict
@@ -1016,7 +1043,7 @@ class Collector:
             if saved.exists():
                 if saved.is_symlink() or saved.stat().st_nlink != 1 or saved.stat().st_size > reader.REQUEST_BYTES:
                     raise RuntimeError('invalid-storage')
-                self.config = settings(reader.decode_message(saved.read_bytes()))
+                self.config = unified_settings(reader.decode_message(saved.read_bytes()))
             for kind in ('traffic','dns'):
                 if self.config[kind]:
                     self.sources[kind]['state'] = 'starting'
