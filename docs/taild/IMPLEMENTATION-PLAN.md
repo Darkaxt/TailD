@@ -1,5 +1,23 @@
 # TailD staged execution
 
+October 16 +17 delivery: workflow 38835859897 passed all eight jobs at exact
+da9164323bb50ea1d3ca455aa4d55210ab65ba0d. Normal public release windows-v1.105.0+17
+is independently downloaded and verified: pinned signatures/checksums, 444 payload
+members, core 4b17755738ec51bb9e94a83e65ef972b8b52260a, unchanged upstream 1.105.0,
+amd64 and SQLite 3.54.0. Installer digest
+31a681200e55751120073bda5f59b5c4c9dadfe7ae519a7c70a626f6d7827f3a.
+Dashboard main-I24A73FR.js exactly matches the native-validated SHA256
+580f4493e69860955be7d1a2523df633e8050bc9fea25dd5ef739110c1cae017.
+Installation request 65019eb7d64449aaab15f55776573f5b (ticket 21) is queued in the
+existing broker; observe the original managed request, do not relaunch. Local
+installation remains +16 until actual approval/execution and installed checks pass.
+Automatic promotion is temporarily paused to avoid the known overlap; restore the
+original enabled setting only after the controlled upgrade is verified. This is
+an external approval dependency for delivery, not completed installed acceptance.
+R30 verification scratch cleanup is complete (525,725,356 bytes); +16 extraction
+cleanup removed 273,042,485 bytes, with administrator-owned empty installer
+directories pending the same reviewed ticket under the queued administrative action.
+
 October 16 delivery and presence-semantics correction: +16 is published from
 cd369cccac7d241d64ea0f5bc93b0fb598373540 (workflow 38832561398, all jobs successful)
 and installed in place (installer exit 0). Independent public verification covers

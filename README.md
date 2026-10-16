@@ -57,7 +57,7 @@ The Tailscale category now includes **Devices**, **Activity** and **TailDrop**.
 Track reported device presence and connection changes, inspect resolver recovery
 events, and retain daemon-reported transfer results. Collection is opt-in and
 requires no Control D token or GlassWire installation.
-The trackers are available from **1.105.0+16**. Current source additionally separates
+The trackers are available from **1.105.0+16**. **1.105.0+17** additionally separates
 offline last-contact times from snapshot reads and hides starting snapshots from
 the default change timeline.
 

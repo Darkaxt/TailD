@@ -1,8 +1,8 @@
 # Tailscale activity and TailDrop
 
 Release **1.105.0+16** adds **Devices**, **Activity** and **TailDrop** to the
-Tailscale category, together with minimized-window/layout corrections. Development
-main additionally corrects offline last-contact and starting-snapshot semantics.
+Tailscale category, together with minimized-window/layout corrections. Release
+**1.105.0+17** corrects offline last-contact and starting-snapshot semantics.
 
 Enable **Track Tailscale activity** on any of those pages. It is off by default,
 requires neither Control D credentials nor GlassWire, and keeps collecting when
