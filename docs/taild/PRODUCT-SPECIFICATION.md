@@ -1084,6 +1084,12 @@ publishing the complete next normal signed release after verification and explic
 requires stopping before real local deployment. Build and independently verify the
 public installer/assets before stopping; do not launch an installation approval.
 
+October 16 subsequent user instruction “deploy” lifts that delivery hold for the
+verified +19 installer. Perform the normal in-place local upgrade, verify live
+identity/credentials/DNS/history/collector preservation and native restoration,
+then restore the pre-hold automatic-installation preference. This authorizes
+delivery of the completed R31 release, not unrelated product changes.
+
 ### R29 — Existing-window activation and dashboard geometry
 
 Tray activation must restore the same minimized native window without a second

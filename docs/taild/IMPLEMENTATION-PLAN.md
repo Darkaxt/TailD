@@ -16,15 +16,37 @@ The downloaded public frozen collector independently passed unified recording
 on/off, actual READ-only daemon subscription (19 peers), SQLite quick_check=ok
 and graceful exit 0 in an isolated history folder. README screenshots show the
 new unified preference and live inventory using synthetic data only.
-R31 implementation/release blockers and required deferrals: none. Stage 10 is
-still ACTIVE for broader B12. Per the explicit user boundary, **not installed**:
-the laptop retains +18, automatic installation is held (Apply=false, Check=true),
-and no deployment approval is queued. Next authorized action is the real in-place
-deployment of this already-built and verified installer, then live preservation/
-recovery checks and restoration of original Apply=true; no further build or
-feature implementation is required before that deployment.
+R31 implementation/release/deployment acceptance is COMPLETE. The user's October
+16 “deploy” instruction lifted the deployment hold. Broker request
+3ec489a4fa25441c9dbbb59c1b2ed646 (ticket 25) completed elevated with installer and
+command exit 0. The installed signed package verifies as +19 at the exact source
+above. Before/after audits preserve node/profile/IPs, Tailnet Lock signing and
+trusted keys, credentials, custom DNS endpoint, raw runtime settings and history
+identity. Public DNS and MagicDNS resolve; custom DNS is applied, collection is
+collecting and live DNS connected; both services are running. SQLite 3.54.0
+quick_check=ok, WAL and the same history file identity are verified. Rolling
+retention moved the DNS start forward normally; observed counts grew by 125 DNS
+and 13294 traffic records during deployment. Automatic updates are restored to
+the original Check=true / Apply=true.
 
-October 16 R31 ACTIVE within the sole ACTIVE Stage 10, already_authorized by the
+Installed native UIA verifies 19 live peers with TailDrop/presence/OS/details,
+the enabled unified preference, no Devices subtab and no per-source switches.
+Actual tray callbacks and the ordinary installed launcher restore the same
+minimized native window without duplication or a launch error; settings were
+not toggled for verification. This is native accessibility/Win32 evidence, not
+a physical pointer click or real TailDrop transfer. Private preservation and
+installed renderer/activation receipts remain under the existing release-19
+verification folder. No new product build/release was needed for deployment.
+
+R31 feature blockers and required deferrals: none. Stage 10 remains ACTIVE for
+broader B12. Deployment scratch contains only four empty administrator-owned
+directories; reviewed cleanup transaction f6bdcda6df08dbf5563b5a81304030b5 /
+ticket 119a07291ad4680c4aa27897d7b250ecdd50286d10e5e0923b6a1e605d62e890
+is partially applied (locked/not_empty), with no expendable payload files left.
+Preserve that ticket until the exact access/consumer condition resolves; no ACL
+reset, forced deletion or service interruption was attempted.
+
+October 16 R31 execution history within the sole ACTIVE Stage 10, already_authorized by the
 unified analytics/live inventory request and explicit next-release instruction.
 Compact execution: (1) implement the complete single-preference / adaptive-source
 / live enriched Connection workflow, (2) verify its backend/native-rendered
@@ -48,15 +70,9 @@ c5aded2a715a986112751007a55103aae4dc3e79c8de558bef458e17487b4fbf.
 Refactoring reconciliation: reuse existing collector/control lanes and compatible
 source flags; remove duplicate Devices navigation and per-source UI toggles.
 No required consolidation gap or additional infrastructure is introduced.
-R31 advancement blockers (internal): signed publication, independent installer/
-payload/provenance verification and public frozen-entrypoint acceptance remain.
-They block release completion, not continued work. Broader B12 remains.
-Tracked deferrals: none. No installation prompt is authorized while the user is
-away; preparatory builds/package/public verification are explicitly required.
-Installed +18 is unchanged. AutoUpdate.Check remains true; AutoUpdate.Apply was
-temporarily changed from true to false before publication to enforce the user's
-stop-before-deployment instruction. Restore Apply=true after the later explicitly
-authorized, verified deployment; no installer approval is queued now.
+The source, publication and independent public acceptance requirements described
+above were subsequently verified, followed by the explicitly authorized local
+deployment recorded in the current reconciliation. Tracked deferrals: none.
 
 October 16 +18 delivery and R29 launcher acceptance: normal public release
 windows-v1.105.0+18 at exact source 19b5a4ce348616b98be201011783de843cda7018
