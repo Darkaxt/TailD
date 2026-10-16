@@ -63,6 +63,15 @@ app-dashboard-widget>h2 taild-brand-mark{font-size:20px;color:#d0e4f3}
 .device-name{font-size:24px;font-weight:500;margin:0}.device-addresses{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
 .device-addresses code{background:var(--cards-primary);padding:8px;border-radius:4px}
 .connectivity-confirm{padding:20px;border:1px solid var(--info-yellow);border-radius:6px;background:var(--cards-secondary)}
+.activity-toolbar,.activity-opt-in,.activity-loading{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.activity-toolbar{margin:20px 0}.activity-loading .loading-dots{position:static;display:flex;gap:4px}
+.activity-scope{display:grid;grid-template-columns:1fr 1fr 2fr;gap:16px;margin-bottom:20px;min-width:0}
+.activity-scope label{display:flex;flex-direction:column;gap:8px;min-width:0}.activity-scope input,.activity-scope select{min-width:0;width:100%}
+.activity-table{max-height:620px}.activity-table td{overflow-wrap:anywhere;max-width:300px;vertical-align:top}
+.activity-table progress{display:block;width:100%;max-width:180px;accent-color:var(--info-blue);margin-top:8px}
+.activity-empty{padding:32px!important;text-align:center;color:var(--text-tertiary)}
+.activity-provenance{margin:20px 0;color:var(--text-secondary);line-height:1.6}.activity-provenance p{max-width:900px}
+@media(max-width:850px){.activity-scope{grid-template-columns:1fr 1fr}.activity-scope label:last-child{grid-column:1/-1}}
 .about-identity{display:flex;align-items:center;gap:20px;padding:16px 0}.about-identity taild-brand-mark{font-size:64px}.about-identity h2{font-size:30px;margin:0}
 .about-facts{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px 24px;margin:16px 0}.about-facts dd{margin:0;overflow-wrap:anywhere}.about-facts dt{color:var(--text-tertiary)}
 .shared-scope{position:sticky;top:0;z-index:10;background:var(--background);display:flex;gap:12px;align-items:end;
@@ -153,11 +162,11 @@ caption{text-align:left;font-size:11px;color:var(--text-tertiary);padding:8px}.i
 /* Pinned Portmaster dashboard: summaries/trend beside contextual sidebar,
    coordinated geography, paired consumers/bandwidth, then deeper rankings. */
 .dashboard-grid{grid-template-areas:'stats stats stats collection' 'dnstrend dnstrend dnstrend collection'
-  'countries countries map map' 'outcomes outcomes map map' 'consumers consumers bandwidth bandwidth'
-  'questions questions destinations destinations' 'correlations correlations correlations correlations'}
+  'body body body body'}
 .dashboard-grid.application-dashboard{grid-template-areas:'stats stats stats stats' 'dnstrend dnstrend dnstrend dnstrend'
-  'countries countries map map' 'outcomes outcomes map map' 'consumers consumers bandwidth bandwidth'
-  'correlations correlations questions questions'}
+  'body body body body'}
+.dashboard-body{grid-area:body;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.dashboard-column{display:flex;flex-direction:column;gap:16px;min-width:0}.dashboard-column>*{min-width:0}
 #dashboard-stats{grid-area:stats}#dashboard-bandwidth{grid-area:bandwidth}#dashboard-consumers{grid-area:consumers}
 #dashboard-correlations{grid-area:correlations}#dashboard-outcomes{grid-area:outcomes}#dashboard-questions{grid-area:questions}
 #dashboard-destinations{grid-area:destinations}#dashboard-countries{grid-area:countries}#dashboard-map{grid-area:map;align-self:start}
@@ -200,21 +209,19 @@ caption{text-align:left;font-size:11px;color:var(--text-tertiary);padding:8px}.i
 #dashboard-correlations .rank-table small{width:100%;font-size:11px}
 @media(max-width:1200px){.dashboard-grid{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-areas:'stats stats stats stats'
   'dnstrend dnstrend dnstrend dnstrend' 'collection collection collection collection'
-  'countries countries map map' 'outcomes outcomes map map' 'consumers consumers bandwidth bandwidth'
-  'questions questions destinations destinations' 'correlations correlations correlations correlations'}
+  'body body body body'}
   #dashboard-collection .ingestion-sources{grid-template-columns:repeat(2,minmax(0,1fr))}
   .dashboard-source-actions{flex-direction:row;flex-wrap:wrap;gap:16px}}
 @media(max-width:1023px){.dashboard-grid,.dashboard-grid.application-dashboard{grid-template-areas:'stats stats stats stats'
   'dnstrend dnstrend dnstrend dnstrend' 'collection collection collection collection'
-  'countries countries outcomes outcomes' 'map map map map' 'consumers consumers bandwidth bandwidth'
-  'correlations correlations questions questions' 'destinations destinations questions questions'}
+  'body body body body'}
   .dashboard-grid.application-dashboard{grid-template-areas:'stats stats stats stats' 'dnstrend dnstrend dnstrend dnstrend'
-    'countries countries outcomes outcomes' 'map map map map' 'consumers consumers bandwidth bandwidth' 'correlations correlations questions questions'}
+    'body body body body'}
   #dashboard-correlations .rank-table{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:850px){.dashboard-grid,.dashboard-grid.application-dashboard{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:'stats stats' 'dnstrend dnstrend'
-  'collection collection' 'countries countries' 'map map' 'outcomes outcomes' 'consumers consumers' 'bandwidth bandwidth' 'questions questions' 'correlations correlations' 'destinations destinations'}
-  .dashboard-grid.application-dashboard{grid-template-areas:'stats stats' 'dnstrend dnstrend' 'countries countries' 'map map'
-    'outcomes outcomes' 'consumers consumers' 'bandwidth bandwidth' 'questions questions' 'correlations correlations'}
+  'collection collection' 'body body'}
+  .dashboard-grid.application-dashboard{grid-template-areas:'stats stats' 'dnstrend dnstrend' 'body body'}
+  .dashboard-body{grid-template-columns:1fr}
   #dashboard-collection .ingestion-sources{grid-template-columns:1fr}}
 @media(max-width:560px){#dashboard-stats .mini-stats-list{grid-template-columns:repeat(2,minmax(0,1fr))}
   #dashboard-correlations .rank-table{grid-template-columns:1fr}}

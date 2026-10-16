@@ -38,6 +38,55 @@ class IsolatedLiveStream:
 class RuntimeTest(unittest.TestCase):
     add_row = test_glasswire.GlassWireTest.add_row
 
+    def test_activity_read_pins_its_revision_before_current_time_cutoff(self):
+        from datetime import datetime,timezone
+        self.collector.now=lambda:datetime.now(timezone.utc).isoformat()
+        tracker=self.collector.activity_tracker
+        before=history.utc(history.instant(self.collector.now())-1000000)
+        def seed(online,at):tracker.snapshot('fixture-profile',{'Peer':{'a':{'ID':'peer',
+            'HostName':'Fixture phone','Online':online}}},{},at)
+        self.collector._commit(lambda:seed(True,before))
+        original=runtime.tailscale_activity.read
+        def concurrent(view,body,now):
+            self.collector._commit(lambda:seed(False,history.utc(history.instant(now)+1000000)))
+            return original(view,body,now)
+        with patch.object(runtime.tailscale_activity,'read',concurrent):
+            result=self.collector.dispatch({'op':'activity-read','body':{'view':'devices'}})
+        self.assertEqual(len(result['rows']),1,'A concurrent latest-state update must not erase the pinned view')
+        self.assertEqual(result['rows'][0]['presence'],'online')
+
+    def test_tailscale_activity_opt_in_independent_pipe_and_graceful_close(self):
+        entered,stopped,release,closed=(threading.Event() for _ in range(4))
+        class ActivityStream:
+            def __init__(self):self.stopped=threading.Event()
+            def run(stream,receive,connected):
+                receive('snapshot','fixture-profile',({'BackendState':'Running','Peer':{'x':{'ID':'peer',
+                    'HostName':'Fixture phone','OS':'android','Online':True}}},{'Configured':False},None))
+                connected();entered.set();stream.stopped.wait();stopped.set();release.wait()
+            def cancel(stream):stream.stopped.set()
+        client=reader.PipeClient(connectivity.instance_name(self.collector.instance))
+        closer=threading.Thread(target=lambda:(self.collector.close(),closed.set()))
+        try:
+            with patch.object(runtime.tailscale_activity,'Stream',ActivityStream):
+                state=self.collector.command('state')
+                self.assertFalse(state['settings']['activity'])
+                self.assertFalse(state['settings']['dns']);self.assertFalse(state['settings']['traffic'])
+                client.request({'op':'activity-configure','body':{'enabled':True}})
+                entered.wait()
+                result=client.request({'op':'activity-read','body':{'view':'devices'}})
+                self.assertEqual(result['rows'][0]['name'],'Fixture phone')
+                self.assertEqual(result['source']['state'],'connected')
+                self.collector.command('configure',{'traffic_seconds':20})
+                self.collector.command('state')
+                self.assertFalse(stopped.is_set(),'Unrelated source settings must not interrupt Tailscale observations')
+                self.assertTrue(self.collector.command('window-closed')['collector_continues'])
+                closer.start();stopped.wait();self.assertFalse(closed.is_set())
+                release.set();closer.join();self.assertTrue(closed.is_set())
+                self.assertIsNone(self.collector.activity_thread)
+        finally:
+            release.set();client.close()
+            if closer.ident is not None:closer.join()
+
     def test_local_settings_lane_rejects_general_operations_and_does_not_wait_for_query(self):
         self.assertTrue(hasattr(connectivity,'instance_name'),'Independent fixed local-control lane is missing')
         self.collector.connectivity.call=DaemonFixture()

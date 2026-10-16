@@ -1,0 +1,17 @@
+{
+  "synthetic_demo_only": true,
+  "installed_client_changed": false,
+  "native_served_url": "https://taild.local/index.html",
+  "native_app_zoom": 100,
+  "capture_date_utc": "2026-10-16",
+  "release_status": "unreleased development main",
+  "assets_sha256": {
+    "main-XB45REMH.js": "43933f0f038105dc76b9339dc3afb1aa5cfc76579af81c7fee7cad66190c0983",
+    "chunk-7CGTOI24.js": "d5ef5dccc1adeed80f7d34612e1934f6aa2f814a0ce0e1170dc7b10381d644de",
+    "chunk-CA5NCUVR.js": "48d96f44b597af53d106d494da2f01cea43781415dcc1f8cc6bcc76330691b47"
+  },
+  "screenshots_sha256": {
+    "devices.png": "e8364100aaa330bec3aee7fabb2f3d68ef20cd846f7e563da127963ce4eb5451",
+    "taildrop.png": "f2b1e173fd8a5cc0ae992b6968b8477e97fb87a006aaf87351362fa73202e06b"
+  }
+}

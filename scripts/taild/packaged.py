@@ -51,7 +51,7 @@ def main(argv=None):
         saved=home/'runtime.json'
         if not saved.exists():return
         config=runtime.settings(reader.decode_message(saved.read_bytes()))
-        if not config['traffic'] and not config['dns']:return
+        if not config['traffic'] and not config['dns'] and not config['activity']:return
         sid=reader.current_sid();instance='owner-'+history.digest([sid,str(home).casefold()])[:32]
         cli=directory.parent/'tailscale.exe'
         # Runtime's owning-user mutex refuses a duplicate collector. Retained

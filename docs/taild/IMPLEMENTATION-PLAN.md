@@ -1,5 +1,42 @@
 # TailD staged execution
 
+October 16 R29/R30 implementation and verification reconciliation. Stage 10 is
+still the sole ACTIVE stage; broader B12 delivery/updater acceptance is unchanged.
+Authorization: implement the proposed trackers after the popup correction,
+continue while the owner is away, and stop before final deployment. No release,
+installed-client change, device/policy mutation or additional ACTIVE stage occurs.
+
+| Requirement | Satisfied acceptance and evidence |
+|---|---|
+| R29 activation | Explicit UTF-8 overlay and real native minimized-window regression; fixed source passes and corrupted title fails, preserved same-owner/path and serialized launch contracts. Committed/pushed in a556f9d; installed +15 is unchanged. |
+| R29 geometry/source attribution | B37 resolved: independent flowing body columns remove the measured 241px map grid hole; bandwidth natural height is 414px rather than stretched 532px at 100%, with 16px bottom padding. Eight populated/empty native layouts cover 100%/150% and actual 560 CSS pixels. Empty chart text is anchored to its plot. README and TAILSCALE-ACTIVITY.md separate Tailscale metadata, GlassWire bytes and Control D decisions/geography. |
+| R30 observe/store/render | B38 resolved in source: opt-in independent READ-only IPN subscription -> whitelisted durable history -> native Devices/Activity/TailDrop views. Real daemon/native and frozen no-console validation each see 19 visible peers; private SQLite quick-check passes and shutdown exits 0. No real file transfer is claimed. |
+| R30 semantics/privacy | Protocol fixtures verify baseline/change/gap/profile isolation; explicit transfer outcomes, disappearance unknown, null versus empty, duplicate/restart, path/key/URL exclusion, malformed fields, UTC offsets/nanoseconds, retention and deletion replay suppression. Activity notifications do not scan other sources' traffic/application rows. |
+| R30 lifecycle/query | Pending native pipe IO cancellation settles before exit. Unrelated source settings do not restart activity. Queries pin SQLite revision before their server-side cutoff, preventing concurrent latest-state updates from erasing a live view. The lost-subscription interval is diagnostic scheduling, not operation cancellation. |
+| R30 UI/QA | Two sequential independent QA reviews found malformed ExitNodeStatus, hidden mutation errors, mislabeled source health and premature draft search. All are corrected and covered by affected verification. Native 100%/150% checks cover actual 560 CSS pixels, keyboard refresh, failed-action explanation/checkbox reconciliation, applied search, source identity and deletion. |
+
+Evidence retained privately in
+`D:/Tools/taild-stage10-validation-20261013/activity-r30-20261016/`:
+`activity.json`, `layout.json`, `frozen-activity.json`. The complete backend
+contract run passed before the final bounded timestamp/query corrections;
+affected activity and full runtime tests were rerun afterwards and pass. Frontend
+contracts, strict TypeScript/production Angular and native builds pass. Native
+screenshots/provenance are refreshed using synthetic data only.
+
+Current verified runtime SHA256 is
+4023da671c2446cf54799df0a506d68ac5ff71e23ffc14d3853ef30ad0ebefc4;
+activity reader SHA256 is
+fb9eeb17a91d4cae63e6bacf1e06711b81510a6565afdc17112e964817212e9d.
+The frozen verification executable is a local, unsigned, non-distributed build;
+its +16 resource is not a tag or release. The public release remains +15.
+No new required deferral remains in R29/R30. Refactoring assessment: existing
+writer/private snapshots, fixed IPC lane and widgets are reused; no new daemon,
+database, scheduler, general provider layer or timeout fallback was introduced.
+The implementation endpoint is verified commit/sync and artifact cleanup,
+then the explicit stop before release/deployment. B12 is not declared complete.
+
+Original R29 diagnosis/execution record, superseded by the reconciliation above:
+
 October 16 R29 ACTIVE within the sole ACTIVE Stage 10. B36 resolved in source:
 +15's generated overlay hash 8f38d6c7489d5b64f9954fd78518c08180e4bc33f13812d90346f28fc91c0088
 matches the exact CP1252 decode / UTF-8 CRLF emission. UTF-8 input is now explicit

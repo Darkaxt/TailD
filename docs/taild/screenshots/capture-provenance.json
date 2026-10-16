@@ -3,6 +3,7 @@
   "provider_requests": 0,
   "installed_client_changed": false,
   "native_app_zoom": 100,
+  "capture_completed_at_utc": "2026-10-16T00:39:11.967445+00:00",
   "native_served_url": "https://taild.local/index.html",
   "documentation_viewport": {
     "width": 1440,
@@ -27,16 +28,16 @@
   "assets_sha256": {
     "chunk-7CGTOI24.js": "d5ef5dccc1adeed80f7d34612e1934f6aa2f814a0ce0e1170dc7b10381d644de",
     "chunk-CA5NCUVR.js": "48d96f44b597af53d106d494da2f01cea43781415dcc1f8cc6bcc76330691b47",
-    "main-7M4K6W4H.js": "2a381a0f856aa317ec7710f579ada2896e74ab21eef49e0afed6f7ed1a0bebae"
+    "main-XB45REMH.js": "43933f0f038105dc76b9339dc3afb1aa5cfc76579af81c7fee7cad66190c0983"
   },
   "screenshots_sha256": {
-    "overview.png": "fb708be189ae62f3d33713fc7f2055575fc6eb89c3e9e6625e9c6a42f43fec58",
-    "geography.png": "1065c8164a2c76c972efb6a2325c5f07741924ba39ba485e1075162886a3905e",
+    "overview.png": "21eff2c0bfee38d866586c2ed2d013733bdfe8f30fb9719419666e4b1b229cd5",
+    "geography.png": "85f491efabd9565ee2d7adbf276b3574e15c1a7540b78054d8e4c36d0fd05864",
     "applications.png": "f1d35a5f9eed9c7a688cf06f20f34b56f12af0c9188c892e95d882a46b61d5f4",
     "activity.png": "5f2830b4cf88dc95ac5b4f58257b5243b3026ffd99c40dcc1c124d6b4d41e93a",
-    "connection.png": "12184522123ea287de02cc5ad15aca8302b548b05e1d03449e83c8f13f738560",
-    "resolver.png": "810277f48d000a52031f11891655a1340c2bd88ddfafc0ef46525e0f78ff96f0",
-    "management.png": "1ed4394e5677553e6227fa6d047931f372094777083630d5189dc2ecf138e258",
+    "connection.png": "ee05c772c0088d621476b1390dd2e8aee2911cc3dbd045aa0af29ddaf88583d6",
+    "resolver.png": "74c43235ba7da285dba55b49daae7ae1f98ee5cd9628aee6f322ed7e6ff108de",
+    "management.png": "ededca9de562a0d89927718b36864e2d4169c957a5ae192db4593d6e039ab9b3",
     "policy.png": "2d6c5dce3343c2ca1e54047603e63c4927d3919d69c9488cacaacca6d11cc16c"
   }
 }

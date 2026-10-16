@@ -29,6 +29,7 @@ The screenshots contain no real accounts, browsing history or personal applicati
 | Local history | Opt-in independent collectors, ingestion progress, pause/resume, retention and deletion, coverage gaps, corrections and private JSON/CSV exports. |
 | TailDNS connectivity | Inherited DNS improvements, MagicDNS-aware resolution, the Windows tray, matching daemon/CLI, and installer/updater integration. |
 | Device control | Category-specific Connection, Preferences and DNS resolver pages; autosaved tray preferences, exit-node controls, and a persistent bottom-left About page. |
+| Tailscale activity · development main | Opt-in visible-device presence history, connection/exit-node/DNS-recovery observations, and durable TailDrop metadata, independent of Control D and GlassWire. |
 
 Control D remains responsible for its DNS filtering. GlassWire and Windows keep
 their firewall roles. TailD does not install another packet-filtering engine or
@@ -49,6 +50,27 @@ and Taildrop. These navigation/control additions are available starting with
 ![TailD DNS resolver: tailnet DNS enabled and custom override applied](docs/taild/screenshots/resolver.png)
 
 </details>
+
+### Tailscale-native history · unreleased development main
+
+The Tailscale category now includes **Devices**, **Activity** and **TailDrop**.
+Track reported device presence and connection changes, inspect resolver recovery
+events, and retain daemon-reported transfer results. Collection is opt-in and
+requires no Control D token or GlassWire installation.
+
+![Development TailD Devices: synthetic online and offline peer observations](docs/taild/screenshots/devices.png)
+
+<details>
+<summary>TailDrop history</summary>
+
+![Development TailD TailDrop: synthetic outgoing success, failure and incoming daemon receipt](docs/taild/screenshots/taildrop.png)
+
+</details>
+
+Online is control-plane presence, not ping reachability. Received by daemon is
+not proof of a save to Downloads. Gaps and unknown outcomes stay explicit; past
+unobserved transfers and uptime are not invented. Read the
+[source, privacy and history contracts](docs/taild/TAILSCALE-ACTIVITY.md).
 
 ### Resolve DNS incidents without opening the browser
 
@@ -152,9 +174,12 @@ The latest verified public Windows release is
 It includes category navigation, native device controls, independent Recent DNS
 loading, matching sidebar icon padding and the pinned SQLite 3.54.0 runtime.
 
-It also includes session policy reuse and the compact DNS refresh icon. The
-October 16 screenshots use these same signed-release interface assets and
-clearly disclosed synthetic facts, not private browsing or account data.
+It also includes session policy reuse and the compact DNS refresh icon.
+Development main additionally fixes minimized-window activation, removes stretched
+bandwidth/map grid holes, and adds the Tailscale-native history views above. These
+changes are **not released or installed**. The October 16 gallery was refreshed
+from current development assets with clearly disclosed synthetic facts, not
+private browsing or account data; capture provenance records the asset hashes.
 
 Stage 10 remains active for outstanding live delivery/updater acceptance; this
 README does not claim every deployment, recovery or lifecycle scenario is

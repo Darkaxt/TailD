@@ -23,15 +23,14 @@ export interface Consumer {value:string|null;label?:string;fullPath?:string;inbo
     <button [attr.aria-pressed]="mode==='rate'" (click)="changeMode('rate')">B/s</button></ng-container>
     <ng-template #decisions><span class="received">● DNS decisions / bin</span></ng-template>
     <span>Gaps are unobserved · partial values are lower bounds</span></div>
-    <div class="line-surface" #surface></div>
-    <p *ngIf="!hasValues" class="chart-empty">No observed {{metric==='decisions'?'DNS decisions':mode==='rate'?'complete-bin rates':'traffic'}} in this scope. Missing coverage is not zero.</p>
+    <div class="line-surface" #surface><p *ngIf="!hasValues" class="chart-empty">No observed {{metric==='decisions'?'DNS decisions':mode==='rate'?'complete-bin rates':'traffic'}} in this scope. Missing coverage is not zero.</p></div>
     <details class="chart-data"><summary>Exact chart data · UTC</summary><div class="table-scroll"><table>
       <thead><tr><th>UTC bin</th><ng-container *ngIf="metric==='traffic'"><th>Received bytes</th><th>Sent bytes</th></ng-container><th *ngIf="metric==='decisions'">Decisions</th><th>Coverage</th><th *ngIf="metric==='traffic'">Rate</th></tr></thead>
       <tbody><tr *ngFor="let bin of bins"><td><button (click)="select.emit(bin)">{{bin.start}}</button></td>
         <ng-container *ngIf="metric==='traffic'"><td>{{bin.inbound_bytes}}</td><td>{{bin.outbound_bytes}}</td></ng-container><td *ngIf="metric==='decisions'">{{bin.events}}</td><td>{{bin.coverage_incomplete?'Partial / unobserved':'Observed'}}</td>
         <td *ngIf="metric==='traffic'">{{bin.rate===null?'Unavailable':bin.total_bytes+' bytes / '+bin.represented_microseconds+' μs'}}</td></tr></tbody>
     </table></div></details>`,
-  styles:[`:host{display:block;position:relative}.line-surface{height:280px;width:100%}.chart-empty{position:absolute;top:130px;left:64px;right:64px;text-align:center}`]})
+  styles:[`:host{display:block;position:relative}.line-surface{position:relative;height:280px;width:100%}.chart-empty{position:absolute;inset:24px 20px 38px 60px;display:grid;place-items:center;text-align:center;margin:0;pointer-events:none}`]})
 export class SfngNetqueryLineChartComponent implements AfterViewInit {
   private element=inject(ElementRef<HTMLElement>);private destroy=inject(DestroyRef);private ready=false;
   @Input() set data(value:Bin[]){this.bins=value||[];this.redraw()}

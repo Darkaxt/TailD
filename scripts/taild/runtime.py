@@ -32,13 +32,14 @@ import management
 import connectivity
 import recent_dns
 import reader
+import tailscale_activity
 
 
 class RuntimeError(reader.ReaderError):
     pass
 
 
-DEFAULTS = {'traffic':False, 'dns':False, 'traffic_seconds':10, 'dns_seconds':60,
+DEFAULTS = {'traffic':False, 'dns':False, 'activity':False, 'traffic_seconds':10, 'dns_seconds':60,
             'host_scope':'local-windows', 'provider':None}
 
 
@@ -46,7 +47,7 @@ def settings(value):
     if not isinstance(value, dict) or set(value)-set(DEFAULTS):
         raise RuntimeError('invalid-settings')
     result = {**DEFAULTS, **value}
-    if any(type(result[k]) is not bool for k in ('traffic','dns')):
+    if any(type(result[k]) is not bool for k in ('traffic','dns','activity')):
         raise RuntimeError('invalid-settings')
     for key, lower in (('traffic_seconds',10), ('dns_seconds',60)):
         if type(result[key]) is not int or not lower <= result[key] <= 86400:
@@ -284,6 +285,10 @@ class Collector:
         self.live_stream = None
         self.live_thread = None
         self.live_attempt_revision = None
+        self.activity_stream = self.activity_thread = self.activity_tracker = None
+        self.activity_due = 0
+        self.activity_epoch = 0
+        self.sources['activity'] = {'state':'disabled','coverage':'observations-only'}
 
     def start(self):
         if self.thread is not None or self.closing:
@@ -320,7 +325,7 @@ class Collector:
             raise RuntimeError('startup-failed') from None
         try:
             self.api = LocalAPI(self)
-            for label,namer,operations in (('settings',connectivity.instance_name,connectivity.OPERATIONS),
+            for label,namer,operations in (('settings',connectivity.instance_name,(*connectivity.OPERATIONS,*tailscale_activity.OPERATIONS)),
                     ('policy',management.instance_name,management.OPERATIONS),('recent',recent_dns.instance_name,recent_dns.OPERATIONS)):
                 server=reader.PipeServer(namer(self.instance),owner,FixedControlSource(self,operations));errors=[]
                 def serve_control(server=server,errors=errors):
@@ -372,11 +377,25 @@ class Collector:
             return self.session()
         if request == {'op':'shutdown'}:
             return {'state':'stopping'}
-        if request['op'] not in ('state','configure','pause','resume','refresh','query','delete','cleanup','credential','credential-remove','window-opened','window-closed',*desktop_api.OPERATIONS,*management.OPERATIONS,*connectivity.OPERATIONS,*recent_dns.OPERATIONS):
+        if request['op'] not in ('state','configure','pause','resume','refresh','query','delete','cleanup','credential','credential-remove','window-opened','window-closed',*desktop_api.OPERATIONS,*management.OPERATIONS,*connectivity.OPERATIONS,*recent_dns.OPERATIONS,*tailscale_activity.OPERATIONS):
             raise RuntimeError('invalid-command')
         try:
             op=request['op'];body=request.get('body') or {}
             if not isinstance(body,dict):raise RuntimeError('invalid-command')
+            if op=='activity-read':
+                with self.condition:
+                    if self.closing or self.store is None:raise RuntimeError('stopping')
+                    store=self.store;source=dict(self.sources['activity']);enabled=self.config['activity']
+                view=store.read_view(now=self.now())
+                try:
+                    # Pin the committed snapshot before its server-side time
+                    # cutoff. Latest-state upserts must not move all rows past
+                    # an already captured cutoff while this read is in flight.
+                    view.db.execute('BEGIN')
+                    revision=view.db.execute('SELECT revision FROM settings').fetchone()[0]
+                    try:return {**tailscale_activity.read(view,body,self.now()),'source':source,'enabled':enabled,'revision':revision}
+                    except ValueError:raise RuntimeError('invalid-query') from None
+                finally:view.close()
             if op=='recent-dns':
                 with self.condition:
                     if self.closing or self.store is None:raise RuntimeError('stopping')
@@ -458,10 +477,10 @@ class Collector:
         staged.replace(target)
 
     def _state(self):
-        enabled = [self.sources[k]['state'] for k in ('traffic','dns') if self.config[k]]
+        enabled = [self.sources[k]['state'] for k in ('traffic','dns','activity') if self.config[k]]
         state = ('stopping' if self.closing else 'write-error' if self.write_error else
                  'paused' if self.paused else 'disabled' if not enabled else
-                 'collecting' if 'collecting' in enabled else 'starting' if 'starting' in enabled else 'stale')
+                 'collecting' if any(s in ('collecting','connected') for s in enabled) else 'starting' if 'starting' in enabled else 'stale')
         return {'state':state,'sources':json.loads(json.dumps(self.sources)),
                 'queue_depth':len(self.queue),'settings':self.config,
                 'lifecycle':self.lifecycle.status() if self.lifecycle is not None else {'state':'starting'},
@@ -473,6 +492,17 @@ class Collector:
             raise RuntimeError('invalid-command')
         if op == 'state' and not body:
             return self._state()
+        if op=='activity-configure':
+            if set(body)!={'enabled'} or type(body['enabled']) is not bool:raise RuntimeError('invalid-command')
+            self._execute(store,'configure',{'activity':body['enabled']})
+            return {'enabled':self.config['activity']}
+        if op=='activity-delete':
+            if self.write_error:raise RuntimeError('write-error')
+            try:result=tailscale_activity.delete(store,body,self.now())
+            except ValueError:raise RuntimeError('invalid-command') from None
+            self.config_revision+=1
+            self.activity_epoch+=1
+            return result
         if op in desktop_api.OPERATIONS:
             if self.write_error and op in ('retention','saved-query','delete-snapshots') and body.get('action')!='list':
                 raise RuntimeError('write-error')
@@ -488,7 +518,7 @@ class Collector:
             return self._state()
         if op == 'window-closed' and not body:
             self.window_attached = False
-            keep = self.config['traffic'] or self.config['dns']
+            keep = self.config['traffic'] or self.config['dns'] or self.config['activity']
             self.stop_after_window_receipt = not keep
             return {'collector_continues':keep,'state':self._state()['state']}
         if op == 'credential':
@@ -510,6 +540,9 @@ class Collector:
             previous = self.config
             self.config = updated
             self.config_revision += 1
+            if previous['activity']!=updated['activity']:
+                self.activity_epoch+=1
+                self.activity_due=0
             self.due = {'traffic':0, 'dns':0}
             for kind in ('traffic','dns'):
                 if not self.config[kind]:
@@ -522,6 +555,8 @@ class Collector:
             # A quick pause/resume is still a lifecycle transition. In-flight IO
             # settles, but its old pass cannot overwrite the fresh opportunity.
             self.config_revision += 1
+            self.activity_epoch+=1
+            self.activity_due = 0
             if op == 'resume':
                 self.write_error = False
                 self.due = {'traffic':0, 'dns':0}
@@ -798,6 +833,11 @@ class Collector:
 
     def _deliver(self, store, command):
         op,body,future = command
+        if op=='_activity_finished':
+            self.activity_thread.join()
+            self.activity_thread=self.activity_stream=None
+            self.activity_due=0 if self.activity_revision!=self.activity_epoch else time.monotonic()+10
+            return
         if op=='_live_finished':
             self.live_thread.join()
             self.live_thread=self.live_stream=None
@@ -918,12 +958,60 @@ class Collector:
         self.live_thread=threading.Thread(target=collect,name='TailD live DNS')
         self.live_thread.start()
 
+    def _synchronize_activity(self):
+        enabled=not (self.closing or self.paused or self.write_error) and self.config['activity']
+        if self.activity_thread is not None:
+            if not enabled or self.activity_revision!=self.activity_epoch:self.activity_stream.cancel()
+            return
+        if not enabled:
+            self.sources['activity']={'state':'write-error' if self.write_error else 'paused' if self.paused else 'disabled',
+                'coverage':'observations-only'}
+            return
+        if time.monotonic()<self.activity_due:return
+        self.activity_revision=self.activity_epoch
+        stream=self.activity_stream=tailscale_activity.Stream()
+        self.sources['activity']={'state':'connecting','coverage':'observations-only'}
+        def collect():
+            profile=None;reason='disconnected'
+            try:
+                def receive(kind,current,value):
+                    nonlocal profile
+                    profile=current
+                    def commit():
+                        if kind=='snapshot':
+                            status,resolver,health=value
+                            self.activity_tracker.snapshot(current,status,resolver,self.now(),health=health)
+                        else:self.activity_tracker.notify(current,value,self.now())
+                    self._commit(commit)
+                    self.sources['activity']={**self.sources['activity'],'last_success_utc':self.now(),
+                        'profile':current,'coverage':'observations-only'}
+                def connected():self.sources['activity']={**self.sources['activity'],'state':'connected'}
+                stream.run(receive,connected)
+                if stream.stopped.is_set():reason='observation-paused'
+            except (OSError,ValueError,reader.ReaderError):
+                reason='observation-paused' if stream.stopped.is_set() else 'disconnected'
+            except sqlite3.Error:
+                self.write_error=True;reason='write-error'
+            except BaseException as error:
+                self.start_error=type(error).__name__;self.closing=True;reason='worker-failed'
+            finally:
+                if profile and not self.write_error:
+                    try:self._commit(lambda:self.activity_tracker.gap(profile,reason,self.now()))
+                    except (sqlite3.Error,OSError):self.write_error=True
+                    except reader.ReaderError:pass
+                self.sources['activity']={**self.sources['activity'],'state':reason}
+                with self.condition:
+                    self.queue.append(('_activity_finished',None,None));self.condition.notify()
+        self.activity_thread=threading.Thread(target=collect,name='TailD Tailscale observations')
+        self.activity_thread.start()
+
     def _run(self):
         store = None
         self.due = {'traffic':0, 'dns':0}
         try:
             store = history.History(self.directory, now=self.now())
             self.store = store
+            self.activity_tracker = tailscale_activity.Tracker(store)
             saved = self.directory/'runtime.json'
             if saved.exists():
                 if saved.is_symlink() or saved.stat().st_nlink != 1 or saved.stat().st_size > reader.REQUEST_BYTES:
@@ -937,11 +1025,14 @@ class Collector:
             self.ready.set()
             while True:
                 self._synchronize_live(store)
+                self._synchronize_activity()
                 with self.condition:
-                    if self.closing and not self.acquisitions and self.live_thread is None and not self.queue:
+                    if self.closing and not self.acquisitions and self.live_thread is None and self.activity_thread is None and not self.queue:
                         break
                     if self.wake_pending and not self.closing:
                         self.config_revision += 1
+                        self.activity_epoch+=1
+                        self.activity_due = 0
                         self.due = {'traffic':0,'dns':0}
                         self.wake_pending = False
                         self._restore_provider_limit()
@@ -953,6 +1044,9 @@ class Collector:
                         # This wait schedules acquisition opportunities; expiry
                         # neither cancels nor classifies any running operation.
                         interval = min((max(self.due[k],self.not_before[k])-time.monotonic() for k in eligible),default=None)
+                        if not (self.closing or self.paused or self.write_error) and self.config['activity'] and self.activity_thread is None:
+                            opportunity=max(0,self.activity_due-time.monotonic())
+                            interval=opportunity if interval is None else min(interval,opportunity)
                         self.condition.wait(None if interval is None else
                             min(threading.TIMEOUT_MAX,max(0,interval)))  # Native wait API limit only.
                         continue
@@ -968,10 +1062,11 @@ class Collector:
             with self.condition:
                 self.closing = True
             if self.live_stream is not None:self.live_stream.cancel()
+            if self.activity_stream is not None:self.activity_stream.cancel()
             # An in-flight source may still return facts after explicit shutdown
             # or a writer defect. Drain its commits/completion before closing the
             # store; never strand a future, orphan a thread or discard its result.
-            while self.acquisitions or self.live_thread is not None or self.queue:
+            while self.acquisitions or self.live_thread is not None or self.activity_thread is not None or self.queue:
                 with self.condition:
                     if not self.queue:
                         self.condition.wait()

@@ -8,7 +8,7 @@ import {command} from './bridge';
 import {BrandMark} from './brand-mark';
 
 interface Source {[key:string]:unknown;state:string;last_success_utc?:string;status?:number}
-interface Settings {traffic:boolean;dns:boolean;traffic_seconds:number;dns_seconds:number;
+interface Settings {traffic:boolean;dns:boolean;activity:boolean;traffic_seconds:number;dns_seconds:number;
   host_scope:string;provider:Provider|null}
 interface Provider {account_scope:string;endpoint:string;account_type:string;instance:string;organization?:string}
 export interface State {state:string;sources:Record<string,Source>;settings:Settings;queue_depth:number}
@@ -42,9 +42,9 @@ export interface State {state:string;sources:Record<string,Source>;settings:Sett
         </app-dashboard-widget>
         <app-dashboard-widget label="Sources & health">
           <div class="status-table" *ngFor="let source of sourceNames">
-            <div><div class="row-title provider-brand"><taild-brand-mark brand="controld" *ngIf="source==='dns'" /><taild-brand-mark brand="tailscale" *ngIf="source==='context'" />{{source==='traffic'?'GlassWire':source==='dns'?'Control D':'TailDNS context'}}</div>
+            <div><div class="row-title provider-brand"><taild-brand-mark brand="controld" *ngIf="source==='dns'" /><taild-brand-mark brand="tailscale" *ngIf="source==='context'||source==='activity'" />{{source==='traffic'?'GlassWire':source==='dns'?'Control D':source==='activity'?'Tailscale activity':'TailDNS context'}}</div>
               <p class="hint" *ngIf="current.sources[source]?.last_success_utc as success">Last read {{success}}</p></div>
-            <span [attr.id]="source+'-status'" class="badge" [class.good]="current.sources[source]?.state==='collecting'"
+            <span [attr.id]="source+'-status'" class="badge" [class.good]="['collecting','connected'].includes(current.sources[source]?.state||'')"
               [class.warn]="isWarning(current.sources[source]?.state)">{{current.sources[source]?.state || 'Unavailable'}}</span>
           </div><p class="hint">A successful read is not proof of complete history. Coverage accompanies analytics queries.</p>
         </app-dashboard-widget>
@@ -90,8 +90,8 @@ export interface State {state:string;sources:Record<string,Source>;settings:Sett
     </section>`})
 export class Collection implements OnDestroy {
   state=signal<State|null>(null);busy=signal(false);error=signal('');
-  enabled=computed(()=>!!(this.state()?.settings.traffic||this.state()?.settings.dns));
-  sourceNames=['traffic','dns','context'];
+  enabled=computed(()=>!!(this.state()?.settings.traffic||this.state()?.settings.dns||this.state()?.settings.activity));
+  sourceNames=['traffic','dns','activity','context'];
   provider:Provider={account_scope:'',endpoint:'',account_type:'personal',instance:''};
   token='';readOnly=false;persist=false;private disposed=false;private healthTimer?:number;
   constructor(){void this.load()}

@@ -1060,6 +1060,56 @@ traffic bytes and Control D DNS/answer geography. Do not invent packet metrics.
 Existing Stage 10 owns this correction, verification and commit/sync. This bug
 report does not independently authorize another public release or deployment.
 
+### R30 — Tailscale-native activity and TailDrop history
+
+The owner explicitly requests these features after the popup fix and authorizes
+continued implementation/verification/commit/sync while away, stopping before
+final deployment. No release, device deployment or change to the running +15
+installation is authorized by this increment.
+
+Add opt-in Tailscale activity tracking to the existing owning-user collector,
+independent of GlassWire and Control D. Use supported READ-only LocalAPI status,
+IPN notification and custom resolver status interfaces. A cancellable Windows
+named-pipe connection must settle its pending IO before handles/thread exit;
+no visible subprocess, new service, scheduler or privileged API is needed.
+Recover a lost subscription through a documented ten-second monitoring opportunity
+or an explicit resume/wake; do not cancel healthy operations by elapsed time.
+
+Persist only whitelisted metadata in the existing private history store and its
+retention policy. No raw notifications, keys, login URLs, file contents or full
+file paths. Track baseline and observed connection/reconnect, exit-node and
+resolver/fallback/captive-portal state changes. Peer history records stable device
+ID, display name, OS, reported online/offline/unknown state and observation time.
+Online means control-plane presence, not ping/reachability or recent activity.
+Only peers visible to this authenticated client are covered. Missing peers,
+disconnected observation and first observation must not become fabricated offline
+transitions or retrospective uptime. Profile changes isolate histories.
+
+TailDrop records direction, filename basename, available peer ID, declared and
+observed byte counts, source start time, observation times and reported result.
+Outgoing Finished/Succeeded and incoming Done are explicit daemon evidence;
+incoming Done means received by the daemon, not proof of local save. Disappearance
+alone is unknown, not success. Empty/null updates retain their distinct meanings.
+Retain completed events durably, de-duplicate replayed initial notifications and
+keep gaps/unknown outcomes visible. Historical transfers before observation cannot
+be reconstructed unless present in the daemon's current retained state.
+
+Expose native-themed Tailscale tabs for Devices, Activity and TailDrop with live
+source state, start/pause controls, bounded local history, time range and search.
+No analytics-wide wait or Control D credential is needed. Retention and explicit
+activity-history deletion apply to these facts, including replay suppression.
+Keep existing tray/device settings and Tailscale/Control D group navigation.
+
+Acceptance: real READ-only daemon subscription -> sanitized events -> durable
+history -> native-served rendered peer/activity/transfer views; controlled real
+protocol fixtures cover transfer completion/failure, duplicate/restart, source
+gaps, profile switches and malformed/private inputs. Real local-daemon validation
+must verify supported fields and current visible peers without manipulating VPN,
+peer devices, files or provider policy. Clearly distinguish fixture transfers from
+real transfers. Verify opt-in independence, graceful cancellation, retention/
+deletion and restart; keyboard access, 560px minimum and 100%/150% app zoom.
+Stage 10 remains the sole ACTIVE stage; R29 layout obligations remain required.
+
 ## 15. Stage mapping and verification boundaries
 
 | Stage | Required scope | Status at specification creation |

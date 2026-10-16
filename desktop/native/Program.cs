@@ -69,7 +69,8 @@ internal sealed class OwnerBridge : IDisposable
     private static extern Microsoft.Win32.SafeHandles.SafePipeHandle CreateFile(string name,uint access,uint share,
         IntPtr security,uint disposition,uint flags,IntPtr template);
     public static OwnerLane LaneFor(string op)=>op switch {
-        "connectivity-read" or "connectivity-edit" or "connectivity-reset" or "connectivity-about"=>OwnerLane.Device,
+        "connectivity-read" or "connectivity-edit" or "connectivity-reset" or "connectivity-about" or
+        "activity-read" or "activity-configure" or "activity-delete"=>OwnerLane.Device,
         "management-read" or "management-prepare" or "management-apply" or "management-cancel"=>OwnerLane.Policy,
         "recent-dns"=>OwnerLane.Recent,_=>OwnerLane.Analytics};
     public OwnerBridge(string instance,uint pid,OwnerLane lane=OwnerLane.Analytics)
@@ -87,7 +88,8 @@ internal sealed class OwnerBridge : IDisposable
         if(op is not ("state" or "configure" or "pause" or "resume" or "refresh" or "credential" or "shutdown" or "window-closed" or
             "credential-remove" or "view-query" or "view-catalog" or "saved-query" or "export-query" or "retention" or "delete" or "delete-snapshots" or "cleanup" or
             "management-read" or "management-prepare" or "management-apply" or "management-cancel" or
-            "connectivity-read" or "connectivity-edit" or "connectivity-reset" or "connectivity-about" or "recent-dns"))
+            "connectivity-read" or "connectivity-edit" or "connectivity-reset" or "connectivity-about" or "recent-dns" or
+            "activity-read" or "activity-configure" or "activity-delete"))
             throw new InvalidDataException();
         var completion=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         lock(requests)requests.Add(completion.Task);

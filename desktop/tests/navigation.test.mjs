@@ -21,3 +21,10 @@ test('every existing page belongs to exactly one category, while About is global
   for(const page of ['Control D','Control D policy'])assert.equal(categoryForPage(page),'controld');
   assert.equal(categoryForPage('About'),null);
 });
+
+test('native activity views belong only to Tailscale and do not mount device settings',()=>{
+  for(const page of ['Devices','Tailscale activity','TailDrop'])assert.equal(categoryForPage(page),'tailscale');
+  const main=readFileSync(new URL('../src/main.ts',import.meta.url),'utf8');
+  assert.match(main,/taild-tailscale-activity/);
+  assert.match(main,/\['Connection','Preferences','DNS resolver'\]\.includes\(page\(\)\)/);
+});
