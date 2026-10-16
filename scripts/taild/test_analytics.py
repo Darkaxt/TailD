@@ -20,6 +20,28 @@ START='2026-10-08T10:00:00Z'
 END='2026-10-08T10:02:00Z'
 
 
+class CorrelationWindowTest(unittest.TestCase):
+    def test_candidate_lookup_does_not_rescan_out_of_window_dns_history(self):
+        class Counted(dict):
+            reads=0
+            def __getitem__(self,key):
+                if key=='timestamp':type(self).reads+=1
+                return super().__getitem__(key)
+        dns=[Counted(id=str(i),timestamp=i,endpoint='test',question='old.invalid',
+            fact={'raw':{'answers':'198.51.100.1'}}) for i in range(1000)]
+        dns.append(Counted(id='current',timestamp=600000000,endpoint='test',question='current.invalid',
+            fact={'raw':{'answers':'198.51.100.1'}}))
+        traffic=[{'timestamp':600000001,'scope':'host','application_path':'test.exe',
+            'destination_ip':'198.51.100.1'} for _ in range(10)]
+        context={'id':'context','timestamp':0,'observed_end':700000000,'scope':'host',
+            'backend_state':'Running','node_id':'node','user_id':'user','dns_accepted':True,
+            'local_override':True,'resolver_applied':True,'portal_mode':False,'resolver_endpoint':'test'}
+        rows=list(analytics.Analytics(None)._iter_correlations(traffic,dns,[context],300,{}))
+        self.assertTrue(all([c['decision_id'] for c in r['candidates']]==['current'] for r in rows))
+        self.assertLessEqual(Counted.reads,len(dns)*3+len(traffic)*2,
+            'Each traffic fact must seek its temporal window, not rescan the whole IP history')
+
+
 class AnalyticsTest(unittest.TestCase):
     def setUp(self):
         self.assertIsNotNone(analytics, 'Stage 5 analytics module is missing')
@@ -178,7 +200,12 @@ class AnalyticsTest(unittest.TestCase):
         expected=(row['inbound']+row['outbound'])*100001+sum(r['inbound_bytes']+r['outbound_bytes'] for r in self.traffic['rows'])
         requests=[self.request(start=start),self.request(start=start,view='series',bin_seconds=5040),
                   self.request(start=start,view='groups',group_by=['application','application_path'])]
-        result=self.engine.batch(requests)
+        self.context() # Exercise the bound path, not the existing unbound reduction.
+        statements=[];self.store.db.set_trace_callback(statements.append)
+        try:result=self.engine.batch(requests)
+        finally:self.store.db.set_trace_callback(None)
+        self.assertTrue(any('traffic_dashboard' in s and 'NULL protocol_raw' in s for s in statements),
+            'These aggregates must use the covering index without opening every JSON fact')
         summary,series,groups=[r['data'] for r in result['results']]
         self.assertEqual(summary['data']['total_bytes'],expected)
         self.assertEqual(summary['application_activity']['bucket_count'],100004)

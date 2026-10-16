@@ -32,7 +32,7 @@ def run(shell,output):
             assert page.locator('main .screen-reader-progress').count()==0,'Announcement is trapped inside aria-busy'
             assert page.locator('#analytics-results').count()==0 # No alternative browser surface.
             partial=snapshot(page);dns_ready=time.perf_counter()-started
-            assert page.locator('.analytics-results').get_attribute('inert') is not None
+            assert page.locator('.analytics-results').get_attribute('inert') is None
             expect(page.locator('#nav-1')).to_be_enabled()
             page.screenshot(path=str(output/'pending.png'))
             # Navigation is accepted immediately; old progress must not reappear.
@@ -67,6 +67,7 @@ def run(shell,output):
             # follows the original operation, with no forced termination.
             hold['active']=True;release.clear();entered.clear()
             page.locator('#nav-0').click()
+            page.locator('#view-refresh').click()
             page.wait_for_function("()=>document.querySelector('#view-progress')!==null")
             assert entered.wait(10),'Diagnostic: close probe query did not enter'
             import win32con,win32gui,win32process

@@ -71,8 +71,12 @@ def close_owned(process):
 
 
 class NativeSession:
-    def __init__(self,shell,directory,playwright,zoom=None):
+    def __init__(self,shell,directory,playwright,zoom=None,open_overview=True):
         import win32api,win32event
+        # This fixture needs DEBUG-only readiness/CDP. Refuse a release before
+        # starting a collector or held query; production correctly omits hooks.
+        if '--validation-ready-event'.encode('utf-16-le') not in shell.with_suffix('.dll').read_bytes():
+            raise ValueError('NativeSession requires a Debug validation shell, not a production release')
         self.directory=directory;self.collector=runtime.Collector(directory,None,now=lambda:END,instance='analytics-'+uuid.uuid4().hex)
         self.collector.start()
         self.server=reader.PipeServer(self.collector.instance,reader.current_sid(),self.collector)
@@ -92,6 +96,9 @@ class NativeSession:
             finally:win32api.CloseHandle(event)
             self.browser=playwright.chromium.connect_over_cdp('http://127.0.0.1:'+str(port))
             self.page=self.browser.contexts[0].pages[0];self.page.set_default_timeout(20000)
+            # Existing analytics fixtures explicitly open their subject page;
+            # startup acceptance opts out and observes the real Connection boot.
+            if open_overview:self.page.locator('#category-analytics').click()
         except BaseException:self.close();raise
 
     def close(self):

@@ -1,5 +1,54 @@
 # TailD staged execution
 
+October 16 R32 acceptance COMPLETE within the sole ACTIVE Stage 10. Startup is
+Connection; Overview loads in the background and retains revision/scope-bound
+progress and completed results across category navigation. The native held-read
+workflow proves responsive Preferences, return without another summary read,
+subtab navigation, terminal error recovery, retained-snapshot scope labeling,
+exact drill-down/export and graceful close during a held query. The loading
+overlay no longer intercepts navigation. Source availability participates in
+cache identity; queued scope/source changes finish the original operation before
+opening the latest requested snapshot. No timeout, retry or cancellation added.
+
+Offline/unknown presence overrides TailDrop availability claims. Incident/policy
+panels use remaining viewport space; Block and Bypass have explicit accessible
+red/green labels. Native-served populated geometry passes 100%/150% and 560px,
+1440px and 1920px checks: a compact map stays anchored top-right while the left
+panel stretches into the remaining width. Independent columns avoid new vertical
+holes. Screenshots were inspected; policy controls below the panel remain visible.
+Empty policy and searched Recent DNS states also pass at 100%/150%. Validation
+fixtures reject production shells before starting collectors; only Debug shells
+expose the readiness/CDP hooks used by the native acceptance workflow.
+
+Root-cause evidence: the apparently malformed database was an old Codex MSIX
+LocalCache redirection, NOT the installed collector's database. Read-only
+elevation verified the actual history identity and quick_check=ok; no recovery or
+database replacement was performed. The query scanned full per-IP DNS histories
+per traffic fact and decoded wide JSON records unnecessarily for broad totals.
+Temporal/endpoint seeks and a guarded covering-index path preserve exact metrics,
+protocol-sensitive queries and revision consistency. Profiling also identified
+redundant accumulator work, now removed. A read-only consistent snapshot of the
+real seven-day history completed all five dashboard queries in 22.025s (21.391s
+process CPU), with DNS series in 2.054s and DNS summary in 3.260s. This is measured
+snapshot evidence, not an instant-render promise or an apples-to-apples speedup
+claim against earlier live/cProfile runs under different load. Native fixture
+Preferences during a held read took 95ms/105ms, not a universal laptop SLA.
+
+Focused backend/frontend contracts, production Angular/type checks, frozen owner/
+background/setup and self-contained native Release builds pass. Native verified
+JS main-7MVNDCCT.js matches the retained production payload. Local verification
+artifacts and compact receipts are retained under r32-verification in the existing
+stage10 evidence folder; these unsigned changed components are not a public
+installer or a signed release. R32 blockers/required deferrals: none. No new
+abstraction or independent collection lane was introduced; existing ownership and
+rollback contracts remain. Stage 10 stays ACTIVE for broader B12. Installed +19
+is unchanged; publication and deployment have not been performed for R32.
+Reviewed cleanup transactions 394ec6c59b0d84c6b21a7ee4e072a208 and
+725fe122ce6411f09e1259b03f3ab03c are applied with no residuals: 3,022,499,138
+bytes of task-owned scratch, including the private read-only database snapshot,
+were removed. Compact receipts, synthetic screenshots and the unsigned changed
+payload are intentionally retained; the installed database was not touched.
+
 October 16 R31 release acceptance satisfied and verified: normal public release
 **1.105.0+19** (windows-v1.105.0+19) at exact source
 fb0b9bbe53e0fa080e41495838b82bd9fd4a900d passed all eight jobs of isolated

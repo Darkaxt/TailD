@@ -15,3 +15,14 @@ test('recent DNS is the primary incident panel before policy navigation and rule
   assert.match(template,/Decision \/ reason/);
   assert.match(template,/id="management-confirm"/);
 });
+
+test('DNS and policy fill the viewport instead of ending at a fixed table height',()=>{
+  const css=readFileSync(new URL('../src/styles.css',import.meta.url),'utf8');
+  assert.doesNotMatch(css,/\.incident-table\{max-height:480px/);
+  assert.match(css,/\.incident-viewport/);
+  assert.match(css,/\.decision-allow/);
+  assert.match(css,/\.decision-block/);
+  const template=readFileSync(new URL('../src/control-d-management.ts',import.meta.url),'utf8');
+  assert.match(template,/class="decision-badge"/);
+  assert.match(template,/decisionClass\(r.outcome\)/);
+});

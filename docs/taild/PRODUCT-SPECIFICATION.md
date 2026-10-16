@@ -1041,6 +1041,40 @@ the installed identity, services, DNS and R28 browsing/refresh behavior. Do not
 reset history or change provider policy. Existing Stage 10 owns this delivery;
 broader B12 obligations remain unchanged.
 
+### R32 — Responsive startup, background analytics and incident readability
+
+October 16 user amendment within the existing ACTIVE Stage 10. Start on
+Tailscale / Connection, matching the first category. Load Overview asynchronously
+in the background, retain its completed/partial results when visiting device or
+Control D pages, and reuse the matching scope on return. Navigation and usable
+panels must not wait for an unrelated metric. Preserve exact snapshot revisions,
+scope/generation isolation, visible progress and real terminal errors; do not
+mask stalled/corrupt history with a timeout, empty result or perpetual overlay.
+Investigate and correct the reported dashboard failure before acceptance.
+
+Offline peers must not advertise TailDrop availability: show Offline without
+an availability claim; unknown presence remains explicitly unconfirmed. Control
+D Recent DNS and Profile policy should use the remaining viewport height, with
+one appropriate content scroller rather than a fixed 480px table leaving unused
+space. Keep headers/actions usable at 100%, app-local 150% and 560px minimum.
+Display allow/bypass in accessible green and block in accessible red, alongside
+explicit labels; redirect, failure and unknown remain distinct and neutral or
+warning, never inferred to be allowed. Apply equivalent policy action styling.
+
+Additional screenshot amendment: align the geography/map row to both content
+edges. The user's clarification supersedes a fixed 3:1 split: keep the compact
+map anchored top-right at a bounded width, while the country panel stretches
+from the left content edge to the map. Remove the unused trailing column space;
+stack at narrow sizes without enlarging the map vertically or adding filler.
+
+Acceptance: reproduce and fix the actual loading failure; offline/unknown peer
+fixtures; background read + navigation + return + scope change/error regression
+workflow; native-served populated/empty DNS and policy layout at representative
+sizes; label/contrast/readability review; focused backend/frontend checks and
+production packaging build. Preserve VPN/DNS identity/settings, policy mutation
+review and signing/update/rollback contracts. Implementation and commit/sync are
+authorized; this amendment alone does not authorize another live installation.
+
 ### R31 — Unified analytics preference and live connection inventory
 
 October 16 user amendment, owned by the existing ACTIVE Stage 10: replace

@@ -30,6 +30,11 @@ def peer_view(peer,users):
     taildrop={0:'Not reported',1:'Available',2:'Network map unavailable',3:'Tailscale not running',
         4:'Not permitted',5:'Offline',6:'Peer information unavailable',7:'Unsupported OS',
         8:'Peer API unavailable',9:'Different owner'}.get(target,'Not reported')
+    taildrop_reason=string(peer.get('NoFileSharingReason'))
+    if online is False:
+        taildrop='Offline';taildrop_reason='Peer is offline; availability is not asserted'
+    elif online is None:
+        taildrop='Presence unknown';taildrop_reason='Current presence is not reported; availability is unconfirmed'
     routes=strings(peer.get('PrimaryRoutes'))
     for value in strings(peer.get('AllowedIPs')):
         try:
@@ -45,7 +50,7 @@ def peer_view(peer,users):
         'created':timestamp(peer.get('Created')),'key_expiry':timestamp(peer.get('KeyExpiry')),
         'expired':peer.get('Expired') if type(peer.get('Expired')) is bool else None,
         'tags':strings(peer.get('Tags')),'routes':routes,
-        'taildrop':taildrop,'taildrop_reason':string(peer.get('NoFileSharingReason')),
+        'taildrop':taildrop,'taildrop_reason':taildrop_reason,
         'ssh':'Advertised' if 'https://tailscale.com/cap/ssh' in caps or peer.get('sshHostKeys') else 'Not reported'}
 
 OPERATIONS=('connectivity-read','connectivity-edit','connectivity-reset','connectivity-about')

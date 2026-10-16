@@ -29,3 +29,11 @@ test('native activity views belong only to Tailscale and do not mount device set
   assert.match(main,/taild-tailscale-activity/);
   assert.match(main,/\['Connection','Preferences','DNS resolver'\]\.includes\(page\(\)\)/);
 });
+
+test('first category boots immediately while Overview preloads independently',()=>{
+  const main=readFileSync(new URL('../src/main.ts',import.meta.url),'utf8');
+  assert.match(main,/category=signal<Category>\('tailscale'\)/);
+  assert.match(main,/page=signal<Page>\('Connection'\)/);
+  assert.match(main,/overviewBatch/);
+  assert.match(main,/refresh\(false,undefined,'Overview'\)/);
+});

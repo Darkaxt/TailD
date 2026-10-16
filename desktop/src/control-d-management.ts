@@ -37,7 +37,7 @@ type RecordValue=Record<string,any>;
       <div class="recent-loading" *ngIf="reading()&&!recentRows().length" role="status" id="recent-loading"><div class="loading-dialog"><div class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></div><strong>Reading recent DNS</strong><span>Reading this endpoint's local observations</span></div></div>
       <div *ngIf="recentError()" class="error" role="alert">{{recentError()}}</div>
       <div class="table-scroll incident-table"><table><thead><tr><th>Time</th><th>Question</th><th>Decision / reason</th><th>Profile</th><th>Incident actions</th></tr></thead><tbody>
-        <tr *ngFor="let r of recentRows()"><td>{{time(r.timestamp)}}</td><td>{{r.question}} <small>{{r.type}}</small></td><td><strong>{{r.outcome}}</strong><p>{{reason(r)}}</p>
+        <tr *ngFor="let r of recentRows()"><td>{{time(r.timestamp)}}</td><td>{{r.question}} <small>{{r.type}}</small></td><td><strong class="decision-badge" [ngClass]="decisionClass(r.outcome)">{{decisionLabel(r.outcome)}}</strong><p>{{reason(r)}}</p>
           <details><summary>Decision details</summary><p class="hint">Classification: {{categories(r).join(', ')||'Not supplied'}}</p><p class="hint">Category labels describe the domain; the provider trigger above identifies the decision cause. Names from current policy are display labels, not historical policy proof.</p><taild-evidence [data]="r.fact" /></details></td><td>{{r.profile}}</td>
           <td class="actions"><button (click)="incident(r,0)" [disabled]="busy()||!snapshot()||!!preview()||r.profile!==snapshot()?.profile">Block</button>
             <button (click)="incident(r,1)" [disabled]="busy()||!snapshot()||!!preview()||r.profile!==snapshot()?.profile">Allow</button>
@@ -70,7 +70,7 @@ type RecordValue=Record<string,any>;
           <label>Find rules<input id="management-rule-search" [(ngModel)]="ruleSearch" placeholder="Search hostnames"></label>
           <p class="hint" *ngIf="resourceState('rules')!=='available'">{{resourceState('rules')}} · rules cannot be edited.</p>
           <div class="table-scroll incident-table"><table><thead><tr><th>Hostname</th><th>Action</th><th>Enabled</th><th>Incident actions</th></tr></thead><tbody>
-            <tr *ngFor="let r of rules()"><td>{{r.PK}}</td><td>{{actionName(r.action?.do)}}</td><td>{{r.action?.status===1?'Yes':'No'}}</td><td class="actions">
+            <tr *ngFor="let r of rules()"><td>{{r.PK}}</td><td><span class="decision-badge" [ngClass]="decisionClass(actionName(r.action?.do))">{{actionName(r.action?.do)}}</span></td><td>{{r.action?.status===1?'Yes':'No'}}</td><td class="actions">
               <button (click)="editRule(r)">{{r.action?.do>1?'Replace action…':'Edit'}}</button><button [disabled]="r.action?.do!==0&&r.action?.do!==1" (click)="prepare({kind:'rule',hostname:r.PK,do:r.action?.do,status:r.action?.status===1?0:1,comment:r.comment||''})">{{r.action?.status===1?'Disable':'Enable'}}</button>
               <button (click)="prepare({kind:'rule',hostname:r.PK,delete:true})">Delete</button></td></tr>
           </tbody></table></div>
@@ -123,6 +123,8 @@ export class ControlDManagement implements OnDestroy {
   rules(){return this.resource('rules').filter(r=>r.PK.toLowerCase().includes(this.ruleSearch.toLowerCase()))}
   services(){return this.resource('services').filter(r=>(r.name||r.PK).toLowerCase().includes(this.serviceSearch.toLowerCase()))}
   actionName(value:unknown){return ({0:'Block',1:'Bypass',2:'Spoof',3:'Redirect'} as Record<string,string>)[String(value)]||'Unknown'}
+  decisionClass(value:string){return ['allow','bypass'].includes(value.toLowerCase())?'decision-allow':value.toLowerCase()==='block'?'decision-block':['failed','redirect','spoof'].includes(value.toLowerCase())?'decision-warning':'decision-unknown'}
+  decisionLabel(value:string){return ({allow:'Allowed · Bypass',block:'Blocked',redirect:'Redirected',failed:'Request failed'} as Record<string,string>)[value]||'Unknown'}
   reason(row:RecordValue){return resolutionReason(row,row.profile===this.snapshot()?.profile?this.resource('filters'):[],row.profile===this.snapshot()?.profile?this.resource('services'):[])}
   categories(row:RecordValue){return resolutionCategories(row)}
   time(value:number){return new Date(value/1000).toLocaleTimeString()}

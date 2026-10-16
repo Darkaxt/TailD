@@ -43,17 +43,17 @@ const fields:Record<Kind,string[]>={
   imports:[CommonModule,FormsModule,Collection,AnalyticsPreference,DashboardWidgetComponent,CircularBarChartComponent,SfngNetqueryLineChartComponent,Evidence,IngestionNotice,WorldMapComponent,ControlDManagement,BrandMark,Connectivity,About,TailscaleActivity],
   template:`
   <button class="skip-link" (click)="skipContent()">Skip to analytics content</button>
-  <div *ngIf="analyticsPage()" class="screen-reader-progress" role="status" aria-live="polite" aria-atomic="true">{{busy()?(pendingBatch()?'Some analytics panels are ready. Reading the remaining panels.':'Loading analytics…'):ready()?'Analytics view ready.':''}}</div>
+  <div *ngIf="analyticsPage()" class="screen-reader-progress" role="status" aria-live="polite" aria-atomic="true">{{busy()?(visiblePending()?'Some analytics panels are ready. Reading the remaining panels.':'Loading analytics…'):ready()?'Analytics view ready.':''}}</div>
   <nav class="rail" aria-label="TailD navigation">
     <button id="category-tailscale" class="nav-link category-root" [class.active]="category()==='tailscale'" aria-label="Tailscale" title="Tailscale" [attr.aria-expanded]="category()==='tailscale'&&page()!=='About'" [attr.aria-controls]="page()==='About'?null:'category-pages'" (click)="selectCategory('tailscale')"><taild-brand-mark brand="tailscale" /></button>
     <button id="nav-3" class="nav-link category-root" [class.active]="category()==='controld'" aria-label="Control D" title="Control D" [attr.aria-expanded]="category()==='controld'&&page()!=='About'" [attr.aria-controls]="page()==='About'?null:'category-pages'" (click)="selectCategory('controld')"><taild-brand-mark brand="controld" /></button>
     <button id="category-analytics" class="nav-link category-root" [class.active]="category()==='analytics'" aria-label="Analytics" title="Analytics" [attr.aria-expanded]="category()==='analytics'&&page()!=='About'" [attr.aria-controls]="page()==='About'?null:'category-pages'" (click)="selectCategory('analytics')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18v16H3zM7 16v-4M12 16V8M17 16v-6" fill="none" stroke="currentColor" stroke-width="1.6" /></svg></button>
     <button id="nav-about" class="nav-link rail-bottom" [class.active]="page()==='About'" [attr.aria-current]="page()==='About'?'page':null" aria-label="About TailD" title="About TailD" (click)="navigate('About')"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6" /><path d="M12 11v6M12 7v1" stroke="currentColor" stroke-width="2" /></svg></button></nav>
-  <main id="analytics-main" tabindex="-1" class="analytics-shell" [attr.aria-busy]="analyticsBusy()" [attr.data-revision]="displayBatch()?.revision" [attr.data-ready]="ready()">
+  <main id="analytics-main" tabindex="-1" class="analytics-shell" [class.incident-viewport]="category()==='controld'&&page()!=='About'" [attr.aria-busy]="analyticsBusy()" [attr.data-revision]="displayBatch()?.revision" [attr.data-ready]="ready()">
     <header class="page-heading"><div><div class="eyebrow product-brand"><taild-brand-mark brand="tailscale" /><span>TailD / {{page()==='About'?'About':category()==='tailscale'?'Device control':category()==='controld'?'Control D':'Network analytics'}}</span></div><h1 class="section-title"><taild-brand-mark brand="controld" *ngIf="category()==='controld'&&page()!=='About'" />{{pageTitle()}}</h1>
       <p>{{category()==='tailscale'&&page()!=='About'?'Manage the existing device · explicit changes, preserved identity.':category()==='controld'&&page()!=='About'?'Resolve DNS incidents · review shared-profile changes before applying.':page()==='Applications'&&application()!==undefined?appName(application()):'Observed facts. Honest gaps. Your network stays unchanged.'}}</p></div>
       <div class="heading-status" *ngIf="category()!=='tailscale'&&page()!=='About'"><span class="badge" [class.good]="runtime()?.state==='collecting'">{{runtime()?.state||'Connecting'}}</span>
-      <span class="revision" *ngIf="displayBatch() as b">Revision {{b.revision}}{{pendingBatch()?' · loading panels':''}}</span></div></header>
+      <span class="revision" *ngIf="(analyticsPage()?displayBatch():null) as b">Revision {{b.revision}}{{visiblePending()?' · loading panels':''}}</span></div></header>
     <nav id="category-pages" class="category-tabs" aria-label="Category pages" *ngIf="page()!=='About'"><button *ngFor="let item of categoryPages()" [id]="item.id" [class.active]="page()===item.page" [attr.aria-current]="page()===item.page?'page':null" (click)="navigate(item.page)">{{item.label}}</button></nav>
     <taild-ingestion-notice *ngIf="category()!=='tailscale'&&page()!=='About'&&page()!=='Settings'&&page()!=='Overview'" [state]="runtime()" [catalog]="catalog()" [start]="start" [end]="end" />
     <fieldset class="shared-scope" aria-label="Shared analytics scope" [disabled]="busy()" *ngIf="category()==='analytics'&&page()!=='About'&&catalog() as c">
@@ -81,16 +81,16 @@ const fields:Record<Kind,string[]>={
       <span class="filter-pill" *ngFor="let filter of predicates;let i=index">{{predicateLabel(filter)}}<button [attr.aria-label]="'Remove filter '+(i+1)" (click)="removeFilter(i)">×</button></span>
       <span class="filter-pill" *ngIf="search">Search: {{search}}<button aria-label="Remove search" (click)="clearSearch()">×</button></span>
     </div>
-    <div class="view-meta" *ngIf="batch() as b"><span id="coverage-state" *ngIf="trafficResult() as t" class="badge" [class.warn]="t.value_state!=='observed'">{{t.value_state}} traffic</span>
+    <div class="view-meta" *ngIf="(analyticsPage()?batch():null) as b"><span id="coverage-state" *ngIf="trafficResult() as t" class="badge" [class.warn]="t.value_state!=='observed'">{{t.value_state}} traffic</span>
       <span *ngIf="dnsResult() as d" class="badge" [class.warn]="d.value_state!=='observed'">{{d.value_state}} DNS</span>
       <span class="hint">{{b.aggregation_version}} · no socket/PID bytes or firewall verdicts</span>
       <span class="hint" *ngIf="application()!==undefined || predicates.length || device">DNS totals use independent endpoint scope when node/traffic/application filters cannot apply.</span>
       <span class="hint" *ngIf="catalog()?.nodes_truncated">Observed-node list is truncated; narrow the host scope.</span></div>
-    <div class="loading-overlay" *ngIf="analyticsBusy()&&!pendingBatch()" role="status" aria-live="polite" aria-atomic="true" id="view-loading">
+    <div class="loading-overlay" *ngIf="analyticsBusy()&&!visiblePending()" role="status" aria-live="polite" aria-atomic="true" id="view-loading">
       <div class="loading-dialog"><div class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>
         <strong>{{batch()?'Refreshing view':'Loading analytics'}}</strong><span>Reading local history</span>
         <small>{{batch()?'Your previous revision is kept until the new view is ready.':'Preparing the selected view.'}}</small></div></div>
-    <div class="progress-notice" *ngIf="analyticsBusy()&&pendingBatch()" role="status" aria-live="polite" id="view-progress">
+    <div class="progress-notice" *ngIf="analyticsBusy()&&visiblePending()" role="status" aria-live="polite" id="view-progress">
       <span class="progress-pulse" aria-hidden="true"></span><strong>Loading remaining panels</strong>
       <span>{{dnsSummary()?'Control D decisions ready.':'Reading Control D decisions.'}} {{summary()?'Traffic summary ready.':'Reading traffic aggregates.'}}</span>
       <small>One consistent revision · drill-down available when this view finishes</small></div>
@@ -99,7 +99,8 @@ const fields:Record<Kind,string[]>={
       {{!sourceAvailability().traffic?'GlassWire traffic is unavailable and no traffic history is retained.':''}}
       {{!sourceAvailability().dns?'Control D analytics needs a READ credential and endpoint, or retained DNS history.':''}}
       <button (click)="navigate('Preferences')">Preferences</button><button (click)="navigate('Settings')">Integration setup</button></p>
-    <div class="analytics-results" [attr.inert]="analyticsBusy()?'':null" [attr.data-progress]="!!pendingBatch()">
+    <p class="hint" role="status" *ngIf="analyticsPage()&&snapshotWindow()">{{snapshotWindow()}} · refresh before using these panels with the selected scope.</p>
+    <div class="analytics-results" [attr.inert]="snapshotWindow()?'':null" [attr.data-progress]="!!visiblePending()">
 
     <ng-container *ngIf="page()==='Overview' || (page()==='Applications'&&application()!==undefined)">
       <div class="dashboard-grid" [class.application-dashboard]="application()!==undefined" [class.no-dns]="!sourceAvailability().dns" [class.no-sources]="!sourceAvailability().dns&&!sourceAvailability().traffic" *ngIf="(summary() || pendingSummary) as s">
@@ -137,6 +138,7 @@ const fields:Record<Kind,string[]>={
                 <tbody><tr *ngFor="let item of geographyCountries()"><td><button class="identity-link" (click)="selectGeography('country',item.value)">{{item.value||'Unknown'}}</button></td><td>{{geographyValue(item)}}</td></tr></tbody></table>
                 <table><thead><tr><th>Answer ASN</th><th>{{geographyMode()==='dns'?'DNS decisions':'Inferred bytes'}}</th></tr></thead><tbody><tr *ngFor="let item of geographyAsns()"><td><button class="identity-link" (click)="selectGeography('asn',item.value)">{{item.value||'Unknown'}}</button></td><td>{{geographyValue(item)}}</td></tr></tbody></table></div></details>
             </app-dashboard-widget>
+
             <app-dashboard-widget *ngIf="sourceAvailability().dns" label="DNS outcomes · Control D decisions" brand="controld" class="half" id="dashboard-outcomes" [class.panel-pending]="!dnsSummary()">
               <p class="hint">Observed decision categories for the selected endpoint.</p>
               <div class="partition" aria-label="DNS outcome distribution"><ng-container *ngFor="let item of outcomes()"><button *ngIf="item.count>0" [attr.data-outcome]="item.name" [style.flex-grow]="item.count" (click)="outcomeScope(item.name)" [attr.aria-label]="outcomeLabel(item.name)+': '+item.count+' decisions'">{{outcomeLabel(item.name)}}</button></ng-container></div>
@@ -158,6 +160,7 @@ const fields:Record<Kind,string[]>={
             <app-dashboard-widget *ngIf="sourceAvailability().dns" [label]="geographyMode()==='dns'?'Answer-country map · DNS decisions':'Answer-country map · inferred traffic'" [brand]="geographyMode()==='dns'?'controld':null" class="half" id="dashboard-map" [class.panel-pending]="!geographyReady()">
               <taild-world-map *ngIf="geographyReady()" [metric]="geographyMode()==='dns'?'decisions':'traffic'" [data]="geographyCountries()" [highlightedCountry]="highlightedCountry()" (selectCountry)="selectGeography('country',$event)" />
             </app-dashboard-widget>
+
             <app-dashboard-widget *ngIf="sourceAvailability().traffic" label="Bandwidth history · observed samples" class="half chart-panel" id="dashboard-bandwidth" [class.panel-pending]="!displayBatch()?.results?.[2]">
               <sfng-netquery-line-chart [data]="bins()" (select)="binScope($event)" />
             </app-dashboard-widget>
@@ -252,18 +255,21 @@ const fields:Record<Kind,string[]>={
     </div><footer><span>TailD · independent TailDNS fork · device control & local analytics</span><span>Queries and exports preserve UTC scope, revision and unknowns.</span></footer>
   </main>`})
 class App implements OnDestroy {
-  category=signal<Category>('analytics');
+  category=signal<Category>('tailscale');
   analyticsPage(){return this.category()==='analytics'&&this.page()!=='About'}
   analyticsBusy(){return this.analyticsPage()&&this.busy()}
   categoryPages(){return categoryPages[this.category()].filter(item=>item.page!=='Applications'||this.sourceAvailability().traffic)}
   selectCategory(category:Category){void this.navigate(categoryPages[category][0].page)}
   pageTitle(){return this.page()==='Control D'?'Recent DNS':this.page()==='Control D policy'?'Profile policy':this.page()==='Settings'?'Collection settings':this.page()}
-  kinds:Kind[]=['traffic','dns','correlations'];page=signal<Page>('Overview');runtime=signal<State|null>(null);
+  kinds:Kind[]=['traffic','dns','correlations'];page=signal<Page>('Connection');runtime=signal<State|null>(null);
   catalog=signal<Catalog|null>(null);batch=signal<Batch|null>(null);busy=signal(false);error=signal('');notice=signal('');ready=signal(false);
   sourceAvailability=computed(()=>availableSources(this.runtime(),this.catalog()));
   availableKinds(){return this.kinds.filter(kind=>kind==='dns'?this.sourceAvailability().dns:
     kind==='correlations'?this.sourceAvailability().dns&&this.sourceAvailability().traffic:this.sourceAvailability().traffic)}
-  pendingBatch=signal<Batch|null>(null);displayBatch=computed(()=>this.pendingBatch()||this.batch());
+  pendingBatch=signal<Batch|null>(null);overviewBatch=signal<Batch|null>(null);overviewPending=signal<Batch|null>(null);
+  private overviewScope='';private activeReadPage:Page|null=null;private activeReadKey='';private overviewError='';
+  visiblePending=computed(()=>this.page()==='Overview'?this.overviewScope===this.queryKey('Overview')?this.overviewPending():null:this.pendingBatch());
+  displayBatch=computed(()=>this.page()==='Overview'?this.overviewScope===this.queryKey('Overview')?this.overviewPending()||this.overviewBatch():null:this.pendingBatch()||this.batch());
   pendingSummary={data:{inbound_bytes:null,outbound_bytes:null},application_activity:{known_distinct:'Loading…',unknown_buckets:'Pending',bucket_count:'Loading…'},
     candidate_domains:{inferred:[]},geography_asn:{countries:[],asns:[]}};
   application=signal<string|null|undefined>(undefined);applicationLabel=signal('');selected=signal('');saved=signal<Saved[]>([]);
@@ -305,7 +311,7 @@ class App implements OnDestroy {
   outcomes=computed(()=>Object.entries(this.dnsSummary()?.dns_outcomes.counts||{}).map(([name,count])=>({name,count:Number(count)})));
   correlation=computed(()=>{const rows=this.summary()?.correlation_coverage||{},total=exact(this.summary()?.data.total_bytes);
     return Object.entries(rows).map(([name,v])=>{const value=v as Fact;return {name,bytes:value.total_bytes,count:value.bucket_count,weight:total?Number(exact(value.total_bytes))/Number(total)*100:0}})});
-  constructor(){this.setTime();void this.initialize().finally(()=>this.observeAvailability())}
+  constructor(){this.setTime();void this.initialize()}
   ngOnDestroy(){this.disposed=true;if(this.availabilityTimer!==undefined)clearTimeout(this.availabilityTimer)}
   private observeAvailability(){if(this.disposed)return;this.availabilityTimer=window.setTimeout(async()=>{
     try{
@@ -314,17 +320,28 @@ class App implements OnDestroy {
       const after=this.sourceAvailability();
       if(before.traffic!==after.traffic||before.dns!==after.dns){
         const catalog=await command<Catalog>('view-catalog');if(this.disposed)return;this.catalog.set(catalog);
-        if(this.analyticsPage()){if(this.busy())this.queuedNavigation=true;else await this.refresh()}
+        if(this.busy())this.queuedNavigation=true;
+        else await this.refresh(false,undefined,this.analyticsPage()?undefined:'Overview');
       }
     }catch{/* Health observation does not cancel or classify an in-flight user action. */}
     finally{this.observeAvailability()}
   },5000)}
   skipContent(){document.getElementById('analytics-main')?.focus()}
   async initialize(){this.busy.set(true);try{
-    this.runtime.set(await command<State>('state'));this.catalog.set(await command<Catalog>('view-catalog'));
+    this.runtime.set(await command<State>('analytics-state'));this.catalog.set(await command<Catalog>('view-catalog'));
     this.retentionDays=this.catalog()!.health.retention_days;
     this.saved.set((await command<{queries:Saved[]}>('saved-query',{action:'list'})).queries);
-  }catch(e){this.error.set((e as Error).message)}finally{this.busy.set(false)}await this.refresh()}
+  }catch(e){this.error.set((e as Error).message)}finally{this.busy.set(false);this.observeAvailability()}
+    if(!this.analyticsPage())this.ready.set(true);
+    this.queuedNavigation=false;
+    if(this.analyticsPage()&&this.page()!=='Overview')await this.refresh();
+    else await this.refresh(false,undefined,'Overview');
+  }
+  private queryKey(page:Page){return JSON.stringify([page,this.start,this.end,this.scope(),this.application(),this.predicates,this.combine,this.search,
+    this.sourceAvailability().traffic,this.sourceAvailability().dns,
+    ...(page==='Overview'?[]:[this.kind,this.group,this.order,this.pageIndex])])}
+  snapshotWindow(){if(!this.analyticsPage())return '';const result=this.displayBatch()?.results.find(Boolean);return result&&(Date.parse(result.start)!==Date.parse(this.start)||Date.parse(result.end)!==Date.parse(this.end))?
+    'Showing previous snapshot '+result.start+' to '+result.end:''}
   private setTime(){Object.assign(this,presetBounds(this.range))}
   localTime(value:string){return Number.isFinite(Date.parse(value))?new Date(value).toLocaleString():'Invalid timestamp'}
   utc(value:number|string){const n=Number(value);return Number.isFinite(n)?new Date(n/1000).toISOString():'Unavailable'}
@@ -351,18 +368,30 @@ class App implements OnDestroy {
       if(this.search&&(!this.predicates.length||this.predicates.every(p=>this.predicateFields(p).every(f=>(fields[kind as Kind]||[]).includes(f)))))query.search=this.search;
     }return query;
   }
-  async refresh(newTime=false,revision?:number){
-    if(!this.analyticsPage()){this.batch.set(null);this.ready.set(true);this.error.set('');return;}
-    if(this.busy())return;this.busy.set(true);this.ready.set(false);this.error.set('');this.pendingBatch.set(null);const generation=++this.loadingGeneration;
+  async refresh(newTime=false,revision?:number,target?:Page){
+    if(!target&&!this.analyticsPage()){this.ready.set(true);return;}
+    const requestPage=target||this.page();
+    if(!newTime&&revision===undefined&&requestPage==='Overview'&&this.overviewScope===this.queryKey('Overview')&&(this.overviewBatch()||this.overviewError)){
+      this.ready.set(!!this.overviewBatch());this.error.set(this.overviewError);return;
+    }
+    if(this.busy())return;this.busy.set(true);if(this.analyticsPage())this.ready.set(false);this.error.set('');this.pendingBatch.set(null);const generation=++this.loadingGeneration;
+    this.activeReadPage=requestPage;
+    let scopeKey='';
     const focused=newTime&&this.selected()?'fact-'+this.selected():document.activeElement instanceof HTMLElement?document.activeElement.id:'';
     try{
       if(newTime){if(this.range!=='custom')this.setTime();this.pageIndex=0;this.cursors=[undefined]}
+      scopeKey=this.queryKey(requestPage);this.activeReadKey=scopeKey;
+      if(requestPage==='Overview'){
+        if(this.overviewScope!==scopeKey&&!newTime)this.overviewBatch.set(null);
+        this.overviewScope=scopeKey;this.overviewPending.set(null);this.overviewError='';
+      }
       if(!/^\d{4}-\d\d-\d\dT.*Z$/.test(this.start)||!/^\d{4}-\d\d-\d\dT.*Z$/.test(this.end)||Date.parse(this.start)>=Date.parse(this.end))throw new Error('Use ascending RFC 3339 UTC timestamps ending in Z.');
-      if(this.page()==='Settings'){
+      if(requestPage==='Settings'){
         this.catalog.set(await command<Catalog>('view-catalog'));this.runtime.set(await command<State>('state'));this.batch.set(null);this.ready.set(true);return;
       }
       this.runtime.set(await command<State>('analytics-state'));
       this.catalog.set(await command<Catalog>('view-catalog'));
+      if(this.queryKey(requestPage)!==scopeKey){this.queuedNavigation=true;return;}
       if(!this.sourceAvailability().traffic&&this.sourceAvailability().dns)this.kind='dns';
       if(!this.sourceAvailability().traffic)this.geographyMode.set('dns');
       const selectedKind=this.kind;
@@ -380,37 +409,50 @@ class App implements OnDestroy {
       // Policy/history controls must not load unrelated network facts or inherit
       // their resource limits. No empty result is substituted for an unread view.
       const planned:Record<number,Query>={0:traffic,1:dns,2:series,3:apps,4:facts,5:groups,6:policy,7:dnsSeries};
-      const indices=(this.page()==='Overview'||this.page()==='Applications'&&this.application()!==undefined?[0,1,2,3,7]:
-        this.page()==='Applications'?[3]:this.page()==='Control D'?[6]:this.page()==='Sources & health'?[0]:
+      const indices=(requestPage==='Overview'||requestPage==='Applications'&&this.application()!==undefined?[0,1,2,3,7]:
+        requestPage==='Applications'?[3]:requestPage==='Control D'?[6]:requestPage==='Sources & health'?[0]:
         [...(this.kind==='dns'?[]:[2]),4,...(this.group?[5]:[])])
-        .filter(index=>this.page()==='Sources & health'||this.page()==='Control D'||
+        .filter(index=>requestPage==='Sources & health'||requestPage==='Control D'||
           (index===1||index===7?this.sourceAvailability().dns:index===4||index===5?
             this.kind==='dns'?this.sourceAvailability().dns:this.sourceAvailability().traffic:this.sourceAvailability().traffic));
-      if(this.page()==='Sources & health')planned[0]={...traffic,view:'health'};
+      if(requestPage==='Sources & health')planned[0]={...traffic,view:'health'};
       if(!indices.length){this.batch.set(null);this.ready.set(true);return}
       const result=await command<Batch>('view-query',{queries:indices.map(i=>planned[i]),...(revision===undefined?{}:{revision})},event=>{
-        if(generation===this.loadingGeneration)this.pendingBatch.set(mergeProgress(this.pendingBatch(),event as BatchProgress,indices) as Batch);
+        if(generation!==this.loadingGeneration||this.queryKey(requestPage)!==scopeKey)return;
+        if(requestPage==='Overview')this.overviewPending.set(mergeProgress(this.overviewPending(),event as BatchProgress,indices) as Batch);
+        else if(this.page()===requestPage)this.pendingBatch.set(mergeProgress(this.pendingBatch(),event as BatchProgress,indices) as Batch);
       });
-      if(generation!==this.loadingGeneration)return;
+      if(generation!==this.loadingGeneration||this.queryKey(requestPage)!==scopeKey)return;
       const ordered:Result[]=[];indices.forEach((i,j)=>ordered[i]=result.results[j]);
-      const state=await command<State>('state');if(generation!==this.loadingGeneration)return;
-      this.batch.set({...result,results:ordered});this.runtime.set(state);
+      const completed={...result,results:ordered};
+      if(requestPage==='Overview')this.overviewBatch.set(completed);
+      if(this.page()!==requestPage)return;
+      this.batch.set(completed);
       if(ordered[4]){this.pageIndex=Math.floor(ordered[4].data.page_offset/50);
         this.cursors[this.pageIndex]=ordered[4].data.current_cursor||undefined;
         this.lastQuery={...facts};delete this.lastQuery.cursor;delete this.lastQuery.anchor_id;}
       this.ready.set(true);
       if(focused)requestAnimationFrame(()=>document.getElementById(focused)?.focus());
-    }catch(e){if(generation===this.loadingGeneration)this.error.set((e as Error).message)}finally{
-      this.pendingBatch.set(null);this.finishOperation();
+    }catch(e){if(generation===this.loadingGeneration){
+      if(requestPage==='Overview')this.overviewError=(e as Error).message;
+      if(this.page()===requestPage)this.error.set((e as Error).message);
+    }}finally{
+      if(requestPage==='Overview')this.overviewPending.set(null);
+      this.pendingBatch.set(null);this.activeReadPage=null;this.activeReadKey='';this.finishOperation();
     }
   }
   async navigate(page:Page){this.page.set(page);const category=categoryForPage(page);if(category)this.category.set(category);this.notice.set('');this.error.set('');
     this.pageIndex=0;this.cursors=[undefined];
     if(page==='Applications'){this.kind='traffic';this.group=''}
-    if(this.busy()){this.loadingGeneration++;this.queuedNavigation=true;this.pendingBatch.set(null);this.batch.set(null);return}
+    if(!this.analyticsPage()){this.ready.set(true);return;}
+    if(page==='Overview'&&this.overviewScope===this.queryKey(page))this.error.set(this.overviewError);
+    if(this.busy()){
+      if(this.activeReadPage===page&&this.activeReadKey===this.queryKey(page)){this.ready.set(false);return;}
+      this.queuedNavigation=true;this.pendingBatch.set(null);this.batch.set(null);return;
+    }
     await this.scopeChanged();}
-  async scopeChanged(){this.pageIndex=0;this.cursors=[undefined];await this.refresh()}
-  finishOperation(){this.busy.set(false);if(this.queuedNavigation){this.queuedNavigation=false;void this.refresh()}}
+  async scopeChanged(){this.pageIndex=0;this.cursors=[undefined];if(this.busy()){this.queuedNavigation=true;return;}await this.refresh()}
+  finishOperation(){this.busy.set(false);if(this.queuedNavigation){this.queuedNavigation=false;void this.refresh(false,undefined,this.analyticsPage()?undefined:'Overview')}}
   hostChanged(){if(this.device&&!this.nodes().includes(this.device))this.device='';void this.scopeChanged()}
   timeChanged(){if(this.range!=='custom')this.setTime();void this.scopeChanged()}
   customTime(){this.range='custom';void this.scopeChanged()}

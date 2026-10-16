@@ -149,7 +149,7 @@ caption{text-align:left;font-size:11px;color:var(--text-tertiary);padding:8px}.i
 .ingestion-activity{font-size:11px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.ingestion-sources small{font-size:10px;color:var(--text-tertiary);overflow-wrap:anywhere}
 .ingestion-sources .ingestion-gap{color:var(--text-secondary)}
 /* Portmaster loading-dot structure and wave, tied to actual request lifetime. */
-.loading-overlay{position:fixed;inset:0 0 0 64px;z-index:40;display:grid;place-items:center;background:#1f1e1eb3;cursor:progress}
+.loading-overlay{position:fixed;inset:0 0 0 64px;z-index:40;display:grid;place-items:center;background:#1f1e1eb3;cursor:progress;pointer-events:none}
 .loading-dialog{display:flex;flex-direction:column;align-items:center;gap:12px;max-width:340px;margin:24px;padding:28px;
   background:var(--cards-secondary);border:1px solid var(--cards-tertiary);border-radius:8px;box-shadow:0 12px 36px #0005;text-align:center}
 .loading-dialog strong{font-size:15px;font-weight:500}.loading-dialog>span,.loading-dialog small{color:var(--text-tertiary);font-size:12px;line-height:1.5}
@@ -166,11 +166,12 @@ caption{text-align:left;font-size:11px;color:var(--text-tertiary);padding:8px}.i
   'body body body body'}
 .dashboard-grid.application-dashboard{grid-template-areas:'stats stats stats stats' 'dnstrend dnstrend dnstrend dnstrend'
   'body body body body'}
-.dashboard-body{grid-area:body;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+#dashboard-map .map-surface{width:100%;height:auto;aspect-ratio:1.6;min-height:160px}
+.dashboard-body{grid-area:body;display:grid;grid-template-columns:minmax(0,1fr) 480px;gap:16px;align-items:start}
 .dashboard-column{display:flex;flex-direction:column;gap:16px;min-width:0}.dashboard-column>*{min-width:0}
 #dashboard-stats{grid-area:stats}#dashboard-bandwidth{grid-area:bandwidth}#dashboard-consumers{grid-area:consumers}
 #dashboard-correlations{grid-area:correlations}#dashboard-outcomes{grid-area:outcomes}#dashboard-questions{grid-area:questions}
-#dashboard-destinations{grid-area:destinations}#dashboard-countries{grid-area:countries}#dashboard-map{grid-area:map;align-self:start}
+#dashboard-destinations{grid-area:destinations}#dashboard-countries,#dashboard-map{grid-area:auto;align-self:stretch}
 #dashboard-dns-trend{grid-area:dnstrend}#dashboard-collection{grid-area:collection}
 .incident-workspace{display:grid;gap:16px;min-width:0}.incident-binding{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
 .incident-binding label{min-width:240px;flex:1}.incident-binding h2{font-size:20px;margin:4px 0}
@@ -183,7 +184,22 @@ caption{text-align:left;font-size:11px;color:var(--text-tertiary);padding:8px}.i
 .incident-confirm input{width:auto}.incident-setting{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--cards-tertiary)}
 .incident-setting>div:first-child{flex:1;min-width:200px}.incident-setting select{max-width:200px}.incident-setting p{max-width:480px}
 .incident-progress{display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:5;background:var(--cards-primary);padding:12px}
-.incident-table{max-height:480px;margin:12px 0}.incident-table td{max-width:340px;overflow-wrap:anywhere}.incident-table td.actions{display:flex}
+.incident-table{min-height:0;margin:12px 0}.incident-table td{max-width:340px;overflow-wrap:anywhere}.incident-table td.actions{display:flex}
+.decision-badge{display:inline-flex;align-items:center;font-size:13px;font-weight:600;line-height:1.3;padding:5px 9px;border:1px solid currentColor;border-radius:4px;white-space:nowrap}
+.decision-allow{color:var(--info-green);background:#85d99612}.decision-block{color:var(--info-red);background:#f68f8712}
+.decision-warning{color:var(--info-yellow);background:#e7c97112}.decision-unknown{color:var(--text-tertiary)}
+.incident-viewport{height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+.incident-viewport>header,.incident-viewport>.category-tabs,.incident-viewport>taild-ingestion-notice,.incident-viewport>footer{flex-shrink:0}
+.incident-viewport>.analytics-results,.incident-viewport taild-control-d{display:flex;flex-direction:column;flex:1;min-height:0}
+.incident-viewport .incident-workspace{display:flex;flex-direction:column;flex:1;min-height:0}
+.incident-viewport #management-binding,.incident-viewport .incident-tabs,.incident-viewport #management-preview{flex-shrink:0}
+.incident-viewport #management-recent,.incident-viewport #management-policy{flex:1;min-height:180px}
+.incident-viewport .recent-content{display:flex;flex-direction:column;flex:1;min-height:0}
+.incident-viewport .incident-table{flex:1;min-height:0;overflow:auto}
+.incident-viewport #management-policy .incident-controls{display:flex;flex-direction:column;flex:1;min-height:0;overflow:auto}
+.incident-viewport .incident-setting{flex-shrink:0}
+@media(max-width:850px),(max-height:700px){.incident-viewport{height:auto;min-height:100dvh;overflow:visible}
+  .incident-viewport .incident-table{flex:none;max-height:none}.incident-viewport #management-policy .incident-controls{overflow:visible}}
 #management-preview{border:1px solid var(--info-blue)}
 @media(max-width:850px){.incident-rule-form{grid-template-columns:1fr 1fr}.incident-binding label{min-width:0;width:100%}.incident-table td{max-width:220px}}
 @media(max-width:560px){.incident-rule-form{grid-template-columns:1fr}}
@@ -211,6 +227,7 @@ caption{text-align:left;font-size:11px;color:var(--text-tertiary);padding:8px}.i
 @media(max-width:1200px){.dashboard-grid{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-areas:'stats stats stats stats'
   'dnstrend dnstrend dnstrend dnstrend' 'collection collection collection collection'
   'body body body body'}
+  .dashboard-body{grid-template-columns:minmax(0,1fr) 320px}
   #dashboard-collection .ingestion-sources{grid-template-columns:repeat(2,minmax(0,1fr))}
   .dashboard-source-actions{flex-direction:row;flex-wrap:wrap;gap:16px}}
 @media(max-width:1023px){.dashboard-grid,.dashboard-grid.application-dashboard{grid-template-areas:'stats stats stats stats'
