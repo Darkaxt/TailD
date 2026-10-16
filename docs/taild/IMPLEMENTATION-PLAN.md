@@ -1,5 +1,25 @@
 # TailD staged execution
 
+October 16 +18 delivery and R29 launcher acceptance: normal public release
+windows-v1.105.0+18 at exact source 19b5a4ce348616b98be201011783de843cda7018
+passed isolated signing workflow 38878244050 and independent pinned-signature,
+checksum, provenance and all-444-member payload verification. Upstream base stays
+1.105.0; inherited core stays 4b17755738ec51bb9e94a83e65ef972b8b52260a.
+Installer SHA256: 1520acecc0cf3c52465af29c966b668c1e671fb0f0300c9c91ae9bf3448dd2ec.
+Administrator request da98fbb012ce4dd28b14395a29768cb5 (ticket 23) completed
+with exit 0. Installed source/version and complete package verification pass.
+Node/profile, tailnet signing identity, credentials, custom resolver and runtime
+settings are unchanged; public DNS, MagicDNS and live Control D collection pass.
+Physical history retains inode 23080948093323689, WAL and quick_check=ok;
+DNS +31 and traffic +623 are diagnostic deltas, not a monotonic-history guarantee.
+The real installed native UI diagnostics verified ordinary TailD.exe reopening
+and the actual tray callback each restore the same minimized HWND, launcher
+exit 0, no popup and no duplicate native window. No Computer Use was needed;
+tracking/settings were not changed. AutoUpdate.Apply was restored to true only
+after these checks. The R29 ordinary-launcher advancement blocker below is now
+resolved by installed evidence in release-18/installed-activation.json. Broader
+B12 remains open and Stage 10 remains the sole ACTIVE stage.
+
 October 16 resumed +17 deployment: request cead897eb27c42db9f596c1237a3a9dc
 (ticket 22) completed with installer exit 0. Installed identity/source and full
 package verification pass; node, tailnet signing identity, credentials, resolver,
