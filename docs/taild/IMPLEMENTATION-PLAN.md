@@ -1,5 +1,29 @@
 # TailD staged execution
 
+October 16 R31 release acceptance satisfied and verified: normal public release
+**1.105.0+19** (windows-v1.105.0+19) at exact source
+fb0b9bbe53e0fa080e41495838b82bd9fd4a900d passed all eight jobs of isolated
+signing workflow 38902707570, including actual fixture install/upgrade/rollback/
+uninstall and fresh-host failed-migration recovery. Independent public download
+verification passed pinned Ed25519 envelope/package/core signatures, public
+checksums, all 444 payload members, exact source/core/base/sequence, AMD64 primary
+executables and SQLite 3.54.0 identity. Installer SHA256:
+fddb38a3ccdcb8dd61fdeecf8fe788c9dd22b0db663f78c490e15b8b00f04340
+(117294544 bytes). Published JS/CSS exactly match the native-verified assets;
+the HTML entry differs only by GitHub Windows checkout CRLF versus local LF.
+Obsolete recording controls/message and production debug hooks are absent.
+The downloaded public frozen collector independently passed unified recording
+on/off, actual READ-only daemon subscription (19 peers), SQLite quick_check=ok
+and graceful exit 0 in an isolated history folder. README screenshots show the
+new unified preference and live inventory using synthetic data only.
+R31 implementation/release blockers and required deferrals: none. Stage 10 is
+still ACTIVE for broader B12. Per the explicit user boundary, **not installed**:
+the laptop retains +18, automatic installation is held (Apply=false, Check=true),
+and no deployment approval is queued. Next authorized action is the real in-place
+deployment of this already-built and verified installer, then live preservation/
+recovery checks and restoration of original Apply=true; no further build or
+feature implementation is required before that deployment.
+
 October 16 R31 ACTIVE within the sole ACTIVE Stage 10, already_authorized by the
 unified analytics/live inventory request and explicit next-release instruction.
 Compact execution: (1) implement the complete single-preference / adaptive-source
