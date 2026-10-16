@@ -1064,8 +1064,10 @@ report does not independently authorize another public release or deployment.
 
 The owner explicitly requests these features after the popup fix and authorizes
 continued implementation/verification/commit/sync while away, stopping before
-final deployment. No release, device deployment or change to the running +15
-installation is authorized by this increment.
+final deployment. The subsequent October 16 instruction, "lets deploy", explicitly
+authorizes the normal signed public Windows release and local laptop upgrade of
+the verified R29/R30 result, preserving identity, settings, history and rollback.
+It does not authorize Android deployment or unrelated provider/device changes.
 
 Add opt-in Tailscale activity tracking to the existing owning-user collector,
 independent of GlassWire and Control D. Use supported READ-only LocalAPI status,

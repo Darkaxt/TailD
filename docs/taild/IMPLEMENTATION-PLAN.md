@@ -2,9 +2,11 @@
 
 October 16 R29/R30 implementation and verification reconciliation. Stage 10 is
 still the sole ACTIVE stage; broader B12 delivery/updater acceptance is unchanged.
-Authorization: implement the proposed trackers after the popup correction,
-continue while the owner is away, and stop before final deployment. No release,
-installed-client change, device/policy mutation or additional ACTIVE stage occurs.
+Authorization: the October 16 "lets deploy" instruction resumes delivery after
+the verified implementation stop. Publish the normal signed Windows release and
+upgrade this laptop in place, preserving identity, settings, history and rollback.
+Independent public verification and actual installed acceptance remain pending;
+no Android/provider mutation or additional ACTIVE stage is authorized.
 
 | Requirement | Satisfied acceptance and evidence |
 |---|---|
