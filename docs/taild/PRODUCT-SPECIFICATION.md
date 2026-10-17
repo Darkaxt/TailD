@@ -1,6 +1,42 @@
 # TailD remaining-product specification
 
-Version 1.12, 2026-10-17. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.13, 2026-10-17. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+
+October 17 R36 Windows refinement (already authorized): make the live device table
+the Connection page's primary content, with this device first, a presence square
+before its name and an accessible OS icon after it. Remove OS/presence columns;
+retain Last online using relative elapsed time and the exact timestamp on hover.
+Place the connection switch beside Running, retaining explicit disconnect safety.
+Move exit-node controls to ordinary Preferences rows, hide inapplicable dependent
+rows and include the existing analytics preference as a row in the same list.
+Expose the existing policy-respecting Admin console action after TailDrop. Hide
+tray Rebuild and diagnostic menu entries in the production product.
+
+Recent DNS retains contextual actions and the floating editor but replaces the
+profile-ID column with First seen and Total for each displayed question/type,
+under the selected account/endpoint and the default seven-day analytics interval.
+The live list retains its 15-minute window. Totals and earliest retained times
+include all stored observations in the last seven days, independently of the
+100-row display limit and search; they are observations, not complete provider
+traffic. Keep original event profile checks internally. Move the compact endpoint
+selector, named enforced profile and icon reload alongside Collecting; do not
+display internal endpoint/profile IDs. Shared-profile safety remains discoverable.
+Move the standalone source-history notice from Control D to About.
+
+Trace the reported terminal analytics error through native bridge, query and
+history boundaries. Finish streamed reads with a compact acknowledged terminal
+receipt; do not resend all completed panels in an oversized batch or raise message
+limits. Reject missing or inconsistent panels/revisions. Preserve specific
+sanitized errors, usable explicit refresh,
+truthful collection versus read status, and completed panels across a later panel
+failure. A failed read must never remain labeled Loading or become a permanently
+cached failure; navigation must keep the original background read alive.
+No automatic mutation retry, history repair/reset, credential or provider change.
+Verify native-served assets at restored 1440x900, 1280x800 and 1024x768 windows,
+100%/150% zoom and narrow scroll reachability; check keyboard/accessible controls,
+preferences, exact scoped counts and failed/background-query recovery. This scope
+belongs to the existing ACTIVE Stage 10, without closing broader B12. Prepare the
+verified changes for the next Windows release; no new device deployment is implied.
 
 October 17 R35: remove the separate Recent DNS incident-actions column. Each row
 has Time, Question, Decision / reason and Profile cells; put its contextual actions

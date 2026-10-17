@@ -346,7 +346,10 @@ class Analytics:
             raise QueryError('Expected 1 to 16 typed queries')
         for request in requests:
             self._validate(request)
-        self.store.db.execute('BEGIN')
+        # A fixed caller such as Recent DNS may own the snapshot to attach
+        # scoped counts to these same facts. Never end that caller's transaction.
+        owns_transaction=not self.store.db.in_transaction
+        if owns_transaction:self.store.db.execute('BEGIN')
         try:
             revision=self.store.db.execute('SELECT revision FROM settings').fetchone()[0]
             if expected_revision is not None and (type(expected_revision) is not int or revision!=expected_revision):
@@ -366,7 +369,7 @@ class Analytics:
                     'correlation_version':CORRELATION_VERSION,'index':index,'result':result})
             return {'revision':revision,'aggregation_version':VERSION,'correlation_version':CORRELATION_VERSION,'results':results}
         finally:
-            self.store.db.execute('ROLLBACK')
+            if owns_transaction:self.store.db.execute('ROLLBACK')
 
     @staticmethod
     def _fields(kind):

@@ -1,5 +1,37 @@
 # Desktop analytics — Stage 8 evidence
 
+## October 17 R36 Windows refinement
+
+R36 supersedes the older action-label/layout recommendations below. Connection
+uses a self-first inventory with presence/OS icons and relative last-online times;
+connection is a switch beside the running state. Preferences owns analytics and
+exit-node rows. The policy-respecting Admin console action follows TailDrop and
+opens the authenticated external browser. The production tray hides Rebuild;
+the native release still disables browser context menus and developer tools.
+
+Recent DNS shows 15 minutes of observations; First seen and Total use the selected
+account/endpoint's retained seven-day question/type scope. Search and the 100-row
+display limit do not truncate these metrics. They reconcile with Analytics using
+the same UTC cutoff and filters, while missing/expired observations remain gaps.
+The endpoint/profile-name/reload toolbar replaces the large binding widget.
+Source import status moves to About; original event profiles still gate writes.
+
+The installed owner database passed read-only SQLite 3.54.0 quick_check. A separate
+Codex-visible file view reported corruption; it must not be treated as proof the
+active history needs repair. The actual owner IPC reproduced a different failure:
+all five seven-day Overview panels completed, with individual frames below the
+16 MiB cap, but their combined 20,600,943-byte replies exceeded that cap when the
+terminal response resent every panel. That disconnected the analytics lane.
+
+The corrected authenticated pipe sends each panel once, retains its acknowledgement
+and finishes with revision/version/count metadata. Python and renderer clients
+assemble only a complete, ordered, matching revision; missing, duplicate or mixed
+panels fail. No message cap, deadline or mutation retry is added. Native acceptance
+exercises a batch above 20 MB, independent DNS readiness, category navigation,
+specific read errors, retained completed panels and explicit recovery. Failed
+reads no longer leave Loading labels or a permanently cached failure. This is
+pre-release source/native validation, not installation or overall B12 acceptance.
+
 ## October 16 compact-action review and documentation refresh
 
 Keep the existing Tailscale-themed widgets and category organization. Refresh DNS

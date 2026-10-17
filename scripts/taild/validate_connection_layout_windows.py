@@ -25,7 +25,7 @@ def run(shell,output):
                 session.collector.connectivity.call=daemon
                 page=session.page;page.set_default_timeout(0);settled(page)
                 origin=page.evaluate('performance.now()');page.locator('#category-tailscale').click()
-                page.wait_for_function("()=>document.querySelectorAll('#connection-devices tbody tr').length===2",timeout=0)
+                page.wait_for_function("()=>document.querySelectorAll('#connection-devices tbody tr').length===3",timeout=0)
                 elapsed=page.evaluate('performance.now()')-origin
                 assert not session.collector.config['activity'],'Live inventory must not enable recording'
                 expect(page.locator('#connection-devices')).to_contain_text('SSH advertised')
@@ -36,9 +36,9 @@ def run(shell,output):
                       table:document.querySelector('#connection-devices').getBoundingClientRect().width,
                       scroller:document.querySelector('#connection-devices').parentElement.clientWidth})''')
                     assert layout['document']<=layout['width'],layout
-                    page.locator('#connection-devices .device-metadata summary').first.click()
+                    page.locator('#connection-devices tbody tr').filter(has_text='Test exit').locator('.device-metadata summary').click()
                     expect(page.locator('#connection-devices')).to_contain_text('192.168.50.0/24')
-                    page.locator('#connection-devices .device-metadata summary').first.click()
+                    page.locator('#connection-devices tbody tr').filter(has_text='Test exit').locator('.device-metadata summary').click()
                     reports.append({'zoom':zoom,'url':page.url,'layout':layout,'navigation_to_live_rows_ms':elapsed})
                     page.locator('#connection-devices').scroll_into_view_if_needed()
                     capture_preview(session,root/('devices-'+str(width or 'native')+'.png'))

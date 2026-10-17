@@ -1,8 +1,9 @@
 """Reviewed TailD build overlay against the inherited exact core, never a fork copy.
 
 Only distribution identity/update dispatch/recovery and desktop activation change.
-DNS, protocol identifiers, right-click controls/icons and service identity continue
-to come from the pinned source.
+DNS, protocol identifiers, operational right-click controls/icons and service
+identity come from the pinned source. Production TailD hides its diagnostic
+Rebuild command.
 """
 import argparse
 import json
@@ -82,6 +83,9 @@ def create(core,output):
             sources[name]=replace_once(sources[name],
                 '\t\t(&systray.Menu{ProductName: "TailD"}).Run(&local.Client{})',
                 '\t\tconfigureDesktopAction()\n\t\t(&systray.Menu{ProductName: "TailD"}).Run(&local.Client{})')
+        elif name=='client/systray/systray.go':
+            sources[name]=replace_once(source,'\tmenu.rebuildMenu.Enable()',
+                '\t// Production TailD exposes no diagnostic repair command.\n\tmenu.rebuildMenu.Hide()').replace('TailDNS','TailD')
         elif name.startswith('cmd/taildns-installer/'):
             # Keep executable/LocalAPI/run-value names for in-place compatibility.
             # Dedicated ProgramData records and manifest product isolate TailD

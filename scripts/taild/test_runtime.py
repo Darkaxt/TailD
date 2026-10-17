@@ -45,6 +45,17 @@ class IsolatedActivityStream:
 class RuntimeTest(unittest.TestCase):
     add_row = test_glasswire.GlassWireTest.add_row
 
+    def test_history_read_errors_remain_distinct_from_transport_and_collection(self):
+        for code,state in [(sqlite3.SQLITE_CORRUPT,'history-corrupt'),(sqlite3.SQLITE_NOTADB,'history-corrupt'),
+                           (sqlite3.SQLITE_BUSY,'history-busy'),(sqlite3.SQLITE_IOERR,'history-read-failed')]:
+            error=sqlite3.DatabaseError('private source details must not cross the bridge')
+            error.sqlite_errorcode=code
+            with patch.object(self.collector.store,'read_view',side_effect=error):
+                with self.assertRaises(runtime.RuntimeError) as caught:
+                    self.collector.dispatch({'op':'view-catalog','body':{}})
+                self.assertEqual(caught.exception.state,state)
+            self.assertEqual(self.collector.dispatch({'op':'analytics-state'})['state'],'disabled')
+
     def test_activity_read_pins_its_revision_before_current_time_cutoff(self):
         from datetime import datetime,timezone
         self.collector.now=lambda:datetime.now(timezone.utc).isoformat()

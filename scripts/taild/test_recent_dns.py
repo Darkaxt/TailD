@@ -73,3 +73,36 @@ class RecentDNSTest(unittest.TestCase):
             for body in ([],{'queries':[]},{'account':'foreign'},{'endpoint':'../device'},{'endpoint':[]},{'endpoint':None},
                          {'search':42},{'search':'x'*257},{'search':'x\x00y'}):
                 with self.subTest(body=body),self.assertRaises(ValueError):recent_dns.read(view,body,self.provider,'connected')
+
+    def test_question_totals_and_first_seen_include_all_scoped_observations(self):
+        self.seed('repeat.invalid',seconds=899)
+        for seconds in range(1,106):self.seed('repeat.invalid',seconds=seconds,action='1')
+        self.seed('repeat.invalid',seconds=9001)
+        self.seed('repeat.invalid',seconds=8*86400)
+        self.seed('repeat.invalid',seconds=898,account='foreign')
+        self.seed('repeat.invalid',seconds=897,endpoint='other')
+        result=self.read({'search':'Allowed'})
+        self.assertEqual(len(result['rows']),100)
+        for row in result['rows']:
+            self.assertEqual(row['total'],107)
+            self.assertEqual(row['first_seen'],history.instant((self.now-timedelta(seconds=9001)).isoformat()))
+        with closing(self.store.read_view()) as view:
+            dashboard=recent_dns.desktop_api.DesktopAPI(view).dispatch('view-query',{'queries':[
+                {'kind':'dns','view':'summary','start':result['metrics_start'],'end':result['metrics_end'],
+                 'scope':{'account':'current','endpoint':'device'},
+                 'where':{'all':[{'field':'question','op':'eq','value':'repeat.invalid'},
+                                  {'field':'type','op':'eq','value':'A'}]}}]})
+        self.assertEqual(int(dashboard['results'][0]['data']['dns_activity']['events']),107)
+
+    def test_metrics_and_recent_rows_share_a_snapshot_during_new_ingestion(self):
+        self.seed('snapshot.invalid',seconds=1)
+        dispatch=recent_dns.desktop_api.DesktopAPI.dispatch
+        def ingest_after_facts(api,*args,**kwargs):
+            result=dispatch(api,*args,**kwargs)
+            self.seed('snapshot.invalid',seconds=2)
+            return result
+        with patch.object(recent_dns.desktop_api.DesktopAPI,'dispatch',ingest_after_facts):
+            result=self.read()
+        self.assertEqual(result['rows'][0]['total'],1)
+        self.assertEqual(result['rows'][0]['first_seen'],result['rows'][0]['timestamp'])
+        self.assertEqual(self.read()['rows'][0]['total'],2)

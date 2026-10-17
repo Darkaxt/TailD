@@ -1,5 +1,45 @@
 # TailD staged execution
 
+## October 17 R36 refinement within ACTIVE Stage 10
+
+Already authorized by the next-Windows-release request and analytics screenshot.
+Stage 10 remains the sole ACTIVE stage; B12 remains unresolved. Execute the
+connected device/preferences/Control D layout changes and terminal analytics read
+correction, then validate native-served assets, scoped history totals and error
+recovery, reconcile R36 and commit. No extra stage, delegation or device deployment.
+R36 implementation acceptance COMPLETE. The self-first live table, presence/OS
+icons, exact-hover relative last-online values and connection switch replace the
+device/exit widgets. Preferences contains ordinary analytics and conditional
+exit-node rows; Admin console follows TailDrop with fresh native policy checks.
+The reviewed exact-core overlay hides tray Rebuild without modifying its source.
+Recent DNS uses five columns including First seen and Total over retained seven-day
+account/endpoint/question/type facts, independent of recent-list/search bounds.
+The compact binding toolbar sits beside collection state; source status is in About.
+
+The actual owner IPC reproduced the analytics failure after all five panels had
+finished: the combined 20,600,943-byte replies exceeded the unchanged 16 MiB pipe
+cap when sent again as a terminal batch. The new terminal receipt carries only
+revision/version/count metadata, with complete/ordered/same-revision assembly in
+both clients. No cap increase, timeout or automatic retry. Completed panels survive
+a later failure; missing panels show Unavailable and explicit revisits can recover.
+Specific sanitized SQLite read errors remain distinct from collection state.
+
+Fresh evidence: focused backend/query/pipe/metric tests, frontend checks/tests,
+Angular production build, Debug/Release native builds, exact-core systray tests,
+and native served-layout/action/error acceptance at restored sizes and 100/150%
+zoom. Native tests complete a batch above 20 MB. Read-only installed-view verification
+also completed 20,667,661 bytes in 144.4 seconds with a reusable connection; the
+same seven-day cutoff gave Total 449 and matching earliest observation in Analytics.
+The active history passed SQLite 3.54.0 quick_check. Codex's different file view
+reported corruption; no repair/reset or active-history mutation was performed.
+
+Compact evidence and exact accepted UI hashes are retained at
+`D:/Tools/taild-stage10-validation-20261013/windows-refinement-r36-20261017/`.
+Final R36 reconciliation: every requested behavior above is satisfied and verified;
+no current-scope blocker or tracked deferral. The closure assessment found no
+additional necessary refactoring. Existing broader B12 is unchanged. This delivery
+prepares source for the next release; no new publication or installation occurred.
+
 ## October 17 scheduled inheritance maintenance within ACTIVE Stage 10
 
 R02/R03/R04 maintenance acceptance COMPLETE under monitor-taildns-upstream-updates;

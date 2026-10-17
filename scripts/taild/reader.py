@@ -211,6 +211,27 @@ def _send(handle, stop, data, maximum):
         raw = raw[count:]
 
 
+def assemble_batch(terminal,events,expected_count=None):
+    """Complete one acknowledged streamed revision, without a second large frame."""
+    if not isinstance(terminal,dict) or 'streamed_results' not in terminal:return terminal
+    count=terminal['streamed_results']
+    if (type(count) is not int or not 1<=count<=16 or len(events)!=count
+        or expected_count is not None and count!=expected_count):
+        raise ReaderError('invalid-response')
+    keys=('revision','aggregation_version','correlation_version')
+    if any(key not in terminal for key in keys):raise ReaderError('invalid-response')
+    results=[None]*count
+    for event in events:
+        if not isinstance(event,dict):raise ReaderError('invalid-response')
+        index=event.get('index')
+        if (type(index) is not int or not 0<=index<count or results[index] is not None
+            or any(event.get(key)!=terminal[key] for key in keys)
+            or not isinstance(event.get('result'),dict) or event['result'].get('revision')!=terminal['revision']):
+            raise ReaderError('invalid-response')
+        results[index]=event['result']
+    return {**{key:terminal[key] for key in keys},'results':results}
+
+
 class PipeServer:
     def __init__(self, name, owner_sid, source, *, ready_handle=None):
         if os.name != 'nt':
@@ -312,6 +333,11 @@ class PipeServer:
                                     raise ReaderError('invalid-message')
                             if isinstance(request,dict) and request.get('op')=='view-query' and hasattr(self.source,'dispatch_progress'):
                                 result=self.source.dispatch_progress(request,progress)
+                                # Every panel was already sent and acknowledged. Resending
+                                # the entire batch can exceed the frame cap even though
+                                # each panel fits. Keep the original terminal receipt.
+                                result={**{key:result[key] for key in ('revision','aggregation_version','correlation_version')},
+                                        'streamed_results':len(result['results'])}
                             else:result = {'state':'stopping'} if request == {'op':'shutdown'} else self.source.dispatch(request)
                             response = {'ok':True, 'data':result}
                         except ReaderError as error:
@@ -377,15 +403,18 @@ class PipeClient:
                         win32con.OPEN_EXISTING, win32file.FILE_FLAG_OVERLAPPED |
                         win32con.SECURITY_SQOS_PRESENT | 0x10000, None)  # SECURITY_IDENTIFICATION
                 _send(self._handle, self._stop, request, REQUEST_BYTES)
+                events=[]
                 while True:
                     response = _receive(self._handle, self._stop, RESPONSE_BYTES)
                     _send(self._handle, self._stop, {'op':'ack'}, REQUEST_BYTES)
                     if not isinstance(response,dict) or response.get('progress') is not True:break
                     if response.get('ok') is not True or request.get('op')!='view-query':raise ReaderError('invalid-response')
+                    events.append(response['data'])
                     if on_result:on_result(response['data'])
                 if not isinstance(response, dict) or response.get('ok') is not True:
                     raise ReaderError(response.get('state','invalid-response') if isinstance(response,dict) else 'invalid-response')
-                return response['data']
+                queries=request.get('body',{}).get('queries') if request.get('op')=='view-query' else None
+                return assemble_batch(response['data'],events,len(queries) if isinstance(queries,list) else None)
             except (pywintypes.error, KeyError, TypeError):
                 if self._handle is not None:
                     win32api.CloseHandle(self._handle)

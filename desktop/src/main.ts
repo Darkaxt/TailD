@@ -6,7 +6,7 @@ import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {command} from './bridge';
 import {IngestionNotice} from './ingestion-notice';
-import {Collection,AnalyticsPreference,State} from './collection';
+import {Collection,State} from './collection';
 import {availableSources} from './source-availability';
 import {DashboardWidgetComponent} from './portmaster/panel';
 import {Bin,Consumer,CircularBarChartComponent,SfngNetqueryLineChartComponent,bytes,exact} from './portmaster/charts';
@@ -40,7 +40,7 @@ const fields:Record<Kind,string[]>={
   dns:['question','type','endpoint','profile','client','action','outcome','reason','reason_value','protocol','provider_country','provider_asn','source','id','timestamp']};
 
 @Component({selector:'taild-app',standalone:true,
-  imports:[CommonModule,FormsModule,Collection,AnalyticsPreference,DashboardWidgetComponent,CircularBarChartComponent,SfngNetqueryLineChartComponent,Evidence,IngestionNotice,WorldMapComponent,ControlDManagement,BrandMark,Connectivity,About,TailscaleActivity],
+  imports:[CommonModule,FormsModule,Collection,DashboardWidgetComponent,CircularBarChartComponent,SfngNetqueryLineChartComponent,Evidence,IngestionNotice,WorldMapComponent,ControlDManagement,BrandMark,Connectivity,About,TailscaleActivity],
   template:`
   <button class="skip-link" (click)="skipContent()">Skip to analytics content</button>
   <div *ngIf="analyticsPage()" class="screen-reader-progress" role="status" aria-live="polite" aria-atomic="true">{{busy()?(visiblePending()?'Some analytics panels are ready. Reading the remaining panels.':'Loading analytics…'):ready()?'Analytics view ready.':''}}</div>
@@ -52,10 +52,11 @@ const fields:Record<Kind,string[]>={
   <main id="analytics-main" tabindex="-1" class="analytics-shell" [class.incident-viewport]="category()==='controld'&&page()!=='About'" [attr.aria-busy]="analyticsBusy()" [attr.data-revision]="displayBatch()?.revision" [attr.data-ready]="ready()">
     <header class="page-heading"><div><div class="eyebrow product-brand"><taild-brand-mark brand="tailscale" /><span>TailD / {{page()==='About'?'About':category()==='tailscale'?'Device control':category()==='controld'?'Control D':'Network analytics'}}</span></div><h1 class="section-title"><taild-brand-mark brand="controld" *ngIf="category()==='controld'&&page()!=='About'" />{{pageTitle()}}</h1>
       <p>{{category()==='tailscale'&&page()!=='About'?'Manage the existing device · explicit changes, preserved identity.':category()==='controld'&&page()!=='About'?'Resolve DNS incidents · review shared-profile changes before applying.':page()==='Applications'&&application()!==undefined?appName(application()):'Observed facts. Honest gaps. Your network stays unchanged.'}}</p></div>
-      <div class="heading-status" *ngIf="category()!=='tailscale'&&page()!=='About'"><span class="badge" [class.good]="runtime()?.state==='collecting'">{{runtime()?.state||'Connecting'}}</span>
+      <div class="heading-status" *ngIf="category()==='analytics'&&page()!=='About'"><span title="Collection status, independent of history read status" class="badge" [class.good]="runtime()?.state==='collecting'">{{runtime()?.state||'Connecting'}}</span>
       <span class="revision" *ngIf="(analyticsPage()?displayBatch():null) as b">Revision {{b.revision}}{{visiblePending()?' · loading panels':''}}</span></div></header>
-    <nav id="category-pages" class="category-tabs" aria-label="Category pages" *ngIf="page()!=='About'"><button *ngFor="let item of categoryPages()" [id]="item.id" [class.active]="page()===item.page" [attr.aria-current]="page()===item.page?'page':null" (click)="navigate(item.page)">{{item.label}}</button></nav>
-    <taild-ingestion-notice *ngIf="category()!=='tailscale'&&page()!=='About'&&page()!=='Settings'&&page()!=='Overview'" [state]="runtime()" [catalog]="catalog()" [start]="start" [end]="end" />
+    <nav id="category-pages" class="category-tabs" aria-label="Category pages" *ngIf="page()!=='About'"><button *ngFor="let item of categoryPages()" [id]="item.id" [class.active]="page()===item.page" [attr.aria-current]="page()===item.page?'page':null" (click)="navigate(item.page)">{{item.label}}</button><button *ngIf="category()==='tailscale'&&adminVisible()" id="nav-admin" (click)="openAdmin()" title="Open Tailscale admin console in your browser">Admin console ↗</button></nav>
+    <div class="error" role="alert" *ngIf="category()==='tailscale'&&page()!=='About'&&adminError()">{{adminError()}}</div>
+    <taild-ingestion-notice *ngIf="page()==='About'" [state]="runtime()" [catalog]="catalog()" [start]="start" [end]="end" />
     <fieldset class="shared-scope" aria-label="Shared analytics scope" [disabled]="busy()" *ngIf="category()==='analytics'&&page()!=='About'&&catalog() as c">
       <label>Host scope<select id="scope-host" [(ngModel)]="host" (change)="hostChanged()"><option value="">All recorded hosts</option>
         <option *ngFor="let value of hosts()" [value]="value">{{value}}</option></select></label>
@@ -103,10 +104,10 @@ const fields:Record<Kind,string[]>={
     <div class="analytics-results" [attr.inert]="snapshotWindow()?'':null" [attr.data-progress]="!!visiblePending()">
 
     <ng-container *ngIf="page()==='Overview' || (page()==='Applications'&&application()!==undefined)">
-      <div class="dashboard-grid" [class.application-dashboard]="application()!==undefined" [class.no-dns]="!sourceAvailability().dns" [class.no-sources]="!sourceAvailability().dns&&!sourceAvailability().traffic" *ngIf="(summary() || pendingSummary) as s">
-        <app-dashboard-widget label="Activity in the selected period" id="dashboard-stats" *ngIf="sourceAvailability().traffic||sourceAvailability().dns" [attr.data-pending]="!summary()&&sourceAvailability().traffic">
-          <div class="mini-stats-list"><button *ngIf="sourceAvailability().traffic" class="mini-stat" id="received-card" (click)="explore('traffic')"><label>Received</label><span>{{summary()?format(s.data.inbound_bytes):'Loading…'}}</span><small>{{summary()?s.data.inbound_bytes+' bytes':'Traffic history'}}</small></button>
-            <button *ngIf="sourceAvailability().traffic" class="mini-stat" id="sent-card" (click)="explore('traffic')"><label>Sent</label><span>{{summary()?format(s.data.outbound_bytes):'Loading…'}}</span><small>{{summary()?s.data.outbound_bytes+' bytes':'Traffic history'}}</small></button>
+      <div class="dashboard-grid" [class.application-dashboard]="application()!==undefined" [class.no-dns]="!sourceAvailability().dns" [class.no-sources]="!sourceAvailability().dns&&!sourceAvailability().traffic" *ngIf="(summary() || pendingSummary()) as s">
+        <app-dashboard-widget label="Activity in the selected period" id="dashboard-stats" *ngIf="sourceAvailability().traffic||sourceAvailability().dns" [attr.data-pending]="busy()&&!summary()&&sourceAvailability().traffic">
+          <div class="mini-stats-list"><button *ngIf="sourceAvailability().traffic" class="mini-stat" id="received-card" (click)="explore('traffic')"><label>Received</label><span>{{summary()?format(s.data.inbound_bytes):missingPanel()}}</span><small>{{summary()?s.data.inbound_bytes+' bytes':'Traffic history'}}</small></button>
+            <button *ngIf="sourceAvailability().traffic" class="mini-stat" id="sent-card" (click)="explore('traffic')"><label>Sent</label><span>{{summary()?format(s.data.outbound_bytes):missingPanel()}}</span><small>{{summary()?s.data.outbound_bytes+' bytes':'Traffic history'}}</small></button>
             <button *ngIf="sourceAvailability().traffic" class="mini-stat" id="applications-card" (click)="navigate('Applications')"><label>Observed applications</label><span>{{s.application_activity.known_distinct}}</span><small>{{s.application_activity.unknown_buckets}} unknown buckets</small></button>
             <button *ngIf="sourceAvailability().dns" class="mini-stat" id="dns-card" (click)="explore('dns')"><label>DNS decisions</label><span>{{dnsSummary()?.dns_activity.events??'Unavailable'}}</span><small>Independent endpoint scope</small></button>
             <button *ngIf="sourceAvailability().traffic" class="mini-stat" id="buckets-card" (click)="explore('traffic')"><label>Traffic buckets</label><span>{{s.application_activity.bucket_count}}</span><small>Not live connections</small></button>
@@ -229,9 +230,8 @@ const fields:Record<Kind,string[]>={
         <button id="open-query" [disabled]="busy()||!savedSelection" (click)="openSaved()">Open</button><button [disabled]="busy()||!savedSelection" (click)="removeSaved()">Remove</button></div>
     </section>
 
-    <taild-control-d *ngIf="category()==='controld'&&page()!=='About'" [section]="page()==='Control D policy'?'policy':'recent'" />
-    <taild-connectivity *ngIf="['Connection','Preferences','DNS resolver'].includes(page())" [view]="page()" />
-    <taild-analytics-preference *ngIf="page()==='Preferences'" />
+    <taild-control-d [collectionState]="runtime()?.state||'Connecting'" *ngIf="category()==='controld'&&page()!=='About'" [section]="page()==='Control D policy'?'policy':'recent'" />
+    <taild-connectivity *ngIf="['Connection','Preferences','DNS resolver'].includes(page())" [view]="page()" (adminVisibility)="adminVisible.set($event)" />
     <taild-tailscale-activity *ngIf="['Tailscale activity','TailDrop'].includes(page())" [view]="page()" (preferences)="navigate('Preferences')" />
     <taild-about *ngIf="page()==='About'" />
     <section *ngIf="page()==='Sources & health'" class="grid">
@@ -256,6 +256,9 @@ const fields:Record<Kind,string[]>={
   </main>`})
 class App implements OnDestroy {
   category=signal<Category>('tailscale');
+  adminVisible=signal(false);adminError=signal('');
+  async openAdmin(){this.adminError.set('');try{await command('open-product-link',{target:'admin'})}catch(e){this.adminError.set((e as Error).message)}}
+  missingPanel(){return this.busy()?'Loading…':'Unavailable'}
   analyticsPage(){return this.category()==='analytics'&&this.page()!=='About'}
   analyticsBusy(){return this.analyticsPage()&&this.busy()}
   categoryPages(){return categoryPages[this.category()].filter(item=>item.page!=='Applications'||this.sourceAvailability().traffic)}
@@ -268,10 +271,10 @@ class App implements OnDestroy {
     kind==='correlations'?this.sourceAvailability().dns&&this.sourceAvailability().traffic:this.sourceAvailability().traffic)}
   pendingBatch=signal<Batch|null>(null);overviewBatch=signal<Batch|null>(null);overviewPending=signal<Batch|null>(null);
   private overviewScope='';private activeReadPage:Page|null=null;private activeReadKey='';private overviewError='';
-  visiblePending=computed(()=>this.page()==='Overview'?this.overviewScope===this.queryKey('Overview')?this.overviewPending():null:this.pendingBatch());
+  visiblePending=computed(()=>this.page()==='Overview'?this.overviewScope===this.queryKey('Overview')&&this.busy()?this.overviewPending():null:this.pendingBatch());
   displayBatch=computed(()=>this.page()==='Overview'?this.overviewScope===this.queryKey('Overview')?this.overviewPending()||this.overviewBatch():null:this.pendingBatch()||this.batch());
-  pendingSummary={data:{inbound_bytes:null,outbound_bytes:null},application_activity:{known_distinct:'Loading…',unknown_buckets:'Pending',bucket_count:'Loading…'},
-    candidate_domains:{inferred:[]},geography_asn:{countries:[],asns:[]}};
+  pendingSummary=computed(()=>({data:{inbound_bytes:null,outbound_bytes:null},application_activity:{known_distinct:this.missingPanel(),unknown_buckets:'Unknown',bucket_count:this.missingPanel()},
+    candidate_domains:{inferred:[]},geography_asn:{countries:[],asns:[]}}));
   application=signal<string|null|undefined>(undefined);applicationLabel=signal('');selected=signal('');saved=signal<Saved[]>([]);
   host='';device='';account='';endpoint='';range=DEFAULT_TIME_RANGE;start='';end='';timezone=Intl.DateTimeFormat().resolvedOptions().timeZone;
   kind:Kind='traffic';search='';predicates:Predicate[]=[];combine:'all'|'any'='all';field='application_path';operator='eq';filterValue='';
@@ -371,7 +374,7 @@ class App implements OnDestroy {
   async refresh(newTime=false,revision?:number,target?:Page){
     if(!target&&!this.analyticsPage()){this.ready.set(true);return;}
     const requestPage=target||this.page();
-    if(!newTime&&revision===undefined&&requestPage==='Overview'&&this.overviewScope===this.queryKey('Overview')&&(this.overviewBatch()||this.overviewError)){
+    if(!newTime&&revision===undefined&&requestPage==='Overview'&&this.overviewScope===this.queryKey('Overview')&&this.overviewBatch()){
       this.ready.set(!!this.overviewBatch());this.error.set(this.overviewError);return;
     }
     if(this.busy())return;this.busy.set(true);if(this.analyticsPage())this.ready.set(false);this.error.set('');this.pendingBatch.set(null);const generation=++this.loadingGeneration;
@@ -437,7 +440,7 @@ class App implements OnDestroy {
       if(requestPage==='Overview')this.overviewError=(e as Error).message;
       if(this.page()===requestPage)this.error.set((e as Error).message);
     }}finally{
-      if(requestPage==='Overview')this.overviewPending.set(null);
+      if(requestPage==='Overview'&&(!this.overviewError||this.overviewBatch()))this.overviewPending.set(null);
       this.pendingBatch.set(null);this.activeReadPage=null;this.activeReadKey='';this.finishOperation();
     }
   }

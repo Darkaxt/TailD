@@ -22,7 +22,7 @@ class DaemonFixture:
             'Applied':True,'Reason':'applied','CaptivePortal':False}
         self.policy={'Settings':{}}
         self.status={'BackendState':'Running','Version':'1.105.0-taild.10',
-            'Self':{'ID':'self','HostName':'Test device','TailscaleIPs':['100.64.0.1']},
+            'Self':{'ID':'self','HostName':'Test device','TailscaleIPs':['100.64.0.1'],'Online':True,'OS':'windows'},
             'User':{'1':{'DisplayName':'Test user','LoginName':'test@example.invalid'}},
             'Peer':{'x':{'ID':'exit-a','HostName':'Test exit','DNSName':'exit.example.invalid.',
                 'TailscaleIPs':['100.64.0.2'],'Online':True,'ExitNodeOption':True}}}
@@ -69,6 +69,18 @@ class ConnectivityTest(unittest.TestCase):
         self.assertEqual(data['profile'],'profile-a')
         self.assertNotIn('PrivateNodeKey',json.dumps(data));self.assertNotIn('Persist',json.dumps(data))
         self.assertEqual(len(data['preferences']),5)
+        self.assertEqual(data['self']['id'],'self')
+        self.assertTrue(data['self']['self'])
+        self.assertEqual(data['self']['online'],True)
+        self.assertTrue(data['show_admin'])
+
+    def test_self_presence_and_admin_visibility_use_reported_state_and_policy(self):
+        self.daemon.status['Self'].pop('Online')
+        self.assertIsNone(self.control.read()['self']['online'])
+        self.daemon.status['BackendState']='Stopped'
+        self.assertFalse(self.control.read()['self']['online'])
+        self.daemon.policy['Settings']['AdminConsoleVisibility']={'Value':'hide'}
+        self.assertFalse(self.control.read()['show_admin'])
     def test_operational_resolver_state_does_not_invalidate_preferences(self):
         revision=self.control.read()['revision']
         self.daemon.resolver.update(Applied=False,Reason='temporary portal',CaptivePortal=True)

@@ -20,7 +20,7 @@ test('navigation and product headers use bundled marks, not TD or the generic pr
 });
 
 test('provider panel headings and source banners share the reviewed Control D artwork',()=>{
-  assert.match(read('control-d-management.ts'),/label="Control D · incident workspace" brand="controld"/);
+  assert.match(read('control-d-management.ts'),/id="management-binding" class="incident-header-controls"/);
   assert.match(read('control-d-management.ts'),/label="Recent DNS · incident resolutions" brand="controld"/);
   assert.match(read('collection.ts'),/label="Control D binding · read only" brand="controld"/);
   assert.match(read('ingestion-notice.ts'),/<taild-brand-mark brand="controld" \*ngIf="source.kind==='dns'"/);

@@ -15,6 +15,7 @@ internal sealed class BridgeError(string state) : Exception
 {
     public string State {get;}=state is "invalid-query" or "stale-revision" or "invalid-export-destination" or "resource-limit" or "invalid-settings" or
         "explicit-provider-required" or "backpressure" or "write-error" or "credential-not-accepted" or
+        "history-corrupt" or "history-busy" or "history-read-failed" or
         "read-only-confirmation-required" or "invalid-command" or "stopping" or
         "management-conflict" or "management-invalid-change" or "management-denied" or "management-rate-limited" or
         "management-write-rejected" or "management-outcome-unknown" or "management-account-mismatch" or
@@ -307,7 +308,7 @@ internal sealed class CollectionWindow : Form
                 data=JsonSerializer.SerializeToElement(new{png=Convert.ToBase64String(png.ToArray())});
             }else
 #endif
-            data=op=="open-product-link"?OpenProductLink(body):op=="export-query"?await Export(body):await
+            data=op=="open-product-link"?await OpenProductLink(body):op=="export-query"?await Export(body):await
                 (lane switch {OwnerLane.Device=>settingsBridge,OwnerLane.Policy=>policyBridge,OwnerLane.Recent=>recentBridge,_=>bridge}).Request(op,body,partial=>{
                 if(!view.IsDisposed&&!disposingWindow)view.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(new{id,ok=true,progress=true,data=partial}));
             });
@@ -318,10 +319,15 @@ internal sealed class CollectionWindow : Form
             id,ok=false,state=error is BridgeError known?known.State:error is InvalidDataException?"invalid-command":"unavailable"}));}
         finally{if(admitted)Interlocked.Decrement(ref active[(int)lane]);}
     }
-    private static JsonElement OpenProductLink(JsonElement body)
+    private async Task<JsonElement> OpenProductLink(JsonElement body)
     {
         if(body.EnumerateObject().Count()!=1||!body.TryGetProperty("target",out var target))throw new InvalidDataException();
+        if(target.GetString()=="admin"){
+            var current=await settingsBridge.Request("connectivity-read",Empty);
+            if(!current.GetProperty("show_admin").GetBoolean())throw new BridgeError("connectivity-denied");
+        }
         var url=target.GetString() switch {
+            "admin"=>"https://login.tailscale.com/admin/machines",
             "project"=>"https://github.com/Darkaxt/TailD",
             "releases"=>"https://github.com/Darkaxt/TailD/releases",
             "licenses"=>"https://github.com/Darkaxt/TailD/blob/main/desktop/NOTICE.md",

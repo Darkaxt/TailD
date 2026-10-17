@@ -458,8 +458,13 @@ class Collector:
             # Typed-query validation failures are public protocol errors, not
             # fatal pipe-server exceptions or private exception messages.
             raise RuntimeError(error.code) from None
-        except (sqlite3.Error,history.HistoryError):
-            raise RuntimeError('unavailable') from None
+        except sqlite3.Error as error:
+            code=getattr(error,'sqlite_errorcode',0)&255
+            raise RuntimeError('history-corrupt' if code in (sqlite3.SQLITE_CORRUPT,sqlite3.SQLITE_NOTADB)
+                else 'history-busy' if code in (sqlite3.SQLITE_BUSY,sqlite3.SQLITE_LOCKED)
+                else 'history-read-failed') from None
+        except history.HistoryError:
+            raise RuntimeError('history-read-failed') from None
 
     def after_receipt(self, request):
         if request == {'op':'shutdown'} or (request == {'op':'window-closed'} and self.stop_after_window_receipt):

@@ -14,36 +14,36 @@ type RecordValue=Record<string,any>;
     <div class="error" role="alert" *ngIf="error()">{{error()}}</div>
     <div class="incident-progress" role="status" *ngIf="busy()"><div class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>{{activity()}}</div>
     <div role="status" class="hint incident-notice" *ngIf="notice()">{{notice()}}</div>
-    <app-dashboard-widget label="Control D · incident workspace" brand="controld" id="management-binding">
-      <div class="incident-binding">
-        <label>Endpoint<select id="management-endpoint" [(ngModel)]="endpoint" (change)="load()" [disabled]="busy()">
-          <option *ngFor="let d of devices()" [value]="d.PK">{{d.name || d.PK}} · {{d.PK}}</option></select></label>
-        <div><span class="eyebrow">Enforced profile</span><h2>{{snapshot()?profileName():'Not loaded'}}</h2><small>{{snapshot()?.profile}}</small></div>
-        <button id="management-reload" (click)="load(true)" [disabled]="busy()">Reload policy</button>
-      </div>
+    <div id="management-binding" class="incident-header-controls">
+      <span class="badge" [class.good]="collectionState==='collecting'" title="Collection status, independent of history read status">{{collectionState}}</span>
+      <label>Endpoint<select id="management-endpoint" [(ngModel)]="endpoint" (change)="load()" [disabled]="busy()"><option *ngFor="let d of devices()" [value]="d.PK">{{d.name || 'Collection endpoint'}}</option></select></label>
+      <span class="enforced-profile" *ngIf="snapshot()">{{profileName()}}</span>
+      <button id="management-reload" class="icon-button" (click)="load(true)" [disabled]="busy()" aria-label="Reload policy" title="Reload policy"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-2l2 3M4 16l2 3a7 7 0 0 0 12-2" fill="none" stroke="currentColor" stroke-width="1.7" /></svg></button>
+    </div>
+    <div class="incident-policy-context">
       <p *ngIf="!snapshot()&&!busy()">Configure a READ credential and endpoint binding in Settings, then reload this page.</p>
       <p class="hint" *ngIf="snapshot()?.policy_cache?.reused">Session policy snapshot. Reload policy to see provider-side changes; every write is checked against fresh policy.</p>
       <details *ngIf="snapshot()" class="incident-scope-details"><summary>Shared profile · {{affected().length}} affected endpoint(s)</summary><p class="hint">Profile policy affects every endpoint below, not only this computer. Endpoint selection here does not change DNS collection or your resolver.</p>
         <div class="incident-endpoints"><span class="filter-pill" *ngFor="let d of affected()">{{d.name}}</span></div>
         <p class="hint">Browsing uses READ access. Explicit changes use the separate Write credential. Allow creates a Bypass rule and can override filter blocks.</p></details>
-    </app-dashboard-widget>
+    </div>
     <app-dashboard-widget label="Recent DNS · incident resolutions" brand="controld" id="management-recent" *ngIf="section==='recent'">
       <div class="incident-recent-controls"><label>Search resolutions<input id="incident-dns-search" [ngModel]="dnsSearch" placeholder="Domain / decision" (ngModelChange)="searchChanged($event)"></label>
         <label class="incident-confirm"><input type="checkbox" [(ngModel)]="observe"> Follow recent activity</label>
         <button id="incident-dns-refresh" class="icon-button" [disabled]="reading()" (click)="recent()" aria-label="Refresh DNS" [title]="reading()?'Reading recent DNS':'Refresh DNS'" [attr.aria-busy]="reading()"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 7v5h-5M4 17v-5h5M6.1 7a7 7 0 0 1 11.8-2L20 8M4 16l2.1 3A7 7 0 0 0 17.9 17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
         <span class="badge" [class.good]="liveState()==='connected'">Live stream: {{liveState()}}</span></div>
-      <p class="hint">Latest 100 stored observations in the last 15 minutes for the selected endpoint. Streaming follows the collection binding, not this selection. Gaps do not mean zero activity.</p>
+      <p class="hint">Latest 100 stored observations in the last 15 minutes for the selected endpoint. First seen and Total cover each question/type in retained history over the last 7 days, independent of search. Streaming follows the collection binding, not this selection. Gaps do not mean zero activity.</p>
       <div class="recent-content" [attr.aria-busy]="reading()">
       <div class="recent-loading" *ngIf="reading()&&!recentRows().length" role="status" id="recent-loading"><div class="loading-dialog"><div class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></div><strong>Reading recent DNS</strong><span>Reading this endpoint's local observations</span></div></div>
       <div *ngIf="recentError()" class="error" role="alert">{{recentError()}}</div>
-      <div class="table-scroll incident-table"><table><thead><tr><th>Time</th><th>Question</th><th>Decision / reason</th><th>Profile</th></tr></thead><tbody>
+      <div class="table-scroll incident-table"><table><thead><tr><th>Time</th><th>Question</th><th>Decision / reason</th><th>First seen</th><th>Total</th></tr></thead><tbody>
         <tr *ngFor="let r of recentRows()"><td>{{time(r.timestamp)}}</td><td>{{r.question}} <small>{{r.type}}</small></td><td>
           <div class="decision-heading"><strong class="decision-badge" [ngClass]="decisionClass(r.outcome)">{{decisionLabel(r.outcome)}}</strong><span class="decision-actions">
             <button *ngIf="r.outcome!=='block'" class="icon-button decision-action-block" (click)="incident(r,0)" [disabled]="busy()||!snapshot()||r.profile!==snapshot()?.profile" aria-label="Block" [title]="'Block '+r.question+' in the shared profile'"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8" /><path d="m6.3 6.3 11.4 11.4" fill="none" stroke="currentColor" stroke-width="1.8" /></svg></button>
             <button *ngIf="r.outcome!=='allow'" class="icon-button decision-action-allow" (click)="incident(r,1)" [disabled]="busy()||!snapshot()||r.profile!==snapshot()?.profile" aria-label="Allow" [title]="'Allow '+r.question+' with a Bypass rule in the shared profile'"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
             <button class="icon-button edit-rule-icon" (click)="editQuestion(r)" [disabled]="busy()||!snapshot()||r.profile!==snapshot()?.profile" [attr.aria-label]="'Edit rule for '+r.question" title="Edit rule"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m14 5 5 5M4 20l5-1L20 8a2.8 2.8 0 0 0-4-4L5 15l-1 5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" /></svg></button>
           </span></div><p>{{reason(r)}}</p>
-          <details><summary>Decision details</summary><p class="hint">Classification: {{categories(r).join(', ')||'Not supplied'}}</p><p class="hint">Category labels describe the domain; the provider trigger above identifies the decision cause. Names from current policy are display labels, not historical policy proof.</p><taild-evidence [data]="r.fact" /></details></td><td>{{r.profile}}</td></tr>
+          <details><summary>Decision details</summary><p class="hint">Classification: {{categories(r).join(', ')||'Not supplied'}}</p><p class="hint">Category labels describe the domain; the provider trigger above identifies the decision cause. Names from current policy are display labels, not historical policy proof.</p><taild-evidence [data]="r.fact" /></details></td><td><time [title]="exactTime(r.first_seen)">{{firstSeen(r.first_seen)}}</time></td><td>{{r.total}}</td></tr>
       </tbody></table></div>
       <p class="empty-state" *ngIf="!recentRows().length&&!reading()&&!recentError()">{{dnsSearch?'No resolutions match this search in the selected endpoint’s recent window. Clear the search to see stored activity.':'No stored resolutions in this endpoint’s recent window. Check its last activity and the collection binding; this is not proof of no DNS traffic.'}}</p>
       </div><p class="hint">Actions require current policy verification and a matching event profile. Policy loading does not block reading resolutions.</p>
@@ -122,6 +122,9 @@ type RecordValue=Record<string,any>;
       <taild-evidence [data]="policyHistory()" /></details>
   </section>`})
 export class ControlDManagement implements OnDestroy {
+  @Input() collectionState='Connecting';
+  firstSeen(value:number){return new Date(value/1000).toLocaleString()}
+  exactTime(value:number){return new Date(value/1000).toISOString()}
   @Input() section:'recent'|'policy'='recent';@ViewChild('policyDialog') policyDialog?:ElementRef<HTMLDialogElement>;
   tabs=['Rules','Filters','Services','Profile Options'];tab=signal('Rules');snapshot=signal<RecordValue|null>(null);
   preview=signal<RecordValue|null>(null);busy=signal(false);reading=signal(false);error=signal('');notice=signal('');activity=signal('');
@@ -132,7 +135,7 @@ export class ControlDManagement implements OnDestroy {
   constructor(){void this.load();this.schedule()}
   devices(){return this.knownDevices.length?this.knownDevices:this.endpoint?[{PK:this.endpoint,name:'Collection endpoint'}]:[]}
   affected(){return this.snapshot()?.affected_endpoints||[]}
-  profileName(){return (this.snapshot()?.resources?.profiles?.data?.profiles||[]).find((p:RecordValue)=>p.PK===this.snapshot()?.profile)?.name||this.snapshot()?.profile}
+  profileName(){return (this.snapshot()?.resources?.profiles?.data?.profiles||[]).find((p:RecordValue)=>p.PK===this.snapshot()?.profile)?.name||'Unnamed profile'}
   resourceState(kind:string){return this.snapshot()?.resources?.[kind]?.state||'unavailable'}
   resource(kind:string):RecordValue[]{return this.resourceState(kind)==='available'?(this.snapshot()?.resources?.[kind]?.data?.[kind]||[]):[]}
   rules(){return this.resource('rules').filter(r=>r.PK.toLowerCase().includes(this.ruleSearch.toLowerCase()))}

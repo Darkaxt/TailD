@@ -54,6 +54,8 @@ class CoreOverlayTest(unittest.TestCase):
         self.assertNotIn('"-taildns."',feature)
         tray=Path(replacements[str(Path(core)/'client/systray/systray.go')]).read_text()
         self.assertIn('About TailD ',tray)
+        self.assertIn('menu.rebuildMenu.Hide()',tray)
+        self.assertNotIn('menu.rebuildMenu.Enable()',tray)
         self.assertIn('https://github.com/Darkaxt/TailD',tray)
         main=Path(replacements[str(Path(core)/'cmd/taildns-ipn/main_windows.go')]).read_text()
         self.assertIn('configureDesktopAction()',main)

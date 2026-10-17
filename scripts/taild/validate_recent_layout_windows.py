@@ -78,12 +78,18 @@ def run(shell,output,diagnostic=False):
                         session.collector.store.import_live_dns({'timestamp':(now-timedelta(seconds=i+1)).isoformat(),
                             'endpointId':'device','profileId':'profile','question':f'host-{i}.example','rrType':'A',
                             'action':('0','1','2','-1','99','3')[i%6],'trigger':'filter','triggerValue':'ads'},'local','device',collected=now.isoformat())
+                    session.collector.store.import_live_dns({'timestamp':(now-timedelta(days=3)).isoformat(),
+                        'endpointId':'device','profileId':'profile','question':'host-0.example','rrType':'A',
+                        'action':'1'},'local','device',collected=now.isoformat())
                 session.collector._commit(seed);page.locator('#nav-3').click();ready(page)
                 page.get_by_label('Follow recent activity',exact=True).uncheck()
                 expect(page.locator('#management-recent tbody tr')).to_have_count(36)
-                expect(page.locator('#management-recent thead th')).to_have_text(['Time','Question','Decision / reason','Profile'])
+                expect(page.locator('#management-recent thead th')).to_have_text(['Time','Question','Decision / reason','First seen','Total'])
+                expect(page.locator('#management-recent tbody tr').first.locator('td').last).to_have_text('2')
+                expect(page.locator('#management-endpoint')).not_to_contain_text(' · device')
+                expect(page.locator('#ingestion-notice')).to_have_count(0)
                 for row in page.locator('#management-recent tbody tr').all():
-                    expect(row.locator('td')).to_have_count(4)
+                    expect(row.locator('td')).to_have_count(5)
                     icons=row.locator('.decision-heading button')
                     assert icons.count() in (2,3)
                     assert icons.evaluate_all('(buttons)=>buttons.every(b=>!b.textContent.trim()&&b.querySelector("svg")&&b.getAttribute("aria-label")&&b.title)')

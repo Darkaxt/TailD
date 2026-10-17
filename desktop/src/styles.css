@@ -270,3 +270,16 @@ caption{text-align:left;font-size:11px;color:var(--text-tertiary);padding:8px}.i
 @media(max-width:850px){.dashboard-grid.no-dns{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:'stats stats' 'collection collection' 'body body'}
   .dashboard-grid.application-dashboard.no-dns{grid-template-areas:'stats stats' 'body body'}
   .dashboard-grid.no-sources{grid-template-areas:'collection collection' 'body body'}}
+
+/* R36: compact identity and preference rows, using the established palette. */
+.device-identity{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.device-os{width:18px;height:18px;flex:none;color:var(--text-secondary)}
+.presence-square{width:18px;height:18px;border:1px solid var(--text-tertiary);border-radius:4px;display:inline-flex;align-items:center;justify-content:center;flex:none;color:var(--text-tertiary)}
+.presence-square span{width:6px;height:6px;border-radius:50%;background:currentColor}.presence-square.online{color:var(--info-green);border-color:var(--info-green)}.presence-square.offline span{background:transparent;border:1px solid currentColor}
+#connection-devices{min-width:600px}#connection-devices th:first-child{width:52%}#connection-devices time{white-space:nowrap}
+.analytics-preference .row{border-bottom:0}.analytics-preference>small{display:block;margin:0 0 12px}.analytics-preference{border-bottom:1px solid var(--cards-tertiary)}
+.incident-header-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}.incident-header-controls label{flex-direction:row;align-items:center}.incident-header-controls select{width:220px;max-width:100%}.enforced-profile{font-size:13px;color:var(--text-secondary)}
+.incident-policy-context{font-size:12px}.incident-policy-context>p{margin:0 0 6px}.incident-policy-context .incident-scope-details{margin:0}
+@media(min-width:1000px){.incident-header-controls{position:absolute;right:32px;top:82px;max-width:58%}}
+@media(max-width:700px){.incident-header-controls{justify-content:flex-start}.incident-header-controls label{flex:1;min-width:180px}.incident-header-controls select{width:100%}}
+
+.connection-switch{position:relative;width:40px;min-width:40px;height:24px;padding:0;border:0;border-radius:999px;background:var(--switch-off)}.connection-switch>span{position:absolute;left:2px;top:3px;width:18px;height:18px;background:var(--switch-dot);border-radius:50%}.connection-switch.on{background:var(--selection)}.connection-switch.on>span{left:20px}.connection-switch:focus-visible{outline:2px solid var(--info-blue);outline-offset:4px}

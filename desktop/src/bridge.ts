@@ -1,9 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import {mergeProgress} from './progressive-batch.ts';
+import type {ProgressiveBatch,BatchProgress} from './progressive-batch.ts';
 interface WebView {postMessage(value:unknown):void;addEventListener(type:string,fn:(event:MessageEvent)=>void):void}
 const webview=(window as unknown as {chrome?:{webview:WebView}}).chrome?.webview;
 let sequence=0;
-const pending=new Map<number,{lane:string;resolve:(value:unknown)=>void;reject:(error:Error)=>void;progress?:(value:unknown)=>void}>();
+const pending=new Map<number,{lane:string;resolve:(value:unknown)=>void;reject:(error:Error)=>void;progress?:(value:unknown)=>void;count?:number;batch?:ProgressiveBatch}>();
 const errors:Record<string,string>={
+  'history-corrupt':'Local history could not be read: SQLite reported a malformed database. History is preserved; collection status is shown separately. Diagnose the history before attempting recovery.',
+  'history-busy':'Local history is busy. Wait for the active operation, then refresh the view.',
+  'history-read-failed':'Local history could not be read. History is preserved; check Sources & health and refresh explicitly.',
   'connectivity-unavailable':'The local Tailscale service is unavailable or incompatible. Reload to check its current state.',
   'connectivity-denied':'This setting is controlled by system policy or the active account. No change was made.',
   'connectivity-conflict':'The active profile or settings changed. Reload before making another change.',
@@ -35,11 +40,27 @@ webview?.addEventListener('message',event=>{
   const message=event.data,request=pending.get(message?.id);
   if(!request)return;
   if(message.ok===true&&message.progress===true){
-    try{request.progress?.(message.data)}catch(error){pending.delete(message.id);request.reject(error instanceof Error?error:new Error('Invalid query progress'))}
+    try{
+      if(request.count!==undefined){
+        if(request.batch?.results[message.data?.index])throw new Error('Duplicate query panel');
+        request.batch=mergeProgress(request.batch||null,message.data as BatchProgress,Array.from({length:request.count},(_,i)=>i));
+      }
+      request.progress?.(message.data)
+    }catch(error){pending.delete(message.id);request.reject(error instanceof Error?error:new Error('Invalid query progress'))}
     return;
   }
   pending.delete(message.id);
-  if(message.ok===true)request.resolve(message.data);
+  if(message.ok===true){
+    const terminal=message.data;
+    if(terminal?.streamed_results!==undefined){
+      const batch=request.batch;
+      if(!batch||terminal.streamed_results!==request.count||batch.results.filter(Boolean).length!==request.count||
+        batch.revision!==terminal.revision||batch.aggregation_version!==terminal.aggregation_version||batch.correlation_version!==terminal.correlation_version){
+        request.reject(new Error('Incomplete or inconsistent analytics reply. Refresh explicitly.'));return;
+      }
+      request.resolve(batch);
+    }else request.resolve(terminal);
+  }
   else request.reject(new Error(errors[message.state]||'Collector unavailable. Reopen TailD to reconnect.'));
 });
 export function command<T=unknown>(op:string,body:unknown={},progress?:(value:unknown)=>void):Promise<T>{
@@ -49,6 +70,8 @@ export function command<T=unknown>(op:string,body:unknown={},progress?:(value:un
   if([...pending.values()].filter(request=>request.lane===lane).length>=(lane==='analytics'?4:2))return Promise.reject(new Error('An operation is already pending.'));
   const id=++sequence;
   return new Promise<T>((resolve,reject)=>{
-    pending.set(id,{lane,resolve:value=>resolve(value as T),reject,progress});webview.postMessage({id,op,body});
+    const queries=op==='view-query'&&body&&typeof body==='object'?(body as {queries?:unknown}).queries:undefined;
+    const count=Array.isArray(queries)&&queries.length>=1&&queries.length<=16?queries.length:undefined;
+    pending.set(id,{lane,resolve:value=>resolve(value as T),reject,progress,count});webview.postMessage({id,op,body});
   });
 }

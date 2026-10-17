@@ -141,6 +141,9 @@ class Connectivity:
         safe_resolver={key:resolver[key] for key in resolver_fields}
         peers=[peer_view(p,status.get('User') or {})
             for p in (status.get('Peer') or {}).values()]
+        own=peer_view(self_info,status.get('User') or {})
+        own.update(self=True,taildrop=None,taildrop_reason=None)
+        if status.get('BackendState')!='Running':own['online']=False if status.get('BackendState')=='Stopped' else None
         safe_prefs={key:prefs.get(key) for key in ('WantRunning','ExitNodeID','ExitNodeAllowLANAccess')}
         safe_prefs['AdvertiseRoutes']=prefs.get('AdvertiseRoutes') or []
         safe_prefs['RunExitNode']=all(route in safe_prefs['AdvertiseRoutes'] for route in ('0.0.0.0/0','::/0'))
@@ -149,6 +152,7 @@ class Connectivity:
             'addresses':self_info.get('TailscaleIPs') or [],'daemon_version':status.get('Version') or '',
             'preferences':preferences,'prefs':safe_prefs,'resolver':safe_resolver,
             'peers':sorted(peers,key=lambda p:p['name'] or ''),
+            'self':own,'show_admin':visible('AdminConsoleVisibility'),
             'show_peers':visible('NetworkDevicesVisibility'),'show_exit':visible('ExitNodeMenuVisibility'),
             'show_run_exit':visible('RunExitNodeVisibility'),'show_reset':visible('ResetToDefaultsVisibility'),
             'can_disconnect':bool(profile_id) and get('AlwaysOn.Enabled') is not True,

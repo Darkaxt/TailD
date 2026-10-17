@@ -119,16 +119,16 @@ export class Collection implements OnDestroy {
 }
 
 @Component({selector:'taild-analytics-preference',standalone:true,
-  imports:[CommonModule,FormsModule,DashboardWidgetComponent,SfngToggleSwitchComponent],template:`
-  <app-dashboard-widget label="Analytics" brand="tailscale">
+  imports:[CommonModule,FormsModule,SfngToggleSwitchComponent],template:`
+  <div class="analytics-preference">
     <div class="row"><div><div class="row-title">Collect analytics</div>
-      <p>Record Tailscale activity, Control D DNS with your configured READ credential, and traffic from an available GlassWire reader.</p></div>
+      <small class="hint">Record Tailscale activity and available DNS/traffic integrations.</small></div>
       <sfng-toggle name="Collect analytics" controlId="analytics-toggle" [ngModel]="enabled()" #recordingControl="ngModel"
         (ngModelChange)="configure($event,recordingControl)" [disabled]="busy()||!state()" /></div>
-    <p class="hint">Turning this off stops recording, not your VPN, live device list or Control D policy management. Retained history remains available.</p>
-    <p class="hint" id="analytics-preference-status" role="status">{{busy()?'Reading / saving recording preference…':enabled()?'Recording enabled · available integrations are selected automatically.':'Recording disabled · retained history only.'}}</p>
+
+    <small class="hint" id="analytics-preference-status" role="status">{{busy()?'Reading / saving recording preference…':enabled()?'Recording enabled · available integrations are selected automatically.':'Recording disabled · retained history only.'}}</small>
     <p class="error" role="alert" *ngIf="error()">{{error()}}</p>
-  </app-dashboard-widget>`})
+  </div>`})
 export class AnalyticsPreference {
   state=signal<State|null>(null);busy=signal(false);error=signal('');
   enabled=computed(()=>this.state()?.analytics_enabled===true);

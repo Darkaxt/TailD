@@ -22,6 +22,30 @@ END = '2026-10-07T16:36:43Z'
 class ReaderTest(unittest.TestCase):
     add_row = test_glasswire.GlassWireTest.add_row
 
+    def test_streamed_batch_does_not_resend_every_panel_in_one_oversized_frame(self):
+        from unittest.mock import patch
+        header={'revision':7,'aggregation_version':'metrics','correlation_version':'candidates'}
+        results=[{'revision':7,'data':{'payload':'x'*1500,'index':i}} for i in range(3)]
+        class BatchSource:
+            def dispatch_progress(source,request,emit):
+                for i,result in enumerate(results):emit({**header,'index':i,'result':result})
+                return {**header,'results':results}
+            def dispatch(source,request):return {'state':'healthy'}
+        self.server.source=BatchSource();received=[]
+        with patch.object(reader,'RESPONSE_BYTES',4096):
+            result=self.client.request({'op':'view-query','body':{'queries':[{}, {}, {}]}},on_result=received.append)
+        self.assertEqual(result,{**header,'results':results})
+        self.assertEqual(len(received),3)
+        self.assertEqual(self.client.request({'op':'state'}),{'state':'healthy'})
+
+    def test_streamed_terminal_rejects_missing_duplicate_and_mixed_revision_panels(self):
+        terminal={'revision':7,'aggregation_version':'metrics','correlation_version':'candidates','streamed_results':2}
+        event=lambda i,rev=7:{'revision':rev,'aggregation_version':'metrics','correlation_version':'candidates',
+                              'index':i,'result':{'revision':rev}}
+        for events in ([event(0)],[event(0),event(0)],[event(0),event(1,8)],[None,event(1)]):
+            with self.subTest(events=events),self.assertRaises(reader.ReaderError):reader.assemble_batch(terminal,events)
+        with self.assertRaises(reader.ReaderError):reader.assemble_batch(terminal,[event(0),event(1)],3)
+
     def setUp(self):
         self.assertIsNotNone(reader, 'Authenticated read-only GlassWire reader is missing')
         test_glasswire.GlassWireTest.setUp(self)
