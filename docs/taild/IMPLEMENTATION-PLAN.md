@@ -1,5 +1,35 @@
 # TailD staged execution
 
+## October 17 scheduled inheritance repair within ACTIVE Stage 10
+
+Already authorized by monitor-taildns-upstream-updates; preserve the single ACTIVE
+Stage 10 and unresolved B12 boundary. R02/R03 inheritance is blocked internally:
+run 38878375267 captured verified TailDNS main 57ae79e2c4782b3b1519839957104f469676fb1b,
+but its merged module da0ed79f0602 failed the exact reviewed-overlay pin contract.
+Review of the nine-commit shared-core delta found no changes to overlay inputs,
+resolver composition/preferences/recovery, tray, installer, updater, branding or
+version files. Windows single-socket behavior remains; CLI changes fix current-user
+policy access and preserve existing tags on bare up. Existing independent public
+core +34 / Android +32 receipts bind that exact core and Android revision; recheck
+their current metadata/digests before reuse.
+
+Compact sequence inside Stage 10: align exact module/sum and reviewed overlay,
+manifest and build stamps; run focused pin/overlay regression against exact core;
+commit/push repair; let the existing GitHub inheritance workflow capture, check
+Android/shared-core/Windows contracts and fast-forward its exact merge; publish
+the next normal signed TailD release only after promotion, including fresh isolated
+installer/recovery checks; independently verify the downloaded complete payload.
+Release publication is authorized; installation/device control is not. Completion
+requires exact inherited ancestry/pin, passing trusted gates and public artifact
+verification. No scope deferral or additional ACTIVE stage is introduced.
+Local pin/overlay and signing-contract verification passed against exact downloaded
+core da0ed79f060255698c4a99eeb7b1deee037c7479, with immutable input blob/hash
+receipts. The existing pin test reproduced the failure before stamp alignment.
+TailDNS core +34 and Android +32 tag sources, normal release status and all current
+asset digests match their independently downloaded October 16 receipts; the pinned
+core manifest signature was independently reverified. GitHub ancestry promotion,
+inherited native checks and the new public TailD release remain required.
+
 ## October 17 R35 inline decision controls within ACTIVE desktop Stage 10
 
 R35 replaces the Recent DNS Actions column with tick/forbid/Edit icons beside
