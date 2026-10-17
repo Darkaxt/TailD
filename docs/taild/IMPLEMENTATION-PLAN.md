@@ -1,53 +1,57 @@
 # TailD staged execution
 
-## October 17 scheduled inheritance repair within ACTIVE Stage 10
+## October 17 scheduled inheritance maintenance within ACTIVE Stage 10
 
-Already authorized by monitor-taildns-upstream-updates; preserve the single ACTIVE
-Stage 10 and unresolved B12 boundary. R02/R03 inheritance is blocked internally:
-run 38878375267 captured verified TailDNS main 57ae79e2c4782b3b1519839957104f469676fb1b,
-but its merged module da0ed79f0602 failed the exact reviewed-overlay pin contract.
-Review of the nine-commit shared-core delta found no changes to overlay inputs,
-resolver composition/preferences/recovery, tray, installer, updater, branding or
-version files. Windows single-socket behavior remains; CLI changes fix current-user
-policy access and preserve existing tags on bare up. Existing independent public
-core +34 / Android +32 receipts bind that exact core and Android revision; recheck
-their current metadata/digests before reuse.
+R02/R03/R04 maintenance acceptance COMPLETE under monitor-taildns-upstream-updates;
+Stage 10 remains the single ACTIVE stage and broader B12 is unresolved. No device
+installation/control or provider/history mutation was authorized or performed.
+TailDNS core +34 / Android +32 current tags, normal releases and all public asset
+digests match the independent October 16 receipts; the pinned core signature was
+reverified. SleepManager upstream 0a4baf7878fcacc9f49142b3df30f28a281a24c2 is already
+contained in fork main 4eba7ae93530c570bf43ade0c3d17be4a411eca7 (zero missing,
+15 fork-only commits); its latest normal release/signing run is unchanged/healthy.
+Unrelated Dependabot PRs and existing dirty Android/SleepManager files were preserved.
 
-Compact sequence inside Stage 10: align exact module/sum and reviewed overlay,
-manifest and build stamps; run focused pin/overlay regression against exact core;
-commit/push repair; let the existing GitHub inheritance workflow capture, check
-Android/shared-core/Windows contracts and fast-forward its exact merge; publish
-the next normal signed TailD release only after promotion, including fresh isolated
-installer/recovery checks; independently verify the downloaded complete payload.
-Release publication is authorized; installation/device control is not. Completion
-requires exact inherited ancestry/pin, passing trusted gates and public artifact
-verification. No scope deferral or additional ACTIVE stage is introduced.
-Local pin/overlay and signing-contract verification passed against exact downloaded
-core da0ed79f060255698c4a99eeb7b1deee037c7479, with immutable input blob/hash
-receipts. The existing pin test reproduced the failure before stamp alignment.
-TailDNS core +34 and Android +32 tag sources, normal release status and all current
-asset digests match their independently downloaded October 16 receipts; the pinned
-core manifest signature was independently reverified. GitHub ancestry promotion,
-inherited native checks and the new public TailD release remain required.
-Delivery review also found two concrete workflow alignment gaps: the immutable
-signer revision still binds the old core, and GitHub now reports active dynamic
-CodeQL/dependency jobs through the workflow inventory. The reviewed signer advance
-to b657f3d04c43d546ebeca40f30bd059b85064561 changes only three core identity
-constants relative to prior trusted signing modules; canonical signer and package
-verification code are identical. Restrict the inherited-disabled guard to source
-paths under .github/workflows/, retaining every inherited YAML requirement and
-leaving GitHub's built-in jobs enabled. Workflow authority regressions pass. Keep
-the original running inheritance operation supervised before updating main.
-Run 39007137787 completed: merged contracts and full inherited Android/DNS/shared
-Windows-core verification passed; promotion failed only at the dynamic-job guard.
-Its retained checked bundle identifies candidate 40ca96f10ad774a9acf4cea7e080635da8efd17f,
-with parents b657f3d04c43d546ebeca40f30bd059b85064561 and captured TailDNS main.
-The exact non-documentation/non-workflow product tree matches the repair source.
-Apply the workflow-only fixes and use the existing inherited_checks=false option
-for the ancestry-only retry: inspect the new candidate's unchanged product tree
-before accepting reused native evidence. A real newly captured source delta still
-automatically requires native builds through source_changed. Fresh Windows
-installer/recovery acceptance remains mandatory for the new release.
+Inheritance failure 38878375267 was caused by an unreviewed core pin advance.
+Reviewed core da0ed79f060255698c4a99eeb7b1deee037c7479 leaves all overlay inputs,
+local DNS, tray, installer, updater and version contracts unchanged. Exact module,
+sum, overlay/manifest/build stamps were aligned; the existing mismatch regression
+failed before repair and exact-source overlay/signing tests then passed. Run
+39007137787 passed merged contracts and full Android/DNS/shared Windows-core
+verification at candidate 40ca96f10ad774a9acf4cea7e080635da8efd17f, then exposed a
+promotion guard that misclassified GitHub dynamic CodeQL/dependency jobs. The guard
+now checks every inherited source YAML workflow while leaving built-in jobs active.
+Immutable signer tooling advanced to reviewed b657f3d04c43d546ebeca40f30bd059b85064561;
+only the three core identity constants differ in its trusted signing modules,
+with canonical signer/package validation and production key identity unchanged.
+
+Run 39008331084 passed the ancestry-only retry and ordinary GitHub fast-forward
+promotion to 10f7409ef302f6bb00e40d8edb634338691fb805, preserving parents
+ ec749bb4f2c156726b4c0d469e073ce723628250 and TailDNS main
+57ae79e2c4782b3b1519839957104f469676fb1b. Native evidence reuse was verified against
+the retained exact checked bundle: the complete non-doc/non-workflow product tree
+and native verification job were unchanged. The existing inherited_checks=false
+option avoided repeating native builds; newly captured real source changes still
+force them through source_changed. Main's focused check 39008397651 passed.
+
+Normal release **1.105.0+25** at exact promoted source 10f7409ef302f6bb00e40d8edb634338691fb805
+passed all eight gates in run **39008459614**, including fresh isolated Windows
+install/upgrade/rollback/uninstall and complete-product failed-migration recovery.
+Independent public download verified pinned Ed25519 envelope/package/core signatures
+and key identities, all 444 payload members, exact core/module/source provenance,
+unchanged actual core VERSION.txt base 1.105.0, sequence 25, AMD64, history schema 4,
+pinned runtime/notices and exact native-tested R35 UI assets. SQLite remains 3.54.0;
+executables/installer remain not Authenticode-signed. Installer size 117310284;
+SHA256 04e7fb48b663aa86e9446551d238296f1d6f5af8618ce57af1f1167e11753d93.
+This is CI/public-artifact acceptance, not real-device Stage 10/B12 acceptance.
+
+Compact evidence: D:/Tools/taild-upstream-verification-20261017. Reviewed cleanup
+transaction a7b63ddf4e6b239eb8694fe1b8ab909d / ticket
+9fd0538673c356710bf9fe93b5778772001b47ad69af32859e2406075d5786bc applied completely:
+479167316 expendable bytes removed, exact task scratch root absent, no residuals.
+Prior +22/+24 cleanup residuals were not touched. Current maintenance blockers and
+tracked deferrals: none; existing B12 real rollout/recovery/final reconciliation
+and later Android/R33 stages remain unchanged and open.
 
 ## October 17 R35 inline decision controls within ACTIVE desktop Stage 10
 
