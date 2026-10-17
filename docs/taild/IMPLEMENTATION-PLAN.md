@@ -6,7 +6,9 @@ Already authorized by the next-Windows-release request and analytics screenshot.
 Stage 10 remains the sole ACTIVE stage; B12 remains unresolved. Execute the
 connected device/preferences/Control D layout changes and terminal analytics read
 correction, then validate native-served assets, scoped history totals and error
-recovery, reconcile R36 and commit. No extra stage, delegation or device deployment.
+recovery, reconcile R36 and commit. No extra stage or delegation. The subsequent
+explicit "go ahead" authorizes the normal release and local in-place deployment
+under PRODUCT-SPECIFICATION.md; this remains within ACTIVE Stage 10.
 R36 implementation acceptance COMPLETE. The self-first live table, presence/OS
 icons, exact-hover relative last-online values and connection switch replace the
 device/exit widgets. Preferences contains ordinary analytics and conditional
@@ -38,7 +40,45 @@ Compact evidence and exact accepted UI hashes are retained at
 Final R36 reconciliation: every requested behavior above is satisfied and verified;
 no current-scope blocker or tracked deferral. The closure assessment found no
 additional necessary refactoring. Existing broader B12 is unchanged. This delivery
-prepares source for the next release; no new publication or installation occurred.
+initially prepared source for the next release without publication or installation.
+The subsequently authorized +26 delivery is verified from checked commit
+914859843873d7639f980dc603e6cf9af9b559e7 in release run 39068147602, with all eight
+gates successful, including fresh isolated install/upgrade/rollback/uninstall and
+failed-first-migration recovery. Independent public verification covered the normal
+release, pinned envelope/package/core signatures, all 444 payload files and exact
+native-tested R36 assets. Installer SHA-256 is
+`90ace6b9237bbb055148b2f33e0cd3ed3c87d32e52a950bc8d2182789cf88c33` (117,321,187 bytes).
+Authenticode remains truthfully not-signed.
+
+The accepted local broker request 0c18abd3ce324c688736ada5090008bb and installer
+both exited 0. Fresh canonical before/after checks preserve node/signing identity,
+addresses, profile, credentials, preferences, resolver, analytics configuration
+and owner/location. The protected sequence floor is 26. Public DNS and MagicDNS
+pass; both services run and live DNS collection is connected. History keeps the
+same file identity and WAL mode and passes SQLite 3.54.0 quick_check on both sides.
+Traffic grows by 11,267 observations; DNS net decreases by six while the seven-day
+retention floor advances, without a reset or repair. The installed collector's
+five-panel seven-day Overview assembled 21,233,415 bytes in 104.25 seconds and
+reused its connection, with the unchanged 16 MiB per-message limit. The ordinary
+owning-user tray restores one native window and its minimized instance.
+
+The deployment preflight initially waited on background/service processes that
+share TailD.exe with the window launcher. Supported graceful stop/resume released
+that exact wait before the original command proceeded; no process was killed and
+no duplicate installer ran. Retain the original script and recovery receipt as
+evidence. Final delivery receipts are in
+`D:/Tools/taild-stage10-validation-20261013/release-26/`.
+The cleanup helper removed all 390,606,699 scratch file bytes and all 534 reviewed
+members; its ticket is applied and the exact scratch root is absent. The remaining
+directory lock was traced to the tray, launcher and collector inheriting the
+candidate's temporary working directory. They exited normally and were restored
+through the actual unelevated Explorer boundary with the stable installed working
+directory, without stopping the VPN service or changing policy. Live DNS reconnected
+and the ordinary window restored before the same ticket completed with elevation.
+This is a verified live recovery, not a source-level prevention claim. Preventing
+temporary working-directory inheritance on subsequent updates and proving that
+upgrade path remain part of the existing unresolved B12 lifecycle acceptance.
+Broader Stage 10/B12 remains ACTIVE; the bounded R36 publication/deployment is verified.
 
 ## October 17 scheduled inheritance maintenance within ACTIVE Stage 10
 

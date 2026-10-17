@@ -1,6 +1,6 @@
 # TailD remaining-product specification
 
-Version 1.13, 2026-10-17. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.14, 2026-10-18. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
 
 October 17 R36 Windows refinement (already authorized): make the live device table
 the Connection page's primary content, with this device first, a presence square
@@ -36,7 +36,13 @@ Verify native-served assets at restored 1440x900, 1280x800 and 1024x768 windows,
 100%/150% zoom and narrow scroll reachability; check keyboard/accessible controls,
 preferences, exact scoped counts and failed/background-query recovery. This scope
 belongs to the existing ACTIVE Stage 10, without closing broader B12. Prepare the
-verified changes for the next Windows release; no new device deployment is implied.
+verified changes for the next Windows release. After being told publication and
+deployment had not occurred, the user explicitly instructed "go ahead". This
+authorizes the normal signed next Windows release from the exact checked R36
+commit and, after independent public verification, its local in-place deployment.
+Preserve node/signing identity, credentials, preferences, resolver and history;
+verify installed source/assets, service health, DNS and collection through the
+existing administrator broker and quiescent upgrade gates. Broader B12 stays open.
 
 October 17 R35: remove the separate Recent DNS incident-actions column. Each row
 has Time, Question, Decision / reason and Profile cells; put its contextual actions
