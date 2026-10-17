@@ -117,7 +117,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          gh api "repos/$GITHUB_REPOSITORY/actions/workflows" --paginate --jq '.workflows[] | select(.path | startswith(".github/workflows/taild-") | not) | .state' | while read -r state; do
+          # GitHub's dynamic CodeQL/dependency jobs are not inherited source workflows.
+          gh api "repos/$GITHUB_REPOSITORY/actions/workflows" --paginate --jq '.workflows[] | select(.path | startswith(".github/workflows/")) | select(.path | startswith(".github/workflows/taild-") | not) | .state' | while read -r state; do
             [[ "$state" == disabled_* ]]
           done
       - name: Verify actual workflow-file write authority without changing main

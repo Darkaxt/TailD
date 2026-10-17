@@ -29,6 +29,25 @@ TailDNS core +34 and Android +32 tag sources, normal release status and all curr
 asset digests match their independently downloaded October 16 receipts; the pinned
 core manifest signature was independently reverified. GitHub ancestry promotion,
 inherited native checks and the new public TailD release remain required.
+Delivery review also found two concrete workflow alignment gaps: the immutable
+signer revision still binds the old core, and GitHub now reports active dynamic
+CodeQL/dependency jobs through the workflow inventory. The reviewed signer advance
+to b657f3d04c43d546ebeca40f30bd059b85064561 changes only three core identity
+constants relative to prior trusted signing modules; canonical signer and package
+verification code are identical. Restrict the inherited-disabled guard to source
+paths under .github/workflows/, retaining every inherited YAML requirement and
+leaving GitHub's built-in jobs enabled. Workflow authority regressions pass. Keep
+the original running inheritance operation supervised before updating main.
+Run 39007137787 completed: merged contracts and full inherited Android/DNS/shared
+Windows-core verification passed; promotion failed only at the dynamic-job guard.
+Its retained checked bundle identifies candidate 40ca96f10ad774a9acf4cea7e080635da8efd17f,
+with parents b657f3d04c43d546ebeca40f30bd059b85064561 and captured TailDNS main.
+The exact non-documentation/non-workflow product tree matches the repair source.
+Apply the workflow-only fixes and use the existing inherited_checks=false option
+for the ancestry-only retry: inspect the new candidate's unchanged product tree
+before accepting reused native evidence. A real newly captured source delta still
+automatically requires native builds through source_changed. Fresh Windows
+installer/recovery acceptance remains mandatory for the new release.
 
 ## October 17 R35 inline decision controls within ACTIVE desktop Stage 10
 

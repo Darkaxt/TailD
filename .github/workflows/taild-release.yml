@@ -149,7 +149,7 @@ jobs:
         with:
           # Reviewed signer tooling is independently immutable. Never import or
           # execute application/candidate files downloaded from build artifacts.
-          ref: 5b8dbda99bc3058eb96e9cb1332d8fd639b80c06
+          ref: b657f3d04c43d546ebeca40f30bd059b85064561
           path: trusted
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
@@ -252,7 +252,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          ref: 5b8dbda99bc3058eb96e9cb1332d8fd639b80c06
+          ref: b657f3d04c43d546ebeca40f30bd059b85064561
           path: trusted
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
@@ -297,4 +297,4 @@ jobs:
           test "$(jq -r .source_commit release/taild-release.json)" = "$GITHUB_SHA"
           tag="windows-v$version"
           gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" -f "ref=refs/tags/$tag" -f "sha=$GITHUB_SHA" >/dev/null
-          gh release create "$tag" release/* --repo "$GITHUB_REPOSITORY" --verify-tag --title "TailD $version for Windows" --notes "Recent DNS now has four columns, with action icons beside each decision badge instead of a separate Actions column. Blocked rows show a green Allow tick; allowed rows show a red Block forbid icon. Accessible labels, tooltips and keyboard actions are retained. Edit opens the same compact floating rule editor. Direct actions retain fresh shared-profile checks, one-use transactions and policy readback. Restored-window layout and decision-label search remain supported. Complete Windows installer includes inherited TailDNS connectivity and Portmaster-derived analytics. DNS collection and GlassWire reads remain independent of management actions and use READ-only access; policy writes require the separate Write credential. In-place migration preserves the Tailscale service and authenticated node. Ed25519-signed payload and installer digest; executables and installer are not Authenticode-signed. Windows x64 and Evergreen WebView2 required. GlassWire compatibility verified against 3.10.1138. Source: $GITHUB_SHA. Independent download verification precedes deployment."
+          gh release create "$tag" release/* --repo "$GITHUB_REPOSITORY" --verify-tag --title "TailD $version for Windows" --notes "Refreshes the inherited TailDNS shared core to reviewed revision da0ed79f0602, preserving local DNS, Windows tray, separate TailD update channel, analytics and history contracts. Recent DNS retains four columns, with action icons beside each decision badge instead of a separate Actions column. Blocked rows show a green Allow tick; allowed rows show a red Block forbid icon. Accessible labels, tooltips and keyboard actions are retained. Edit opens the same compact floating rule editor. Direct actions retain fresh shared-profile checks, one-use transactions and policy readback. Restored-window layout and decision-label search remain supported. Complete Windows installer includes inherited TailDNS connectivity and Portmaster-derived analytics. DNS collection and GlassWire reads remain independent of management actions and use READ-only access; policy writes require the separate Write credential. In-place migration preserves the Tailscale service and authenticated node. Ed25519-signed payload and installer digest; executables and installer are not Authenticode-signed. Windows x64 and Evergreen WebView2 required. GlassWire compatibility verified against 3.10.1138. Source: $GITHUB_SHA. Independent download verification precedes deployment."
