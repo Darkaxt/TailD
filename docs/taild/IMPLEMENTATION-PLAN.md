@@ -13,23 +13,38 @@ run 39101428463 before merge 84e54804c0fc4b39f5d9a1ce7acaf3593fae316e. Normal
 1.103.312+33 passed release run 39102441970 and independent APK package/version,
 monotonic code, pinned signer, four-ABI core provenance and companion checks.
 
-Current maintenance acceptance: GitHub must capture/check/promote that exact
-TailDNS revision and matching require/replace pin while preserving R36 and the
-TailD channel. Review unchanged overlay inputs, align guarded core build/manifest
-identities if required, and retain isolated trusted signer boundaries. Then pass
-the mandatory fresh Windows release gates and independently verify the next normal
-TailD release. These remain advancement blockers until verified; no later stage or
-unrelated B12 source work is activated. SleepManager has zero missing upstream
-commits and needs no release. Compact receipts are in
-`D:/Tools/taildns-upstream-verification-20261018/`.
+Bounded scheduled-maintenance acceptance is COMPLETE. Initial capture run
+39103037598 correctly rejected the advanced core before overlay review. The
+same guard failed locally, then passed after aligning only the reviewed core
+identity. All ten overlay inputs are unchanged; the actual Go module checksum,
+overlay, protected-signing and package/replay/recovery contracts passed. The
+immutable trusted signer closure at fc3061b1d235e913afe802ece9135f882d7fa3c9
+changes only the three expected core identity constants from its prior pin.
 
-Repair evidence: run 39103037598 correctly rejected the advanced core before
-overlay review. The same guard failed locally, then passed after aligning only
-the reviewed core identity. All ten overlay inputs are unchanged; actual Go
-module download and overlay tests verify the exact source and module sum.
-Protected-signing and package/replay/recovery contracts pass. Next: pin the
-unchanged signing closure to this reviewed identity, then repeat the existing
-GitHub capture/check/promotion path and fresh release gates.
+GitHub run 39103390868 captured exact TailDNS 84e54804 and passed full inherited
+Android, DNS and Windows core checks before scoped fast-forward promotion of
+217f83dc37b4173faed0a9b4061fcc329e778eca. Its tree equals reviewed e8bc54e9;
+TailD analytics/UI/channel and the matching shared-core require/replace survive.
+Normal windows-v1.105.0+27 at that exact source passed all eight release jobs in
+39104476069, including fresh isolated install/upgrade/rollback/uninstall and
+failed-migration recovery. Independent public download verification passed the
+pinned Ed25519 release/package/core signatures, source/core/module/version,
+installer checksum/size, all 444 payload members, every core PE source/version
+stamp, runtime identities/notices, exact accepted R36 JS/CSS and channel overlay.
+Installer: 117321861 bytes; SHA256
+b05690f5539ebe261c22f7188e1593f65b41c3e98e77b5c5ecc761602f5e6153.
+Product executables and installer are truthfully not Authenticode-signed.
+
+SleepManager is 15 commits ahead and zero behind upstream; verified v0.7.2.1
+remains current. No device installation/control or provider-policy change took
+place. Stage 10 remains the sole ACTIVE stage: broader B12 real rollout,
+rollback/final reconciliation and the tracked stable-working-directory source
+prevention remain open, with no CI-to-device acceptance claim. Compact public
+receipts and exact-source run records are retained in
+`D:/Tools/taildns-upstream-verification-20261018/`.
+Exact registered scratch cleanup is applied: all 957 reviewed members removed
+(591613244 bytes), no residual root; durable receipts and active module cache
+retained. Pre-existing dirty Android and SleepManager files remain untouched.
 
 ## October 17 R36 refinement within ACTIVE Stage 10
 
