@@ -1,5 +1,36 @@
 # TailD staged execution
 
+## October 18 scheduled inheritance within ACTIVE Stage 10
+
+Already authorized by monitor-taildns-upstream-updates; no device control or
+installation. Stage 10 remains the only ACTIVE stage and broader B12 stays open.
+Core PR 33's exact trusted head 87ea0c55f0eaae13f0538a391589ec6cbd8cce3c passed
+run 39011937592 and was reviewed before merge 28b0deb7805710f50689f4aa133ed911f74e504d.
+Windows 1.105.0+35 passed isolated release run 39100964600 and independent public
+signature/key/source/version/architecture/five-payload/notice verification.
+Android PR 23's exact trusted head 7987bd677663d9170b369dee341554982b0ca40e passed
+run 39101428463 before merge 84e54804c0fc4b39f5d9a1ce7acaf3593fae316e. Normal
+1.103.312+33 passed release run 39102441970 and independent APK package/version,
+monotonic code, pinned signer, four-ABI core provenance and companion checks.
+
+Current maintenance acceptance: GitHub must capture/check/promote that exact
+TailDNS revision and matching require/replace pin while preserving R36 and the
+TailD channel. Review unchanged overlay inputs, align guarded core build/manifest
+identities if required, and retain isolated trusted signer boundaries. Then pass
+the mandatory fresh Windows release gates and independently verify the next normal
+TailD release. These remain advancement blockers until verified; no later stage or
+unrelated B12 source work is activated. SleepManager has zero missing upstream
+commits and needs no release. Compact receipts are in
+`D:/Tools/taildns-upstream-verification-20261018/`.
+
+Repair evidence: run 39103037598 correctly rejected the advanced core before
+overlay review. The same guard failed locally, then passed after aligning only
+the reviewed core identity. All ten overlay inputs are unchanged; actual Go
+module download and overlay tests verify the exact source and module sum.
+Protected-signing and package/replay/recovery contracts pass. Next: pin the
+unchanged signing closure to this reviewed identity, then repeat the existing
+GitHub capture/check/promotion path and fresh release gates.
+
 ## October 17 R36 refinement within ACTIVE Stage 10
 
 Already authorized by the next-Windows-release request and analytics screenshot.
