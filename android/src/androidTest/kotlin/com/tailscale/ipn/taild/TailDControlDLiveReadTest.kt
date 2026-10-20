@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.LocalServerSocket
 import android.os.Build
 import android.os.Bundle
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
@@ -16,10 +17,13 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import org.junit.Assert.*
 import org.junit.Assume.assumeTrue
+import org.junit.Rule
 import org.junit.Test
 
 /** Explicit opt-in live READ acceptance. No WRITE token or non-GET exchange is permitted. */
 class TailDControlDLiveReadTest {
+  @get:Rule val compose = createEmptyComposeRule()
+
   @Test
   fun selectedEndpointBindingPolicyAndHistoryUseActualProvider() = runBlocking {
     assumeTrue(Build.HARDWARE in listOf("ranchu", "goldfish"))

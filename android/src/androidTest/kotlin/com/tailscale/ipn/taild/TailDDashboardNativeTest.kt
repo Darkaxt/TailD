@@ -2,36 +2,40 @@ package com.tailscale.ipn.taild
 
 import android.content.ComponentCallbacks
 import android.content.res.Configuration
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.test.uiautomator.*
 import java.time.Instant
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.serialization.json.*
 import org.junit.Assert.*
+import org.junit.Rule
 import org.junit.Test
 
 /**
  * Complete native Dashboard workflow against the same isolated HTTPS/SQLite boundary as Control D.
  */
 class TailDDashboardNativeTest {
+  @get:Rule val compose = createEmptyComposeRule()
+
   @Test
   fun scopedPanelsDrilldownExportNavigationAndRecordingLifecycle() = runBlocking {
-    val fixture = NativeControlDSession(reset = true)
+    val fixture = NativeControlDSession(reset = true, compose = compose)
     with(fixture) {
       suspend fun dashboardContent(text: String, contains: Boolean = false): UiObject2 =
-          scrollTo(
-              "taild-dashboard-content",
-              if (contains) By.textContains(text) else By.text(text),
-          )
+          scrollTo("taild-dashboard-content", text, contains = contains)
       suspend fun dashboardTab(label: String) {
-        scrollTo("taild-dashboard-tabs", By.text(label), horizontal = true).click()
-        instrumentation.waitForIdleSync()
+        scrollTo("taild-dashboard-tabs", label, horizontal = true).click()
+        compose.waitForIdle()
       }
       var localJob: Job? = null
       try {
+        phase("dashboard-before-launch")
         launch()
+        phase("dashboard-after-launch")
         model.configureRead("read-fixture", null)
         ready { !it.busySetup && it.inventory != null }
+        phase("dashboard-inventory-ready")
         model.select(
             model.state.value.inventory!!.endpoints.first(),
             ControlDClient("phone", "This emulator"),
@@ -75,12 +79,13 @@ class TailDDashboardNativeTest {
         dashboardContent("125 stored DNS observations")
         phase("capture-dashboard")
         dashboardContent("Blocked · 124").click()
-        node(By.text("124 matching observations"))
+        phase("capture-details-before-count")
+        scrollTo("taild-dashboard-details", "124 matching observations")
         val selected = checkNotNull(dashboard.state.value.dnsDetails)
         phase("capture-drilldown")
         // The actual native CreateDocument launcher preserves the selected snapshot and
         // cancellation.
-        click(By.text("Export"))
+        scrollTo("taild-dashboard-details", "Export").click()
         val picker =
             context.packageManager
                 .resolveActivity(
@@ -123,7 +128,7 @@ class TailDDashboardNativeTest {
             124,
             output.getValue("metadata").jsonObject.getValue("record_count").jsonPrimitive.int,
         )
-        click(By.text("Export"))
+        scrollTo("taild-dashboard-details", "Export").click()
         assertTrue(device.wait(Until.hasObject(By.pkg(picker)), 30_000))
         device.pressBack()
         assertTrue(
@@ -137,7 +142,7 @@ class TailDDashboardNativeTest {
             selected.revision,
             output.getValue("metadata").jsonObject.getValue("history_revision").jsonPrimitive.long,
         )
-        click(By.text("Close"))
+        scrollTo("taild-dashboard-details", "Close").click()
         dashboardTab("Geography")
         dashboardContent("Provider DNS-answer geography")
         dashboardContent("Country coverage · 125 / 125", contains = true)
@@ -158,6 +163,12 @@ class TailDDashboardNativeTest {
         try {
           phase("switch-theme")
           dark.await()
+        } catch (error: Throwable) {
+          instrumentation.sendStatus(
+              0,
+              android.os.Bundle().apply { putString("taild_failure", error.stackTraceToString()) },
+          )
+          throw error
         } finally {
           context.unregisterComponentCallbacks(callback)
         }
@@ -234,6 +245,12 @@ class TailDDashboardNativeTest {
         model.state.first { !it.busyHistory && it.transient != null }
         assertEquals(before, model.store.recent(model.state.value.binding!!).summaries)
         phase("assert-read-only-dashboard")
+      } catch (error: Throwable) {
+        instrumentation.sendStatus(
+            0,
+            android.os.Bundle().apply { putString("taild_failure", error.stackTraceToString()) },
+        )
+        throw error
       } finally {
         app.setDashboardForEmulatorTest(null)
         localJob?.cancelAndJoin()

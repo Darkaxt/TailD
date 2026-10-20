@@ -1,16 +1,20 @@
 package com.tailscale.ipn.taild
 
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.test.uiautomator.By
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.junit.Assert.*
+import org.junit.Rule
 import org.junit.Test
 
 /** Host force-stops the previous instrumentation process before this test starts. */
 class TailDDashboardRestartTest {
+  @get:Rule val compose = createEmptyComposeRule()
+
   @Test
   fun newProcessReadsRetainedDashboardScopesWithoutReplayingProviderWrites() = runBlocking {
-    val fixture = NativeControlDSession(reset = false)
+    val fixture = NativeControlDSession(reset = false, compose = compose)
     with(fixture) {
       try {
         val local = TailDHistory(fixtureContext, scope)

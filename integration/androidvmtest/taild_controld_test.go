@@ -283,6 +283,9 @@ func runControlDNative(t *testing.T, steps []controlDNativeStep) {
 			for scanner.Scan() {
 				line := scanner.Text()
 				fmt.Fprintln(&output, line)
+				if strings.HasPrefix(line, "INSTRUMENTATION_STATUS: taild_failure=") {
+					t.Log(line)
+				}
 				const marker = "INSTRUMENTATION_STATUS: taild_phase="
 				if strings.HasPrefix(line, marker) {
 					phases <- strings.TrimSpace(strings.TrimPrefix(line, marker))

@@ -287,66 +287,68 @@ fun DashboardView(
         }
     ModalBottomSheet(
         onDismissRequest = model::dismissDetails,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         modifier = Modifier.semantics { testTagsAsResourceId = true },
     ) {
-      Column(
+      LazyColumn(
           Modifier.fillMaxHeight(.9f)
               .imePadding()
               .padding(horizontal = 16.dp)
               .testTag("taild-dashboard-details")
       ) {
-        Text(
-            if (dnsDetails != null) "DNS observations" else "Local observations",
-            style = MaterialTheme.typography.titleLarge,
-        )
-        val window = dnsDetails?.window ?: activityDetails!!.window
-        Text(
-            "${window.from} → ${window.until} UTC · end exclusive",
-            style = MaterialTheme.typography.bodySmall,
-        )
-        OutlinedTextField(
-            value = if (dnsDetails != null) state.dnsFilter.search else state.activitySearch,
-            onValueChange = model::searchDetails,
-            label = { Text("Search selected facts") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-        )
-        val ready = if (dnsDetails != null) matchingDns != null else matchingActivity != null
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        item {
           Text(
-              if (!ready) "Filtering…"
-              else "${matchingDns?.size ?: matchingActivity?.size ?: 0} matching observations",
-              Modifier.weight(1f),
+              if (dnsDetails != null) "DNS observations" else "Local observations",
+              style = MaterialTheme.typography.titleLarge,
           )
-          TextButton(
-              onClick = {
-                if (dnsDetails != null) exportDns(dnsDetails, state.dnsFilter)
-                else exportActivity(activityDetails!!, state.activityKind, state.activitySearch)
-              },
-              enabled = ready && !state.exportPending && !state.exportWriting,
-          ) {
-            Text("Export")
+          val window = dnsDetails?.window ?: activityDetails!!.window
+          Text(
+              "${window.from} → ${window.until} UTC · end exclusive",
+              style = MaterialTheme.typography.bodySmall,
+          )
+          OutlinedTextField(
+              value = if (dnsDetails != null) state.dnsFilter.search else state.activitySearch,
+              onValueChange = model::searchDetails,
+              label = { Text("Search selected facts") },
+              modifier = Modifier.fillMaxWidth(),
+              singleLine = true,
+          )
+          val ready = if (dnsDetails != null) matchingDns != null else matchingActivity != null
+          Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                if (!ready) "Filtering…"
+                else "${matchingDns?.size ?: matchingActivity?.size ?: 0} matching observations",
+                Modifier.weight(1f),
+            )
+            TextButton(
+                onClick = {
+                  if (dnsDetails != null) exportDns(dnsDetails, state.dnsFilter)
+                  else exportActivity(activityDetails!!, state.activityKind, state.activitySearch)
+                },
+                enabled = ready && !state.exportPending && !state.exportWriting,
+            ) {
+              Text("Export")
+            }
+            TextButton(onClick = model::dismissDetails) { Text("Close") }
           }
-          TextButton(onClick = model::dismissDetails) { Text("Close") }
+          if (!ready) LinearProgressIndicator(Modifier.fillMaxWidth())
         }
-        if (!ready) LinearProgressIndicator(Modifier.fillMaxWidth())
-        LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-          items(matchingDns.orEmpty(), key = { it.key }) { row ->
-            Text(row.fact.question, style = MaterialTheme.typography.titleMedium)
-            Text(
-                "${row.fact.at} UTC · ${row.fact.type}\n${row.fact.decision} · ${row.fact.reason}",
-                style = MaterialTheme.typography.bodySmall,
-            )
-            HorizontalDivider()
-          }
-          items(matchingActivity.orEmpty(), key = { it.id }) { row ->
-            Text(row.event.subject, style = MaterialTheme.typography.titleMedium)
-            Text(
-                "${Instant.ofEpochMilli(row.at)} UTC · ${row.event.kind}\n${row.event.detail}",
-                style = MaterialTheme.typography.bodySmall,
-            )
-            HorizontalDivider()
-          }
+
+        items(matchingDns.orEmpty(), key = { it.key }) { row ->
+          Text(row.fact.question, style = MaterialTheme.typography.titleMedium)
+          Text(
+              "${row.fact.at} UTC · ${row.fact.type}\n${row.fact.decision} · ${row.fact.reason}",
+              style = MaterialTheme.typography.bodySmall,
+          )
+          HorizontalDivider()
+        }
+        items(matchingActivity.orEmpty(), key = { it.id }) { row ->
+          Text(row.event.subject, style = MaterialTheme.typography.titleMedium)
+          Text(
+              "${Instant.ofEpochMilli(row.at)} UTC · ${row.event.kind}\n${row.event.detail}",
+              style = MaterialTheme.typography.bodySmall,
+          )
+          HorizontalDivider()
         }
       }
     }

@@ -6,6 +6,9 @@ import android.content.res.Configuration
 import android.net.LocalServerSocket
 import android.os.Build
 import android.os.Bundle
+import androidx.compose.ui.test.*
+import androidx.compose.ui.test.junit4.ComposeTestRule
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.*
 import com.tailscale.ipn.App
@@ -20,10 +23,11 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import org.junit.Assert.*
 import org.junit.Assume.assumeTrue
+import org.junit.Rule
 import org.junit.Test
 
 /** Synthetic credentials and pinned HTTPS only, on the host-owned emulator. */
-internal class NativeControlDSession(reset: Boolean) {
+internal class NativeControlDSession(reset: Boolean, private val compose: ComposeTestRule? = null) {
   val instrumentation = InstrumentationRegistry.getInstrumentation()
   val context = instrumentation.targetContext
   val app = App.get()
@@ -85,79 +89,55 @@ internal class NativeControlDSession(reset: Boolean) {
     return device.findObject(By.copy(selector).pkg(context.packageName))
   }
 
-  fun node(selector: BySelector): UiObject2 =
-      device.wait(
-          object : Condition<UiDevice, UiObject2?> {
-            override fun apply(device: UiDevice): UiObject2? = freshFind(selector)
-          },
-          30_000,
-      ) ?: throw AssertionError("Native Control D node missing: $selector")
+  fun node(selector: BySelector): UiObject2 {
+    compose?.waitForIdle()
+    return device.wait(
+        object : Condition<UiDevice, UiObject2?> {
+          override fun apply(device: UiDevice): UiObject2? = freshFind(selector)
+        },
+        30_000,
+    ) ?: throw AssertionError("Native Control D node missing: $selector")
+  }
 
   fun click(selector: BySelector) {
     node(selector).click()
-    instrumentation.waitForIdleSync()
+    compose?.waitForIdle()
   }
 
-  suspend fun scrollTo(tag: String, selector: BySelector, horizontal: Boolean = false): UiObject2 {
-    val selected = By.copy(selector).pkg(context.packageName)
-    instrumentation.waitForIdleSync()
-    device.waitForIdle()
-    fun tagged(
-        node: android.view.accessibility.AccessibilityNodeInfo
-    ): android.view.accessibility.AccessibilityNodeInfo? {
-      if (node.viewIdResourceName == tag) return node
-      for (i in 0 until node.childCount) node.getChild(i)?.let {
-        tagged(it)?.let {
-          return it
+  suspend fun scrollTo(
+      tag: String,
+      text: String,
+      description: Boolean = false,
+      resource: Boolean = false,
+      contains: Boolean = false,
+      horizontal: Boolean = false,
+  ): UiObject2 {
+    val selector =
+        when {
+          resource -> By.res(text)
+          description -> By.desc(text)
+          contains -> By.textContains(text)
+          else -> By.text(text)
         }
-      }
-      return null
-    }
-    fun viewport(): String {
-      if (Build.VERSION.SDK_INT >= 33) instrumentation.uiAutomation.clearCache()
-      val root =
-          tagged(checkNotNull(instrumentation.uiAutomation.rootInActiveWindow))
-              ?: error("Rendered scroll region missing: $tag")
-      val out = StringBuilder()
-      fun visit(node: android.view.accessibility.AccessibilityNodeInfo) {
-        if (!node.isVisibleToUser) return
-        val bounds = android.graphics.Rect().also(node::getBoundsInScreen)
-        out.append(node.text)
-            .append('|')
-            .append(node.contentDescription)
-            .append('|')
-            .append(bounds.flattenToString())
-            .append('\n')
-        for (i in 0 until node.childCount) node.getChild(i)?.let(::visit)
-      }
-      visit(root)
-      return out.toString()
-    }
-    val directions =
-        if (horizontal) listOf(Direction.LEFT, Direction.RIGHT)
-        else listOf(Direction.UP, Direction.DOWN)
-    for (direction in directions) {
-      while (freshFind(selector) == null) {
-        val before = viewport()
-        val root = node(By.res(tag))
-        val scroll =
-            if (root.isScrollable) root
-            else root.findObject(By.scrollable(true)) ?: error("No scrollable child in $tag")
-        // A physical swipe plus fresh measured viewport determines progress.
-        // UiAutomator's scroll boolean/events falsely reported a middle item as the end.
-        val gesture =
-            when (direction) {
-              Direction.UP -> Direction.DOWN
-              Direction.DOWN -> Direction.UP
-              Direction.LEFT -> Direction.RIGHT
-              Direction.RIGHT -> Direction.LEFT
-            }
-        scroll.swipe(gesture, 0.75f)
-        device.waitForIdle()
-        if (viewport() == before) break
-      }
-    }
+    val matcher =
+        when {
+          resource -> hasTestTag(text)
+          description -> hasContentDescription(text, substring = contains)
+          else -> hasText(text, substring = contains)
+        }
+    val rule = checkNotNull(compose) { "Native Compose rule required for scroll acceptance" }
     try {
+      if (
+          tag in
+              listOf(
+                  "taild-control-d-content",
+                  "taild-dashboard-content",
+                  "taild-dashboard-details",
+              )
+      )
+          rule.onNodeWithTag(tag, useUnmergedTree = true).performScrollToNode(matcher)
+      else rule.onNode(matcher, useUnmergedTree = true).performScrollTo()
+      rule.waitForIdle()
       return node(selector)
     } catch (missing: AssertionError) {
       val tree = java.io.ByteArrayOutputStream()
@@ -165,7 +145,7 @@ internal class NativeControlDSession(reset: Boolean) {
       instrumentation.sendStatus(
           0,
           Bundle().apply {
-            putString("taild_missing_content", selector.toString())
+            putString("taild_missing_content", text)
             putString("taild_missing_tree", tree.toString("UTF-8"))
           },
       )
@@ -174,10 +154,8 @@ internal class NativeControlDSession(reset: Boolean) {
     }
   }
 
-  suspend fun content(text: String, description: Boolean = false): UiObject2 {
-    val selector = if (description) By.desc(text) else By.text(text)
-    return scrollTo("taild-control-d-content", selector)
-  }
+  suspend fun content(text: String, description: Boolean = false): UiObject2 =
+      scrollTo("taild-control-d-content", text, description = description)
 
   suspend fun ready(predicate: (ControlDState) -> Boolean): ControlDState =
       model.state
@@ -190,9 +168,11 @@ internal class NativeControlDSession(reset: Boolean) {
             check(predicate(it)) {
               "Native Control D readiness failed: ${it.error ?: it.historyError}"
             }
+            compose?.waitForIdle()
           }
 
   suspend fun phase(name: String) {
+    compose?.waitForIdle()
     LocalServerSocket("taild-r37-native").use { server ->
       instrumentation.sendStatus(0, Bundle().apply { putString("taild_phase", name) })
       val ack =
@@ -260,14 +240,16 @@ internal class NativeControlDSession(reset: Boolean) {
 }
 
 class TailDControlDInitialTest {
+  @get:Rule val compose = createEmptyComposeRule()
+
   @Test
   fun nativeSetupHistoryPolicyAndUnknownOutcome() = runBlocking {
-    val fixture = NativeControlDSession(reset = true)
+    val fixture = NativeControlDSession(reset = true, compose = compose)
     with(fixture) {
       try {
         launch()
-        click(By.text("Set up Control D"))
-        node(By.res("taild-api-token")).text = "read-fixture"
+        content("Set up Control D").click()
+        scrollTo("", "taild-api-token", resource = true).text = "read-fixture"
         click(By.text("Verify and save"))
         ready { it.hasRead && !it.busySetup }
         click(By.text("Close"))
@@ -307,7 +289,7 @@ class TailDControlDInitialTest {
         assertTrue(model.state.value.page.rows.all { it.fact.action == 0 })
         phase("capture-recent")
         content("Add separate Write access").click()
-        node(By.res("taild-api-token")).text = "write-fixture"
+        scrollTo("", "taild-api-token", resource = true).text = "write-fixture"
         click(By.text("Verify and save"))
         ready { it.hasWrite && !it.busySetup }
         click(By.text("Close"))
@@ -351,7 +333,7 @@ class TailDControlDInitialTest {
             model.state.value.preview,
         )
         content("Edit rule for blocked.invalid", description = true).click()
-        scrollTo("taild-rule-editor-content", By.res("taild-rule-comment")).click()
+        scrollTo("taild-rule-editor-content", "taild-rule-comment", resource = true).click()
         val ime =
             android.provider.Settings.Secure.getString(
                     context.contentResolver,
@@ -362,11 +344,12 @@ class TailDControlDInitialTest {
             "The real software keyboard is visible",
             device.wait(Until.hasObject(By.pkg(ime)), 30_000),
         )
-        node(By.res("taild-rule-comment")).text = "Reviewed in Android"
+        scrollTo("taild-rule-editor-content", "taild-rule-comment", resource = true).text =
+            "Reviewed in Android"
         phase("capture-editor-keyboard")
         device.pressBack()
         assertTrue(device.wait(Until.gone(By.pkg(ime)), 30_000))
-        scrollTo("taild-rule-editor-content", By.desc("Block rule action")).click()
+        scrollTo("taild-rule-editor-content", "Block rule action", description = true).click()
         node(By.desc("Allow with Bypass rule action"))
         assertFalse(
             "Only the inverse rule action is offered",
@@ -393,7 +376,10 @@ class TailDControlDInitialTest {
         try {
           phase("switch-theme")
           changed.await()
-          assertEquals("Reviewed in Android", node(By.res("taild-rule-comment")).text)
+          assertEquals(
+              "Reviewed in Android",
+              scrollTo("taild-rule-editor-content", "taild-rule-comment", resource = true).text,
+          )
           phase("capture-editor")
         } finally {
           context.unregisterComponentCallbacks(callback)
@@ -407,16 +393,18 @@ class TailDControlDInitialTest {
         click(By.text("Close"))
         click(By.text("Profile policy"))
         content("Create custom rule").click()
-        node(By.res("taild-rule-hostname")).text = "new.invalid"
-        node(By.res("taild-rule-comment")).text = "New rule"
+        scrollTo("taild-rule-editor-content", "taild-rule-hostname", resource = true).text =
+            "new.invalid"
+        scrollTo("taild-rule-editor-content", "taild-rule-comment", resource = true).text =
+            "New rule"
         applyEditor()
         assertNotNull(rule("new.invalid"))
         content("Edit new.invalid", description = true).click()
-        click(By.desc("Rule enabled"))
+        scrollTo("taild-rule-editor-content", "Rule enabled", description = true).click()
         applyEditor()
         assertEquals(0, rule("new.invalid")?.objectAt("action")?.number("status"))
         content("Edit new.invalid", description = true).click()
-        scrollTo("taild-rule-editor-content", By.text("Review deletion")).click()
+        scrollTo("taild-rule-editor-content", "Review deletion").click()
         ready { !it.busyWrite && it.preview != null }
         click(By.text("Apply reviewed change"))
         ready { !it.busyWrite }
@@ -463,9 +451,11 @@ class TailDControlDInitialTest {
 }
 
 class TailDControlDRestartTest {
+  @get:Rule val compose = createEmptyComposeRule()
+
   @Test
   fun processRestartReconcilesWithoutRepeatingWrite() = runBlocking {
-    val fixture = NativeControlDSession(reset = false)
+    val fixture = NativeControlDSession(reset = false, compose = compose)
     with(fixture) {
       try {
         assertTrue(model.state.value.unresolved)

@@ -120,17 +120,33 @@ consumes the existing notification bus without adding a watcher, timer or servic
 All test installation/control so far is confined to the task-owned emulator;
 the connected physical Thor, real tailnet and provider policy remain untouched.
 
-A4 current verification: the public device-list deep link now selects Connection
+A4 current verification: the public device-list deep link selects Connection
 from Dashboard, including a previously selected Activity tab; the independent
-public-UI regression passes in the rebuilt app. Dashboard integrated rerun 4
-passes native export/cancellation, selected revision, live dark theme, scope
-changes, held HTTP/SQLite navigation, failure/retry, recording off and restart.
-Backend/inherited source contracts and release lint pass. The production delivery
-harness compiles, and the isolated main-only Android environment now holds the
-existing pinned TailDNS signer without generating or rotating a key. Responsive
-large-text/landscape acceptance, signed candidate upgrade/recovery and actual
-TalkBack, exact-source CI, publication and independent public delivery remain A4
-advancement blockers. No candidate or Android release has been published.
+public-UI regression passes. Dashboard integrated rerun 4 passes the full native
+workflow. Large-font portrait Control D/Dashboard run 7 passes, followed by
+landscape Control D run 8 and Dashboard run 9 on the 800x360 dp phone and 900x840 dp
+tablet at 150% text. The editor retains its draft through a live system theme
+change, permits real keyboard input and offers only the inverse icon. The actual
+short-screen Dashboard sheet exposed hidden fixed-header controls; it now opens
+fully and scrolls the complete details/filter/export view. The corrected workflow
+passes actual document export/readback, cancellation, hidden-page HTTP/SQLite work,
+terminal failure/retry, off/cancellation, restart and retained scope checks.
+
+Compose test scrolling replaces custom gesture/end detection, with explicit
+render-clock synchronization after native taps. A framework teardown stall in a
+prior combined run was diagnosed from its owned JVM stack; failures are now
+reported before teardown, and the corrected complete standalone workflows pass.
+Backend/inherited contracts and release lint passed before this UI-only correction;
+new exact-source CI must verify the final tree. Gradle builds verify two workers,
+no parallel projects, the 3 GB Gradle heap and single-use daemon exit.
+
+Candidate run 39445685301 at 975593b passes isolated build/signing and independent
+APK verification: existing pinned signer, source/core identities, four ABIs and
+all payload members. It is superseded by the landscape correction and must not
+be published. The protected main-only environment reuses the existing signer;
+no key was generated or rotated. Signed final-source upgrade/recovery, actual
+TalkBack, final exact-source CI, normal Android publication and independent public
+delivery remain A4 advancement blockers. No Android release has been published.
 
 ## October 18 scheduled inheritance within ACTIVE Stage 10
 
