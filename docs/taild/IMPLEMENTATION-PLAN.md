@@ -19,6 +19,14 @@ with explicit human authority; no policy change is authorized or performed. The
 phone may disconnect; remaining runtime verification uses an isolated emulator.
 No tracked deferrals. Desktop B12 and R33 remain separate unresolved boundaries.
 
+Current verification: exact-source focused checks and CodeQL passed at 06e7f8a;
+candidate 39477027818 stopped before signing because the alternate SearchView
+still referenced the removed owner-title helper. Search results now share the
+same presence/name/OS rendering and retain only the pinned label. This is an
+internal current-stage acceptance gap being resolved, not a parked stage. The
+host delivery adapter also quotes the generated owner name through adb's remote
+shell; a read-only reproduction proved that unquoted spaces split arguments.
+
 ## Current execution - October 20 Android R37
 
 The human instruction starts Android implementation and updates its specification

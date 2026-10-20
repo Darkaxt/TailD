@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -142,7 +143,8 @@ func TestTailDProductionDelivery(t *testing.T) {
 		args = append(args, "-e", "ui_correction", "true")
 		for _, profile := range fixtureStatus.User {
 			if profile.DisplayName != "" {
-				args = append(args, "-e", "owner_name", profile.DisplayName)
+				// adb shell joins its command arguments before remote parsing.
+				args = append(args, "-e", "owner_name", strconv.Quote(profile.DisplayName))
 				break
 			}
 		}

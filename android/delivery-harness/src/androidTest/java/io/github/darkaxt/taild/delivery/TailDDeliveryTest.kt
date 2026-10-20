@@ -570,7 +570,7 @@ class TailDDeliveryTest {
     fun connection() {
       open("main/devices")
       val peer = node(By.text(peerName))
-      val android = node(By.desc("android"))
+      val android = node(By.descContains("android"))
       assertTrue(
           "Local Android icon precedes the remote peer",
           android.visibleBounds.top < peer.visibleBounds.top,
@@ -586,6 +586,7 @@ class TailDDeliveryTest {
     fun search(value: String) {
       click(By.text("Control D"))
       val editor = node(By.clazz("android.widget.EditText"))
+      editor.click()
       editor.text = value
       node(By.desc("Search domains or decisions"))
       assertEquals(value, node(By.clazz("android.widget.EditText")).text)
