@@ -8,12 +8,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Clear
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
@@ -22,6 +27,7 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.tailscale.ipn.R
+import com.tailscale.ipn.ui.theme.searchBarColors
 import java.time.Instant
 import kotlinx.serialization.json.*
 
@@ -63,6 +69,8 @@ private val ruleEditorSaver =
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ControlDView(model: ControlDModel, onDNSSettings: () -> Unit) {
+  val focusManager = LocalFocusManager.current
+  var searchFocused by remember { mutableStateOf(false) }
   val state by model.state.collectAsState()
   var tab by rememberSaveable { mutableIntStateOf(0) }
   var setup by remember { mutableStateOf<ControlDCredentials.Access?>(null) }
@@ -256,9 +264,35 @@ fun ControlDView(model: ControlDModel, onDNSSettings: () -> Unit) {
             OutlinedTextField(
                 value = state.search,
                 onValueChange = model::search,
-                label = { Text("Domain / decision") },
-                modifier = Modifier.weight(1f),
+                placeholder = {
+                  Text(
+                      "Domain / decision",
+                      style = MaterialTheme.typography.bodyLarge,
+                      maxLines = 1,
+                  )
+                },
+                modifier = Modifier.weight(1f).onFocusChanged { searchFocused = it.isFocused },
                 singleLine = true,
+                shape = MaterialTheme.shapes.extraLarge,
+                colors = MaterialTheme.colorScheme.searchBarColors,
+                leadingIcon = { Icon(Icons.Outlined.Search, "Search domains or decisions") },
+                trailingIcon = {
+                  if (searchFocused) {
+                    IconButton(
+                        onClick = {
+                          focusManager.clearFocus()
+                          model.search("")
+                        }
+                    ) {
+                      Icon(
+                          if (state.search.isEmpty()) Icons.Outlined.Close
+                          else Icons.Outlined.Clear,
+                          "Clear domain or decision search",
+                          tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                      )
+                    }
+                  }
+                },
             )
             IconButton(
                 onClick = { model.refreshHistory(full = true) },

@@ -1,6 +1,6 @@
 # TailD Android specification
 
-Version 1.0, 2026-10-20. Authoritative Android extension to
+Version 1.1, 2026-10-20. Authoritative Android extension to
 [PRODUCT-SPECIFICATION.md](PRODUCT-SPECIFICATION.md), requirement R37.
 The historical filename is retained to preserve existing links.
 
@@ -46,7 +46,13 @@ Do not expose unfinished destinations as working features in a released APK.
 
 Connection is a searchable device list with this device first. Put a presence
 square/dot before the name and an accessible OS icon immediately after it. Unknown
-presence stays Unknown. Show relative Last online and make the exact provider UTC
+presence stays Unknown. The local device uses its known Android platform even
+when its self-node OS metadata is omitted; remote unknown OS stays unknown. Do
+not repeat owner/account headings in the list: account identity is already
+beside the connection switch. Preserve the pinned-devices heading. Use the same
+official Tailscale and Control D marks as Windows for rail and bottom navigation,
+with theme-aware tint, unchanged accessible destination labels and bundled notices.
+Show relative Last online and make the exact provider UTC
 timestamp available by tap/long press and accessibility, equivalent to Windows
 hover. Phone rows may wrap; do not require a five-column desktop table on a phone.
 Keep addresses, owner, routes, tags, health and capability facts reachable in device
@@ -57,6 +63,9 @@ Collect analytics is one preference row, disabled by default, independent of VPN
 state. Production debug controls stay out of normal navigation.
 
 Recent DNS uses Time, Question, Decision/reason, First seen and Total semantics.
+Its domain/decision search uses the Tailscale search field's rounded shape,
+theme colors, search glyph, placeholder and focused clear/close control. Preserve
+the current domain/decision filtering and independent history-refresh action.
 The recent list is the latest 100 observations in 15 minutes; First seen and Total
 query every retained observation in the last seven days for the exact selected
 account/endpoint/client/question/type, independently of list/search limits. Label

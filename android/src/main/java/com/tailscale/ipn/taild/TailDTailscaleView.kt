@@ -10,8 +10,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
@@ -20,10 +18,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import com.tailscale.ipn.App
+import com.tailscale.ipn.R
 import com.tailscale.ipn.ShareActivity
 import com.tailscale.ipn.ui.Links
 import com.tailscale.ipn.ui.util.AndroidTVUtil.isAndroidTV
@@ -66,13 +66,21 @@ fun TailDTailscaleView(
             NavigationRailItem(
                 selected = destination == 0,
                 onClick = { destination = 0 },
-                icon = { Icon(Icons.Default.List, null) },
+                icon = {
+                  Icon(
+                      painterResource(R.drawable.taild_brand_tailscale),
+                      null,
+                      Modifier.size(24.dp),
+                  )
+                },
                 label = { Text("Tailscale") },
             )
             NavigationRailItem(
                 selected = destination == 1,
                 onClick = { destination = 1 },
-                icon = { Icon(Icons.Default.Settings, null) },
+                icon = {
+                  Icon(painterResource(R.drawable.taild_brand_controld), null, Modifier.size(24.dp))
+                },
                 label = { Text("Control D") },
             )
             NavigationRailItem(
@@ -153,13 +161,25 @@ fun TailDTailscaleView(
               NavigationBarItem(
                   selected = destination == 0,
                   onClick = { destination = 0 },
-                  icon = { Icon(Icons.Default.List, null) },
+                  icon = {
+                    Icon(
+                        painterResource(R.drawable.taild_brand_tailscale),
+                        null,
+                        Modifier.size(24.dp),
+                    )
+                  },
                   label = { Text("Tailscale") },
               )
               NavigationBarItem(
                   selected = destination == 1,
                   onClick = { destination = 1 },
-                  icon = { Icon(Icons.Default.Settings, null) },
+                  icon = {
+                    Icon(
+                        painterResource(R.drawable.taild_brand_controld),
+                        null,
+                        Modifier.size(24.dp),
+                    )
+                  },
                   label = { Text("Control D") },
               )
               NavigationBarItem(

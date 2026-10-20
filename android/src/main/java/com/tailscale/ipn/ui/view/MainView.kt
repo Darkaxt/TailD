@@ -112,7 +112,6 @@ import com.tailscale.ipn.ui.util.AutoResizingText
 import com.tailscale.ipn.ui.util.Lists
 import com.tailscale.ipn.ui.util.LoadingIndicator
 import com.tailscale.ipn.ui.util.PeerSet
-import com.tailscale.ipn.ui.util.PeerSet.Companion.FAVORITES_ID
 import com.tailscale.ipn.ui.util.itemsWithDividers
 import com.tailscale.ipn.ui.util.set
 import com.tailscale.ipn.ui.util.withSelfFirst
@@ -835,12 +834,13 @@ fun PeerList(
         if (idx != 0) {
           item(key = "user_divider_${peerSet.id}") { Lists.ItemDivider() }
         }
-        if (peerSet.id == PeerSet.SELF_ID) {
-          // This device is the first device row, without a duplicate widget/header.
-        } else if (isAndroidTV()) {
-          item { NodesSectionHeader(peerSet = peerSet) }
-        } else {
-          stickyHeader { NodesSectionHeader(peerSet = peerSet) }
+        // Account identity is already beside the connection switch.
+        if (peerSet.isFavorite) {
+          if (isAndroidTV()) {
+            item { PinnedDevicesSectionHeader() }
+          } else {
+            stickyHeader { PinnedDevicesSectionHeader() }
+          }
         }
         itemsWithDividers(peerSet.nodes, key = { it.StableID }) { peer ->
           ListItem(
@@ -980,40 +980,29 @@ fun DeviceDropdownMenu(
 }
 
 @Composable
-fun PeerSet.sectionTitle(): String =
-    if (isFavorite) stringResource(id = R.string.pinned_devices)
-    else title ?: stringResource(id = R.string.unknown_user)
-
-@Composable
-fun NodesSectionHeader(peerSet: PeerSet) {
+fun PinnedDevicesSectionHeader() {
   Spacer(Modifier.height(16.dp).fillMaxSize().background(color = MaterialTheme.colorScheme.surface))
   Lists.LargeTitle(
-      peerSet.sectionTitle(),
+      stringResource(id = R.string.pinned_devices),
       bottomPadding = 8.dp,
       focusable = isAndroidTV(),
       style = MaterialTheme.typography.titleLarge,
       fontWeight = FontWeight.SemiBold,
-      leadingIcon =
-          if (peerSet.isFavorite) {
-            {
-              Icon(
-                  painter = painterResource(R.drawable.pin_24),
-                  contentDescription = null,
-                  modifier = Modifier.size(16.dp),
-                  tint = MaterialTheme.colorScheme.onSurfaceVariant,
-              )
-            }
-          } else null,
+      leadingIcon = {
+        Icon(
+            painter = painterResource(R.drawable.pin_24),
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+      },
   )
 }
 
 @Preview(showBackground = true)
 @Composable
-private fun NodesSectionHeaderPreview() {
-  Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-    NodesSectionHeader(peerSet = PeerSet(FAVORITES_ID, null, nodes = emptyList()))
-    NodesSectionHeader(peerSet = PeerSet(1, "Thing", nodes = emptyList()))
-  }
+private fun PinnedDevicesSectionHeaderPreview() {
+  PinnedDevicesSectionHeader()
 }
 
 @Composable

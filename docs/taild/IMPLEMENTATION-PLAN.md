@@ -1,5 +1,24 @@
 # TailD staged execution
 
+## Current execution - October 20 Android device-list correction
+
+Already authorized: remove redundant owner headings, show Android for the local
+device without self-node OS metadata, and use the Windows official integration
+marks in native navigation, and match the DNS filter to Tailscale search styling.
+Specification: Android v1.1. This current record
+supersedes historical current-work labels without reopening completed A1-A4 or B12.
+
+| Stage | Status | Acceptance satisfied | Acceptance remaining |
+| --- | --- | --- | --- |
+| Device-list and navigation correction | ACTIVE | Owner grouping and missing self Hostinfo.OS traced; Windows mark geometry located. | Integrated headings/icon/marks/DNS search, preserved peer metadata, pinning/filter behavior and auto-dark/accessibility, focused regression and native verification. |
+| Android correction delivery | NOT STARTED | Prior +34 delivery and ZFold7 upgrade evidence retained. | Exact-source gates, protected signing, signed candidate acceptance, normal +35 publication and independent public APK verification. |
+
+ObtainX on ZFold7 now tracks TailD Android +34 with APK/title filters and actual
+installed-version detection. Both separate READ/Write credentials are registered
+with explicit human authority; no policy change is authorized or performed. The
+phone may disconnect; remaining runtime verification uses an isolated emulator.
+No tracked deferrals. Desktop B12 and R33 remain separate unresolved boundaries.
+
 ## Current execution - October 20 Android R37
 
 The human instruction starts Android implementation and updates its specification

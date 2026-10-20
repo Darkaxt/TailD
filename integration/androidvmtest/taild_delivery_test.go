@@ -34,6 +34,7 @@ var deliveryEndpoint = flag.String("android.delivery-endpoint", "", "existing li
 var deliveryProfile = flag.String("android.delivery-profile", "", "existing live READ profile display name")
 
 var deliveryFinalizeOnly = flag.Bool("android.delivery-finalize", false, "finish cleanup and TalkBack on the retained candidate; prior migration and recovery evidence is separate")
+var deliveryUICorrection = flag.Bool("android.delivery-ui-correction", false, "verify the bounded device-list/navigation/search correction on the normally signed candidate")
 
 var deliveryResumeCandidate = flag.Bool("android.delivery-resume-candidate", false, "continue recovery/read/accessibility on the retained verified candidate; does not establish the origin upgrade")
 var deliveryOriginFolderPrepared = flag.Bool("android.delivery-origin-folder-prepared", false, "resume the previously verified origin TailDrop directory grant")
@@ -131,11 +132,21 @@ func TestTailDProductionDelivery(t *testing.T) {
 	peerName := "taild-delivery-peer-" + parsed.Port()
 	peer := &tsnet.Server{Dir: t.TempDir(), ControlURL: server.URL, Hostname: peerName, Ephemeral: true, Store: new(mem.Store), Logf: t.Logf}
 	defer peer.Close()
-	if _, err := peer.Up(context.Background()); err != nil {
+	fixtureStatus, err := peer.Up(context.Background())
+	if err != nil {
 		t.Fatal(err)
 	}
 	args := []string{"-s", *adbSerial, "shell", "am", "instrument", "-w", "-r", "-e", "class", "io.github.darkaxt.taild.delivery.TailDDeliveryTest#productionUpgradeRecoveryAndAccessibility", "-e", "taild_delivery", "true", "-e", "control_url", server.URL, "-e", "source_revision", receipt.Source}
 	args = append(args, "-e", "candidate_code", fmt.Sprint(receipt.Code), "-e", "peer_name", peerName)
+	if *deliveryUICorrection {
+		args = append(args, "-e", "ui_correction", "true")
+		for _, profile := range fixtureStatus.User {
+			if profile.DisplayName != "" {
+				args = append(args, "-e", "owner_name", profile.DisplayName)
+				break
+			}
+		}
+	}
 	if *deliveryResumeCandidate {
 		args = append(args, "-e", "resume_candidate", "true")
 	}
@@ -368,7 +379,9 @@ func TestTailDProductionDelivery(t *testing.T) {
 		t.Fatalf("production native delivery: %v %v\n%s", err, scanner.Err(), result)
 	}
 	required := []string{"assert-node-continuity", "rejected-downgrade", "reinstall", "capture-talkback", "delivery-verified"}
-	if *deliveryFinalizeOnly {
+	if *deliveryUICorrection {
+		required = []string{"baseline-ready", "upgrade", "assert-node-continuity", "capture-ui-phone-light", "capture-ui-phone-dark", "capture-ui-rail-dark", "capture-ui-rail-light", "rejected-downgrade", "reinstall", "delivery-verified"}
+	} else if *deliveryFinalizeOnly {
 		required = []string{"capture-talkback", "delivery-verified"}
 	} else if *deliveryResumeCandidate {
 		required = append(required, "resumed-candidate", "recovery-baseline")
@@ -379,6 +392,10 @@ func TestTailDProductionDelivery(t *testing.T) {
 		if seen[phase] == 0 {
 			t.Fatalf("missing production acceptance phase %s", phase)
 		}
+	}
+	if *deliveryUICorrection {
+		t.Log("Normally signed correction verified: in-place identity, owner-free list, Android self icon, phone/rail marks and DNS search/clear across live system themes, rejected downgrade and exact reinstall")
+		return
 	}
 	if *deliveryFinalizeOnly {
 		t.Log("Retained production-signed candidate cleanup, log audit and TalkBack session verified; migration/recovery assertions belong to their earlier evidence")

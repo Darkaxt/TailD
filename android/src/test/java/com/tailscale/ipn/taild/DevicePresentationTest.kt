@@ -8,6 +8,25 @@ import org.junit.Test
 
 class DevicePresentationTest {
   @Test
+  fun localAndroidPlatformDoesNotDependOnSelfHostinfo() {
+    val self = Tailcfg.Node(StableID = "self")
+    assertEquals("android", deviceOperatingSystem(self, "self"))
+    assertEquals(
+        "android",
+        deviceOperatingSystem(self.copy(Hostinfo = Tailcfg.Hostinfo(OS = "linux")), "self"),
+    )
+    assertNull(deviceOperatingSystem(self, "other"))
+    assertEquals(
+        "windows",
+        deviceOperatingSystem(self.copy(Hostinfo = Tailcfg.Hostinfo(OS = "Windows")), "other"),
+    )
+    assertEquals(
+        "android",
+        deviceOperatingSystem(self.copy(Hostinfo = Tailcfg.Hostinfo(OS = "android")), null),
+    )
+  }
+
+  @Test
   fun selfIsFirstWithoutDuplicateAndHiddenSelfStaysHidden() {
     val self = Tailcfg.Node(StableID = "self")
     val other = Tailcfg.Node(StableID = "other")

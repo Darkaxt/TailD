@@ -17,3 +17,12 @@ as apache-2.0.txt. Android platform SQLite remains provided by the operating sys
 Source and Android release information: https://github.com/Darkaxt/TailD
 Technical package/namespace and protocol names inherited from TailDNS/Tailscale
 are preserved for upgrades and compatibility.
+
+Navigation marks reuse TailD for Windows desktop/src/brand-mark.ts artwork.
+The Control D company symbol retains the four original paths and 44x33 viewport
+from https://controld.com/ (retrieved 2026-10-15). Copyright and trademarks
+CONTROL D, Inc.; used only to identify the integration. Artwork is not declared
+BSD or GPL by this attribution. The Tailscale nine-dot symbol retains its circle
+positions and five dimmed dots from the inherited Tailscale web icon (core
+4b17755738ec51bb9e94a83e65ef972b8b52260a). Copyright Tailscale Inc. and
+Contributors. Both marks retain their owners' rights; no endorsement is claimed.

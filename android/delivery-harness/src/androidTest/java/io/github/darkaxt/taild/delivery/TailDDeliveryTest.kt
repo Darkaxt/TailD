@@ -472,6 +472,26 @@ class TailDDeliveryTest {
     click(By.text("Add account"))
     open("main/devices")
     node(By.text(peerName))
+    if (arguments.getString("ui_correction") == "true") {
+      alwaysOn(true)
+      open("main/devices")
+      node(By.text(peerName))
+      phase("baseline-ready")
+      phase("upgrade")
+      launch()
+      signedPackage(checkNotNull(arguments.getString("candidate_code")).toLong())
+      node(By.text(peerName))
+      phase("assert-node-continuity")
+      verifyUiCorrection()
+      phase("rejected-downgrade")
+      phase("reinstall")
+      launch()
+      signedPackage(checkNotNull(arguments.getString("candidate_code")).toLong())
+      open("main/devices")
+      node(By.text(peerName))
+      phase("delivery-verified")
+      return@runBlocking
+    }
     dnsPreference(null)
     dnsPreference(false)
     phase("origin-dns-prepared")
@@ -539,6 +559,59 @@ class TailDDeliveryTest {
       node(By.text("Set up Control D"))
     }
     finishDelivery()
+  }
+
+  private suspend fun verifyUiCorrection() {
+    fun shell(command: String) {
+      android.os.ParcelFileDescriptor.AutoCloseInputStream(automation.executeShellCommand(command))
+          .use { it.readBytes() }
+      device.waitForIdle()
+    }
+    fun connection() {
+      open("main/devices")
+      val peer = node(By.text(peerName))
+      val android = node(By.desc("android"))
+      assertTrue(
+          "Local Android icon precedes the remote peer",
+          android.visibleBounds.top < peer.visibleBounds.top,
+      )
+      var list: UiObject2? = peer
+      while (list != null && !list.isScrollable) list = list.parent
+      checkNotNull(list) { "Actual device list missing" }
+      val owner = checkNotNull(arguments.getString("owner_name"))
+      assertFalse("No redundant owner heading in device list", list.hasObject(By.text(owner)))
+      node(By.text("Tailscale"))
+      node(By.text("Control D"))
+    }
+    fun search(value: String) {
+      click(By.text("Control D"))
+      val editor = node(By.clazz("android.widget.EditText"))
+      editor.text = value
+      node(By.desc("Search domains or decisions"))
+      assertEquals(value, node(By.clazz("android.widget.EditText")).text)
+      device.pressBack()
+      device.waitForIdle()
+    }
+    connection()
+    phase("capture-ui-phone-light")
+    search("Blocked")
+    shell("cmd uimode night yes")
+    node(By.text("TailD \u00b7 Control D"))
+    assertEquals("Blocked", node(By.clazz("android.widget.EditText")).text)
+    phase("capture-ui-phone-dark")
+    click(By.desc("Clear domain or decision search"))
+    assertTrue(node(By.clazz("android.widget.EditText")).text.isNullOrEmpty())
+    shell("wm size 1680x1800")
+    shell("wm density 320")
+    connection()
+    phase("capture-ui-rail-dark")
+    search("example.invalid")
+    shell("cmd uimode night no")
+    node(By.text("TailD \u00b7 Control D"))
+    assertEquals("example.invalid", node(By.clazz("android.widget.EditText")).text)
+    click(By.desc("Clear domain or decision search"))
+    assertTrue(node(By.clazz("android.widget.EditText")).text.isNullOrEmpty())
+    phase("capture-ui-rail-light")
   }
 
   private fun matchingText(root: AccessibilityNodeInfo, text: String): List<AccessibilityNodeInfo> =

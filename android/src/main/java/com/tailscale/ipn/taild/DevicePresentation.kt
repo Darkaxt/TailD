@@ -21,6 +21,11 @@ import com.tailscale.ipn.ui.model.Tailcfg
 import com.tailscale.ipn.ui.theme.off
 import com.tailscale.ipn.ui.theme.on
 
+fun deviceOperatingSystem(node: Tailcfg.Node, selfId: String?): String? =
+    // SelfChange can omit Hostinfo.OS, but this native client knows its platform.
+    // Keep unknown remote platforms unknown instead of guessing from their names.
+    if (node.StableID == selfId) "android" else node.Hostinfo.OS?.lowercase()
+
 fun taildropCapability(node: Tailcfg.Node, selfId: String?): Boolean? {
   if (node.Online != true || node.StableID == selfId) return null
   // Exact ipnstate.TaildropTargetStatus from the pinned core. Node capabilities
@@ -76,7 +81,7 @@ fun DevicePresenceName(
         overflow = TextOverflow.Ellipsis,
         maxLines = 2,
     )
-    val os = node.Hostinfo.OS?.lowercase()
+    val os = deviceOperatingSystem(node, selfId)
     val icon =
         when (os) {
           "android" -> R.drawable.android
@@ -90,7 +95,7 @@ fun DevicePresenceName(
         }
     Icon(
         painterResource(icon),
-        node.Hostinfo.OS ?: "Unknown operating system",
+        os ?: "Unknown operating system",
         Modifier.size(18.dp),
     )
   }

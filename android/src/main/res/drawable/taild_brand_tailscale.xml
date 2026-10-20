@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Official Tailscale mark geometry from desktop/src/brand-mark.ts.
+     Tailscale Inc. and Contributors retain artwork/trademark rights. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="26" android:viewportHeight="26">
+    <path android:fillColor="#FFFFFFFF" android:fillAlpha="0.2" android:pathData="M0.79687,3.69865a3.07273,3.07273 0,1 0,6.14546,0a3.07273,3.07273 0,1 0,-6.14546,0" />
+    <path android:fillColor="#FFFFFFFF" android:fillAlpha="0.2" android:pathData="M10.01517,3.69865a3.07273,3.07273 0,1 0,6.14546,0a3.07273,3.07273 0,1 0,-6.14546,0" />
+    <path android:fillColor="#FFFFFFFF" android:fillAlpha="0.2" android:pathData="M19.11917,3.69865a3.07273,3.07273 0,1 0,6.14546,0a3.07273,3.07273 0,1 0,-6.14546,0" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M0.79687,12.85990a3.07273,3.07273 0,1 0,6.14546,0a3.07273,3.07273 0,1 0,-6.14546,0" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M10.01517,12.85990a3.07273,3.07273 0,1 0,6.14546,0a3.07273,3.07273 0,1 0,-6.14546,0" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M19.11917,12.85990a3.07273,3.07273 0,1 0,6.14546,0a3.07273,3.07273 0,1 0,-6.14546,0" />
+    <path android:fillColor="#FFFFFFFF" android:fillAlpha="0.2" android:pathData="M0.79687,22.19190a3.07273,3.07273 0,1 0,6.14546,0a3.07273,3.07273 0,1 0,-6.14546,0" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M10.01517,22.19190a3.07273,3.07273 0,1 0,6.14546,0a3.07273,3.07273 0,1 0,-6.14546,0" />
+    <path android:fillColor="#FFFFFFFF" android:fillAlpha="0.2" android:pathData="M19.11917,22.19190a3.07273,3.07273 0,1 0,6.14546,0a3.07273,3.07273 0,1 0,-6.14546,0" />
+</vector>

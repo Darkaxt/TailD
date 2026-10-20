@@ -1,3 +1,10 @@
+This update removes redundant owner headings from the device list, shows the
+Android icon for this device even when its self-node OS metadata is omitted, and
+uses the official Tailscale/Control D navigation marks from TailD for Windows.
+The Domain/decision filter now uses the same rounded search style and clear
+control as the Tailscale tab. System light/dark tint and accessible destination
+labels remain supported.
+
 TailD Android adds native Tailscale device/status views, opt-in scoped activity
 and TailDrop history, Control D setup/Recent DNS/basic management, and a private
 seven-day Dashboard with matching drill-down and document export.
