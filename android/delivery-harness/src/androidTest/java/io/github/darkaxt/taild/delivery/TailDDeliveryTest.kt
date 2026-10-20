@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityManager
 import android.view.accessibility.AccessibilityNodeInfo
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.*
@@ -25,24 +26,65 @@ import org.junit.Test
 /** A separate, self-targeted test UID: no private app API, production key or run-as access. */
 class TailDDeliveryTest {
   private val instrumentation = InstrumentationRegistry.getInstrumentation()
+  private val automation
+    get() = instrumentation.getUiAutomation(Configurator.getInstance().uiAutomationFlags)
+
   private val context = instrumentation.targetContext
   private val arguments = InstrumentationRegistry.getArguments()
+  private val peerName
+    get() = checkNotNull(arguments.getString("peer_name"))
+
   private val pkg = "io.github.darkaxt.taildns"
   private lateinit var device: UiDevice
 
+  private fun find(selector: BySelector, packageName: String = pkg): UiObject2? {
+    if (Build.VERSION.SDK_INT >= 33) automation.clearCache()
+    return device.findObject(By.copy(selector).pkg(packageName))
+  }
+
   private fun node(selector: BySelector, packageName: String = pkg): UiObject2 =
-      device.wait(Until.findObject(By.copy(selector).pkg(packageName)), 30_000)
-          ?: error("Required delivery control missing: $selector")
+      device.wait(
+          object : Condition<UiDevice, UiObject2?> {
+            override fun apply(value: UiDevice): UiObject2? = find(selector, packageName)
+          },
+          30_000,
+      ) ?: error("Required delivery control missing: $selector")
 
   private fun click(selector: BySelector) {
-    node(selector).click()
+    check(
+        device.wait(
+            object : Condition<UiDevice, Boolean> {
+              override fun apply(value: UiDevice): Boolean {
+                val target = find(By.copy(selector).enabled(true)) ?: return false
+                return try {
+                  target.click()
+                  true
+                } catch (_: StaleObjectException) {
+                  // UiAutomator 2.3 rejects a stale handle before dispatching its gesture.
+                  // Reacquire that handle after Compose remounts; never repeat a dispatched action.
+                  false
+                }
+              }
+            },
+            30_000,
+        )
+    ) {
+      "Actionable delivery control missing: $selector"
+    }
     device.waitForIdle()
   }
 
   private fun content(selector: BySelector): UiObject2 {
-    if (!device.hasObject(By.copy(selector).pkg(pkg)))
-        node(By.scrollable(true))
-            .scrollUntil(Direction.DOWN, Until.findObject(By.copy(selector).pkg(pkg)))
+    val target = By.copy(selector).pkg(pkg)
+    val ready =
+        device.wait(
+            object : Condition<UiDevice, UiObject2?> {
+              override fun apply(value: UiDevice): UiObject2? =
+                  find(selector) ?: find(By.scrollable(true))
+            },
+            30_000,
+        ) ?: error("Content did not render")
+    if (!device.hasObject(target)) ready.scrollUntil(Direction.DOWN, Until.findObject(target))
     return node(selector)
   }
 
@@ -53,6 +95,7 @@ class TailDDeliveryTest {
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     )
     device.waitForIdle()
+    if (path == "settings") node(By.text("Settings"))
   }
 
   private suspend fun phase(name: String) {
@@ -113,24 +156,36 @@ class TailDDeliveryTest {
 
   private fun dnsPreference(expected: Boolean?) {
     open("settings")
-    content(By.text("DNS settings")).click()
-    val first = node(By.checkable(true))
+    content(By.text("DNS settings"))
+    click(By.text("DNS settings"))
+    val corpDNS = By.desc("Use Tailscale DNS").checkable(true)
+    node(corpDNS)
     if (expected == null) {
-      if (first.isChecked) first.click()
-    } else assertEquals(expected, first.isChecked)
+      if (node(corpDNS).isChecked) click(corpDNS)
+      check(
+          device.wait(
+              object : Condition<UiDevice, Boolean> {
+                override fun apply(value: UiDevice): Boolean = find(corpDNS)?.isChecked == false
+              },
+              30_000,
+          )
+      )
+    } else assertEquals(expected, node(corpDNS).isChecked)
     val endpoint = "https://resolver.invalid/dns-query"
     content(By.text("HTTPS DNS endpoint"))
     val editor = node(By.clazz("android.widget.EditText"))
     if (expected == null) {
       editor.click()
       editor.text = endpoint
-      val focused =
-          checkNotNull(
-              instrumentation.uiAutomation.rootInActiveWindow.findFocus(
-                  AccessibilityNodeInfo.FOCUS_INPUT
+      val ime =
+          android.provider.Settings.Secure.getString(
+                  context.contentResolver,
+                  android.provider.Settings.Secure.DEFAULT_INPUT_METHOD,
               )
-          )
-      check(focused.performAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_IME_ENTER.id))
+              .substringBefore('/')
+      node(By.desc(Pattern.compile("Done", Pattern.CASE_INSENSITIVE)), ime).click()
+      check(device.wait(Until.gone(By.pkg(ime)), 30_000))
+      node(By.clazz("android.widget.EditText").enabled(true))
       device.waitForIdle()
     } else assertEquals("Manual resolver is retained without enabling it", endpoint, editor.text)
     device.pressBack()
@@ -139,14 +194,11 @@ class TailDDeliveryTest {
 
   private fun analytics(enabled: Boolean, verifyOnly: Boolean = false) {
     open("settings")
-    val label = content(By.text("Collect analytics"))
-    val row = label.parent
-    val control =
-        row.findObject(By.checkable(true))
-            ?: row.parent.findObject(By.checkable(true))
-            ?: error("Analytics preference has no switch")
+    content(By.text("Collect analytics"))
+    val selector = By.desc("Collect analytics").checkable(true)
+    val control = node(selector)
     if (verifyOnly) assertEquals(enabled, control.isChecked)
-    else if (control.isChecked != enabled) control.click()
+    else if (control.isChecked != enabled) click(selector)
     device.waitForIdle()
   }
 
@@ -157,8 +209,20 @@ class TailDDeliveryTest {
     )
     device.waitForIdle()
     val settings = "com.android.settings"
-    node(By.desc(Pattern.compile(".*[Ss]ettings.*TailD.*|.*TailD.*[Ss]ettings.*")), settings)
-        .click()
+    check(
+        device.wait(
+            object : Condition<UiDevice, Boolean> {
+              override fun apply(value: UiDevice): Boolean =
+                  find(By.text("Always-on VPN"), settings) != null ||
+                      find(By.desc("Settings"), settings) != null
+            },
+            30_000,
+        )
+    )
+    // Android may restore this task directly to the VPN's existing details page.
+    if (find(By.text("Always-on VPN"), settings) == null) {
+      node(By.desc("Settings"), settings).click()
+    }
     val label = node(By.text("Always-on VPN"), settings)
     val row = label.parent.parent
     val toggle = row.findObject(By.checkable(true)) ?: error("Always-on VPN switch missing")
@@ -177,12 +241,17 @@ class TailDDeliveryTest {
 
   private fun folder() {
     open("settings")
-    content(By.text("Permissions")).click()
+    content(By.text("Permissions"))
+    click(By.text("Permissions"))
     click(By.text("Taildrop directory access"))
   }
 
   private fun prepareFolder() {
     folder()
+    if (arguments.getString("origin_folder_prepared") == "true") {
+      node(By.textContains("TailDDelivery"))
+      return
+    }
     click(By.text("Pick a different directory"))
     val picker =
         context.packageManager
@@ -199,6 +268,11 @@ class TailDDeliveryTest {
 
   private suspend fun readSetup() {
     click(By.text("Control D"))
+    if (find(By.text("Set up Control D")) == null) {
+      // A recovery continuation reuses the READ vault already verified on this signed APK.
+      retainedRead()
+      return
+    }
     click(By.text("Set up Control D"))
     LocalServerSocket("taild-r37-release-read").use { server ->
       instrumentation.sendStatus(
@@ -213,7 +287,36 @@ class TailDDeliveryTest {
           val bytes = ByteArray(size)
           input.readFully(bytes)
           try {
-            node(By.res("taild-api-token")).text = bytes.toString(Charsets.UTF_8)
+            node(By.res("taild-api-token"))
+            fun input(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
+              if (
+                  node.packageName?.toString() == pkg &&
+                      node.viewIdResourceName == "taild-api-token"
+              )
+                  return node
+              for (index in 0 until node.childCount) {
+                node.getChild(index)?.let { child ->
+                  input(child)?.let {
+                    return it
+                  }
+                }
+              }
+              return null
+            }
+            val field = checkNotNull(input(checkNotNull(automation.rootInActiveWindow)))
+            // UiObject2.setText logs its input. Invoke the same Android text action without that
+            // wrapper.
+            check(
+                field.performAction(
+                    AccessibilityNodeInfo.ACTION_SET_TEXT,
+                    Bundle().apply {
+                      putCharSequence(
+                          AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE,
+                          bytes.toString(Charsets.UTF_8),
+                      )
+                    },
+                )
+            )
           } finally {
             bytes.fill(0)
           }
@@ -223,11 +326,14 @@ class TailDDeliveryTest {
       }
     }
     click(By.text("Verify and save"))
-    node(By.text("Remove saved API credentials"))
+    content(By.text("Remove saved API credentials"))
     click(By.text("Close"))
-    click(By.text("No endpoint selected"))
     val name = checkNotNull(arguments.getString("endpoint_name"))
-    content(By.text(name)).click()
+    if (find(By.text("No endpoint selected")) != null) {
+      click(By.text("No endpoint selected"))
+      content(By.text(name))
+      click(By.text(name))
+    } else node(By.text(name))
     node(By.text(checkNotNull(arguments.getString("profile_name"))))
     click(By.text("Dashboard"))
     node(By.text(Pattern.compile("[1-9][0-9]* stored DNS observations")))
@@ -254,7 +360,7 @@ class TailDDeliveryTest {
             bounds.height() / density >= 47.5f,
         )
         assertTrue(
-            "Accessible action width ${node.viewIdResourceName}",
+            "Accessible action width ${node.viewIdResourceName} ${node.text} ${node.contentDescription} ${bounds.flattenToString()} density=$density",
             bounds.width() / density >= 47.5f,
         )
       }
@@ -270,7 +376,67 @@ class TailDDeliveryTest {
           }
       ) + children
     }
-    return JsonArray(visit(checkNotNull(instrumentation.uiAutomation.rootInActiveWindow)))
+    return JsonArray(visit(checkNotNull(automation.rootInActiveWindow)))
+  }
+
+  private fun savedHistoryMetadata() {
+    node(By.text("TailDrop history"))
+    val saved = By.textContains("taildrop.saved")
+    if (find(saved) == null) {
+      node(By.scrollable(true).hasDescendant(By.text("TailDrop history")))
+          .scrollUntil(Direction.DOWN, Until.findObject(saved))
+    }
+    node(saved)
+  }
+
+  @Test
+  fun inspectOwnedInputRoots() {
+    assumeTrue(Build.HARDWARE in listOf("ranchu", "goldfish"))
+    Configurator.getInstance().uiAutomationFlags =
+        UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES
+    device = UiDevice.getInstance(instrumentation)
+    assumeTrue(device.currentPackageName == pkg)
+    fun ids(node: AccessibilityNodeInfo): List<String> =
+        listOf(
+            "${node.packageName}:${node.viewIdResourceName}:${node.isEditable}:${node.isClickable}:${Rect().also(node::getBoundsInScreen).flattenToString()}:${if (node.isEditable || node.isPassword) "redacted" else node.text}"
+        ) + (0 until node.childCount).flatMap { node.getChild(it)?.let(::ids).orEmpty() }
+    val active = automation.rootInActiveWindow
+    instrumentation.sendStatus(
+        0,
+        Bundle().apply {
+          putString(
+              "taild_input_roots",
+              buildJsonObject {
+                put("uia_field_found", find(By.res("taild-api-token")) != null)
+                put("active", active?.let { JsonArray(ids(it).map(::JsonPrimitive)) } ?: JsonNull)
+                put(
+                    "windows",
+                    JsonArray(
+                        automation.windows.map { window ->
+                          window.root?.let { JsonArray(ids(it).map(::JsonPrimitive)) } ?: JsonNull
+                        }
+                    ),
+                )
+              }
+                  .toString(),
+          )
+        },
+    )
+  }
+
+  @Test
+  fun inspectOwnedSystemWindow() {
+    assumeTrue(Build.HARDWARE in listOf("ranchu", "goldfish"))
+    Configurator.getInstance().uiAutomationFlags =
+        UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES
+    device = UiDevice.getInstance(instrumentation)
+    assumeTrue(device.currentPackageName == "com.android.settings")
+    val tree = java.io.ByteArrayOutputStream()
+    device.dumpWindowHierarchy(tree)
+    instrumentation.sendStatus(
+        0,
+        Bundle().apply { putString("taild_system_tree", tree.toString("UTF-8")) },
+    )
   }
 
   @Test
@@ -280,44 +446,66 @@ class TailDDeliveryTest {
     Configurator.getInstance().uiAutomationFlags =
         UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES
     device = UiDevice.getInstance(instrumentation)
+    val resume = arguments.getString("resume_candidate") == "true"
     val baseline = signedPackage()
     launch()
-    click(By.text("Get Started"))
+    if (arguments.getString("finalize_only") == "true") {
+      signedPackage(checkNotNull(arguments.getString("candidate_code")).toLong())
+      open("main/devices")
+      finishDelivery()
+      return@runBlocking
+    }
+    if (resume) {
+      signedPackage(checkNotNull(arguments.getString("candidate_code")).toLong())
+      // A recovery-only continuation does not repeat or claim the original migration checks.
+      phase("resumed-candidate")
+    }
+    if (!resume && arguments.getString("origin_intro_seen") != "true") click(By.text("Get Started"))
     open("settings")
-    content(By.text("Accounts")).click()
+    val accounts = By.text(Pattern.compile("Accounts|user-[0-9]+@fake-control\\.example\\.net"))
+    content(accounts)
+    click(accounts)
     click(By.desc("menu"))
     click(By.text("Use an alternate server"))
     node(By.clazz("android.widget.EditText")).text =
         checkNotNull(arguments.getString("control_url"))
     click(By.text("Add account"))
-    node(By.text("taild-delivery-peer"))
+    open("main/devices")
+    node(By.text(peerName))
     dnsPreference(null)
     dnsPreference(false)
+    phase("origin-dns-prepared")
     prepareFolder()
+    phase("origin-folder-prepared")
     alwaysOn(true)
     open("main/devices")
-    phase("baseline-ready")
-    phase("upgrade")
-    launch()
-    assertTrue(signedPackage() > baseline)
-    node(By.text("taild-delivery-peer"))
-    phase("assert-node-continuity")
-    dnsPreference(false)
-    folder()
-    node(By.textContains("TailDDelivery"))
-    analytics(false, verifyOnly = true)
-    analytics(true)
-    open("main/devices")
-    click(By.text("TailDrop"))
-    phase("receive-ready")
-    node(By.textContains("taildrop.saved"))
-    phase("assert-saved-file")
-    phase("capture-signed-taildrop")
+    phase(if (resume) "recovery-baseline" else "baseline-ready")
+    if (!resume) {
+      phase("upgrade")
+      launch()
+      assertTrue(signedPackage() > baseline)
+      node(By.text(peerName))
+      phase("assert-node-continuity")
+      dnsPreference(false)
+      folder()
+      node(By.textContains("TailDDelivery"))
+      analytics(false, verifyOnly = true)
+      analytics(true)
+      open("main/devices")
+      click(By.text("TailDrop"))
+      phase("receive-ready")
+      savedHistoryMetadata()
+      phase("assert-saved-file")
+      phase("capture-signed-taildrop")
+    } else {
+      analytics(true, verifyOnly = true)
+      open("main/devices")
+    }
     if (arguments.getString("live_read") == "true") {
       readSetup()
       open("main/devices")
-      node(By.text("TailD · Tailscale"))
-      node(By.text("taild-delivery-peer"))
+      node(By.text("TailD \u00b7 Tailscale"))
+      node(By.text(peerName))
     }
     val installed = signedPackage()
     phase("rejected-downgrade")
@@ -325,7 +513,7 @@ class TailDDeliveryTest {
     phase("reinstall")
     launch()
     signedPackage(installed)
-    node(By.text("taild-delivery-peer"))
+    node(By.text(peerName))
     phase("assert-node-continuity")
     dnsPreference(false)
     folder()
@@ -340,38 +528,102 @@ class TailDDeliveryTest {
         Intent("$pkg.CONNECT_VPN").setClassName(pkg, "com.tailscale.ipn.IPNReceiver")
     )
     node(By.desc("Disconnect"))
-    node(By.text("taild-delivery-peer"))
+    node(By.text(peerName))
     if (arguments.getString("live_read") == "true") {
       retainedRead()
       click(By.text("Control D"))
       click(By.desc("Control D setup"))
+      content(By.text("Remove saved API credentials"))
       click(By.text("Remove saved API credentials"))
       click(By.text("Close"))
       node(By.text("Set up Control D"))
     }
+    finishDelivery()
+  }
+
+  private fun matchingText(root: AccessibilityNodeInfo, text: String): List<AccessibilityNodeInfo> =
+      (if (root.packageName?.toString() == pkg && root.text?.toString() == text) listOf(root)
+      else emptyList()) +
+          (0 until root.childCount).flatMap {
+            root.getChild(it)?.let { child -> matchingText(child, text) }.orEmpty()
+          }
+
+  private suspend fun finishDelivery() {
     analytics(false)
-    content(By.text("Delete local history")).click()
+    content(By.text("Delete local history"))
     click(By.text("Delete local history"))
+    node(By.text("Cancel"))
+    val deleteRoot = checkNotNull(automation.rootInActiveWindow)
+    val deleteActions =
+        matchingText(deleteRoot, "Delete local history")
+            .mapNotNull { label ->
+              var candidate: AccessibilityNodeInfo? = label
+              while (candidate != null && !candidate.isClickable) candidate = candidate.parent
+              candidate?.takeIf { it.packageName?.toString() == pkg && it.isEnabled }
+            }
+            .distinct()
+    check(deleteActions.size == 1) { "Exact deletion confirmation action required" }
+    check(deleteActions.single().performAction(AccessibilityNodeInfo.ACTION_CLICK))
+    check(device.wait(Until.gone(By.text("Cancel").pkg(pkg)), 30_000))
     open("main/devices")
+    node(By.text("TailD \u00b7 Tailscale"))
+    check(device.wait(Until.gone(By.text("Settings").pkg(pkg)), 30_000))
+    // The outgoing title can leave the viewport while the incoming destination is still clipped.
+    // Wait for its rightmost bottom-navigation target to reach the actual viewport edge.
+    check(
+        device.wait(
+            object : Condition<UiDevice, Boolean> {
+              override fun apply(value: UiDevice): Boolean {
+                var target = find(By.text("Dashboard")) ?: return false
+                return try {
+                  while (!target.isClickable && target.parent != null) target = target.parent
+                  target.visibleBounds.right == device.displayWidth &&
+                      target.visibleBounds.width() >= 48 * context.resources.displayMetrics.density
+                } catch (_: StaleObjectException) {
+                  false
+                }
+              }
+            },
+            30_000,
+        )
+    )
+    device.waitForIdle()
     instrumentation.sendStatus(
         0,
         Bundle().apply { putString("taild_rendered_controls", renderedControls().toString()) },
     )
     phase("enable-talkback")
+    val accessibility = context.getSystemService(AccessibilityManager::class.java)
+    check(
+        device.wait(
+            object : Condition<UiDevice, Boolean> {
+              override fun apply(value: UiDevice): Boolean = accessibility.isTouchExplorationEnabled
+            },
+            30_000,
+        )
+    ) {
+      "TalkBack touch exploration did not become active"
+    }
     for (label in listOf("Control D", "Dashboard", "Tailscale")) {
-      val root = checkNotNull(instrumentation.uiAutomation.rootInActiveWindow)
-      val labelNode =
-          root.findAccessibilityNodeInfosByText(label).first { it.packageName?.toString() == pkg }
+      node(By.text(label))
+      val root = checkNotNull(automation.rootInActiveWindow)
+      val labelNode = matchingText(root, label).first()
       var candidate = labelNode
       while (!candidate.isClickable && candidate.parent != null) candidate = candidate.parent
       check(candidate.packageName?.toString() == pkg && candidate.isClickable)
-      instrumentation.uiAutomation.executeAndWaitForEvent(
-          { check(candidate.performAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS)) },
+      if (candidate.isAccessibilityFocused)
+          check(candidate.performAction(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS))
+      automation.executeAndWaitForEvent(
+          {
+            check(candidate.performAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS)) {
+              "Focus rejected for $label: visible=${candidate.isVisibleToUser}, important=${candidate.isImportantForAccessibility}, actions=${candidate.actionList.map { it.id }}"
+            }
+          },
           { it.eventType == AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED },
           30_000,
       )
       check(candidate.performAction(AccessibilityNodeInfo.ACTION_CLICK))
-      node(By.text("TailD · $label"))
+      node(By.text("TailD \u00b7 $label"))
     }
     phase("capture-talkback")
     phase("disable-talkback")

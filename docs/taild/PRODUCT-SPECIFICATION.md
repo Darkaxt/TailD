@@ -14,6 +14,9 @@ weighted domain attribution and app blocking remain required in named F1-F3
 after A1-A4; they are outside this initial Android implementation. Normal final
 Android publication is authorized after integrated acceptance. Desktop Stage 10/
 B12 remains unresolved; no device acceptance or deployment is implied.
+Android A1-A4 are now verified and delivered as normal release v1.103.312+34
+from 0f7d1ad6b993d3efbf68757ba962b71f110dddb1. The execution ledger records
+independent public verification and the explicit emulator/provider boundaries.
 
 October 17 R36 Windows refinement (already authorized): make the live device table
 the Connection page's primary content, with this device first, a presence square

@@ -31,6 +31,13 @@ nondestructive rejected downgrade and reinstallation of the exact verified
 candidate, preserving identity, settings, retained history and Keystore access;
 it does not claim a physical-device rollback or close desktop B12.
 
+Verified first Android delivery: v1.103.312+34, code 298751830, source
+0f7d1ad6b993d3efbf68757ba962b71f110dddb1 and core
+28b0deb7805710f50689f4aa133ed911f74e504d. Candidate 39451115770 and publication
+39466380329 preserve the same tested APK bytes. Independent public verification
+checks all nine assets, pinned signer and 636 payload members across four ABIs.
+The current reconciliation and physical-device limits are in IMPLEMENTATION-PLAN.md.
+
 ## Historical Windows Stage 9 contract
 
 Stage 9 is COMPLETE for local release-readiness; no public release exists. Its

@@ -13,7 +13,7 @@ Authority: PRODUCT-SPECIFICATION.md R37 and ANDROID-EXPANSION-PROPOSAL.md v1.0.
 | Android A1 - Tailscale representation and history | COMPLETE | Native device/detail/control/preferences workflow, durable opt-in observations, real TailDrop receipt/save, process restart/gap, phone/tablet/font/orientation and live system-theme acceptance; inherited VPN/DNS/broadcast/Recents contracts. | None for A1. |
 | Android A2 - Control D | COMPLETE | Native setup/history/direct actions/editor/basic management, Keystore/SQLite, seven-day metrics, live theme, dismissed-review, readback ownership, account reset and restart/reconciliation fixture acceptance; actual READ inventory/policy/history; adaptive Tailscale matrix. | None for A2. |
 | Android A3 - Dashboard and lifecycle | COMPLETE | Scoped seven-day panels, exact drill-down/document export, source health, bounded catch-up, overlap/retention/off/cancellation, hidden-page work, terminal read failure/retry and real-process restart pass. | None for A3. |
-| Android A4 - Delivery | ACTIVE | A1-A3 integrated development workflows and read-only provider boundary verified. | Final integrated accessibility/TalkBack audit, exact-source clean gates, protected existing signer, isolated upgrade/recovery contracts, normal Android release and independent public verification. |
+| Android A4 - Delivery | COMPLETE | Exact-source clean gates, protected existing signer, isolated in-place upgrade/recovery, retained READ access, TalkBack focus/navigation, normal v1.103.312+34 publication and independent public package verification. | None for A4; physical-device continuity, desktop B12 and R33 F1-F3 retain their separate boundaries. |
 
 Desktop parking: external B12 acceptance requires separately scheduled real
 Windows rollout/rollback and reconciliation on the owning installed profile;
@@ -140,13 +140,43 @@ Backend/inherited contracts and release lint passed before this UI-only correcti
 new exact-source CI must verify the final tree. Gradle builds verify two workers,
 no parallel projects, the 3 GB Gradle heap and single-use daemon exit.
 
-Candidate run 39445685301 at 975593b passes isolated build/signing and independent
-APK verification: existing pinned signer, source/core identities, four ABIs and
-all payload members. It is superseded by the landscape correction and must not
-be published. The protected main-only environment reuses the existing signer;
-no key was generated or rotated. Signed final-source upgrade/recovery, actual
-TalkBack, final exact-source CI, normal Android publication and independent public
-delivery remain A4 advancement blockers. No Android release has been published.
+A4 delivery reconciliation: final candidate 39451115770 at
+0f7d1ad6b993d3efbf68757ba962b71f110dddb1 passes isolated build/signing, exact-source
+checks 39451113993 and CodeQL. It supersedes candidate 39445685301. The protected
+main-only environment reuses the existing signer; no key was generated or rotated.
+Normal Android release v1.103.312+34 was published by run 39466380329 from that
+exact checked commit and independently downloaded. Package io.github.darkaxt.taildns,
+versionName 1.103.312+34, code 298751830, existing pinned certificate, core
+28b0deb7805710f50689f4aa133ed911f74e504d, all four ABIs, notices and all 636 APK
+members match. APK SHA-256:
+`c6f58c01b9ecd7019c7793019fac16ff9645228907edc9ba9d7d755c13da539b`.
+All nine normal-release assets and companion checksums verify. Windows +27 remains
+the repository's latest-release channel.
+
+Production-signed delivery evidence is cumulative on unchanged APK bytes. Run 9
+performed the real published TailDNS +33 -> TailD +34 in-place replacement and
+verified stable node/machine identity, DNS/manual resolver settings, always-on
+association and an actual TailDrop document save with the retained folder grant.
+Run 10 verified the saved-history UI metadata and file body. Run 18 completed
+native READ setup against the existing ZFold7/Hardened target and populated the
+Dashboard. Run 21 passed nondestructive downgrade refusal, exact reinstallation,
+node/machine and DNS/folder/analytics/READ-vault retention, external VPN control
+broadcasts and credential removal. Those runs stopped at later harness issues;
+their aggregate failures are not reported as passes. Finalization run 29 passes
+actual local-history confirmation, measured 48 dp actions, bound TalkBack touch
+exploration and accessibility-focus navigation across all three destinations,
+service restoration and an exact-token absence audit of emulator logs.
+
+The external harness uses one UiAutomation connection mode, labelled controls,
+Compose virtual-node traversal and readiness tied to actual navigation/layout.
+It reacquires only handles rejected stale before gesture dispatch. Current Gradle
+builds confirm the shared gate, two workers, no parallel projects, 3 GB Gradle
+heap and exited single-use daemons; no active native build concurrency is claimed.
+Compact source-bound receipts, log hashes and selected screenshots are retained
+privately under D:/Tools/taild-android-r37-evidence-20261020. No physical device
+was installed or controlled and no live provider policy/resource was changed.
+R37 A1-A4 have no remaining acceptance blocker or tracked deferral. Desktop B12
+and R33 F1-F3 remain explicitly separate and unresolved.
 
 ## October 18 scheduled inheritance within ACTIVE Stage 10
 

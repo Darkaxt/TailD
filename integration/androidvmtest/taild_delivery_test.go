@@ -33,15 +33,25 @@ var deliveryReadHelper = flag.String("android.delivery-read-helper", "", "privat
 var deliveryEndpoint = flag.String("android.delivery-endpoint", "", "existing live READ endpoint display name")
 var deliveryProfile = flag.String("android.delivery-profile", "", "existing live READ profile display name")
 
+var deliveryFinalizeOnly = flag.Bool("android.delivery-finalize", false, "finish cleanup and TalkBack on the retained candidate; prior migration and recovery evidence is separate")
+
+var deliveryResumeCandidate = flag.Bool("android.delivery-resume-candidate", false, "continue recovery/read/accessibility on the retained verified candidate; does not establish the origin upgrade")
+var deliveryOriginFolderPrepared = flag.Bool("android.delivery-origin-folder-prepared", false, "resume the previously verified origin TailDrop directory grant")
+var deliveryOriginIntroSeen = flag.Bool("android.delivery-origin-intro-seen", false, "resume preserved TailDNS origin after its verified onboarding tap")
+
 func TestTailDProductionDelivery(t *testing.T) {
 	if *deliveryAPK == "" {
 		t.Skip("explicit verified signed delivery inputs required")
+	}
+	if *deliveryFinalizeOnly && !*deliveryResumeCandidate {
+		t.Fatal("finalization requires the retained candidate")
 	}
 	if !strings.HasPrefix(*adbSerial, "emulator-") {
 		t.Fatal("production delivery tests require the owned emulator")
 	}
 	var receipt struct {
 		Verified bool   `json:"verified"`
+		Code     int64  `json:"version_code"`
 		APK      string `json:"apk_sha256"`
 		Source   string `json:"source"`
 		Package  string `json:"package"`
@@ -76,7 +86,11 @@ func TestTailDProductionDelivery(t *testing.T) {
 	const pkg = "io.github.darkaxt.taildns"
 	const harness = "io.github.darkaxt.taild.delivery"
 	// No uninstall/reset fallback. A mismatched existing app requires reviewed owned-test cleanup.
-	for _, apk := range []string{*baselineAPK, *harnessAPK, *harnessTestAPK} {
+	installations := []string{*harnessAPK, *harnessTestAPK}
+	if !*deliveryResumeCandidate {
+		installations = append([]string{*baselineAPK}, installations...)
+	}
+	for _, apk := range installations {
 		if apk == "" {
 			t.Fatal("complete delivery inputs required")
 		}
@@ -114,12 +128,26 @@ func TestTailDProductionDelivery(t *testing.T) {
 		run("reverse", mapping, mapping)
 		t.Cleanup(func() { run("reverse", "--remove", mapping) })
 	}
-	peer := &tsnet.Server{Dir: t.TempDir(), ControlURL: server.URL, Hostname: "taild-delivery-peer", Ephemeral: true, Store: new(mem.Store), Logf: t.Logf}
+	peerName := "taild-delivery-peer-" + parsed.Port()
+	peer := &tsnet.Server{Dir: t.TempDir(), ControlURL: server.URL, Hostname: peerName, Ephemeral: true, Store: new(mem.Store), Logf: t.Logf}
 	defer peer.Close()
 	if _, err := peer.Up(context.Background()); err != nil {
 		t.Fatal(err)
 	}
-	args := []string{"-s", *adbSerial, "shell", "am", "instrument", "-w", "-r", "-e", "class", "io.github.darkaxt.taild.delivery.TailDDeliveryTest", "-e", "taild_delivery", "true", "-e", "control_url", server.URL, "-e", "source_revision", receipt.Source}
+	args := []string{"-s", *adbSerial, "shell", "am", "instrument", "-w", "-r", "-e", "class", "io.github.darkaxt.taild.delivery.TailDDeliveryTest#productionUpgradeRecoveryAndAccessibility", "-e", "taild_delivery", "true", "-e", "control_url", server.URL, "-e", "source_revision", receipt.Source}
+	args = append(args, "-e", "candidate_code", fmt.Sprint(receipt.Code), "-e", "peer_name", peerName)
+	if *deliveryResumeCandidate {
+		args = append(args, "-e", "resume_candidate", "true")
+	}
+	if *deliveryFinalizeOnly {
+		args = append(args, "-e", "finalize_only", "true")
+	}
+	if *deliveryOriginFolderPrepared {
+		args = append(args, "-e", "origin_folder_prepared", "true")
+	}
+	if *deliveryOriginIntroSeen {
+		args = append(args, "-e", "origin_intro_seen", "true")
+	}
 	if *deliveryReadHelper != "" {
 		if *deliveryEndpoint == "" || *deliveryProfile == "" {
 			t.Fatal("explicit existing READ scope required")
@@ -185,7 +213,17 @@ func TestTailDProductionDelivery(t *testing.T) {
 		}
 		var phaseErr error
 		switch phase {
-		case "baseline-ready", "assert-node-continuity":
+		case "delivery-verified":
+			if *deliveryReadHelper != "" {
+				out, auditErr := exec.Command("python", "-B", *deliveryReadHelper, "--serial", *adbSerial, "--socket", "taild-r37-release-read", "--audit-logs").CombinedOutput()
+				if auditErr != nil {
+					phaseErr = fmt.Errorf("private READ log audit failed: %v", auditErr)
+				} else {
+					t.Log(strings.TrimSpace(string(out)))
+				}
+			}
+
+		case "baseline-ready", "recovery-baseline", "assert-node-continuity":
 			if strings.TrimSpace(run("shell", "settings", "get", "secure", "always_on_vpn_app")) != pkg {
 				phaseErr = fmt.Errorf("always-on package association was not retained")
 				break
@@ -204,17 +242,14 @@ func TestTailDProductionDelivery(t *testing.T) {
 				phaseErr = fmt.Errorf("expected exactly one isolated Android peer, got %d", len(status.Peer))
 				break
 			}
-			identities := map[int64]bool{}
-			for _, node := range control.AllNodes() {
-				if identities[int64(node.ID)] {
-					phaseErr = fmt.Errorf("duplicate stable node identity")
-				}
-				identities[int64(node.ID)] = true
-			}
+			matched := 0
 			for _, target := range status.Peer {
 				for _, node := range control.AllNodes() {
-					if node.StableID == target.ID {
-						if phase == "baseline-ready" {
+					// Testcontrol retains the old and candidate keys during rotation.
+					// Compare the live peer's exact current key, not every staged entry.
+					if node.StableID == target.ID && node.Key == target.PublicKey {
+						matched++
+						if phase == "baseline-ready" || phase == "recovery-baseline" {
 							initialID = string(node.StableID)
 							initialMachine = node.Machine.String()
 						} else if string(node.StableID) != initialID || node.Machine.String() != initialMachine {
@@ -223,8 +258,8 @@ func TestTailDProductionDelivery(t *testing.T) {
 					}
 				}
 			}
-			if initialID == "" {
-				phaseErr = fmt.Errorf("stable baseline node not found")
+			if initialID == "" || matched != 1 {
+				phaseErr = fmt.Errorf("expected one exact current stable peer, got %d", matched)
 			}
 		case "upgrade", "reinstall":
 			run("install", "-r", *deliveryAPK)
@@ -267,10 +302,28 @@ func TestTailDProductionDelivery(t *testing.T) {
 			restore()
 		case "capture-talkback":
 			dump := run("shell", "dumpsys", "accessibility")
-			bound := false
-			for _, entry := range strings.Split(dump, "\n") {
-				if strings.Contains(entry, "Bound services:") && strings.Contains(entry, "com.google.android.marvin.talkback") {
-					bound = true
+			section := ""
+			if start := strings.Index(dump, "Bound services:"); start >= 0 {
+				section = dump[start:]
+				if end := strings.Index(section, "Enabled services:"); end >= 0 {
+					section = section[:end]
+				}
+			}
+			if *taildCaptureDir != "" {
+				if err := os.WriteFile(filepath.Join(*taildCaptureDir, "production-accessibility-bound.txt"), []byte(section), 0600); err != nil {
+					t.Error(err)
+				}
+			}
+			// This Android image prints only the service label in the bound section.
+			// Bind that record to the sole enabled and independently resolved component.
+			enabled := strings.TrimSpace(run("shell", "settings", "get", "secure", "enabled_accessibility_services"))
+			resolved := run("shell", "cmd", "package", "query-services", "--brief", "-a", "android.accessibilityservice.AccessibilityService", "-p", "com.google.android.marvin.talkback")
+			bound := strings.Contains(section, "Service[label=TalkBack,") && strings.Contains(section, "FEEDBACK_SPOKEN") &&
+				enabled == "com.google.android.marvin.talkback/com.google.android.marvin.talkback.TalkBackService" &&
+				strings.Contains(resolved, "com.google.android.marvin.talkback/.TalkBackService")
+			if *taildCaptureDir != "" {
+				if err := os.WriteFile(filepath.Join(*taildCaptureDir, "production-accessibility-identity.txt"), []byte(enabled+"\n"+resolved), 0600); err != nil {
+					t.Error(err)
 				}
 			}
 			if !bound {
@@ -314,12 +367,24 @@ func TestTailDProductionDelivery(t *testing.T) {
 	if err != nil || scanner.Err() != nil || !strings.Contains(result, "OK (1 test)") || strings.Contains(result, "FAILURES") {
 		t.Fatalf("production native delivery: %v %v\n%s", err, scanner.Err(), result)
 	}
-	for _, phase := range []string{"baseline-ready", "upgrade", "assert-node-continuity", "receive-ready", "assert-saved-file", "rejected-downgrade", "reinstall", "capture-talkback", "delivery-verified"} {
+	required := []string{"assert-node-continuity", "rejected-downgrade", "reinstall", "capture-talkback", "delivery-verified"}
+	if *deliveryFinalizeOnly {
+		required = []string{"capture-talkback", "delivery-verified"}
+	} else if *deliveryResumeCandidate {
+		required = append(required, "resumed-candidate", "recovery-baseline")
+	} else {
+		required = append(required, "baseline-ready", "upgrade", "receive-ready", "assert-saved-file")
+	}
+	for _, phase := range required {
 		if seen[phase] == 0 {
 			t.Fatalf("missing production acceptance phase %s", phase)
 		}
 	}
-	t.Log("Actual production signer, in-place continuity, retained data, rejected downgrade, exact reinstall, external VPN broadcasts and TalkBack focus session verified on owned emulator")
+	if *deliveryFinalizeOnly {
+		t.Log("Retained production-signed candidate cleanup, log audit and TalkBack session verified; migration/recovery assertions belong to their earlier evidence")
+		return
+	}
+	t.Log("Actual production signer, selected-mode continuity, retained data, rejected downgrade, exact reinstall, external VPN broadcasts and TalkBack focus session verified on owned emulator")
 	if *deliveryReadHelper != "" {
 		t.Log("Live READ access and retained provider vault verified through the production UI; no Write credential used")
 	}

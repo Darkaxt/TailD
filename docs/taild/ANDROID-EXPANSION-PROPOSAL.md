@@ -113,8 +113,9 @@ its selected tab, local data and active VPN; do not hard-code a light or dark th
 
 Live GitHub workflow inventory confirms inherited Android CI, TailDNS validation
 and TailDNS release workflows are disabled in TailD. `fork-release.yml` also
-restricts execution to Darkaxt/TailDNS. Current TailD delivery is Windows-only;
-an Android release needs a deliberately scoped TailD workflow.
+restricts execution to Darkaxt/TailDNS. At the baseline, TailD delivery was Windows-only. R37 adds the deliberately
+scoped taild-android-release.yml candidate/signing/publication workflow and the
+verified normal Android release v1.103.312+34; inherited workflows remain disabled.
 
 ## Approach choices
 
@@ -288,7 +289,7 @@ may be ACTIVE. Status is maintained in IMPLEMENTATION-PLAN.md.
 | A1: Tailscale representation and history | COMPLETE | Live peer -> detail/control -> opt-in observed event -> durable history -> process restart with truthful gap; observed TailDrop outcome/save -> history. Verify phone/tablet rendering, live automatic system theme and preservation of VPN/DNS/SleepManager behavior. |
 | A2: Control D setup, history and basic management | COMPLETE | Explicit device/client resolver binding -> READ inventory/history -> matching Recent DNS facts -> direct incident action or reviewed Edit/management action -> verified provider readback. Cover shared profiles, wrong account, stale intent, unknown outcome, unknown schemas and server denial. |
 | A3: Compatible dashboard and battery lifecycle | COMPLETE | Committed scoped history -> count/trend/domain/geography or local-activity panel -> exact drill-down -> matching private export. Verify backfill/overlap/retention, recording off, visible-only optional stream, process death and delayed work without blocking connection/navigation. |
-| A4: TailD Android distribution and migration readiness | ACTIVE | Clean current-source build -> protected existing signer -> independent APK verification -> isolated in-place upgrade -> retained identity/data/VPN/TailDrop/SleepManager contracts -> compatible recovery/update transition -> normal published Android release and independent public asset verification. Real-device continuity requires its actual evidence and is never inferred from CI or an emulator. |
+| A4: TailD Android distribution and migration readiness | COMPLETE | Clean current-source build -> protected existing signer -> independent APK verification -> isolated in-place upgrade -> retained identity/data/VPN/TailDrop/SleepManager contracts -> compatible recovery/update transition -> normal published Android release and independent public asset verification. Real-device continuity requires its actual evidence and is never inferred from CI or an emulator. |
 
 Required tracked deferrals: F1 (Windows app/IP audit and weighted domains), F2
 (Android equivalent) and F3 (explicit app blocking on both), owned by

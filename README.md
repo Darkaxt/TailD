@@ -193,8 +193,11 @@ The Windows reference release is
 including compact device controls and DNS incident actions, seven-day historical
 cross-checks and the analytics reconnection repair. The October 16 gallery may
 show older layouts; its facts are explicitly synthetic, with capture provenance.
-Android +34 is undergoing its final signed delivery and upgrade acceptance; the
-[execution ledger](docs/taild/IMPLEMENTATION-PLAN.md) records the current boundary.
+Android [1.103.312+34](https://github.com/Darkaxt/TailD/releases/tag/v1.103.312%2B34)
+is published and independently verified. It updates the existing TailDNS package
+with the same signer. The [Android guide](docs/taild/ANDROID.md) covers downloads
+and upgrade limits; the [execution ledger](docs/taild/IMPLEMENTATION-PLAN.md) records
+the isolated upgrade, recovery, theme, accessibility and live READ evidence.
 
 Desktop Stage 10 is parked at the unresolved real B12 acceptance boundary; this
 README does not claim every deployment, recovery or lifecycle scenario is
