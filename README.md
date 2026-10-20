@@ -1,13 +1,14 @@
 # TailD
 
-Your tailnet, DNS decisions and application traffic—in one desktop.
+Your tailnet and DNS decisions, on Windows and Android.
 
-TailD combines **TailDNS connectivity**, **Control D analytics and incident management**,
-and **GlassWire traffic measurements** in a Portmaster-inspired interface with a
-Tailscale-style dark theme. Investigate what applications transferred, what your
-DNS provider decided, and how strong the evidence linking them actually is.
+TailD expands **TailDNS connectivity** with **Control D analytics and incident
+management**. Windows also integrates **GlassWire traffic measurements** in the
+desktop interface. Android uses native device, DNS and scoped-history views with
+automatic system light/dark mode; app bandwidth and blocking remain later work.
 
 [Download for Windows](https://github.com/Darkaxt/TailD/releases/latest) ·
+[Android downloads and upgrade notes](docs/taild/ANDROID.md) ·
 [Specifications](docs/taild/PRODUCT-SPECIFICATION.md) ·
 [Issues](https://github.com/Darkaxt/TailD/issues)
 
@@ -17,6 +18,10 @@ DNS provider decided, and how strong the evidence linking them actually is.
 The screenshots contain no real accounts, browsing history or personal application paths.*
 
 ## What TailD brings together
+
+The table and gallery below describe Windows. The [Android guide](docs/taild/ANDROID.md)
+covers its native Tailscale, Control D and Dashboard destinations, existing-package
+upgrade, separate release channel and battery-conscious history collection.
 
 | Capability | What you can inspect |
 |---|---|
@@ -33,8 +38,9 @@ The screenshots contain no real accounts, browsing history or personal applicati
 
 Control D remains responsible for its DNS filtering. GlassWire and Windows keep
 their firewall roles. TailD does not install another packet-filtering engine or
-change firewall policy. Control D policy changes require an explicit preview and
-confirmation, using a separate Write credential; collection remains READ-only.
+change firewall policy. Incident Allow/Block taps use fresh safety checks and
+verified readback; Edit and other management changes use explicit review and a
+separate Write credential. Collection remains READ-only.
 
 The sidebar keeps Tailscale, Control D and Analytics category icons visible while
 showing only the selected category's pages. Control D opens on recent DNS activity;
@@ -182,19 +188,15 @@ The executables and installer are **not Authenticode-signed**. Review the
 
 ### Release versus development main
 
-The latest verified public Windows release is
-[1.105.0+15](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B15).
-It includes category navigation, native device controls, independent Recent DNS
-loading, matching sidebar icon padding and the pinned SQLite 3.54.0 runtime.
+The Windows reference release is
+[1.105.0+27](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B27),
+including compact device controls and DNS incident actions, seven-day historical
+cross-checks and the analytics reconnection repair. The October 16 gallery may
+show older layouts; its facts are explicitly synthetic, with capture provenance.
+Android +34 is undergoing its final signed delivery and upgrade acceptance; the
+[execution ledger](docs/taild/IMPLEMENTATION-PLAN.md) records the current boundary.
 
-It also includes session policy reuse and the compact DNS refresh icon.
-Development main additionally fixes minimized-window activation, removes stretched
-bandwidth/map grid holes, and adds the Tailscale-native history views above. These
-changes are **not released or installed**. The October 16 gallery was refreshed
-from current development assets with clearly disclosed synthetic facts, not
-private browsing or account data; capture provenance records the asset hashes.
-
-Stage 10 remains active for outstanding live delivery/updater acceptance; this
+Desktop Stage 10 is parked at the unresolved real B12 acceptance boundary; this
 README does not claim every deployment, recovery or lifecycle scenario is
 complete. See the [current reconciliation and validation limits](docs/taild/IMPLEMENTATION-PLAN.md).
 
@@ -203,9 +205,10 @@ complete. See the [current reconciliation and validation limits](docs/taild/IMPL
 TailD is a public, history-preserving derivative of
 [Darkaxt/TailDNS](https://github.com/Darkaxt/TailDNS), with the shared Windows/core
 implementation pinned through [Darkaxt/tailscale](https://github.com/Darkaxt/tailscale).
-It retains the inherited Android source; use the maintained
-[TailDNS Android releases](https://github.com/Darkaxt/TailDNS/releases) for that
-product. A TailD Android analytics UI is not implemented.
+Its native Android client is the expanded TailDNS derivative described in the
+[Android specification](docs/taild/ANDROID-EXPANSION-PROPOSAL.md). The maintained
+[TailDNS Android releases](https://github.com/Darkaxt/TailDNS/releases) remain a
+separate product/update origin; existing TailDNS clients are not redirected.
 
 The daily **Inherit TailDNS improvements** workflow checks the exact candidate and
 core pin, preserves fork contracts and promotes passing history to main. Failed
@@ -224,6 +227,7 @@ GitHub fork badge.
 - [Collector lifecycle and privilege boundary](docs/taild/CONTINUOUS-RUNTIME.md)
 - [Desktop design and native validation](docs/taild/DESKTOP-ANALYTICS.md)
 - [Windows packaging and verification](docs/taild/PACKAGING.md)
+- [TailD Android scope, downloads and upgrades](docs/taild/ANDROID.md)
 - [Inherited Android build reference](docs/INHERITED-ANDROID.md)
 
 The desktop uses Angular in a native WebView2 host. Frontend and native dependency

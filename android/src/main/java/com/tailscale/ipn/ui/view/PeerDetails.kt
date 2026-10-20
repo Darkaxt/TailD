@@ -3,17 +3,10 @@
 
 package com.tailscale.ipn.ui.view
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,18 +18,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tailscale.ipn.R
 import com.tailscale.ipn.ui.theme.listItem
-import com.tailscale.ipn.ui.theme.short
 import com.tailscale.ipn.ui.util.AndroidTVUtil.isAndroidTV
 import com.tailscale.ipn.ui.util.Lists
 import com.tailscale.ipn.ui.util.itemsWithDividers
@@ -57,6 +47,7 @@ fun PeerDetails(
         ),
 ) {
   val isPinging by model.isPinging.collectAsState()
+  val connectionState by com.tailscale.ipn.ui.notifier.Notifier.state.collectAsState()
 
   model.netmap.collectAsState().value?.let { netmap ->
     model.node.collectAsState().value?.let { node ->
@@ -64,29 +55,11 @@ fun PeerDetails(
           topBar = {
             Header(
                 title = {
-                  Column {
-                    Text(
-                        text = node.displayName,
-                        style = MaterialTheme.typography.titleMedium.short,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                      Box(
-                          modifier =
-                              Modifier.size(8.dp)
-                                  .background(
-                                      color = node.connectedColor(netmap),
-                                      shape = RoundedCornerShape(percent = 50),
-                                  )
-                      ) {}
-                      Spacer(modifier = Modifier.size(8.dp))
-                      Text(
-                          text = stringResource(id = node.connectedStrRes(netmap)),
-                          style = MaterialTheme.typography.bodyMedium.short,
-                          color = MaterialTheme.colorScheme.onSurfaceVariant,
-                      )
-                    }
-                  }
+                  com.tailscale.ipn.taild.DevicePresenceName(
+                      node,
+                      netmap.SelfNode.StableID,
+                      connectionState,
+                  )
                 },
                 actions = {
                   IconButton(onClick = { model.startPing() }) {
@@ -129,6 +102,41 @@ fun PeerDetails(
 
           itemsWithDividers(node.info, key = { "info_${it.titleRes}" }) {
             ValueRow(title = stringResource(id = it.titleRes), value = it.value.getString())
+          }
+          item(key = "taildOwner") {
+            ValueRow(
+                title = "Owner",
+                value =
+                    netmap.userProfile(node.User)?.DisplayName?.ifBlank { null }
+                        ?: netmap.userProfile(node.User)?.LoginName
+                        ?: "Unknown",
+            )
+          }
+          item(key = "taildPresence") {
+            ValueRow(
+                title = "Presence",
+                value =
+                    when (node.Online) {
+                      true -> "Online"
+                      false -> "Offline"
+                      null -> "Unknown"
+                    },
+            )
+          }
+          item(key = "taildLastSeen") {
+            ValueRow(title = "Last online", value = node.LastSeen ?: "Unknown")
+          }
+          item(key = "taildRoutes") {
+            ValueRow(
+                title = "Allowed routes",
+                value = node.AllowedIPs?.joinToString("\n") ?: "Unknown",
+            )
+          }
+          item(key = "taildTags") {
+            ValueRow(
+                title = "Tags",
+                value = node.Tags?.joinToString(", ")?.ifEmpty { "None" } ?: "Unknown",
+            )
           }
         }
         if (isPinging) {

@@ -89,7 +89,7 @@ object Notifier {
 
   @Synchronized
   @OptIn(ExperimentalSerializationApi::class)
-  fun start(scope: CoroutineScope) {
+  fun start(scope: CoroutineScope, onObservation: (Notify) -> Unit = {}) {
     TSLog.d(TAG, "Starting Notifier")
     if (!::app.isInitialized) {
       App.get()
@@ -143,6 +143,7 @@ object Notifier {
                   health.set(it)
                 }
               }
+              onObservation(notify)
             }
                 .onFailure { TSLog.e(TAG, "failed to process IPN notification", it) }
           }
@@ -189,6 +190,8 @@ object Notifier {
 
     if (initial != null && next == null) {
       _netmap.set(null)
+      prefs.set(null)
+      health.set(null)
       if (BuildConfig.DEBUG) {
         TSLog.d(TAG, "received empty initial status; cleared network map")
       }
@@ -200,6 +203,10 @@ object Notifier {
     }
 
     val self = notify.SelfChange
+    if (initial != null && cur != null && !cur.isSameSelf(next.SelfNode)) {
+      prefs.set(null)
+      health.set(null)
+    }
     if (initial == null && self != null && !next.isSameSelf(self)) {
       // A self node change is a profile boundary. It resets the implicit bus
       // state, so the publisher must resend any UserProfiles referenced by the
@@ -207,6 +214,8 @@ object Notifier {
       // profiles included in the same update are retained.
       userProfiles.clear()
       next = self.toEmptyNetworkMap()
+      prefs.set(null)
+      health.set(null)
       if (BuildConfig.DEBUG) {
         TSLog.d(
             TAG,
@@ -367,6 +376,8 @@ object Notifier {
         Online = Online,
         Capabilities = Capabilities,
         CapMap = CapMap,
+        Tags = Tags,
+        TaildropTarget = TaildropTarget,
         ComputedName = computedName,
         ComputedNameWithHost = computedNameWithHost,
     )

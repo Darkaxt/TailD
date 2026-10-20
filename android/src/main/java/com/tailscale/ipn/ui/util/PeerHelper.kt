@@ -17,6 +17,7 @@ data class PeerSet(
 ) {
   companion object {
     const val FAVORITES_ID: UserID = -1
+    const val SELF_ID: UserID = -2
 
     fun create(id: UserID, title: String?, nodes: List<Tailcfg.Node>): PeerSet? =
         if (nodes.isEmpty()) null else PeerSet(id, title, nodes)
@@ -24,6 +25,15 @@ data class PeerSet(
 
   val isFavorite: Boolean
     get() = id == FAVORITES_ID
+}
+
+/** Move only an already visible self row; never bypass management visibility policy. */
+fun List<PeerSet>.withSelfFirst(selfId: StableNodeID?): List<PeerSet> {
+  val self = flatMap { it.nodes }.firstOrNull { it.StableID == selfId } ?: return this
+  return listOf(PeerSet(PeerSet.SELF_ID, null, listOf(self))) +
+      mapNotNull { set ->
+        PeerSet.create(set.id, set.title, set.nodes.filterNot { it.StableID == selfId })
+      }
 }
 
 fun List<PeerSet>.withPinnedSection(pinnedIds: List<StableNodeID>): List<PeerSet> {

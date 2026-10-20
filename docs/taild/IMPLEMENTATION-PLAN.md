@@ -1,5 +1,137 @@
 # TailD staged execution
 
+## Current execution - October 20 Android R37
+
+The human instruction starts Android implementation and updates its specification
+against shipped Windows R36. This current record supersedes historical ACTIVE
+labels below; those dated entries remain evidence, not concurrent execution.
+Authority: PRODUCT-SPECIFICATION.md R37 and ANDROID-EXPANSION-PROPOSAL.md v1.0.
+
+| Stage | Status | Acceptance satisfied | Acceptance remaining |
+| --- | --- | --- | --- |
+| Desktop Stage 10 | BLOCKED | Bounded Windows R36 publication and prior deployment evidence retained. | Broader B12 real rollout/rollback, updater/lifecycle and final reconciliation, including recorded source prevention gaps. |
+| Android A1 - Tailscale representation and history | COMPLETE | Native device/detail/control/preferences workflow, durable opt-in observations, real TailDrop receipt/save, process restart/gap, phone/tablet/font/orientation and live system-theme acceptance; inherited VPN/DNS/broadcast/Recents contracts. | None for A1. |
+| Android A2 - Control D | COMPLETE | Native setup/history/direct actions/editor/basic management, Keystore/SQLite, seven-day metrics, live theme, dismissed-review, readback ownership, account reset and restart/reconciliation fixture acceptance; actual READ inventory/policy/history; adaptive Tailscale matrix. | None for A2. |
+| Android A3 - Dashboard and lifecycle | COMPLETE | Scoped seven-day panels, exact drill-down/document export, source health, bounded catch-up, overlap/retention/off/cancellation, hidden-page work, terminal read failure/retry and real-process restart pass. | None for A3. |
+| Android A4 - Delivery | ACTIVE | A1-A3 integrated development workflows and read-only provider boundary verified. | Final integrated accessibility/TalkBack audit, exact-source clean gates, protected existing signer, isolated upgrade/recovery contracts, normal Android release and independent public verification. |
+
+Desktop parking: external B12 acceptance requires separately scheduled real
+Windows rollout/rollback and reconciliation on the owning installed profile;
+the current Android instruction does not authorize a new Windows device cycle.
+Resolution requires that authorized physical cycle and the recorded source fixes;
+Windows Stage 10 cannot close until both pass. Internal source gaps remain owned
+by B12 and are not relabelled satisfied or deferred into Android. Android A1 has
+no dependency on desktop updater completion; Windows behavior is the reference.
+This explicit Android prioritization creates no second ACTIVE stage.
+
+Requirement mapping: A1 owns native Tailscale navigation/device/preferences, local activity
+and TailDrop history; A2 owns provider credentials/binding/Recent DNS/policy;
+A3 owns all compatible dashboard/export and cross-source lifecycle acceptance;
+A4 owns integrated regression/accessibility, identity/migration and final distribution.
+A2 adds its real Control D destination and the adaptive two-destination rail needed
+to preserve short-screen access. A3 completes three-destination navigation with
+Dashboard and cross-destination lifecycle verification.
+The final TalkBack audit belongs to A4 after all native destinations exist; UIAutomator
+semantics checks are not claimed as an actual TalkBack session. These named final
+integration checks do not excuse any unmet slice criterion. Do not release a partial APK.
+
+A1 reconciliation: native matrix run 14 passed all five cases: 360x800 phone,
+412x915/150%-text phone, 840x900 tablet, dark landscape phone and dark landscape
+large-text tablet. Actual testcontrol/DERP peers, search with keyboard, details,
+Preferences/DNS back navigation, UI and package-scoped broadcast VPN controls,
+unchanged DNS preferences, opt-in history and real incoming TailDrop/document save
+passed. New processes retained scoped history and recorded prior-observation gaps.
+Live system theme changes repainted TailDrop while retaining its tab and VPN;
+dark/light screenshots were inspected. Real Android SQLite fixture checks passed
+off/scope/dedup/restart/delete. JVM regressions, inherited branding/Thor Recents,
+current APK builds, gate resource profile and daemon-exit checks passed. A1 has no
+remaining blocker or deferral. This is isolated emulator/development-build evidence,
+not physical-device, provider or release acceptance. R33 F1-F3 remain separately
+required with their original dependencies; they do not weaken A1-A4.
+
+A2 reconciliation: final native fixture run 9 passes actual UI setup, exact
+client selection, retained total 124 against recent limit 100, overlap replay,
+inline action, floating editor, custom-rule create/update/delete and basic filter,
+service/option controls. Exactly nine deliberate fixture writes occur; stale or
+consumed intents, account mismatch and process restart add none. A committed write
+with a lost response remains unresolved across process death and reconciles by
+READ only. Actual Keystore key loss, recording-off, scope changes and deletion pass.
+The editor's live system-theme transition retains text/action, and dismissing an
+in-flight review invalidates its eventual preview. A storage-context correction
+keeps fixture SQLite in the explicitly selected device-protected test context.
+
+Live READ run 3 verifies the human-selected endpoint/profile, all four policy categories
+and matching observations through native Android against the real provider. Only GET
+is issued and no Write credential is present. The user explicitly restricted live
+verification to reads; management mutation/recovery remains synthetic fixture
+evidence. The READ token travels through a one-shot owned-emulator socket, never
+an argument/log/plaintext file, and its isolated ciphertext/key/history are removed
+after the test. Provider policy/resources and physical devices are unchanged.
+
+Adaptive navigation regression run 16 passes the complete five-case Tailscale
+matrix, including real transfers, phone/tablet/large text, short-screen Preferences
+and live system theme with selected TailDrop tab and VPN preserved. This supersedes
+run 15's failed short-screen bottom-bar layout. A delayed pre-write reload cannot
+overwrite verified post-write policy; its held-response regression passes. READ
+account changes clear Write access even before endpoint selection, verified using
+real Keystore storage. Current source APKs and instrumentation compile, focused
+contracts and inherited branding/Thor checks pass; Gradle gates verify the required
+resource profile and daemon exits. No A2 blocker or tracked deferral remains.
+
+A2 closure assessment: the concrete app-owned model, private stores, fixed-origin
+API and separate credential roles serve this stage directly. Completion handoff,
+dismissal and readback ownership findings were resolved and verified in A2; no
+additional consolidation stage or speculative infrastructure is needed. Compatible
+dashboard queries/export, full retention/backfill and recording-off during ongoing
+cross-destination work remain explicitly assigned to A3, beyond A2's off/read and
+scoped-storage checks. A1/A2 APKs remain unreleased until A3/A4 finish.
+
+A3 reconciliation: native Dashboard run 6 passes full retained DNS and local
+activity totals beyond their recent-list limits, matching detail selection and
+actual Android document-picker export/readback with the selected revision. A live
+system dark-mode transition preserves Geography and its data. Scope changes,
+navigation during held HTTPS and SQLite work, terminal SQLite failure with
+explicit recovery, recording-off cancellation and transient reads pass. A fresh
+process restores the retained Dashboard scopes. Real SQLite checks cover
+overlapping replay, capped-response preservation, cancellation rollback,
+seven-day expiry, recording-off ordering, deletion watermarks and restart.
+Focused snapshot/catch-up contracts and current development builds pass; gate
+profiles and daemon exits were inspected. Live READ run 4 confirms the new
+windowed catch-up against the selected existing provider target using GET only,
+without a Write credential or provider mutation. These remain owned-emulator
+and read-only provider results, not physical-device or release acceptance.
+
+The Dashboard captures its own window, independent of a stale provider refresh
+timestamp. Aggregations run with the background snapshot query; panels, detail
+filters and export share immutable facts. A3 closure assessment found no required
+consolidation: existing application jobs and the history actor own work, with no
+new service, polling timer or generic coordination layer. No A3 blocker or tracked
+deferral remains. A4 owns the final integrated accessibility/identity/upgrade and
+distribution gates. No intermediate APK has been published.
+
+Local activity scope includes the control-origin digest, tailnet, stable self ID
+and user. Node IDs from different custom control servers cannot share history.
+Missing profile context is unknown; stale preferences/health clear with the bus
+profile boundary. TailDrop saves retain the scope captured when their writer
+opened, rather than borrowing whichever profile is current at completion. Files,
+URIs, text/clipboard payloads and credentials are not persisted in the ledger.
+Android schema v1 is independent of Windows history migrations. The recorder
+consumes the existing notification bus without adding a watcher, timer or service.
+All test installation/control so far is confined to the task-owned emulator;
+the connected physical Thor, real tailnet and provider policy remain untouched.
+
+A4 current verification: the public device-list deep link now selects Connection
+from Dashboard, including a previously selected Activity tab; the independent
+public-UI regression passes in the rebuilt app. Dashboard integrated rerun 4
+passes native export/cancellation, selected revision, live dark theme, scope
+changes, held HTTP/SQLite navigation, failure/retry, recording off and restart.
+Backend/inherited source contracts and release lint pass. The production delivery
+harness compiles, and the isolated main-only Android environment now holds the
+existing pinned TailDNS signer without generating or rotating a key. Responsive
+large-text/landscape acceptance, signed candidate upgrade/recovery and actual
+TalkBack, exact-source CI, publication and independent public delivery remain A4
+advancement blockers. No candidate or Android release has been published.
+
 ## October 18 scheduled inheritance within ACTIVE Stage 10
 
 Already authorized by monitor-taildns-upstream-updates; no device control or

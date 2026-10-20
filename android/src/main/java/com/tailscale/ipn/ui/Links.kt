@@ -4,6 +4,9 @@
 package com.tailscale.ipn.ui
 
 object Links {
+  const val FORK_ANDROID_DOWNLOADS_URL =
+      "https://github.com/Darkaxt/TailD/blob/main/docs/taild/ANDROID.md"
+  const val FORK_SOURCE_URL = "https://github.com/Darkaxt/TailD"
   const val DEFAULT_CONTROL_URL = "https://controlplane.tailscale.com"
   const val SERVER_URL = "https://login.tailscale.com"
   const val ADMIN_URL = SERVER_URL + "/admin"

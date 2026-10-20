@@ -54,6 +54,7 @@ libtailscale-sources.jar
 .DS_Store
 
 tailscale.version
+/android/src/main/assets/taild-build.json
 
 # local tmp folder
 .tmp/

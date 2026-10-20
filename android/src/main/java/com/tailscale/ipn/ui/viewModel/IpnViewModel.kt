@@ -294,19 +294,32 @@ open class IpnViewModel : ViewModel() {
 
   // Exit Node Manipulation
 
-  fun toggleExitNode() {
-    val prefs = prefs.value ?: return
+  fun toggleExitNode(onResult: (Result<Ipn.Prefs>) -> Unit = {}) {
+    val prefs =
+        prefs.value
+            ?: run {
+              onResult(Result.failure(IllegalStateException("Preferences unavailable")))
+              return
+            }
 
     LoadingIndicator.start()
     if (prefs.activeExitNodeID != null) {
       // We have an active exit node so we should keep it, but disable it
-      Client(viewModelScope).setUseExitNode(false) { LoadingIndicator.stop() }
+      Client(viewModelScope).setUseExitNode(false) {
+        LoadingIndicator.stop()
+        onResult(it)
+      }
     } else if (prefs.selectedExitNodeID != null) {
       // We have a prior exit node to enable
-      Client(viewModelScope).setUseExitNode(true) { LoadingIndicator.stop() }
+      Client(viewModelScope).setUseExitNode(true) {
+        LoadingIndicator.stop()
+        onResult(it)
+      }
     } else {
       // This should not be possible.  In this state the button is hidden
       TSLog.e(TAG, "No exit node to disable and no prior exit node to enable")
+      LoadingIndicator.stop()
+      onResult(Result.failure(IllegalStateException("No selected exit node")))
     }
   }
 

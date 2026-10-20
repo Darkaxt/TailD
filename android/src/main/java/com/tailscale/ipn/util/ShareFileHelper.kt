@@ -38,13 +38,21 @@ object ShareFileHelper : libtailscale.ShareFileHelper {
   // resolve against a different root.
   @Volatile private var savedUri: String? = null
   private var scope: CoroutineScope? = null
+  private var observationScope: () -> String? = { null }
 
   @JvmStatic
-  fun init(context: Context, app: libtailscale.Application, uri: String, appScope: CoroutineScope) {
+  fun init(
+      context: Context,
+      app: libtailscale.Application,
+      uri: String,
+      appScope: CoroutineScope,
+      scopeProvider: () -> String? = { null },
+  ) {
     appContext = context.applicationContext
     this.app = app
     savedUri = uri
     scope = appScope
+    observationScope = scopeProvider
     Libtailscale.setShareFileHelper(this)
     TSLog.d("ShareFileHelper", "init ShareFileHelper with savedUri: $savedUri")
   }
@@ -121,12 +129,17 @@ object ShareFileHelper : libtailscale.ShareFileHelper {
   }
 
   private val currentUri = ConcurrentHashMap<String, String>()
+  private val transferScopes = ConcurrentHashMap<String, String>()
 
   @Throws(IOException::class)
   override fun openFileWriter(fileName: String, offset: Long): libtailscale.OutputStream {
     runBlocking { waitUntilTaildropDirReady() }
     val (uri, stream) = openWriterFD(fileName, offset)
     currentUri[fileName] = uri
+    transferScopes.putIfAbsent(
+        uri,
+        observationScope() ?: "unknown",
+    )
     return OutputStreamAdapter(stream)
   }
 
@@ -169,6 +182,9 @@ object ShareFileHelper : libtailscale.ShareFileHelper {
       DocumentsContract.renameDocument(ctx.contentResolver, srcUri, finalName)?.also { newUri ->
         runCatching { ctx.contentResolver.delete(srcUri, null, null) }
         cleanupPartials(dir, targetName)
+        (appContext as? com.tailscale.ipn.App)
+            ?.tailDHistory
+            ?.documentSaved(transferScopes.remove(oldPath), newUri.toString())
         maybeNotifyInlineShare(ctx, newUri.toString(), targetName)
         return newUri.toString()
       }
@@ -195,6 +211,9 @@ object ShareFileHelper : libtailscale.ShareFileHelper {
 
     ctx.contentResolver.delete(srcUri, null, null)
     cleanupPartials(dir, targetName)
+    (appContext as? com.tailscale.ipn.App)
+        ?.tailDHistory
+        ?.documentSaved(transferScopes.remove(oldPath), dest.uri.toString())
     maybeNotifyInlineShare(ctx, dest.uri.toString(), targetName)
     return dest.uri.toString()
   }

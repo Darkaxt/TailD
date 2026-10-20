@@ -9,6 +9,7 @@ import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import com.tailscale.ipn.ui.localapi.Client
 import com.tailscale.ipn.ui.model.Ipn
+import com.tailscale.ipn.ui.model.IpnState
 import com.tailscale.ipn.util.TSLog
 import kotlinx.coroutines.CompletableDeferred
 
@@ -56,11 +57,18 @@ class IntegrationLoginWorker(context: Context, params: WorkerParameters) :
         }
 
     val prefs = await<Ipn.Prefs> { client.editPrefs(maskedPrefs, it) }.getOrThrow()
+    val existingIdentity =
+        await<IpnState.Status> { client.status(it) }.getOrThrow().HaveNodeKey == true
     prefs.WantRunning = true
 
     val opts = Ipn.Options(UpdatePrefs = prefs, AuthKey = authKey)
     await<Unit> { client.start(opts, it) }.getOrThrow()
-    await<Unit> { client.startLoginInteractive(it) }.getOrThrow()
+    // Start already supplies the fixture auth key. Interactive login is only
+    // needed for a new profile with no persisted node identity; repeating it on
+    // process restart rotates a working node key and is not an auth-key resume.
+    if (!existingIdentity) {
+      await<Unit> { client.startLoginInteractive(it) }.getOrThrow()
+    }
     app.startVPN()
   }
 

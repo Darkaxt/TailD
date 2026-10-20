@@ -88,10 +88,10 @@ private val LightColors =
 
 private val DarkColors =
     darkColorScheme(
-        primary = Color(0xFF3E5DB3), // blue-600
-        onPrimary = Color(0xFFFFFFFF), // white
-        primaryContainer = Color(0xFFf0f5ff), // blue-0
-        onPrimaryContainer = Color(0xFF5A82DC), // blue-400
+        primary = Color(0xFFADC6FF), // accessible blue on dark surfaces
+        onPrimary = Color(0xFF102F60), // dark blue on primary
+        primaryContainer = Color(0xFF294575), // dark blue container
+        onPrimaryContainer = Color(0xFFD8E2FF), // light text on dark container
         error = Color(0xFFEF5350), // red-400
         onError = Color(0xFFFFFFFF), // white
         errorContainer = Color(0xFFfff6f4), // red-0

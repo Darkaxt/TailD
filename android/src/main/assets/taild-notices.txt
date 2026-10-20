@@ -1,0 +1,19 @@
+TailD Android
+
+TailD is an independent, history-preserving TailDNS derivative. TailDNS is an
+independent Tailscale client fork. It is not an official Tailscale product.
+
+TailD contributions and the inherited client: BSD-3-Clause; see taild-license.txt.
+Tailscale core and WireGuard components retain their upstream copyright notices
+and licenses. Tailscale is a registered trademark of Tailscale Inc. WireGuard is
+a registered trademark of Jason A. Donenfeld.
+
+AndroidX, Kotlin, coroutines, kotlinx.serialization, OkHttp 4.12.0 and Okio are
+used under the Apache License, Version 2.0. Other inherited component notices
+and license information are available at https://tailscale.com/licenses/android
+and in the corresponding source repositories. The Apache License text is bundled
+as apache-2.0.txt. Android platform SQLite remains provided by the operating system.
+
+Source and Android release information: https://github.com/Darkaxt/TailD
+Technical package/namespace and protocol names inherited from TailDNS/Tailscale
+are preserved for upgrades and compatibility.

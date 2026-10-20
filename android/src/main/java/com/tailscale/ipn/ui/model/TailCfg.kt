@@ -83,6 +83,8 @@ class Tailcfg {
       var Online: Boolean? = null,
       var Capabilities: List<String>? = null,
       var CapMap: Map<String, JsonElement?>? = null,
+      var Tags: List<String>? = null,
+      var TaildropTarget: Int? = null,
       var ComputedName: String? = null,
       var ComputedNameWithHost: String? = null,
   ) {

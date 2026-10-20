@@ -1,0 +1,216 @@
+name: TailD Android release
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish a previously signed and delivery-verified candidate
+        type: boolean
+        default: false
+      candidate_run:
+        description: Successful same-source candidate run (required for publication)
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: taild-android-release
+  cancel-in-progress: false
+
+jobs:
+  request:
+    if: github.repository == 'Darkaxt/TailD' && github.ref == 'refs/heads/main' && github.actor == github.repository_owner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate the explicit candidate/publication operation
+        env:
+          PUBLISH: ${{ inputs.publish }}
+          CANDIDATE_RUN: ${{ inputs.candidate_run }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$PUBLISH" = true ]]; then [[ "$CANDIDATE_RUN" =~ ^[1-9][0-9]*$ ]]; else test -z "$CANDIDATE_RUN"; fi
+  build:
+    needs: request
+    if: github.repository == 'Darkaxt/TailD' && github.ref == 'refs/heads/main' && github.actor == github.repository_owner && !inputs.publish && inputs.candidate_run == ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Build exact clean source without signing credentials
+        env:
+          TAILD_PACKAGE_TEST_OUTPUT: ${{ runner.temp }}/taild-contract-fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$GITHUB_SHA"
+          python3 -m pip install 'cryptography==50.0.2'
+          python3 -B -m unittest discover -s scripts/taild -p 'test_*.py'
+          bash scripts/test-append-taildns-version.sh
+          bash scripts/test-taildns-branding.sh
+          bash scripts/test-thor-recents-resilience.sh
+          bash scripts/test-sync-core-toolchain-rev.sh
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-36' 'build-tools;36.0.0' 'ndk;23.1.7779620'
+          python3 -B scripts/taild/android_release.py prepare
+          export TAILDNS_RELEASE_SEQUENCE="$(cat TAILD_ANDROID_SEQUENCE.txt)"
+          make version libtailscale
+          ./tool/go test -timeout=0 $(./tool/go list ./... | grep -v '^github.com/tailscale/tailscale-android/libtailscale$')
+          core_dir="$(./tool/go list -m -f '{{.Dir}}' tailscale.com)"
+          bash scripts/sync-core-toolchain-rev.sh --check "$core_dir" "$PWD"
+          go_bin="$(./tool/go env GOROOT)/bin/go"
+          (cd "$core_dir" && "$go_bin" test -timeout=0 -mod=readonly ./ipn/... ./net/dns/... ./client/local ./cmd/taildns ./safesocket -count=1)
+          code="$(python3 -c 'import json;print(json.load(open("android/src/main/assets/taild-build.json"))["version_code"])')"
+          (cd android && ./gradlew --no-daemon --max-workers=2 --no-parallel -Dorg.gradle.jvmargs=-Xmx3g ktfmtCheck test lintVitalRelease assembleRelease -PVERSION_CODE_BASE="$code")
+          "$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer" manifest print android/build/outputs/apk/release/android-release-unsigned.apk > "$RUNNER_TEMP/taild-merged-manifest.xml"
+          bash scripts/test-thor-recents-resilience.sh "$RUNNER_TEMP/taild-merged-manifest.xml"
+          python3 -B scripts/taild/android_release.py package --directory "$RUNNER_TEMP/taild-android-input"
+          (cd android && ./gradlew --no-daemon --max-workers=2 --no-parallel -Dorg.gradle.jvmargs=-Xmx3g assembleRelease -PPLATFORM=tv -PVERSION_CODE_BASE="$code")
+          git diff --exit-code
+      - name: Preserve inert candidate inputs
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: taild-android-input
+          path: ${{ runner.temp }}/taild-android-input/
+          if-no-files-found: error
+          retention-days: 7
+
+  sign:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: taild-android-release
+    steps:
+      # No checkout, repository scripts, plugins, or APK execution in this job.
+      - name: Install fixed Android signing tools
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "build-tools;36.0.0"'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: taild-android-input
+          path: candidate
+      - name: Sign and inspect only the inert package
+        env:
+          KEYSTORE_BASE64: ${{ secrets.TAILD_ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.TAILD_ANDROID_KEYSTORE_PASSWORD }}
+          EXPECTED_SIGNER: ${{ vars.TAILD_ANDROID_SIGNER_SHA256 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          test "$EXPECTED_SIGNER" = dcd0ede91eb7e0ed88a72b5289f84f8d4a61ccc22707f36378e15540b99d32e1
+          key="$RUNNER_TEMP/taild-android.jks"
+          trap 'rm -f "$key"' EXIT
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$key"
+          tools="$ANDROID_HOME/build-tools/36.0.0"
+          mkdir release
+          "$tools/zipalign" -P 16 -f 4 candidate/taild-android-unsigned.apk "$RUNNER_TEMP/aligned.apk"
+          "$tools/apksigner" sign --ks "$key" --ks-key-alias taildns --ks-pass env:KEYSTORE_PASSWORD --key-pass env:KEYSTORE_PASSWORD --out release/taild-android.apk "$RUNNER_TEMP/aligned.apk"
+          "$tools/apksigner" verify --verbose --print-certs release/taild-android.apk | tee release/signature.txt
+          grep -Fx "Signer #1 certificate SHA-256 digest: $EXPECTED_SIGNER" release/signature.txt
+          "$tools/aapt" dump badging release/taild-android.apk > release/package.txt
+          python3 - <<'PY'
+          import hashlib,json,os,re,zipfile
+          from pathlib import Path
+          meta=json.loads(Path('candidate/build.json').read_text())
+          assert meta['source_revision']==os.environ['GITHUB_SHA']
+          assert meta['package']=='io.github.darkaxt.taildns' and meta['signer_sha256']==os.environ['EXPECTED_SIGNER']
+          assert re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+\+[1-9][0-9]*',meta['tag'])
+          assert meta['version_name']==meta['tag'][1:]
+          package=Path('release/package.txt').read_text()
+          for text in ["package: name='io.github.darkaxt.taildns'",f"versionCode='{meta['version_code']}'",f"versionName='{meta['version_name']}'","application-label:'TailD'"]: assert text in package
+          expected=json.loads(Path('candidate/payloads.json').read_text())
+          with zipfile.ZipFile('release/taild-android.apk') as z:
+            assert len(z.namelist())==len(set(z.namelist()))
+            actual={n:{'sha256':hashlib.sha256(z.read(n)).hexdigest(),'size':z.getinfo(n).file_size} for n in z.namelist()}
+            assert json.loads(z.read('assets/taild-build.json'))==meta
+          signature=re.compile(r'META-INF/(?:MANIFEST\.MF|[^/]+\.(?:SF|RSA|DSA|EC))$',re.I)
+          assert {k:v for k,v in actual.items() if not signature.fullmatch(k)}=={k:v for k,v in expected.items() if not signature.fullmatch(k)}
+          for name in ['build.json','payloads.json','release-notes.md']: Path('release',name).write_bytes(Path('candidate',name).read_bytes())
+          Path('release/provenance.txt').write_text(f"Release tag: {meta['tag']}\nAndroid source: {meta['source_revision']}\nCore source: {meta['core_revision']}\nCore module: {meta['core_module']}\nAndroid package: {meta['package']}\nAndroid version code: {meta['version_code']}\nAndroid version name: {meta['version_name']}\nAndroid signer SHA-256: {meta['signer_sha256']}\n")
+          Path('release/SHA256SUMS').write_text(''.join(f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n' for p in sorted(Path('release').iterdir()) if p.is_file() and p.name!='SHA256SUMS'))
+          PY
+      - name: Preserve signed candidate for isolated delivery acceptance
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: taild-android-signed-candidate
+          path: release/
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    needs: request
+    if: github.repository == 'Darkaxt/TailD' && github.ref == 'refs/heads/main' && github.actor == github.repository_owner && inputs.publish && inputs.candidate_run != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      # No signing secrets or checkout. Reuse the original verified candidate.
+      - name: Select the completed exact-source signing operation
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CANDIDATE_RUN: ${{ inputs.candidate_run }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$CANDIDATE_RUN" =~ ^[1-9][0-9]*$ ]]
+          test "$CANDIDATE_RUN" != "$GITHUB_RUN_ID"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$CANDIDATE_RUN" > original.json
+          python3 - <<'PY'
+          import json,os
+          run=json.load(open('original.json'))
+          assert run['status']=='completed' and run['conclusion']=='success'
+          assert run['event']=='workflow_dispatch' and run['head_branch']=='main'
+          assert run['path']=='.github/workflows/taild-android-release.yml'
+          assert run['head_sha']==os.environ['GITHUB_SHA']
+          assert run['repository']['full_name']==os.environ['GITHUB_REPOSITORY']
+          assert run['actor']['login']==os.environ['GITHUB_REPOSITORY_OWNER']
+          PY
+          gh run download "$CANDIDATE_RUN" --repo "$GITHUB_REPOSITORY" --name taild-android-signed-candidate --dir release
+      - name: Verify and publish the accepted signed bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'build-tools;36.0.0'
+          (cd release && sha256sum --check SHA256SUMS)
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs release/taild-android.apk > verified-signature.txt
+          grep -Fx 'Signer #1 certificate SHA-256 digest: dcd0ede91eb7e0ed88a72b5289f84f8d4a61ccc22707f36378e15540b99d32e1' verified-signature.txt
+          tag="$(python3 -c 'import json;print(json.load(open("release/build.json"))["tag"])')"
+          [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+\+[1-9][0-9]*$ ]]
+          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" --jq .object.sha)" = "$GITHUB_SHA"
+          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)" = "$GITHUB_SHA"
+          python3 - <<'PY'
+          import json,os,subprocess
+          meta=json.load(open('release/build.json'))
+          assert meta['source_revision']==os.environ['GITHUB_SHA']
+          assert meta['version_name']==meta['tag'][1:]
+          # TailDNS is the in-place upgrade origin. Its code must remain lower.
+          previous=json.loads(subprocess.check_output(['gh','api','repos/Darkaxt/TailDNS/releases/latest']))
+          asset=next(a for a in previous['assets'] if a['name']=='provenance.txt')
+          text=subprocess.check_output(['gh','api',asset['url'],'-H','Accept: application/octet-stream']).decode()
+          old=int(next(line.split(': ',1)[1] for line in text.splitlines() if line.startswith('Android version code: ')))
+          assert meta['version_code']>old
+          releases=json.loads(subprocess.check_output(['gh','api','--paginate','repos/'+os.environ['GITHUB_REPOSITORY']+'/releases?per_page=100','--slurp']))
+          for page in releases:
+            for release in page:
+              if release['draft'] or release['prerelease'] or not release['tag_name'].startswith('v'): continue
+              seq=int(release['tag_name'].rsplit('+',1)[1])
+              assert meta['taild_sequence']>seq
+              asset=next(a for a in release['assets'] if a['name']=='build.json')
+              old=json.loads(subprocess.check_output(['gh','api',asset['url'],'-H','Accept: application/octet-stream']))
+              assert meta['version_code']>old['version_code']
+          PY
+          gh release create "$tag" release/* --repo "$GITHUB_REPOSITORY" --verify-tag --latest=false --title "TailD Android ${tag#v}" --notes-file release/release-notes.md

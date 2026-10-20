@@ -112,6 +112,7 @@ dependencies {
 
   // Supporting libraries.
   implementation(libs.coil.compose)
+  implementation("com.squareup.okhttp3:okhttp:4.12.0")
   implementation(libs.zxing.core)
   implementation(libs.vico.compose)
   implementation(libs.vico.composeM3)
@@ -138,6 +139,7 @@ dependencies {
   testImplementation(libs.mockito.inline)
   testImplementation(libs.mockito.kotlin)
   testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
 }
 
 fun getLocalProperty(key: String, defaultValue: String): String {

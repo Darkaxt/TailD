@@ -52,7 +52,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -68,6 +67,8 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -84,6 +85,8 @@ import com.tailscale.ipn.App
 import com.tailscale.ipn.R
 import com.tailscale.ipn.mdm.MDMSettings
 import com.tailscale.ipn.mdm.ShowHide
+import com.tailscale.ipn.taild.DeviceLastOnline
+import com.tailscale.ipn.taild.DevicePresenceName
 import com.tailscale.ipn.ui.Links
 import com.tailscale.ipn.ui.model.Ipn
 import com.tailscale.ipn.ui.model.IpnLocal
@@ -112,6 +115,7 @@ import com.tailscale.ipn.ui.util.PeerSet
 import com.tailscale.ipn.ui.util.PeerSet.Companion.FAVORITES_ID
 import com.tailscale.ipn.ui.util.itemsWithDividers
 import com.tailscale.ipn.ui.util.set
+import com.tailscale.ipn.ui.util.withSelfFirst
 import com.tailscale.ipn.ui.viewModel.AppViewModel
 import com.tailscale.ipn.ui.viewModel.IpnViewModel.NodeState
 import com.tailscale.ipn.ui.viewModel.MainViewModel
@@ -149,6 +153,7 @@ fun MainView(
         val user by viewModel.loggedInUser.collectAsState()
         val stateVal by viewModel.stateRes.collectAsState(initial = R.string.placeholder)
         val stateStr = stringResource(id = stateVal)
+        val toggleLabel = stringResource(if (isOn) R.string.disconnect else R.string.connect)
         val netmap by viewModel.netmap.collectAsState()
         val showExitNodePicker by MDMSettings.exitNodesPicker.flow.collectAsState()
         val disableToggle by MDMSettings.forceEnabled.flow.collectAsState()
@@ -166,6 +171,7 @@ fun MainView(
                         !disableToggle.value &&
                             !isToggleInProgress, // Disable switch if toggle is in progress
                     onCheckedChange = { desiredState -> viewModel.toggleVpn(desiredState) },
+                    modifier = Modifier.semantics { contentDescription = toggleLabel },
                 )
               }
             },
@@ -187,7 +193,7 @@ fun MainView(
                     Spacer(modifier = Modifier.size(4.dp))
                     IconButton(
                         onClick = { navigation.onNavigateToHealth() },
-                        modifier = Modifier.size(16.dp),
+                        modifier = Modifier.size(48.dp),
                     ) {
                       Icon(
                           painterResource(id = it),
@@ -225,7 +231,7 @@ fun MainView(
             if (showKeyExpiry) {
               netmap?.let { ExpiryNotification(netmap = it, action = { viewModel.login() }) }
             }
-            if (showExitNodePicker.value == ShowHide.Show) {
+            if (isAndroidTV() && showExitNodePicker.value == ShowHide.Show) {
               ExitNodeStatus(
                   navAction = navigation.onNavigateToExitNodes,
                   viewModel = viewModel,
@@ -449,7 +455,7 @@ private fun ExitNodeStatus(navAction: () -> Unit, viewModel: MainViewModel) {
 
 @Composable
 private fun SettingsButton(action: () -> Unit) {
-  IconButton(modifier = Modifier.size(24.dp), onClick = { action() }) {
+  IconButton(modifier = Modifier.size(48.dp), onClick = { action() }) {
     Icon(
         Icons.Outlined.Settings,
         contentDescription = "Open settings",
@@ -673,13 +679,28 @@ fun PeerList(
     onSearch: (String) -> Unit,
 ) {
   val focusManager = LocalFocusManager.current
-  val peerList by viewModel.peers.collectAsState()
+  val storedPeerList by viewModel.peers.collectAsState()
   val searchTermStr by viewModel.searchTerm.collectAsState()
   val expandedPeer by viewModel.expandedMenuPeer.collectAsState()
   val netmap by viewModel.netmap.collectAsState()
-  val showNoResults by remember {
-    derivedStateOf { searchTermStr.isNotEmpty() && peerList.isEmpty() }
-  }
+  val peerList =
+      storedPeerList
+          .mapNotNull { set ->
+            PeerSet.create(
+                set.id,
+                set.title,
+                set.nodes.filter {
+                  searchTermStr.isBlank() ||
+                      it.displayName.contains(searchTermStr, ignoreCase = true) ||
+                      it.Addresses.orEmpty().any { address ->
+                        address.contains(searchTermStr, ignoreCase = true)
+                      } ||
+                      set.title?.contains(searchTermStr, ignoreCase = true) == true
+                },
+            )
+          }
+          .withSelfFirst(netmap?.SelfNode?.StableID)
+  val showNoResults = searchTermStr.isNotEmpty() && peerList.isEmpty()
   var isSearchFocussed by remember { mutableStateOf(false) }
   var isListFocussed by remember { mutableStateOf(false) }
 
@@ -814,7 +835,9 @@ fun PeerList(
         if (idx != 0) {
           item(key = "user_divider_${peerSet.id}") { Lists.ItemDivider() }
         }
-        if (isAndroidTV()) {
+        if (peerSet.id == PeerSet.SELF_ID) {
+          // This device is the first device row, without a duplicate widget/header.
+        } else if (isAndroidTV()) {
           item { NodesSectionHeader(peerSet = peerSet) }
         } else {
           stickyHeader { NodesSectionHeader(peerSet = peerSet) }
@@ -832,18 +855,11 @@ fun PeerList(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                  Box(
-                      modifier =
-                          Modifier.padding(top = 2.dp)
-                              .size(10.dp)
-                              .background(
-                                  color = peer.connectedColor(netmap),
-                                  shape = RoundedCornerShape(percent = 50),
-                              )
-                  )
-                  Text(
-                      text = peer.displayName,
-                      style = MaterialTheme.typography.titleMedium,
+                  DevicePresenceName(
+                      peer,
+                      netmap?.SelfNode?.StableID,
+                      Ipn.State.Running,
+                      modifier = Modifier.weight(1f),
                   )
                   if (expandedPeer?.StableID == peer.StableID) {
                     DeviceDropdownMenu(
@@ -855,13 +871,13 @@ fun PeerList(
                 }
               },
               supportingContent = {
-                Text(
-                    text = peer.Addresses?.first()?.split("/")?.first() ?: "",
-                    style =
-                        MaterialTheme.typography.bodyMedium.copy(
-                            lineHeight = MaterialTheme.typography.titleMedium.lineHeight
-                        ),
-                )
+                Column {
+                  Text(
+                      text = peer.Addresses?.firstOrNull()?.split("/")?.first() ?: "",
+                      style = MaterialTheme.typography.bodyMedium,
+                  )
+                  DeviceLastOnline(peer, peer.StableID == netmap?.SelfNode?.StableID)
+                }
               },
           )
         }

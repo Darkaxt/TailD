@@ -64,6 +64,30 @@ import libtailscale.Libtailscale
 
 class App : UninitializedApp(), libtailscale.AppContext, ViewModelStoreOwner {
   val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+  val tailDHistory by lazy { com.tailscale.ipn.taild.TailDHistory(this, applicationScope) }
+  private val defaultControlD by lazy {
+    com.tailscale.ipn.taild.ControlDModel(this, applicationScope, tailDHistory)
+  }
+  @Volatile private var testControlD: com.tailscale.ipn.taild.ControlDModel? = null
+  val tailDControlD: com.tailscale.ipn.taild.ControlDModel
+    get() = if (BuildConfig.DEBUG) testControlD ?: defaultControlD else defaultControlD
+
+  private val defaultDashboard by lazy {
+    com.tailscale.ipn.taild.DashboardModel(applicationScope, tailDHistory, tailDControlD)
+  }
+  @Volatile private var testDashboard: com.tailscale.ipn.taild.DashboardModel? = null
+  val tailDDashboard: com.tailscale.ipn.taild.DashboardModel
+    get() = if (BuildConfig.DEBUG) testDashboard ?: defaultDashboard else defaultDashboard
+
+  internal fun setDashboardForEmulatorTest(model: com.tailscale.ipn.taild.DashboardModel?) {
+    check(BuildConfig.DEBUG && android.os.Build.HARDWARE in listOf("ranchu", "goldfish"))
+    testDashboard = model
+  }
+
+  internal fun setControlDForEmulatorTest(model: com.tailscale.ipn.taild.ControlDModel?) {
+    check(BuildConfig.DEBUG && android.os.Build.HARDWARE in listOf("ranchu", "goldfish"))
+    testControlD = model
+  }
 
   companion object {
     const val FILE_CHANNEL_ID = "tailscale-files"
@@ -273,10 +297,21 @@ class App : UninitializedApp(), libtailscale.AppContext, ViewModelStoreOwner {
    */
   fun startLibtailscale(directFileRoot: String, hardwareAttestation: Boolean) {
     app = Libtailscale.start(this.filesDir.absolutePath, directFileRoot, hardwareAttestation, this)
-    ShareFileHelper.init(this, app, directFileRoot, applicationScope)
+    ShareFileHelper.init(this, app, directFileRoot, applicationScope) {
+      com.tailscale.ipn.taild.activityScope(Notifier.netmap.value, Notifier.prefs.value)
+    }
     Request.setApp(app)
     Notifier.setApp(app)
-    Notifier.start(applicationScope)
+    val history = tailDHistory
+    Notifier.start(applicationScope) { notification ->
+      history.observe(
+          Notifier.state.value,
+          Notifier.netmap.value,
+          Notifier.prefs.value,
+          Notifier.health.value,
+          notification,
+      )
+    }
   }
 
   private fun initViewModels() {

@@ -88,6 +88,8 @@ fun AboutView(backToSettings: BackNavigation) {
       }
 
       Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        OpenURLButton("TailD Android downloads", Links.FORK_ANDROID_DOWNLOADS_URL)
+        OpenURLButton("TailD source and release information", Links.FORK_SOURCE_URL)
         OpenURLButton(stringResource(R.string.acknowledgements), Links.LICENSES_URL)
         OpenURLButton(stringResource(R.string.privacy_policy), Links.PRIVACY_POLICY_URL)
         OpenURLButton(stringResource(R.string.terms_of_service), Links.TERMS_URL)

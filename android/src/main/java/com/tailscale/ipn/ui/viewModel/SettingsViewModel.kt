@@ -26,6 +26,8 @@ data class SettingsNav(
     val onNavigateToPermissions: () -> Unit,
     val onNavigateBackHome: () -> Unit,
     val onBackToSettings: () -> Unit,
+    val onNavigateToExitNodes: () -> Unit = {},
+    val onNavigateToRunAsExitNode: () -> Unit = {},
 )
 
 class SettingsViewModel : IpnViewModel() {

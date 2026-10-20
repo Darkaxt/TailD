@@ -9,7 +9,6 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.RestrictionsManager
-import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration.SCREENLAYOUT_SIZE_LARGE
 import android.content.res.Configuration.SCREENLAYOUT_SIZE_MASK
@@ -41,8 +40,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -75,7 +76,6 @@ import com.tailscale.ipn.ui.view.LoginQRView
 import com.tailscale.ipn.ui.view.LoginWithAuthKeyView
 import com.tailscale.ipn.ui.view.LoginWithCustomControlURLView
 import com.tailscale.ipn.ui.view.MDMSettingsDebugView
-import com.tailscale.ipn.ui.view.MainView
 import com.tailscale.ipn.ui.view.MainViewNavigation
 import com.tailscale.ipn.ui.view.ManagedByView
 import com.tailscale.ipn.ui.view.MullvadExitNodePicker
@@ -156,11 +156,6 @@ class MainActivity : ComponentActivity() {
     ) {
       setIntroScreenViewed(true)
     }
-    // (jonathan) TODO: Force the app to be portrait on small screens until we have
-    // proper landscape layout support
-    if (!isLandscapeCapable()) {
-      requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-    }
     installSplashScreen()
     vpnPermissionLauncher =
         registerForActivityResult(VpnPermissionContract()) { granted ->
@@ -240,6 +235,8 @@ class MainActivity : ComponentActivity() {
     appViewModel.directoryPickerLauncher = directoryPickerLauncher
 
     setContent {
+      val taildDestination = rememberSaveable { mutableIntStateOf(0) }
+      val taildTailscaleTab = rememberSaveable { mutableIntStateOf(0) }
       var showDialog by remember { mutableStateOf(false) }
 
       LaunchedEffect(Unit) { appViewModel.triggerDirectoryPicker.collect { showDialog = true } }
@@ -274,7 +271,11 @@ class MainActivity : ComponentActivity() {
       val introNotYetViewed = remember { isIntroScreenViewedSet() }
 
       LaunchedEffect(navController) {
-        val nav = DeepLinkNavigator(navController)
+        val nav =
+            DeepLinkNavigator(navController) {
+              taildDestination.intValue = 0
+              taildTailscaleTab.intValue = 0
+            }
         deepLinkNavigator = nav
         pendingDeepLink?.let {
           pendingDeepLink = null
@@ -319,6 +320,7 @@ class MainActivity : ComponentActivity() {
               fun backTo(route: String): () -> Unit = {
                 navController.popBackStack(route = route, inclusive = false)
               }
+              val backToPreferences: () -> Unit = { navController.popBackStack() }
               val mainViewNav =
                   MainViewNavigation(
                       onNavigateToSettings = { navController.navigate("settings") },
@@ -344,7 +346,9 @@ class MainActivity : ComponentActivity() {
                       onNavigateToManagedBy = { navController.navigate("managedBy") },
                       onNavigateToUserSwitcher = { navController.navigate("userSwitcher") },
                       onNavigateToPermissions = { navController.navigate("permissions") },
-                      onBackToSettings = backTo("settings"),
+                      onBackToSettings = backToPreferences,
+                      onNavigateToExitNodes = { navController.navigate("exitNodes") },
+                      onNavigateToRunAsExitNode = { navController.navigate("runExitNode") },
                       onNavigateBackHome = backTo("main"),
                   )
               val exitNodePickerNav =
@@ -361,7 +365,7 @@ class MainActivity : ComponentActivity() {
                   )
               val userSwitcherNav =
                   UserSwitcherNav(
-                      backToSettings = backTo("settings"),
+                      backToSettings = backToPreferences,
                       onNavigateHome = backTo("main"),
                       onNavigateCustomControl = {
                         navController.navigate("loginWithCustomControl")
@@ -370,10 +374,14 @@ class MainActivity : ComponentActivity() {
                   )
 
               composable("main", enterTransition = { fadeIn(animationSpec = tween(150)) }) {
-                MainView(
+                com.tailscale.ipn.taild.TailDTailscaleView(
                     loginAtUrl = ::login,
                     navigation = mainViewNav,
+                    settingsNav = settingsNav,
                     viewModel = viewModel,
+                    appViewModel = appViewModel,
+                    destinationState = taildDestination,
+                    tabState = taildTailscaleTab,
                 )
               }
               composable("search") {
@@ -412,18 +420,18 @@ class MainActivity : ComponentActivity() {
                     PingViewModel(),
                 )
               }
-              composable("bugReport") { BugReportView(backTo("settings")) }
-              composable("dnsSettings") { DNSSettingsView(backTo("settings")) }
-              composable("splitTunneling") { SplitTunnelAppPickerView(backTo("settings")) }
-              composable("tailnetLock") { TailnetLockSetupView(backTo("settings")) }
-              composable("subnetRouting") { SubnetRoutingView(backTo("settings")) }
-              composable("about") { AboutView(backTo("settings")) }
-              composable("mdmSettings") { MDMSettingsDebugView(backTo("settings")) }
-              composable("managedBy") { ManagedByView(backTo("settings")) }
+              composable("bugReport") { BugReportView(backToPreferences) }
+              composable("dnsSettings") { DNSSettingsView(backToPreferences) }
+              composable("splitTunneling") { SplitTunnelAppPickerView(backToPreferences) }
+              composable("tailnetLock") { TailnetLockSetupView(backToPreferences) }
+              composable("subnetRouting") { SubnetRoutingView(backToPreferences) }
+              composable("about") { AboutView(backToPreferences) }
+              composable("mdmSettings") { MDMSettingsDebugView(backToPreferences) }
+              composable("managedBy") { ManagedByView(backToPreferences) }
               composable("userSwitcher") { UserSwitcherView(userSwitcherNav) }
               composable("permissions") {
                 PermissionsView(
-                    backTo("settings"),
+                    backToPreferences,
                     { navController.navigate("taildropDir") },
                     { navController.navigate("notifications") },
                 )

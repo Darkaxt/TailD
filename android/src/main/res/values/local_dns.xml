@@ -2,7 +2,7 @@
 <!-- Copyright (c) Tailscale Inc & AUTHORS
      SPDX-License-Identifier: BSD-3-Clause -->
 <resources>
-    <string name="fork_app_name" translatable="false">TailDNS</string>
+    <string name="fork_app_name" translatable="false">TailD</string>
     <string name="local_dns_title">Local default DNS</string>
     <string name="local_dns_scope">Overrides the default resolver for this profile. MagicDNS and more-specific routes stay under Tailscale control. No generic-provider fallback is used. Generic resolver bootstrap may send only the provider hostname in plaintext to the underlying network DNS, outside an exit node.</string>
     <string name="local_dns_enable">Use local default resolver</string>
@@ -11,7 +11,7 @@
     <string name="local_dns_endpoint">HTTPS DNS endpoint</string>
     <string name="local_dns_manual_done">Press keyboard Done to save a valid HTTPS endpoint. The local resolver must be enabled separately.</string>
     <string name="local_dns_previous_endpoint">Previous endpoint (not in use): %1$s</string>
-    <string name="local_dns_strict_conflict">Strict Android Private DNS is active and may bypass or conflict with VPN DNS. TailDNS does not change that system setting.</string>
+    <string name="local_dns_strict_conflict">Strict Android Private DNS is active and may bypass or conflict with VPN DNS. TailD does not change that system setting.</string>
     <string name="local_dns_mode_unknown">Android Private DNS mode could not be determined. System mode compatibility is unverified.</string>
     <string name="local_dns_tailnet_resolvers">Tailnet-advertised resolvers</string>
     <string name="local_dns_error">DNS settings could not be read or saved. Check the active profile, administrator policy and HTTPS endpoint. Unsaved edits have not been applied.</string>

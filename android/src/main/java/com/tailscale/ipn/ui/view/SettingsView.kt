@@ -23,13 +23,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tailscale.ipn.App
 import com.tailscale.ipn.BuildConfig
 import com.tailscale.ipn.R
 import com.tailscale.ipn.mdm.AlwaysNeverUserDecides
@@ -52,6 +57,7 @@ fun SettingsView(
     settingsNav: SettingsNav,
     viewModel: SettingsViewModel = viewModel(),
     appViewModel: AppViewModel = viewModel(),
+    embedded: Boolean = false,
 ) {
   val handler = LocalUriHandler.current
 
@@ -65,13 +71,31 @@ fun SettingsView(
   val useTailscaleSubnets by MDMSettings.useTailscaleSubnets.flow.collectAsState()
   val isClientRemoteLoggingEnabled by viewModel.isClientRemoteLoggingEnabled.collectAsState()
   var showDisableLoggingDialog by remember { mutableStateOf(false) }
+  var showDeleteHistoryDialog by remember { mutableStateOf(false) }
+  var showSourceHealth by remember { mutableStateOf(false) }
+  val history = App.get().tailDHistory
+  val recording by history.enabled.collectAsState()
+  val exitPrefs by viewModel.prefs.collectAsState()
+  val map by viewModel.netmap.collectAsState()
+  val exitPicker by MDMSettings.exitNodesPicker.flow.collectAsState()
+  val managedExit by MDMSettings.exitNodeID.flow.collectAsState()
+  val exitEnabled = !exitPrefs?.activeExitNodeID.isNullOrEmpty()
+  val runningAsExit by viewModel.isRunningExitNode.collectAsState()
+  var exitChangePending by remember { mutableStateOf(false) }
+  var exitError by remember { mutableStateOf(false) }
 
   Scaffold(
       topBar = {
-        Header(titleRes = R.string.settings_title, onBack = settingsNav.onNavigateBackHome)
+        if (!embedded)
+            Header(titleRes = R.string.settings_title, onBack = settingsNav.onNavigateBackHome)
       }
   ) { innerPadding ->
-    Column(modifier = Modifier.padding(innerPadding).verticalScroll(rememberScrollState())) {
+    Column(
+        modifier =
+            Modifier.padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .testTag("taild-preferences")
+    ) {
       if (isVPNPrepared) {
         UserView(
             profile = user,
@@ -86,6 +110,52 @@ fun SettingsView(
       }
 
       Lists.SectionDivider()
+      Setting.Switch(
+          R.string.taild_collect_analytics,
+          subtitle = stringResource(R.string.taild_collect_analytics_detail),
+          isOn = recording,
+          onToggle = history::setEnabled,
+      )
+      Setting.Text(R.string.taild_delete_history, onClick = { showDeleteHistoryDialog = true })
+      if (exitPicker.value == ShowHide.Show) {
+        Lists.ItemDivider()
+        Setting.Switch(
+            R.string.taild_use_exit_node,
+            isOn = exitEnabled,
+            enabled = exitPrefs != null && managedExit.value.isNullOrEmpty() && !exitChangePending,
+            onToggle = {
+              if (exitPrefs?.activeExitNodeID != null || exitPrefs?.selectedExitNodeID != null) {
+                exitError = false
+                exitChangePending = true
+                viewModel.toggleExitNode { result ->
+                  exitChangePending = false
+                  exitError = result.isFailure
+                }
+              } else settingsNav.onNavigateToExitNodes()
+            },
+        )
+        if (exitEnabled) {
+          Setting.Text(
+              R.string.exit_node,
+              subtitle =
+                  map?.Peers?.find { it.StableID == exitPrefs?.activeExitNodeID }?.displayName
+                      ?: stringResource(R.string.taild_exit_node_unavailable),
+              onClick = settingsNav.onNavigateToExitNodes,
+          )
+        }
+        if (exitError)
+            Text(
+                stringResource(R.string.taild_exit_node_failed),
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+        Setting.Text(
+            R.string.taild_run_exit_node,
+            subtitle = stringResource(if (runningAsExit) R.string.enabled else R.string.disabled),
+            onClick = settingsNav.onNavigateToRunAsExitNode,
+        )
+      }
+      Lists.ItemDivider()
       Setting.Text(
           R.string.dns_settings,
           subtitle =
@@ -158,6 +228,11 @@ fun SettingsView(
 
       Lists.ItemDivider()
       Setting.Text(
+          title = "About TailD · history & source health",
+          onClick = { showSourceHealth = true },
+      )
+      Lists.ItemDivider()
+      Setting.Text(
           R.string.about_tailscale,
           subtitle = "${stringResource(id = R.string.version)} ${AppVersion.Short()}",
           onClick = settingsNav.onNavigateToAbout,
@@ -170,6 +245,37 @@ fun SettingsView(
         Setting.Text(R.string.mdm_settings, onClick = settingsNav.onNavigateToMDMSettings)
       }
     }
+  }
+
+  if (showSourceHealth)
+      com.tailscale.ipn.taild.TailDAboutDialog(
+          App.get().tailDControlD,
+          history,
+          onPreferences = { showSourceHealth = false },
+          onClose = { showSourceHealth = false },
+      )
+  if (showDeleteHistoryDialog) {
+    AlertDialog(
+        onDismissRequest = { showDeleteHistoryDialog = false },
+        title = { Text(stringResource(R.string.taild_delete_history)) },
+        text = { Text(stringResource(R.string.taild_delete_history_detail)) },
+        confirmButton = {
+          TextButton(
+              onClick = {
+                history.deleteHistory()
+                App.get().tailDControlD.clearHistory()
+                showDeleteHistoryDialog = false
+              }
+          ) {
+            Text(stringResource(R.string.taild_delete_history))
+          }
+        },
+        dismissButton = {
+          TextButton(onClick = { showDeleteHistoryDialog = false }) {
+            Text(stringResource(R.string.cancel))
+          }
+        },
+    )
   }
 
   if (showDisableLoggingDialog) {
@@ -245,6 +351,7 @@ object Setting {
       enabled: Boolean = true,
       onToggle: (Boolean) -> Unit = {},
   ) {
+    val label = title ?: stringResource(titleRes)
     ListItem(
         colors = MaterialTheme.colorScheme.listItem,
         headlineContent = {
@@ -264,7 +371,12 @@ object Setting {
               }
             },
         trailingContent = {
-          TintedSwitch(checked = isOn, onCheckedChange = onToggle, enabled = enabled)
+          TintedSwitch(
+              checked = isOn,
+              onCheckedChange = onToggle,
+              enabled = enabled,
+              modifier = Modifier.semantics { contentDescription = label },
+          )
         },
     )
   }

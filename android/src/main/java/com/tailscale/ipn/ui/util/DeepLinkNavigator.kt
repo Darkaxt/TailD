@@ -13,7 +13,10 @@ import com.tailscale.ipn.util.TSLog
 // behalf. Tails whose leaf would imply an action (e.g., a specific exit
 // node) are accepted for URL compatibility but resolve to the parent
 // view; the user picks and confirms in-app.
-class DeepLinkNavigator(private val navController: NavHostController) {
+class DeepLinkNavigator(
+    private val navController: NavHostController,
+    private val showDevices: () -> Unit = {},
+) {
   companion object {
     private const val TAG = "DeepLinkNavigator"
   }
@@ -61,6 +64,7 @@ class DeepLinkNavigator(private val navController: NavHostController) {
   }
 
   private fun showDeviceList() {
+    showDevices()
     popToMain()
   }
 
@@ -70,6 +74,7 @@ class DeepLinkNavigator(private val navController: NavHostController) {
       TSLog.d(TAG, "Deep link: device not found for '$identifier'")
       return false
     }
+    showDevices()
     navigateOverMain("peerDetails/${node.StableID}")
     return true
   }

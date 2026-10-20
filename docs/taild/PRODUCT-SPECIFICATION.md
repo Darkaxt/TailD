@@ -1,6 +1,19 @@
 # TailD remaining-product specification
 
-Version 1.14, 2026-10-18. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.15, 2026-10-20. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+
+October 20 R37 Android implementation is authorized in this TailD fork. The
+[Android specification](ANDROID-EXPANSION-PROPOSAL.md) carries current Windows
+R36 semantics into native Android: compact Tailscale devices/preferences, Control
+D basic management/Recent DNS and compatible seven-day dashboards. Preserve the
+existing Android package, signer, local-DNS and SleepManager contracts. Retain
+automatic system light/dark theming, including live changes without losing the
+current tab or VPN connection. Battery-conscious collection and truthful source
+coverage are required. R33 app/IP audit,
+weighted domain attribution and app blocking remain required in named F1-F3
+after A1-A4; they are outside this initial Android implementation. Normal final
+Android publication is authorized after integrated acceptance. Desktop Stage 10/
+B12 remains unresolved; no device acceptance or deployment is implied.
 
 October 17 R36 Windows refinement (already authorized): make the live device table
 the Connection page's primary content, with this device first, a presence square

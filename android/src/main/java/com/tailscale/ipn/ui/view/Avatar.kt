@@ -10,6 +10,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
@@ -26,6 +27,8 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.AsyncImage
@@ -46,12 +49,22 @@ fun Avatar(
   val isFocused = remember { mutableStateOf(false) }
   val focusManager = LocalFocusManager.current
   val isIconLoaded = remember { mutableStateOf(false) }
+  val actionLabel = stringResource(R.string.settings_title)
+  val interaction = remember { MutableInteractionSource() }
 
   // Outer Box for the larger focusable and clickable area
   Box(
       contentAlignment = Alignment.Center,
       modifier =
-          Modifier.conditional(AndroidTVUtil.isAndroidTV(), { padding(4.dp) })
+          Modifier.conditional(
+                  action != null,
+                  {
+                    sizeIn(minWidth = 48.dp, minHeight = 48.dp).semantics {
+                      contentDescription = actionLabel
+                    }
+                  },
+              )
+              .conditional(AndroidTVUtil.isAndroidTV(), { padding(4.dp) })
               .conditional(
                   AndroidTVUtil.isAndroidTV() && isFocusable,
                   {
@@ -63,13 +76,19 @@ fun Avatar(
                   if (isFocused.value) MaterialTheme.colorScheme.surface else Color.Transparent,
               )
               .onFocusChanged { focusState -> isFocused.value = focusState.isFocused }
-              .focusable() // Make this outer Box focusable (after onFocusChanged)
-              .clickable(
-                  interactionSource = remember { MutableInteractionSource() },
-                  indication = ripple(bounded = true), // Apply ripple effect inside circular bounds
-                  onClick = {
-                    action?.invoke()
-                    focusManager.clearFocus() // Clear focus after clicking the avatar
+              .focusable(enabled = action != null)
+              .conditional(
+                  action != null,
+                  {
+                    clickable(
+                        interactionSource = interaction,
+                        indication =
+                            ripple(bounded = true), // Apply ripple effect inside circular bounds
+                        onClick = {
+                          action?.invoke()
+                          focusManager.clearFocus() // Clear focus after clicking the avatar
+                        },
+                    )
                   },
               ),
   ) {

@@ -1,11 +1,15 @@
-# TailD Android expansion proposal
+# TailD Android specification
 
-Date: 2026-10-16. Status: planning and brainstorming only.
+Version 1.0, 2026-10-20. Authoritative Android extension to
+[PRODUCT-SPECIFICATION.md](PRODUCT-SPECIFICATION.md), requirement R37.
+The historical filename is retained to preserve existing links.
 
-This proposal does not activate implementation, close desktop Stage 10/B12,
-change a schedule, configure signing,
-publish a release, or authorize installation or provider-policy changes.
-Its proposed stages are all NOT STARTED.
+The October 20 instruction authorizes implementation in TailD, specification
+alignment with the shipped Windows R36 behavior, verification and the normal
+Android release. It does not authorize unrelated device deployment, changing
+production provider policy or closing desktop B12. Current stage status lives in
+[IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md); historical planning language
+below is superseded by this authority and the parity contract below.
 
 ## Confirmed direction
 
@@ -25,7 +29,75 @@ Its proposed stages are all NOT STARTED.
 
 ## Source-verified starting point
 
-Inspected TailD main at 8e81c27fccdae0a5e75a7e1e421db25e2669814d.
+Implementation baseline: TailD main
+61f96f5836edfb99814260a5e19e59adf0c3c19b, containing verified TailDNS
+84e54804c0fc4b39f5d9a1ce7acaf3593fae316e and shared core
+28b0deb7805710f50689f4aa133ed911f74e504d. Windows reference is the
+verified R36 interface delivered in windows-v1.105.0+27.
+
+## Windows parity and native design contract
+
+Reuse the native Compose application and existing VPN/control operations. Phone
+navigation has Tailscale, Control D and Dashboard destinations; wide layouts use
+a rail. The Tailscale destination opens Connection, with TailDrop, Admin console
+and Preferences alongside it. Admin console respects current management policy
+and opens the authenticated provider website; it must not collect browser cookies.
+Do not expose unfinished destinations as working features in a released APK.
+
+Connection is a searchable device list with this device first. Put a presence
+square/dot before the name and an accessible OS icon immediately after it. Unknown
+presence stays Unknown. Show relative Last online and make the exact provider UTC
+timestamp available by tap/long press and accessibility, equivalent to Windows
+hover. Phone rows may wrap; do not require a five-column desktop table on a phone.
+Keep addresses, owner, routes, tags, health and capability facts reachable in device
+details. Put the existing VPN switch beside its truthful state; no duplicate This
+device or exit-node card. Put exit-node controls in ordinary Preferences rows,
+hide dependent rows when disabled, preserve MDM constraints and visible failures.
+Collect analytics is one preference row, disabled by default, independent of VPN
+state. Production debug controls stay out of normal navigation.
+
+Recent DNS uses Time, Question, Decision/reason, First seen and Total semantics.
+The recent list is the latest 100 observations in 15 minutes; First seen and Total
+query every retained observation in the last seven days for the exact selected
+account/endpoint/client/question/type, independently of list/search limits. Label
+the analytical window and incomplete provider/local coverage. No internal IDs in
+normal rows. Place endpoint display name, enforced profile name and labelled icon
+reload beside collection status; shared-profile impact remains discoverable.
+Search includes visible decision labels and canonical outcomes, case-insensitively;
+distinguish no matches, no observations and read failure.
+
+Blocked observations show a tick Allow action (explicit bypass); allowed observations
+show a forbid Block action. Other supported decisions may show both. Put these
+accessible icons and a tool Edit icon beside Decision, with no actions column.
+Quick actions consume an explicit user tap and perform fresh binding/event-profile/
+shared-profile checks and verified readback without another transaction popup.
+Only Edit opens the full floating rule editor; it must not shrink the list and
+dismissal preserves query, scroll and focus. The October 20 UI refinement also
+applies the single-inverse-action rule inside Edit: show the draft's current rule
+action and only one icon to change it (check for Allow/explicit Bypass, cross for
+Block), with a tooltip, accessible name and 48 dp touch target. Do not display both
+choices for a known action. A supported observation supplies the initial action
+when no custom rule exists; unsupported actions remain read-only. Close and Review
+change retain their text labels and existing explicit review behavior. Other
+management writes keep their explicit review and confirmation. Unsupported actions cannot be coerced to Block.
+
+Dashboard defaults to seven days. DNS counts/outcomes/trends/domains/reasons and
+available answer country/ASN data share exact scopes with drill-down/export.
+Local Tailscale/TailDrop observations are distinct from provider DNS coverage.
+Do not show Windows-only GlassWire/application-byte panels. Source acquisition,
+history freshness and diagnostics belong to About and the dashboard's source
+health view. Background queries survive navigation under the app's existing scope;
+complete panels remain usable and failed panels become Unavailable with explicit
+refresh, never endless Loading. VPN control must not await history or charts.
+
+Verify actual native rendering at 360x800 and 412x915 dp phones and 840x900 dp
+tablet, portrait/landscape, font scale 1.0/1.5, dark/light, keyboard and accessible
+48 dp actions. Lists and floating editors must remain scroll reachable. Evidence
+must identify build/source, viewport, visible state and synthetic versus live data.
+Preserve inherited Android TV connectivity without requiring a TV dashboard redesign.
+Android TailD continues to follow the system's automatic light/dark theme. A live
+system theme change must repaint the current native destination while retaining
+its selected tab, local data and active VPN; do not hard-code a light or dark theme.
 
 | Existing boundary | Reuse and remaining work |
 | --- | --- |
@@ -130,6 +202,14 @@ visible. Historical synchronization still works without it, and stream events
 must reconcile with later historical facts without double counting. Do not keep
 a permanent stream alive solely to make historical DNS dashboards work.
 
+The initial A1–A4 implementation uses bounded CSV catch-up on opening and explicit
+refresh; it does not open the optional foreground stream. Returned-window
+checkpoints avoid repeatedly fetching old intervals, while a 15-minute overlap
+reconciles recent observations. Daily request windows split on an explicit local
+response budget/cap, preserving incomplete facts and truthful unknown coverage.
+Recording off permits only a deliberate transient recent read. No polling timer,
+periodic worker or additional foreground service is introduced.
+
 Control D's public CSV guide currently labels automated access organization-only;
 TailD has recorded personal-account access evidence. Verify the actual capability
 again during Android integration, and expose server denial truthfully. No browser
@@ -164,13 +244,13 @@ Do not log tokens, include them in exports/URLs, back them up, or silently copy
 Windows vault contents. A resolver ID is not an API credential. Test key loss,
 credential removal, account changes and process restart without mixing scopes.
 
-Control D management follows desktop's safe workflow: fresh binding/policy read,
-preview including every affected endpoint sharing a profile, explicit confirmation,
-single consumed write intent, then verified readback. Switching account/profile
-invalidates previews. A lost response after mutation is outcome unknown until
-reconciled; never retry the write automatically. Starting the app, collecting or
-refreshing data never changes policy. API management need not require VPN on
-when ordinary Internet connectivity is available.
+Control D management follows the parity contract above: direct incident Allow/
+Block actions use a fresh, single consumed intent and verified readback; other
+management writes include a preview of all affected endpoints and explicit
+confirmation. Switching account/profile invalidates previews. A lost response
+after mutation is outcome unknown until reconciled; never retry the write
+automatically. Starting the app, collecting or refreshing never changes policy.
+API management need not require VPN on when Internet connectivity is available.
 
 ## Package, compatibility and delivery
 
@@ -184,7 +264,7 @@ Do not rename Kotlin namespaces simply for branding.
 
 The signer must be verifiably available to a protected TailD Android signing job;
 do not regenerate or silently substitute it. This is a delivery prerequisite,
-not permission in this planning task to provision credentials or change settings.
+not permission to regenerate keys or substitute a different identity.
 Preserve independent Windows and Android release identities. Android versionCode
 must exceed installed/public compatible builds, with the true upstream version
 base and explicit TailD sequence. Keep existing TailDNS release selection from
@@ -195,21 +275,20 @@ Keep inherited TailDNS workflows disabled in TailD. Add a narrowly owned Android
 check/release path when implementation is authorized, preserving inheritance
 contracts and Windows behavior. Independent APK verification must cover package,
 certificate, version/code, ABI/core pin, checksums, notices and release source.
-This proposal authorizes no build, key changes, release, schedule expansion or
-device installation.
+The authorized implementation includes builds and a verified normal release;
+no schedule expansion or unrelated device installation is implied.
 
-## Proposed delivery sequence
+## Required delivery sequence
 
-These are future integrated slices, not component-only validation milestones.
-Only one could become ACTIVE at a time after implementation authorization and
-reconciliation with the existing desktop Stage 10 workload.
+These are integrated slices, not component-only validation milestones. Only one
+may be ACTIVE. Status is maintained in IMPLEMENTATION-PLAN.md.
 
 | Stage | Status | Complete workflow and acceptance |
 | --- | --- | --- |
-| A1: Tailscale representation and history | NOT STARTED | Live peer -> detail/control -> opt-in observed event -> durable history -> process restart with truthful gap; observed TailDrop outcome/save -> history. Verify phone/tablet rendering and preservation of VPN/DNS/SleepManager behavior. |
-| A2: Control D setup, history and basic management | NOT STARTED | Explicit device/client resolver binding -> READ inventory/history -> matching Recent DNS facts -> selected domain policy preview -> separately authorized write -> verified provider readback. Cover shared profiles, wrong account, stale preview, unknown outcome, unknown schemas and server denial. |
-| A3: Compatible dashboard and battery lifecycle | NOT STARTED | Committed scoped history -> count/trend/domain/geography or local-activity panel -> exact drill-down -> matching private export. Verify backfill/overlap/retention, recording off, visible-only optional stream, process death and delayed work without blocking connection/navigation. |
-| A4: TailD Android distribution and migration readiness | NOT STARTED | Clean current-source build -> protected existing signer -> independent APK verification -> authorized in-place test -> retained identity/data/VPN/TailDrop/SleepManager -> compatible recovery/update transition. Publication and device deployment require their applicable explicit authority. |
+| A1: Tailscale representation and history | COMPLETE | Live peer -> detail/control -> opt-in observed event -> durable history -> process restart with truthful gap; observed TailDrop outcome/save -> history. Verify phone/tablet rendering, live automatic system theme and preservation of VPN/DNS/SleepManager behavior. |
+| A2: Control D setup, history and basic management | COMPLETE | Explicit device/client resolver binding -> READ inventory/history -> matching Recent DNS facts -> direct incident action or reviewed Edit/management action -> verified provider readback. Cover shared profiles, wrong account, stale intent, unknown outcome, unknown schemas and server denial. |
+| A3: Compatible dashboard and battery lifecycle | COMPLETE | Committed scoped history -> count/trend/domain/geography or local-activity panel -> exact drill-down -> matching private export. Verify backfill/overlap/retention, recording off, visible-only optional stream, process death and delayed work without blocking connection/navigation. |
+| A4: TailD Android distribution and migration readiness | ACTIVE | Clean current-source build -> protected existing signer -> independent APK verification -> isolated in-place upgrade -> retained identity/data/VPN/TailDrop/SleepManager contracts -> compatible recovery/update transition -> normal published Android release and independent public asset verification. Real-device continuity requires its actual evidence and is never inferred from CI or an emulator. |
 
 Required tracked deferrals: F1 (Windows app/IP audit and weighted domains), F2
 (Android equivalent) and F3 (explicit app blocking on both), owned by
@@ -222,6 +301,13 @@ contract tests should cover normalization, exact counts, state changes and safe
 writes. Real provider reads and any real test mutation need the applicable scoped
 authority; never substitute fixture results for them. Use an isolated test policy
 or exact recoverable confirmed action for writes, not a silent production probe.
+
+October 20 live-verification scope: the user selected an existing device/profile and
+directed read-only verification with the saved Windows READ credential. Verify
+Android's actual inventory, binding, policy and history reads against that target.
+Keep management mutation/reconciliation acceptance in the isolated HTTPS fixture;
+do not create provider resources or change that production profile to prove the write path.
+Report fixture management evidence separately from real provider read evidence.
 
 Use the installed Gradle build gate and required memory profile for Windows
 Gradle verification. Validate the actual served native Compose UI at compact
@@ -260,6 +346,6 @@ or desktop dependency. No calendar-duration promise is inferred from inspection.
 - [Android Keystore](https://developer.android.com/privacy-and-security/keystore).
 - [Android foreground service requirements](https://developer.android.com/develop/background-work/services/fgs/service-types).
 
-All inspection was read-only apart from this planning document. No Android build,
-runtime implementation, credential provisioning, authenticated provider call, device mutation,
-workflow activation, release or automation modification was performed.
+The original October 16 investigation was read-only apart from this document.
+Subsequent implementation and verification evidence belongs in the execution
+ledger; the planning inspection is not acceptance evidence.

@@ -1,5 +1,38 @@
 # Stage 9 local packaging contract
 
+## Android R37 distribution contract (October 20)
+
+The separate native Android deliverable is governed by the
+[Android specification](ANDROID-EXPANSION-PROPOSAL.md). Keep application ID
+`io.github.darkaxt.taildns`, existing connect/disconnect intents and the existing
+TailDNS APK certificate; TailD branding and update/release origin are fork-specific.
+Do not change the Windows package channel or enable inherited signing workflows.
+Android builds/checks use no signing secrets. A separate isolated signing job
+must use the protected existing certificate, and publication must identify the
+exact checked source/core, true upstream Android base, monotonic versionCode and
+TailD Android sequence. Verify the independently downloaded normal release APK,
+certificate, manifest/version, ABI payloads/provenance, checksums and notices.
+The implementation's final release is authorized; a physical deployment requires
+its applicable authority and evidence. Existing Windows evidence below is not
+Android signing, upgrade or lifecycle evidence.
+
+The first TailD Android sequence continues after inherited TailDNS +33 as +34;
+the upstream Android base remains 1.103.312. `TAILD_ANDROID_SEQUENCE.txt` records
+the chosen sequence; versionCode is derived deterministically from the exact
+source commit epoch using the inherited reserved-platform-digit contract.
+Candidate signing uses only the existing certificate in the main-scoped
+`taild-android-release` environment. `taild-android-release.yml` first builds and
+signs an unpublished candidate; publication reuses that successful same-source
+run after isolated delivery acceptance. Publication requires the exact main tag,
+increasing Android codes/sequences and normal release state, with `--latest=false`
+to preserve the Windows latest-release channel. It never checks out repository
+code in a signing or publication job. Android recovery acceptance covers a
+nondestructive rejected downgrade and reinstallation of the exact verified
+candidate, preserving identity, settings, retained history and Keystore access;
+it does not claim a physical-device rollback or close desktop B12.
+
+## Historical Windows Stage 9 contract
+
 Stage 9 is COMPLETE for local release-readiness; no public release exists. Its
 original scope did not authorize replacing the active client or activating an
 updater. Stage 10 is now explicitly authorized and ACTIVE. Stage 8's native UI acceptance
