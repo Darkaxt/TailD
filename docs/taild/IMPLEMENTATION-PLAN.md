@@ -10,8 +10,8 @@ supersedes historical current-work labels without reopening completed A1-A4 or B
 
 | Stage | Status | Acceptance satisfied | Acceptance remaining |
 | --- | --- | --- | --- |
-| Device-list and navigation correction | ACTIVE | Owner grouping and missing self Hostinfo.OS traced; Windows mark geometry located. | Integrated headings/icon/marks/DNS search, preserved peer metadata, pinning/filter behavior and auto-dark/accessibility, focused regression and native verification. |
-| Android correction delivery | NOT STARTED | Prior +34 delivery and ZFold7 upgrade evidence retained. | Exact-source gates, protected signing, signed candidate acceptance, normal +35 publication and independent public APK verification. |
+| Device-list and navigation correction | COMPLETE | Both device-search paths omit owner headings and share presence/OS rendering; local Android platform, official mark geometry/attribution, rounded DNS search/clear, labels and live auto-dark pass focused and native phone/rail checks. Existing peer details, filtering and pinning remain covered by exact-source regressions. | None. |
+| Android correction delivery | COMPLETE | Exact-source backend/core/JVM/format/lint/production/TV gates, protected signing and native acceptance passed. Normal v1.103.312+35 publication 39481591655 reuses candidate 39479150613. Independent public verification confirms all nine assets, source/core, existing signer, code 298753760, four ABIs and all 638 members. | None. |
 
 ObtainX on ZFold7 now tracks TailD Android +34 with APK/title filters and actual
 installed-version detection. Both separate READ/Write credentials are registered
@@ -19,13 +19,25 @@ with explicit human authority; no policy change is authorized or performed. The
 phone may disconnect; remaining runtime verification uses an isolated emulator.
 No tracked deferrals. Desktop B12 and R33 remain separate unresolved boundaries.
 
-Current verification: exact-source focused checks and CodeQL passed at 06e7f8a;
-candidate 39477027818 stopped before signing because the alternate SearchView
-still referenced the removed owner-title helper. Search results now share the
-same presence/name/OS rendering and retain only the pinned label. This is an
-internal current-stage acceptance gap being resolved, not a parked stage. The
-host delivery adapter also quotes the generated owner name through adb's remote
-shell; a read-only reproduction proved that unquoted spaces split arguments.
+Current verification: candidate 39479150613 passed at exact source 54a265e;
+all required source checks and CodeQL passed. Earlier candidate 39477027818
+stopped before signing at the removed alternate-search owner helper; the shared
+device renderer resolves it. Native initial run proves +34 -> +35 node/machine
+and always-on continuity, then exposed a test-only assumption that a two-row list
+must be scrollable. A corrected external harness asserts absence of the owner
+heading directly and focuses the field before its focus-only clear action.
+The resumed normally signed +35 run passes all four phone/rail light/dark
+captures, search retention/clear, owner/OS/navigation checks, rejected downgrade
+and exact reinstall. That resumed run does not re-establish the +34 origin;
+the first run owns its verified upgrade evidence. Harness-only corrections are
+outside the unchanged production APK and will be committed with delivery evidence.
+Evidence: D:/Tools/taild-android-ui35-evidence-20261020. Public APK SHA-256:
+08fc777559ab3f16f61d2365a55a7ce7c4fa28dae8b0d987ffc2b7af348b5440.
+All four correction requirements are reconciled, with no blocker, deferral or
+ACTIVE stage in this correction scope. Windows latest remains +27. ObtainX's
+Android feed can deliver +35; ZFold7 was upgraded only to +34 in this session,
+with its real node identity/settings and both separate provider credentials
+verified. No +35 physical installation or real policy-write test is claimed.
 
 ## Current execution - October 20 Android R37
 

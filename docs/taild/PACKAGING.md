@@ -36,7 +36,15 @@ Verified first Android delivery: v1.103.312+34, code 298751830, source
 28b0deb7805710f50689f4aa133ed911f74e504d. Candidate 39451115770 and publication
 39466380329 preserve the same tested APK bytes. Independent public verification
 checks all nine assets, pinned signer and 636 payload members across four ABIs.
-The current reconciliation and physical-device limits are in IMPLEMENTATION-PLAN.md.
+Current Android correction delivery: v1.103.312+35, code 298753760, exact source
+54a265e2dd27b6fae369d80ed60cb529327f4ad4 and unchanged core above. Candidate
+39479150613 and normal publication 39481591655 preserve the same tested bytes.
+Independent public verification covers nine assets, the existing certificate,
+638 payload members and all four ABIs. Native +34 -> +35 identity continuity,
+phone/rail light/dark search/navigation, rejected downgrade and reinstall pass;
+the external harness-only assertion correction is documented separately from
+the production APK source. The current reconciliation and physical-device
+limits are in IMPLEMENTATION-PLAN.md.
 
 ## Historical Windows Stage 9 contract
 

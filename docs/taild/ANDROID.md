@@ -4,11 +4,16 @@ TailD expands the inherited TailDNS Android client with native Tailscale device
 views and observations, Control D DNS history and basic management, and a private
 seven-day Dashboard. It follows Android's automatic light/dark theme.
 
-Current release: [1.103.312+34](https://github.com/Darkaxt/TailD/releases/tag/v1.103.312%2B34)
-([APK](https://github.com/Darkaxt/TailD/releases/download/v1.103.312%2B34/taild-android.apk)).
+Current release: [1.103.312+35](https://github.com/Darkaxt/TailD/releases/tag/v1.103.312%2B35)
+([APK](https://github.com/Darkaxt/TailD/releases/download/v1.103.312%2B35/taild-android.apk)).
 The public package, existing signer, source/core identities and all payload hashes
 were independently verified. In-place upgrade and recovery checks used an isolated
 emulator; installation and continuity on a physical phone remain separate.
+
+This update removes redundant device-owner headings, keeps Android's icon beside
+this device, and uses the official Tailscale and Control D navigation marks.
+The domain/decision filter matches Tailscale's rounded search field and clear
+control, including automatic system light/dark transitions.
 
 Android releases use tags `v<upstream Android base>+<TailD Android sequence>`.
 Windows releases use `windows-v...` and remain on their existing update channel.

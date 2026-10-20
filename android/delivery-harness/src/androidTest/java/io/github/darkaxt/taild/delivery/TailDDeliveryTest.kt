@@ -575,11 +575,10 @@ class TailDDeliveryTest {
           "Local Android icon precedes the remote peer",
           android.visibleBounds.top < peer.visibleBounds.top,
       )
-      var list: UiObject2? = peer
-      while (list != null && !list.isScrollable) list = list.parent
-      checkNotNull(list) { "Actual device list missing" }
       val owner = checkNotNull(arguments.getString("owner_name"))
-      assertFalse("No redundant owner heading in device list", list.hasObject(By.text(owner)))
+      // A short LazyColumn has no scroll action in the accessibility tree.
+      // The connection page identifies the account by login, never its owner heading.
+      assertNull("No redundant owner heading on Connection", find(By.text(owner)))
       node(By.text("Tailscale"))
       node(By.text("Control D"))
     }
@@ -600,6 +599,7 @@ class TailDDeliveryTest {
     node(By.text("TailD \u00b7 Control D"))
     assertEquals("Blocked", node(By.clazz("android.widget.EditText")).text)
     phase("capture-ui-phone-dark")
+    node(By.clazz("android.widget.EditText")).click()
     click(By.desc("Clear domain or decision search"))
     assertTrue(node(By.clazz("android.widget.EditText")).text.isNullOrEmpty())
     shell("wm size 1680x1800")
@@ -610,6 +610,7 @@ class TailDDeliveryTest {
     shell("cmd uimode night no")
     node(By.text("TailD \u00b7 Control D"))
     assertEquals("example.invalid", node(By.clazz("android.widget.EditText")).text)
+    node(By.clazz("android.widget.EditText")).click()
     click(By.desc("Clear domain or decision search"))
     assertTrue(node(By.clazz("android.widget.EditText")).text.isNullOrEmpty())
     phase("capture-ui-rail-light")
