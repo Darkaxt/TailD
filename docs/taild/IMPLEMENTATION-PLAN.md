@@ -33,6 +33,18 @@ existing Dashboard. The normal package inventory serves backend-free viewing;
 it cannot authorize a policy operation. No additional observer, scheduler, VPN,
 provider wrapper or required consolidation was introduced. No tracked deferral.
 
+Final acceptance found a real refresh lifecycle defect in the first unpublished
+candidate (39666586306, source cbf550d). Its signatures and initial 187-second
+upgrade/runtime suite passed, but an additional diagnosis-export check exposed a
+cancelled read overwriting the successful snapshot's error state, and conditional
+unkeyed status items remounting the search field. That candidate is withheld.
+Propagating cancellation/checking current coroutine ownership and stable lazy item
+keys correct the underlying causes. Fresh refresh-r1 native phone/tablet/wide
+checks preserve focus through scope details and rapid refresh, require an exact
+ready snapshot and reject the stale error. Rebuild the same unpublished .39
+sequence from the corrected source; signing/public runtime/export/publication
+and cleanup remain acceptance blockers of the single ACTIVE final delivery stage.
+
 ## Current execution - October 21 review-driven UI refinement
 
 Already authorized by the user's instruction to act on the review results.

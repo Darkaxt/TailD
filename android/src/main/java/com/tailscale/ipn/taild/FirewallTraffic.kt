@@ -30,7 +30,10 @@ import com.tailscale.ipn.App
 import com.tailscale.ipn.R
 import java.time.Instant
 import java.util.Locale
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
@@ -206,7 +209,10 @@ internal fun FirewallView(onPreferences: () -> Unit) {
                 .find { it.key == diagnosisKey }
                 ?.let { FirewallDiagnosis(it, snapshot) }
       }
+    } catch (cancelled: CancellationException) {
+      throw cancelled
     } catch (_: Exception) {
+      currentCoroutineContext().ensureActive()
       error = "App traffic unavailable. Refresh to read again."
     }
   }
@@ -225,7 +231,15 @@ internal fun FirewallView(onPreferences: () -> Unit) {
     )
   } else
       Box(Modifier.fillMaxSize()) {
-        Column(Modifier.align(Alignment.TopCenter).widthIn(max = 840.dp).fillMaxSize()) {
+        Column(
+            Modifier.align(Alignment.TopCenter)
+                .widthIn(max = 840.dp)
+                .fillMaxSize()
+                .testTag(
+                    if (snapshot?.until == untilMillis && error == null) "taild-firewall-ready"
+                    else "taild-firewall-reading"
+                )
+        ) {
           Row(
               Modifier.fillMaxWidth().padding(horizontal = 16.dp),
               verticalAlignment = Alignment.CenterVertically,

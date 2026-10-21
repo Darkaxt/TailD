@@ -187,6 +187,19 @@ class TailDLayoutNativeTest {
         )
         phase("capture-layout-firewall-traffic")
         compose.onNodeWithTag("taild-app-access-search").performScrollTo().performTextInput("TailD")
+        compose.onNodeWithContentDescription("Firewall setup & coverage").performClick()
+        compose.onNodeWithTag("taild-app-access-search").assertIsFocused()
+        compose.onNodeWithContentDescription("Hide firewall setup").performClick()
+        compose.onNodeWithTag("taild-app-access-search").assertIsFocused()
+        compose.onNodeWithContentDescription("Refresh app traffic").performClick()
+        compose.onNodeWithContentDescription("Refresh app traffic").performClick()
+        compose.waitUntil(30_000) {
+          compose.onAllNodesWithTag("taild-firewall-ready").fetchSemanticsNodes().isNotEmpty()
+        }
+        compose
+            .onNodeWithText("App traffic unavailable. Refresh to read again.")
+            .assertDoesNotExist()
+        compose.onNodeWithTag("taild-app-access-search").assertIsFocused()
         compose.onNodeWithTag("taild-app-access-search").performImeAction()
         compose
             .onNodeWithTag("taild-app-access")

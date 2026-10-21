@@ -73,7 +73,7 @@ internal fun AppAccessView(
             state.error != null ||
             state.busy
     )
-        item {
+        item(key = "firewall-status") {
           if (onDiagnosis == null)
               Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -113,7 +113,7 @@ internal fun AppAccessView(
               LinearProgressIndicator(Modifier.fillMaxWidth().testTag("taild-app-access-busy"))
         }
     if (snapshot != null || onDiagnosis != null) {
-      item {
+      item(key = "firewall-search") {
         if (snapshot != null && snapshot.profiles.size > 1)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
               snapshot.profiles.forEach { profile ->
@@ -270,7 +270,7 @@ internal fun AppAccessView(
           state.snapshot?.apps?.none { it.uid == entry.identity.uid } != false
         }
     if (missing.isNotEmpty())
-        item {
+        item(key = "firewall-recorded-rules") {
           Text("Recorded rules", style = MaterialTheme.typography.titleSmall)
           Text(
               "Blocks may remain when backend access is lost. Reconnect and reconcile to inspect them. An Android restart clears transient platform rules on supported devices; TailD never silently reapplies them.",

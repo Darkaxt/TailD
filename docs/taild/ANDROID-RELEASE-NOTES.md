@@ -3,6 +3,7 @@ row shows received and sent bytes for the last 24 hours and a compact hourly
 graph. Apps sort by combined traffic descending, then alphabetically. Viewing
 traffic and installed-app metadata does not require Shizuku; optional blocking
 keeps its existing explicit setup and reviewed actions.
+Refreshing preserves the search field and avoids stale failure banners.
 
 The diagnosis icon opens a separate page with a larger hourly graph, accessible
 hour values, package/UID/profile/version/signing metadata, observed destinations,

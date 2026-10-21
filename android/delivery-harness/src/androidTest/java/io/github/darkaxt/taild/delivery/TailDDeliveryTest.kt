@@ -88,6 +88,30 @@ class TailDDeliveryTest {
     return node(selector)
   }
 
+  private fun enterText(selector: BySelector, text: String, packageName: String = pkg) {
+    check(
+        device.wait(
+            object : Condition<UiDevice, Boolean> {
+              override fun apply(value: UiDevice): Boolean {
+                val target = find(selector, packageName) ?: return false
+                return try {
+                  target.text = text
+                  true
+                } catch (_: StaleObjectException) {
+                  // UiObject2 checks its node before dispatching ACTION_SET_TEXT. A stale
+                  // node here means no action was dispatched; reacquire the current node.
+                  false
+                }
+              }
+            },
+            30_000,
+        )
+    ) {
+      "Editable delivery control missing: $selector"
+    }
+    device.waitForIdle()
+  }
+
   private fun open(path: String) {
     context.startActivity(
         Intent(Intent.ACTION_VIEW, Uri.parse("taildns://navigate/$path"))
@@ -725,6 +749,94 @@ class TailDDeliveryTest {
     node(By.desc("OS app totals"))
     shell("settings put system font_scale 1.0")
     shell("cmd uimode night no")
+  }
+
+  /** Verify the new diagnosis export against the retained real-traffic delivery fixture. */
+  @Test
+  fun appDiagnosisExportRetainsScope() {
+    assumeTrue(Build.HARDWARE in listOf("ranchu", "goldfish"))
+    assumeTrue(arguments.getString("taild_delivery") == "true")
+    device = UiDevice.getInstance(instrumentation)
+    signedPackage()
+    val uid = checkNotNull(arguments.getString("traffic_uid")).toInt()
+    open("main/devices")
+    click(By.text("Firewall"))
+    click(By.desc("Refresh app traffic"))
+    node(By.res("taild-firewall-ready"))
+    check(device.wait(Until.gone(By.res("taild-app-access-busy").pkg(pkg)), 30_000))
+    click(By.clazz("android.widget.EditText"))
+    enterText(By.clazz("android.widget.EditText"), "TailD F0")
+    check(
+        device.wait(
+            object : Condition<UiDevice, Boolean> {
+              override fun apply(value: UiDevice) =
+                  automation.windows.any {
+                    it.type == android.view.accessibility.AccessibilityWindowInfo.TYPE_INPUT_METHOD
+                  }
+            },
+            30_000,
+        )
+    )
+    device.pressBack()
+    device.waitForIdle()
+    val diagnosis = By.desc("Diagnose TailD F0 One / TailD F0 Two")
+    node(By.res("taild-app-access"))
+        .scrollUntil(Direction.DOWN, Until.findObject(By.copy(diagnosis).pkg(pkg)))
+    click(diagnosis)
+    node(By.desc(Pattern.compile("Hourly observed traffic; peak .*")))
+    click(By.desc("Export app diagnosis snapshot"))
+    val picker =
+        checkNotNull(
+                context.packageManager.resolveActivity(
+                    Intent(Intent.ACTION_CREATE_DOCUMENT)
+                        .setType("application/json")
+                        .addCategory(Intent.CATEGORY_OPENABLE),
+                    0,
+                )
+            )
+            .activityInfo
+            .packageName
+    node(By.desc("Show roots"), picker).click()
+    val downloads = device.findObject(UiSelector().packageName(picker).text("Downloads"))
+    assertTrue(downloads.waitForExists(30_000))
+    assertTrue(downloads.click())
+    val fileName = "taild-app-diagnosis-${System.currentTimeMillis()}.json"
+    enterText(By.clazz("android.widget.EditText"), fileName, picker)
+    node(By.text(Pattern.compile("save", Pattern.CASE_INSENSITIVE)), picker).click()
+    node(By.text("Selected snapshot exported to your chosen document."))
+    val text =
+        android.os.ParcelFileDescriptor.AutoCloseInputStream(
+                automation.executeShellCommand("cat /sdcard/Download/$fileName")
+            )
+            .use { it.bufferedReader().readText() }
+    val data = Json.parseToJsonElement(text).jsonObject
+    assertEquals(
+        86400000L,
+        data.getValue("untilExclusive").jsonPrimitive.long -
+            data.getValue("fromInclusive").jsonPrimitive.long,
+    )
+    val facts = data.getValue("facts").jsonArray
+    assertTrue(facts.isNotEmpty())
+    assertTrue(
+        facts.all { row ->
+          val source = row.jsonObject.getValue("source").jsonObject
+          source.getValue("uid").jsonPrimitive.int == uid ||
+              source["dns"]
+                  ?.jsonObject
+                  ?.get("queryIdentity")
+                  ?.jsonObject
+                  ?.get("uid")
+                  ?.jsonPrimitive
+                  ?.int == uid
+        }
+    )
+    assertTrue(
+        facts
+            .filter {
+              it.jsonObject.getValue("source").jsonObject.getValue("uid").jsonPrimitive.int == uid
+            }
+            .sumOf { it.jsonObject.getValue("measuredBytes").jsonPrimitive.long } > 32768L
+    )
   }
 
   /** Exercise the normally signed/R8 package through its public UI only. */

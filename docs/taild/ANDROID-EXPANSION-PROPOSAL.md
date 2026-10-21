@@ -27,6 +27,8 @@ release. Existing blocking, history, privacy, theme and package contracts remain
   deterministic ties. Traffic inspection works without Shizuku; optional blocking
   still requires its existing authorized backend. Preserve unassigned/system and
   historical installation identities separately; never relabel reused UIDs.
+  Refresh cancellation cannot publish an error over a newer successful snapshot;
+  search focus and text survive status rows appearing/disappearing and refresh.
 - U9: An accessible diagnosis icon opens a separate full content page with Back,
   app/package/UID/profile/version/install/update/signer metadata, totals, observed
   IP/protocol/time/packet and DNS resolution/block evidence, equal-weight domain
