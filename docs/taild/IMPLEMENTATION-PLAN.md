@@ -9,7 +9,7 @@ Desktop B12 remains BLOCKED and Windows F1/F3 remain outside this update.
 | Stage | Status | Acceptance satisfied | Acceptance remaining |
 | --- | --- | --- | --- |
 | Integrated Firewall traffic and provider-boundary correction | COMPLETE | U8–U10 integrated: 24-hour Firewall totals/clock-hour graphs, exact identity/sorting/context-byte reconciliation, separate diagnosis/Back/metadata/export path, normal package inventory without Shizuku, preserved blocking boundaries. CSV regression and live GET envelope pass. Native default/font-1.5/short-landscape phone/tablet/wide checks pass, including at least 50% results space and 48 dp diagnosis targets. | None for source/native implementation. Normally signed real traffic, live theme and upgrade acceptance belong to final delivery below. |
-| Final Android update delivery | ACTIVE | Standing final release authorization; independently verified .38 baseline; U8–U11 source/native checks, populated Vico chart and destination/DNS tables with IN/OUT labels, default/large/short-landscape visual acceptance. | Exact-source signed candidate, real traffic/export/current and historical identity/recovery, normal publication and independent verification; reviewed cleanup. |
+| Final Android update delivery | COMPLETE | U8–U11 reconciled: exact-source candidate 39685819513, fresh .38 upgrade/history/settings/file continuity, real block/restore/traffic, IN/OUT chart/table/theme/native layouts, app-only export, zero/current and historical identities, downgrade/reinstall recovery. Normal v1.103.312.39 via publication 39688312816; all nine public assets independently verified and identical to accepted bytes. Reviewed cleanup applied. | None. |
 
 Evidence: D:/Tools/taild-firewall39-evidence-20261021. Native default-r2, large and
 landscape-large pass the complete scope/selection/diagnosis flows; source contracts
@@ -78,8 +78,29 @@ keeps IN/OUT sums distinct and excludes resolver context; destination/DNS sortin
 and selection pass. The current source reuses the pinned Vico 1.15 dependency
 and Material theme. No new observer or dependency upgrade, no tracked deferral.
 Local gate verifies two workers, nonparallel execution, 3 GB Gradle/in-process
-Kotlin, successful assembly and owned daemon exit. Final signed runtime, export,
-normal public delivery and cleanup remain unresolved acceptance criteria.
+Kotlin, successful assembly and owned daemon exit.
+
+Final U8–U11 reconciliation passes. Source 705f03f164ca4a6301429996c975e3e174271527,
+core d9c112d927479d092f6d1132e16613f046f6ba51 and normal v1.103.312.39 are
+independently verified: code 298770200, unchanged package/certificate, 643 APK
+members/four ABIs and all nine public assets identical to accepted candidate.
+The fresh signed production delivery passes upgrade/history/identity/settings/file,
+auto-dark/large text, real backend block/restore and VPN traffic, chart/tables,
+SAF export, downgrade refusal and exact reinstall. Separate signed checks pass
+app-scoped exact 24-hour export and zero-data current vs retained historical
+metadata. The historical dialog test's internal resource-tag assertion was not
+visible externally; its actual App details/Previous installation/package text is
+verified after correcting that external-only selector. Signed application bytes
+remain unchanged. No unresolved blocker or tracked deferral in this Android scope.
+
+Cleanup transaction a490f2ed9b224dad2967e5d7ed91f166 is applied: all 8,123 reviewed
+members removed, 24,325,837,703 logical file bytes, no errors or exclusions, exact
+scratch root absent. Owned emulators exited; temporary Gradle project unregistered.
+Compact verification/recovery evidence and final captures remain under the evidence
+path above. No physical .39 installation is claimed; desktop B12 and Windows F1/F3
+remain explicitly outside this completed Android update. The post-release commit
+contains only this reconciliation, packaging evidence and external test correction;
+it does not require a second release of unchanged APK behavior.
 
 ## Current execution - October 21 review-driven UI refinement
 

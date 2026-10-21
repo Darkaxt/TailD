@@ -84,6 +84,26 @@ app/DNS/byte export, auto-dark, rejected downgrade, exact reinstall and retained
 traffic/identity. Harness corrections are not APK changes. No physical-device
 installation or OEM acceptance is implied; Windows B12 and F1/F3 remain open.
 
+Current Firewall analysis delivery: v1.103.312.39, code 298770200,
+source 705f03f164ca4a6301429996c975e3e174271527 and unchanged core
+d9c112d927479d092f6d1132e16613f046f6ba51. Candidate 39685819513 and normal
+publication 39688312816 preserve identical signed bytes. Independent public
+verification checks all nine assets, 643 APK members across four ABIs, the exact
+source/core and existing pinned certificate. APK SHA-256:
+a7c6577349b8fbda62fbd3a38790d9107fc548e02d90473a7a33cfe3f0a686fc.
+The fresh isolated .38 -> .39 run passes retained identity/settings/file/history,
+phone/rail and large-text automatic themes, real shared-UID block/restore,
+measured VPN traffic, Vico diagnosis chart/tables with IN/OUT labels, SAF export,
+downgrade rejection and exact reinstall recovery. Additional signed checks pass
+app-only 24-hour export, zero-data current installation and retained historical
+package metadata. The external historical-dialog assertion now uses its visible
+title: the internal Compose tag is not exported as an Android resource ID in that
+popup. This is a post-candidate harness-only correction, absent from the APK;
+no production behavior changed to pass the test. Evidence and retained captures:
+D:/Tools/taild-firewall39-evidence-20261021. Windows latest remains
+windows-v1.105.0+28. No physical-phone deployment or desktop B12 acceptance is
+claimed.
+
 ## Historical Windows Stage 9 contract
 
 Stage 9 is COMPLETE for local release-readiness; no public release exists. Its

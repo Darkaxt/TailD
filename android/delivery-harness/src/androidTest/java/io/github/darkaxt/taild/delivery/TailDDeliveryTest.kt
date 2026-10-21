@@ -911,7 +911,7 @@ class TailDDeliveryTest {
     node(recordedRow).findObject(By.desc("Diagnose TailD F0 One / TailD F0 Two")).click()
     node(By.desc(Pattern.compile("Hourly observed traffic; peak .*")))
     click(By.desc("App & coverage details"))
-    node(By.res("taild-firewall-details"))
+    node(By.text("App details"))
     node(By.text("Previous installation"))
     content(By.text("io.github.darkaxt.taild.fixture.one"))
     click(By.text("Close"))
