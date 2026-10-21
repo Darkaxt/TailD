@@ -41,6 +41,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:enableOnBackInvokedCallback="true"
         android:theme="@style/Theme.App.SplashScreen">
+        <provider
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="${applicationId}.shizuku"
+            android:enabled="true"
+            android:exported="true"
+            android:multiprocess="false"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
         <activity
             android:name="MainActivity"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"

@@ -85,7 +85,7 @@ verified R36 interface delivered in windows-v1.105.0+27.
 ## Windows parity and native design contract
 
 Reuse the native Compose application and existing VPN/control operations. Phone
-navigation has Tailscale, Control D and Dashboard destinations; wide layouts use
+navigation has Tailscale, Control D, Firewall and Dashboard destinations; wide layouts use
 a rail. The Tailscale destination opens Connection, with TailDrop, Admin console
 and Preferences alongside it. Admin console respects current management policy
 and opens the authenticated provider website; it must not collect browser cookies.
@@ -194,7 +194,10 @@ management to shared core simply to eliminate a small Kotlin API implementation.
 
 ## Proposed user experience and feature scope
 
-Use three top-level destinations: **Tailscale**, **Control D**, **Dashboard**.
+Use four top-level destinations: **Tailscale**, **Control D**, **Firewall**,
+**Dashboard**. The October 21 user correction gives optional app/UID controls
+their own Firewall tab, with the official ShizuWall mark and source/license
+attribution; Dashboard Applications contains traffic metrics and domain details.
 Open on Tailscale Connection. Settings/About remain consistently reachable.
 Use a bottom bar on phones and a rail with list/detail layouts on wider screens.
 Keep the current Android visual language while matching desktop meanings and

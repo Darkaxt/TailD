@@ -201,17 +201,16 @@ internal class NativeControlDSession(reset: Boolean, private val compose: Compos
         Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     )
     click(By.text("Control D"))
-    if (InstrumentationRegistry.getArguments().getString("landscape") == "true") {
-      device.setOrientationLeft()
-      compose?.waitUntil(30_000) {
-        context.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-      }
-      assertEquals(
-          "Landscape acceptance uses a landscape viewport",
-          Configuration.ORIENTATION_LANDSCAPE,
-          context.resources.configuration.orientation,
-      )
-    }
+    val landscape = InstrumentationRegistry.getArguments().getString("landscape") == "true"
+    if (landscape) device.setOrientationLeft() else device.setOrientationNatural()
+    val expected =
+        if (landscape) Configuration.ORIENTATION_LANDSCAPE else Configuration.ORIENTATION_PORTRAIT
+    compose?.waitUntil(30_000) { context.resources.configuration.orientation == expected }
+    assertEquals(
+        "Acceptance uses the requested viewport",
+        expected,
+        context.resources.configuration.orientation,
+    )
   }
 
   suspend fun reviewedToggle(label: String) {

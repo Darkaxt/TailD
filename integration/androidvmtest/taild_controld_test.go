@@ -242,11 +242,16 @@ func runControlDNative(t *testing.T, steps []controlDNativeStep) {
 	t.Cleanup(func() { run("reverse", "--remove", mapping) })
 	digest := sha256.Sum256(server.Certificate().Raw)
 	const pkg = "io.github.darkaxt.taildns"
+	var appAccess *appAccessNativeFixture
+	if len(steps) > 0 && strings.HasPrefix(steps[0].class, "TailDAppAccess") {
+		appAccess = newAppAccessNativeFixture(t, run)
+	}
 	// A fresh owned emulator has no VPN grant; MainActivity's ordinary preparation
 	// dialog would obscure every native fixture action. This is test setup only.
 	run("shell", "appops", "set", pkg, "ACTIVATE_VPN", "allow")
 	for _, step := range steps {
 		run("shell", "am", "force-stop", pkg)
+		run("shell", "wm", "user-rotation", "lock", "0")
 		if strings.HasPrefix(step.name, "phone-") {
 			run("shell", "wm", "size", "1080x2400")
 			run("shell", "wm", "density", "480")
@@ -273,10 +278,12 @@ func runControlDNative(t *testing.T, steps []controlDNativeStep) {
 			}
 			if *nativeProviderLayout == "landscape-large" {
 				landscape = "true"
+				run("shell", "wm", "user-rotation", "lock", "1")
 			}
 		}
 		run("shell", "settings", "put", "system", "font_scale", font)
 		cmd := exec.Command(*adbPath, "-s", *adbSerial, "shell", "am", "instrument", "-w", "-r", "-e", "class", "com.tailscale.ipn.taild."+step.class,
+			"-e", "app_access_profile", strconv.Itoa(*appAccessProfile),
 			"-e", "taild_fixture", "true", "-e", "landscape", landscape, "-e", "fixture_url", server.URL, "-e", "fixture_cert", hex.EncodeToString(digest[:]), pkg+".test/androidx.test.runner.AndroidJUnitRunner")
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
@@ -327,6 +334,9 @@ func runControlDNative(t *testing.T, steps []controlDNativeStep) {
 		}()
 		for phase := range phases {
 			t.Logf("native %s phase %s", step.name, phase)
+			if appAccess != nil {
+				appAccess.phase(phase)
+			}
 			seen[phase] = true
 			var phaseErr error
 			fixture.mu.Lock()
@@ -406,6 +416,9 @@ func runControlDNative(t *testing.T, steps []controlDNativeStep) {
 			t.Fatalf("Control D native %s: %v %v\n%s", step.name, result.processErr, result.scanErr, result.output)
 		}
 		required := []string{"capture-recent", "capture-reconciled", "assert-after-restart", "assert-after-reconcile"}
+		if appAccess != nil {
+			required = appAccessRequired(step.class)
+		}
 		if step.class == "TailDGeographyNativeTest" {
 			required = []string{"capture-map-light", "capture-map-drilldown", "capture-map-dark", "capture-map-empty", "capture-map-scope", "assert-read-only-dashboard"}
 		}

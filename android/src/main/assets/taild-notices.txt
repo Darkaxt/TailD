@@ -39,3 +39,20 @@ device location. Reproduce the projected asset with scripts/taild/android_countr
 and the pinned desktop topology. Build-time d3-geo 3.1.1 and topojson-client 3.1.0
 are ISC-licensed; no JavaScript library, remote map service or copied Portmaster
 renderer code is included in the Android runtime.
+
+Optional app access: Shizuku API and Provider 13.1.5, copyright (c) 2021 RikkaW,
+MIT licensed. Full notice: taild-shizuku-license.txt.
+Source: https://github.com/RikkaApps/Shizuku-API . ShizuWall was reviewed as a
+platform-integration reference; its application code and tracker data are not
+bundled. No second VPN or tracker scanner is added by this integration.
+
+Firewall navigation mark: ShizuWall monochrome launcher artwork from
+AhmetCanArslan/ShizuWall, commit 8a51d90ec7fed3d2e53e027fe997052403ec6859,
+app/src/main/res/drawable/ic_launcher_monochrome.xml. Copyright its upstream
+contributors; distributed under the repository's GPL-3.0 license, bundled as
+taild-shizuwall-license.txt. Original paths are retained; adaptive launcher
+inset is removed for the navigation mark. Corresponding source and original:
+https://github.com/AhmetCanArslan/ShizuWall/tree/8a51d90ec7fed3d2e53e027fe997052403ec6859
+TailD's modified vector is in android/src/main/res/drawable/taild_brand_shizuwall.xml
+at https://github.com/Darkaxt/TailD . This mark identifies the integration
+reference; no endorsement or bundling of the standalone ShizuWall app is claimed.

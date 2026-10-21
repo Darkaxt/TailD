@@ -45,6 +45,7 @@ android {
   lint { warningsAsErrors = true }
 
   buildFeatures {
+    aidl = true
     buildConfig = true
     compose = true
   }
@@ -69,6 +70,8 @@ android {
 }
 
 dependencies {
+  implementation("dev.rikka.shizuku:api:13.1.5")
+  implementation("dev.rikka.shizuku:provider:13.1.5")
   constraints {
     implementation("androidx.fragment:fragment:1.5.4") {
       because("Align the compile classpath with the runtime Activity Result-compatible Fragment")

@@ -130,6 +130,69 @@ blocking, routing changes and provider changes remain separate live actions;
 use isolated test apps/backends for enforcement verification. Preserve package,
 signer, VPN ownership, SleepManager, opt-in history and automatic theme contracts.
 
+## F0 Android control implementation contract
+
+Use the official Shizuku 13.1.5 API/provider and one non-daemon, typed UserService.
+No arbitrary shell/command RPC, second VPN, foreground-app watcher or copied
+ShizuWall implementation is required. ShizuWall informs the platform integration;
+its chain-3 global reset/disable behavior is deliberately not imported. Bundle
+the Shizuku API's MIT notice. The existing minimum API remains 26; the optional
+firewall backend requires actual capability/readback proof (initial target API
+33+ platform interfaces), with an explicit unavailable state elsewhere.
+
+Select OEM deny chain 2 (platform chain 8) for TailD's own rules, avoiding the
+chain 3 used by ShizuWall. This does not imply exclusive OS ownership. Read the
+complete chain membership and enabled state through the platform's TrafficController
+dump plus typed ConnectivityService calls before any write. Reject unsupported,
+partial or contradictory evidence. If a disabled chain contains existing deny
+rules, refuse to activate it: doing so would change someone else's effective
+policy. Activation of an empty chain is part of the user's explicit reviewed
+first block. Never globally disable/reset a chain or replace its rule list.
+Removing the final TailD rule can leave its empty chain enabled; that has no
+blocked UID and avoids disabling concurrent external policy.
+
+The user's October 21 navigation correction places app control in its own main
+Firewall tab, using the official ShizuWall monochrome mark with source/license
+attribution. Show the same destination in bottom navigation and the wide/landscape
+rail; preserve selected-state semantics, automatic theme tint and minimum touch
+targets. Dashboard Applications remains the destination for F2 traffic metrics.
+Optional Shizuku setup is explicit; basic dashboards and later audit-only use remain
+available without it. Select Android profile explicitly and group packages by
+full UID. Show all packages affected by a shared UID. Identity comprises profile,
+UID, sorted package names, signing certificates and installation/update generation.
+Never infer ownership from the foreground app or permit blocking TailD's own UID
+or platform/system UIDs. Re-read identity and rules before applying the reviewed
+change; reject a changed profile/package/UID or stale rule snapshot.
+
+Persist a private intent/ownership record before the single platform mutation.
+Block only an initially permitted UID; do not claim an existing deny rule as
+TailD-owned. Remove only a recorded TailD block with unchanged identity and
+expected state. A recorded-rule recovery action inspects the record's full UID/profile, including
+when opened from another profile's view, and selects that verified profile for
+subsequent review. Retain pending/unknown outcomes after service loss or ambiguous
+readback, disable further writes until explicit reconciliation, and never retry a
+mutation automatically. Existing Android APIs provide no atomic compare-and-swap
+against independent tools: preflight/readback detects observable conflicts, while
+identical concurrent writes remain indistinguishable. Describe the observed TailD
+rule rather than promising global Internet permission across all other policies.
+
+Binding/setup/view refresh and process restart are read-only. No boot-time
+Shizuku provisioning, permission grant, automatic re-block or hidden daemon is
+added. On backend loss, existing blocks may remain; show their unknown effective
+state and a reconnect/restore path. After reboot, query actual state and show
+inactive requests instead of silently reapplying them. Recovery must work by
+reconnecting Shizuku and removing only recorded blocks; verify the isolated OS
+reboot behavior separately. Keep this ownership journal separate from opt-in
+analytics/history and provider credentials.
+
+Acceptance requires a real optional Shizuku connection and native app selection,
+reviewed block, independently observed prevented fixture traffic, readback,
+unblock and restored fixture traffic. Include shared UID, another Android profile,
+preexisting other-chain and same-chain rules, stale identity, pending failures,
+process restart, backend loss and reboot recovery. Only task-owned emulator apps
+and policies may be changed during these checks. No physical-device grant or
+production blocking is authorized by this implementation contract.
+
 ## Required product behavior
 
 1. Show source-observed app-to-IP traffic on Windows and Android, with time,
@@ -241,6 +304,18 @@ Give this derived metric its own algorithm/version, such as
 `equal-domain-candidate-v1`; do not silently reinterpret current R11's unique-only
 inferred-domain results or historical exports.
 
+The user's October 21 per-app blocked-domain question belongs to F2 presentation.
+Keep three facts distinct: a provider/local DNS Block decision, an app's current
+UID firewall rule, and an individually observed traffic attempt/outcome. Show
+blocked DNS entries in an app view only when app identity is supported by the
+corresponding observation; endpoint identity alone does not identify an app. A
+blocked DNS answer may have no destination IP, so an IP-only join cannot attribute
+it. A system resolver/proxy UID is not evidence that a particular caller app
+issued the lookup. Preserve unassigned DNS decisions separately. App/IP domain
+candidates stay estimates under the rules above. Attempts stopped before the
+Tailscale observation path have unknown domain/attempt coverage; do not invent
+per-app blocked-domain counts from a deny rule or past successful connections.
+
 Estimated domain candidates must never automatically generate IP/domain/app
 blocking rules. Blocking an app, an IP and a Control D profile-domain rule have
 different effects and must be explicitly described and selected.
@@ -266,8 +341,9 @@ defined recovery path if backend access disappears with a block still active.
 Filtering within the existing Tailscale packet path remains a candidate for
 explicitly scoped routed traffic. It is not whole-device blocking unless all
 required traffic paths are covered and that routing arrangement is authorized.
-Backend selection and any required privilege decision must be resolved in F3;
-unsupported operation is visible and cannot be relabeled successful enforcement.
+Under the October 21 Android ordering, backend selection and its real
+capability/recovery proof belong to F0; Windows enforcement remains in F3.
+Unsupported operation is visible and cannot be relabeled successful enforcement.
 
 ### Windows
 
@@ -302,8 +378,8 @@ them. All R33 stages must eventually pass before the R33 extension is called com
 | ID / stage | Status | Dependencies | Required final verification |
 | --- | --- | --- | --- |
 | F1 — Windows app/IP audit and weighted domain view | NOT STARTED | Existing desktop Stage 10 and Android A1–A4 acceptance complete; implementation subsequently authorized. | Real existing-path/source traffic -> measured app/IP record -> local/provider DNS candidates -> equal weights -> matching dashboard/drill-down/export; IPv4/IPv6, shared-IP/dedup/scope-change/unknown cases and exact once-only byte reconciliation. Extra connection/permit/block claims need their actual source proof. |
-| F0 — Android app/UID control integration | ACTIVE | Geography stage COMPLETE; shared identity/control and recovery design is the first remaining implementation requirement. | Explicit optional Shizuku setup -> profile/UID-aware app selection -> authorized isolated block -> real prevented connection -> effective readback -> unblock/recovery; backend loss, reboot and owned-rule coexistence. No traffic capture in this stage. |
-| F2 — Android app/IP audit and weighted domain view | NOT STARTED | F0 COMPLETE; shared domain/accounting semantics specified and focused fixtures verified; no parallel ACTIVE stage. | Real traffic through the current Tailscale path -> UID/app identity where supported -> measured IP/counters -> local/provider DNS candidates -> identical weighted semantics -> native dashboard/drill-down/export. Verify excluded routes, version capabilities, process restart, network transitions and unchanged VPN/DNS behavior. |
+| F0 — Android app/UID control integration | COMPLETE | Geography COMPLETE; real enforcement/recovery and four-destination theme/layout acceptance verified in the execution ledger. | Explicit optional Shizuku setup -> profile/UID-aware app selection -> authorized isolated block -> real prevented connection -> effective readback -> unblock/recovery; backend loss, reboot and owned-rule coexistence. No traffic capture in this stage. |
+| F2 — Android app/IP audit and weighted domain view | ACTIVE | F0 COMPLETE; shared domain/accounting semantics specified; focused fixtures are verified within F2 before acceptance; no parallel ACTIVE stage. | Real traffic through the current Tailscale path -> UID/app identity where supported -> measured IP/counters -> local/provider DNS candidates -> identical weighted semantics -> native dashboard/drill-down/export. Verify excluded routes, version capabilities, process restart, network transitions and unchanged VPN/DNS behavior. |
 | F3 — Explicit app traffic blocking on both platforms | NOT STARTED | F1 and F2 COMPLETE. | User selects exact app/scope -> preview/confirm -> authorized platform rule -> real prevented connection -> visible effective state -> unblock -> restored connectivity. Verify separate audit-only use, owned-rule recovery, reboot/backend loss, shared identities and coexistence with existing firewall/Tailscale policy on Windows and Android. |
 
 Future source/backend capability gaps belong to their named stage and block that

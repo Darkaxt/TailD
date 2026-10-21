@@ -1,6 +1,16 @@
 # TailD remaining-product specification
 
-Version 1.16, 2026-10-21. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.17, 2026-10-21. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+
+October 21 Android continuation is authorized after Geography: optional app/UID
+control (R33 F0) precedes Android traffic measurement (F2), followed by one
+integrated normal Android release. This supersedes the initial R37-only boundary
+below for that continuation; Windows B12/F1/F3 remain open. The user gives app
+control its own main Firewall tab using the official ShizuWall mark, alongside
+Tailscale, Control D and Dashboard. Preserve live automatic theming, package,
+signer, VPN ownership, explicit backend setup and private rule ownership/recovery.
+The R33 specification owns capability/readback and isolated enforcement gates;
+no physical-device privilege grant or production firewall change is implied.
 
 October 21 Android version correction is authorized: replace `+N` with `.N` in
 new Android APK versionNames and tags, retaining the exact inherited base,
@@ -1395,13 +1405,14 @@ the subsequent explicit instruction authorizes Android implementation directly
 after Geography, with app/UID control (F0) before measurement (F2). Real-device
 privilege grants remain separate, and Windows B12/F1/F3 remain open.
 
-[R33's specification](TRAFFIC-AUDIT-AND-BLOCKING-SPECIFICATION.md) owns F1 Windows
-audit/weighted views, F2 Android audit/weighted views and F3 app blocking on both.
-All are NOT STARTED. Their final verification and dependencies are explicit there.
-They are required tracked deferrals, not current Stage 10 blockers. The existing
-firewall-enforcement/non-interception exclusions apply to current delivery;
-R33 permits only its later explicitly scoped auditing/enforcement work after
-activation. TLS decryption, fabricated certainty, arbitrary global rule resets
-and automatic policy changes remain outside scope. No current code, provider,
-device, privilege, routing, schedule or release change is authorized by this
-planning amendment.
+[R33's specification](TRAFFIC-AUDIT-AND-BLOCKING-SPECIFICATION.md) owns F0 Android
+app/UID control, F1 Windows audit/weighted views, F2 Android audit/weighted views
+and F3 remaining explicit enforcement/Windows acceptance. F0 is COMPLETE; F2 is ACTIVE; F1/F3
+are NOT STARTED at this amendment. The execution ledger owns subsequent verified
+status transitions. Android F0/F2 are activated by the subsequent implementation
+instruction above; Windows F1/F3 remain named required later stages, outside
+current B12 acceptance. Their dependencies and final verification remain explicit.
+TLS decryption, fabricated certainty, arbitrary global rule resets and automatic
+policy changes remain outside scope. The initial planning amendment alone did
+not authorize execution; the later bounded Android implementation authority
+supersedes it while preserving separate live-device/provider/routing boundaries.

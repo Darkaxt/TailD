@@ -8,6 +8,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
@@ -21,6 +23,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.tailscale.ipn.App
 import com.tailscale.ipn.R
@@ -60,9 +63,11 @@ fun TailDTailscaleView(
       }
   ) {
     val useRail = maxWidth >= 600.dp || maxHeight < 480.dp
-    Row(Modifier.fillMaxSize()) {
+    Row(Modifier.fillMaxSize().then(if (useRail) Modifier.navigationBarsPadding() else Modifier)) {
       if (useRail)
-          NavigationRail(Modifier.navigationBarsPadding()) {
+          NavigationRail(
+              Modifier.verticalScroll(rememberScrollState()).testTag("taild-main-navigation-rail")
+          ) {
             NavigationRailItem(
                 selected = destination == 0,
                 onClick = { destination = 0 },
@@ -73,7 +78,7 @@ fun TailDTailscaleView(
                       Modifier.size(24.dp),
                   )
                 },
-                label = { Text("Tailscale") },
+                label = { Text("Tailscale", maxLines = 1, overflow = TextOverflow.Ellipsis) },
             )
             NavigationRailItem(
                 selected = destination == 1,
@@ -81,18 +86,35 @@ fun TailDTailscaleView(
                 icon = {
                   Icon(painterResource(R.drawable.taild_brand_controld), null, Modifier.size(24.dp))
                 },
-                label = { Text("Control D") },
+                label = { Text("Control D", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            )
+            NavigationRailItem(
+                selected = destination == 3,
+                onClick = { destination = 3 },
+                icon = {
+                  Icon(
+                      painterResource(R.drawable.taild_brand_shizuwall),
+                      null,
+                      Modifier.size(24.dp),
+                  )
+                },
+                label = { Text("Firewall", maxLines = 1, overflow = TextOverflow.Ellipsis) },
             )
             NavigationRailItem(
                 selected = destination == 2,
                 onClick = { destination = 2 },
                 icon = { Icon(Icons.Default.Info, null) },
-                label = { Text("Dashboard") },
+                label = { Text("Dashboard", maxLines = 1, overflow = TextOverflow.Ellipsis) },
             )
           }
       Column(Modifier.weight(1f)) {
         Text(
-            listOf("TailD · Tailscale", "TailD · Control D", "TailD · Dashboard")[destination],
+            listOf(
+                "TailD · Tailscale",
+                "TailD · Control D",
+                "TailD · Dashboard",
+                "TailD · Firewall",
+            )[destination],
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
         )
@@ -143,6 +165,7 @@ fun TailDTailscaleView(
               savedDestinations.SaveableStateProvider(destination) {
                 if (destination == 1)
                     ControlDView(App.get().tailDControlD, settingsNav.onNavigateToDNSSettings)
+                else if (destination == 3) AppAccessView()
                 else
                     DashboardView(
                         App.get().tailDDashboard,
@@ -168,7 +191,7 @@ fun TailDTailscaleView(
                         Modifier.size(24.dp),
                     )
                   },
-                  label = { Text("Tailscale") },
+                  label = { Text("Tailscale", maxLines = 1, overflow = TextOverflow.Ellipsis) },
               )
               NavigationBarItem(
                   selected = destination == 1,
@@ -180,13 +203,25 @@ fun TailDTailscaleView(
                         Modifier.size(24.dp),
                     )
                   },
-                  label = { Text("Control D") },
+                  label = { Text("Control D", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+              )
+              NavigationBarItem(
+                  selected = destination == 3,
+                  onClick = { destination = 3 },
+                  icon = {
+                    Icon(
+                        painterResource(R.drawable.taild_brand_shizuwall),
+                        null,
+                        Modifier.size(24.dp),
+                    )
+                  },
+                  label = { Text("Firewall", maxLines = 1, overflow = TextOverflow.Ellipsis) },
               )
               NavigationBarItem(
                   selected = destination == 2,
                   onClick = { destination = 2 },
                   icon = { Icon(Icons.Default.Info, null) },
-                  label = { Text("Dashboard") },
+                  label = { Text("Dashboard", maxLines = 1, overflow = TextOverflow.Ellipsis) },
               )
             }
       }

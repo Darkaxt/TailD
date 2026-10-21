@@ -65,6 +65,9 @@ import libtailscale.Libtailscale
 class App : UninitializedApp(), libtailscale.AppContext, ViewModelStoreOwner {
   val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
   val tailDHistory by lazy { com.tailscale.ipn.taild.TailDHistory(this, applicationScope) }
+  internal val tailDAppAccess by lazy {
+    com.tailscale.ipn.taild.AppAccessModel(this, applicationScope)
+  }
   private val defaultControlD by lazy {
     com.tailscale.ipn.taild.ControlDModel(this, applicationScope, tailDHistory)
   }

@@ -5,17 +5,28 @@
 Already authorized by the user's missing-map feedback. Android specification v1.3
 is authoritative. The version-format delivery below is COMPLETE. B12 remains
 BLOCKED/open; R33 Android implementation is now authorized after Geography; Windows F1/F3
-remain later scope. Geography is COMPLETE; the single ACTIVE stage is Android F0.
+remain later scope. Geography and Android F0 are COMPLETE; the single ACTIVE stage is Android F2.
 
 | Stage | Status | Acceptance satisfied | Acceptance remaining |
 | --- | --- | --- | --- |
 | Geography correction and traffic assessment | COMPLETE | Offline pinned map/notices, exact country touch/list drill-down, unknown/empty/scope isolation and live auto-dark pass native phone/tablet and large-text checks. Explicitly asserted landscape viewports pass compact-landscape-r2. Map provenance and release-asset guards pass focused checks. Existing native Dashboard/export/restart/storage workflow passes dashboard-regression-r1. R33 source assessment is recorded; no capture/privilege changes activated. | None. |
-| Android app/UID control integration (R33 F0) | ACTIVE | October 21 direct implementation authority and source integration assessment recorded; Geography COMPLETE. | Resolve identity/backend/owned-rule design; integrated native controls; isolated block/unblock, backend loss, reboot, shared UID/profile and coexistence/recovery acceptance. |
-| Android traffic measurement (R33 F2) | NOT STARTED | Shared IP/DNS/equal-weight semantics specified. | F0 COMPLETE; real existing-path counters -> UID/app -> candidates/byte estimates -> native app views/drill-down/export, opt-in/lifecycle/coverage and regression verification. |
+| Android app/UID control integration (R33 F0) | COMPLETE | Main Firewall tab/official icon; optional typed Shizuku backend/private journal. Real shared-UID block/unblock, backend loss/reconnect, process restart, profile isolation, same/other-chain coexistence, stale-identity refusal and fresh reboot reconciliation pass f0-final-r1/f0-final-reboot-r2. Lost-response recovery, cross-profile recorded-rule recovery and live automatic theme pass at 1.5 font scale in phone and asserted landscape (f0-failure-large-r3/f0-failure-landscape-r2). Bundled licenses/icon, service classes and protected provider independently verified in current debug APK; focused unchanged policy contracts pass. | None for F0. Production/R8/signed-package acceptance belongs to integrated final delivery. |
+| Android traffic measurement (R33 F2) | ACTIVE | F0 COMPLETE; shared IP/DNS/equal-weight and per-app blocked-domain evidence semantics specified. | Real existing-path counters -> UID/app -> candidates/byte estimates -> native app views/drill-down/export, whole-app totals/overlap distinction where supported, opt-in/lifecycle/coverage and regression verification. |
 | Android integrated final delivery | NOT STARTED | Existing protected candidate/publication path available. | Geography, F0 and Android F2 COMPLETE; exact-source gates, signed candidate, isolated production upgrade/recovery, one normal monotonic dotted release, independent public asset/package/source/map/notices verification and reviewed cleanup. |
 
-Current advancement blocker: F0's actual optional backend/control/recovery workflow
-is not yet implemented or verified (internal; resolve in F0). No tracked deferrals.
+Current advancement blocker: F2's integrated measured-traffic workflow is not yet
+implemented or verified (internal; resolve within F2 before final delivery).
+F0 has no remaining blockers or tracked deferrals. Its closure evidence is
+D:/Tools/taild-android-map37-evidence-20261021/f0-acceptance.json. The lifecycle
+fix clears both the remote record and SDK callback cache on view teardown;
+landscape system insets are consumed by the containing row. Final source checks
+use the correct selected profile and completed-inspection state. Refactoring
+review found no required new abstraction: the fixed typed backend, application
+controller and private journal directly own this feature's lifecycle and rules.
+No physical-device privilege grant or production firewall change is claimed.
+Gradle gate 1640 verified two workers, no parallel execution and a 3 GB Gradle heap;
+in-process Kotlin was selected, and owned daemon exit was verified. No JVM-test
+execution is claimed for this build; unchanged policy-test evidence is gate 1631.
 Geography closure review found no required refactor: native paths reuse the existing
 snapshot/filter/query/export boundary and design system; the static asset and build
 guard add no new runtime service. Native evidence and inspected captures are retained
