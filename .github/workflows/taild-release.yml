@@ -149,7 +149,7 @@ jobs:
         with:
           # Reviewed signer tooling is independently immutable. Never import or
           # execute application/candidate files downloaded from build artifacts.
-          ref: fc3061b1d235e913afe802ece9135f882d7fa3c9
+          ref: 1fbe9912436dfb485deef28c4c788335c7197f92
           path: trusted
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
@@ -252,7 +252,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          ref: fc3061b1d235e913afe802ece9135f882d7fa3c9
+          ref: 1fbe9912436dfb485deef28c4c788335c7197f92
           path: trusted
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
@@ -297,4 +297,4 @@ jobs:
           test "$(jq -r .source_commit release/taild-release.json)" = "$GITHUB_SHA"
           tag="windows-v$version"
           gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" -f "ref=refs/tags/$tag" -f "sha=$GITHUB_SHA" >/dev/null
-          gh release create "$tag" release/* --repo "$GITHUB_REPOSITORY" --verify-tag --title "TailD $version for Windows" --notes "Refreshes the inherited TailDNS shared core to reviewed revision 28b0deb78057. Preserves the compact R36 device, preferences and Recent DNS interface, seven-day analytics streaming, local DNS ownership, private history and separate TailD update channel. Complete Windows x64 installer with inherited TailDNS connectivity and Portmaster-derived analytics. Analytics remains opt-in; DNS and GlassWire reads are independent of management actions, and provider writes require the separate Write credential. Ed25519-signed package, core and release manifests; executables and installer are not Authenticode-signed. Evergreen WebView2 required. Source: $GITHUB_SHA. No device installation or rollout is performed by this publication."
+          gh release create "$tag" release/* --repo "$GITHUB_REPOSITORY" --verify-tag --title "TailD $version for Windows" --notes "Refreshes the inherited TailDNS shared core to reviewed revision d9c112d92747. Preserves the compact R36 device, preferences and Recent DNS interface, seven-day analytics streaming, local DNS ownership, private history and separate TailD update channel. Complete Windows x64 installer with inherited TailDNS connectivity and Portmaster-derived analytics. Analytics remains opt-in; DNS and GlassWire reads are independent of management actions, and provider writes require the separate Write credential. Ed25519-signed package, core and release manifests; executables and installer are not Authenticode-signed. Evergreen WebView2 required. Source: $GITHUB_SHA. No device installation or rollout is performed by this publication."
