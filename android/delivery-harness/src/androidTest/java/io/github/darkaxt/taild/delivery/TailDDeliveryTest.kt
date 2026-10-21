@@ -472,6 +472,23 @@ class TailDDeliveryTest {
     click(By.text("Add account"))
     open("main/devices")
     node(By.text(peerName))
+    if (arguments.getString("audit_only") == "true") {
+      check(resume)
+      phase("recovery-baseline")
+      verifyAuditRelease()
+      phase("rejected-downgrade")
+      phase("reinstall")
+      launch()
+      signedPackage(checkNotNull(arguments.getString("candidate_code")).toLong())
+      open("main/devices")
+      node(By.text(peerName))
+      phase("assert-node-continuity")
+      click(By.text("Dashboard"))
+      click(By.text("Applications"))
+      node(By.res("taild-traffic-app-${arguments.getString("traffic_uid")}"))
+      phase("delivery-verified")
+      return@runBlocking
+    }
     if (arguments.getString("ui_correction") == "true") {
       alwaysOn(true)
       open("main/devices")
@@ -661,9 +678,26 @@ class TailDDeliveryTest {
     phase("production-firewall-backend")
     open("main/devices")
     click(By.text("Firewall"))
-    click(By.text("Connect Shizuku"))
-    node(By.text(Pattern.compile("Allow all the time|Allow")), "moe.shizuku.privileged.api").click()
-    node(By.text("Android firewall state inspected."))
+    val entry =
+        device.wait(
+            object : Condition<UiDevice, UiObject2?> {
+              override fun apply(value: UiDevice) =
+                  find(By.textContains("Android firewall state inspected."))
+                      ?: find(By.text("Connect Shizuku"))
+            },
+            30_000,
+        ) ?: error("App-control setup did not render")
+    if (entry.text == "Connect Shizuku") {
+      val permission =
+          context.packageManager.checkPermission("moe.shizuku.manager.permission.API_V23", pkg) ==
+              PackageManager.PERMISSION_GRANTED
+      click(By.text("Connect Shizuku"))
+      if (!permission)
+          node(By.text(Pattern.compile("Allow all the time|Allow")), "moe.shizuku.privileged.api")
+              .click()
+    }
+    node(By.textContains("Android firewall state inspected."))
+    node(By.clazz("android.widget.EditText")).click()
     node(By.clazz("android.widget.EditText")).text = "TailD F0"
     dismissKeyboard()
     phase("capture-signed-firewall")
@@ -708,7 +742,8 @@ class TailDDeliveryTest {
     assertTrue(downloads.waitForExists(30_000))
     assertTrue(downloads.click())
     device.waitForIdle()
-    node(By.clazz("android.widget.EditText"), picker).text = "TailD-signed-traffic.json"
+    node(By.clazz("android.widget.EditText"), picker).text =
+        checkNotNull(arguments.getString("traffic_export"))
     device.waitForIdle()
     node(By.text(Pattern.compile("save", Pattern.CASE_INSENSITIVE)), picker).click()
     node(By.text("Selected snapshot exported to your chosen document."))

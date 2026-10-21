@@ -69,6 +69,21 @@ all four phone/rail theme captures, search/clear, downgrade refusal and reinstal
 This harness-only change is recorded after publication and is absent from the
 production APK; no production behavior was patched to hide a test failure.
 
+Current Geography/firewall/traffic delivery: v1.103.312.37, code 298766040,
+source 3f486dc847f1f3fee8f1b70fa3f5201c2df50991 and unchanged core
+d9c112d927479d092f6d1132e16613f046f6ba51. Candidate 39625376476 and publication
+39629850389 preserve identical signed bytes. Independent public verification
+covers all nine assets, 643 APK members and four ABIs, the unchanged certificate,
+map and exact ShizuWall/Shizuku notices. APK SHA-256:
+8ce07eaa6a513055f7e3c33d701a557a4bd511c907b6ba2dafe258d5d69a6e4e.
+The actual installed isolated-emulator APK has that same digest. The initial run
+verifies .36 -> .37 identity/always-on continuity and phone/rail theme/navigation
+before a later test-only exact-text assertion fails. Corrected external harness
+continuation passes real shared-UID enforcement/readback/unblock, real VPN
+app/DNS/byte export, auto-dark, rejected downgrade, exact reinstall and retained
+traffic/identity. Harness corrections are not APK changes. No physical-device
+installation or OEM acceptance is implied; Windows B12 and F1/F3 remain open.
+
 ## Historical Windows Stage 9 contract
 
 Stage 9 is COMPLETE for local release-readiness; no public release exists. Its

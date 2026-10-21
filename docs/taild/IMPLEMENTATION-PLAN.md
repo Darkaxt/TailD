@@ -5,27 +5,39 @@
 Already authorized by the user's missing-map feedback. Android specification v1.3
 is authoritative. The version-format delivery below is COMPLETE. B12 remains
 BLOCKED/open; R33 Android implementation is now authorized after Geography; Windows F1/F3
-remain later scope. Geography, Android F0 and Android F2 are COMPLETE; the single ACTIVE stage is Android integrated final delivery.
+remain later scope. Geography, Android F0, Android F2 and integrated Android final
+delivery are COMPLETE. No Android implementation stage remains ACTIVE.
 
 | Stage | Status | Acceptance satisfied | Acceptance remaining |
 | --- | --- | --- | --- |
 | Geography correction and traffic assessment | COMPLETE | Offline pinned map/notices, exact country touch/list drill-down, unknown/empty/scope isolation and live auto-dark pass native phone/tablet and large-text checks. Explicitly asserted landscape viewports pass compact-landscape-r2. Map provenance and release-asset guards pass focused checks. Existing native Dashboard/export/restart/storage workflow passes dashboard-regression-r1. R33 source assessment is recorded; no capture/privilege changes activated. | None. |
 | Android app/UID control integration (R33 F0) | COMPLETE | Main Firewall tab/official icon; optional typed Shizuku backend/private journal. Real shared-UID block/unblock, backend loss/reconnect, process restart, profile isolation, same/other-chain coexistence, stale-identity refusal and fresh reboot reconciliation pass f0-final-r1/f0-final-reboot-r2. Lost-response recovery, cross-profile recorded-rule recovery and live automatic theme pass at 1.5 font scale in phone and asserted landscape (f0-failure-large-r3/f0-failure-landscape-r2). Bundled licenses/icon, service classes and protected provider independently verified in current debug APK; focused unchanged policy contracts pass. | None for F0. Production/R8/signed-package acceptance belongs to integrated final delivery. |
 | Android traffic measurement (R33 F2) | COMPLETE | Real VPN UID/byte/DNS/EDE-block/native search/detail/SAF export, optional public OS accounting/revocation, live auto-dark and 1.5-font phone/tablet/landscape pass f2-real-path-r12. Actual Wi-Fi/mobile transitions, protocol-based readiness, excluded direct routes, immutable retained export after update/restart and native Preferences deletion pass. Real SQLite dedup/boundaries/retention/UTF-8 capacity/epoch and focused Go IPv6/fragment/TTL/queue/loss/no-replay contracts pass. Existing native Dashboard/export/restart/storage/read-only regression passes f2-dashboard-regression-r1. | None for F2. Production package/signing/delivery belongs to final delivery. |
-| Android integrated final delivery | ACTIVE | Geography, F0 and Android F2 COMPLETE; existing protected candidate/publication path available. | Exact-source gates, signed candidate, isolated production upgrade/recovery, one normal monotonic dotted release, independent public asset/package/source/map/notices verification and reviewed cleanup. |
+| Android integrated final delivery | COMPLETE | Exact 3f486dc source passed candidate 39625376476; publication 39629850389 reused the same signed APK. Normal v1.103.312.37 and all nine public assets independently verified, including package/code/pinned signer, source/core, 643 payload members/four ABIs, map and notices. Isolated .36 upgrade/identity/theme evidence and signed runtime/enforcement/traffic/export/downgrade/reinstall acceptance passed. Reviewed cleanup is applied; exact scratch root absent. | None. Physical deployment is not claimed; Windows B12/F1/F3 remain outside this Android delivery. |
 
-Final delivery preparation: next sequence 37 is available across all historical
-`+N` and dotted tags; no active Android signing/publication run exists. Release
-asset guards now require the exact ShizuWall/Shizuku notices. Focused payload
-contracts pass, and gate 1651 builds the external signed-package harness plus
-passes affected ActivityHistory, DashboardFacts and AppAccessPolicy regressions.
-It verifies two workers, no parallel execution, 3 GB Gradle heap, one fail-fast
-512 MB test fork and owned daemon exit with in-process Kotlin selected. Signed
-upgrade/enforcement/traffic/export and public delivery remain unverified.
+Final delivery: [v1.103.312.37](https://github.com/Darkaxt/TailD/releases/tag/v1.103.312.37)
+is published normally from exact source 3f486dc847f1f3fee8f1b70fa3f5201c2df50991.
+Independent public verification confirms version code 298766040, the existing
+package/signer and APK SHA-256
+`8ce07eaa6a513055f7e3c33d701a557a4bd511c907b6ba2dafe258d5d69a6e4e`.
+The initial delivery run proves the actual .36 upgrade, identity/always-on
+continuity and automatic themes before a later test-only text assertion failed.
+Explicit audit-only continuation production-delivery37-r3 passes signed R8
+Shizuku block/unblock, actual VPN UID/byte/DNS traffic and SAF export, downgrade
+rejection and exact reinstall/recovery. It does not re-claim the original upgrade.
+Unpackaged harness corrections fix that text assertion and search focus; no
+production bytes changed. Gate 1651 passes affected JVM regressions with two
+workers, no parallel execution, 3 GB Gradle heap and one fail-fast 512 MB test
+fork. Gates 1652/1653 assemble the corrected harness; owned daemon exit is
+verified for each, with in-process Kotlin selected.
 
-Current advancement blocker: final delivery acceptance is not yet satisfied
-(internal preparation; remain ACTIVE). No Android implementation blockers or
-tracked deferrals remain. F2 evidence is
+No Android acceptance blocker or tracked deferral remains. Durable public and
+signed-delivery receipts, logs and final captures are retained under
+D:/Tools/taild-android-map37-evidence-20261021. Cleanup transaction
+faf9492bb82485068196cf2aaa6c6ecc is applied without errors; 17,429 reviewed
+generated members were removed and the exact scratch root is absent. Both owned
+emulators exited; their retired build-copy usage registration is absent.
+F2 evidence is
 D:/Tools/taild-android-map37-evidence-20261021/f2-acceptance.json. Native r12
 uses an actual PeerAPI HTTP response to establish post-transition data-path
 readiness; failed one-shot UDP/TSMP diagnostics are retained as failed/cancelled,
@@ -38,7 +50,7 @@ Gradle gate 1648 (product + native tests) and 1650 (test-only synchronization)
 verified two workers, no parallel execution, a 3 GB Gradle heap and owned daemon
 exit with in-process Kotlin selected. These were assembly tasks, not JVM-test
 execution. Focused parser/accounting tests and real Android SQLite/native tests
-supply F2 acceptance; required production checks still belong to delivery.
+supply F2 acceptance; the exact-source production checks also passed in delivery.
 
 
 F0 has no remaining blockers or tracked deferrals. Its closure evidence is
@@ -56,7 +68,25 @@ review and prioritized improvement suggestions. Cover current rendered phone/tab
 large-text and light/dark layouts using the actual final package and captures.
 Use the inherited main model at Low effort under the standing worker policy.
 This is a post-delivery review, not another implementation stage or authority to
-apply a redesign. Do not launch it while F2/final delivery remain incomplete.
+apply a redesign. Final delivery and the requested independent read-only review
+are COMPLETE. The inherited-model Low-effort reviewer inspected eight captures;
+populated-map and large-text debug fixtures were explicitly distinguished from
+production-signed captures. Main-agent readback confirms the endpoint-action,
+traffic-density and large-text observations. Suggestions, not new acceptance
+criteria or an authorized redesign:
+
+- Prioritize Select endpoint over Retry when no endpoint is selected.
+- Intentionally arrange large-text controls/navigation; confirm the fixture
+  observation in the signed package before classifying a release defect.
+- Compact traffic Coverage/export actions and excessive vertical gaps.
+- Align Control D settings with scope selection and disclose lengthy coverage
+  text on demand while retaining required policy/recovery context.
+- Emphasize shared-UID affected-app counts; move package identifiers into details.
+- Consider a bounded landscape working column or aligned traffic columns.
+- Place export confirmation near its action rather than across unrelated tabs.
+
+This screenshot review does not establish live interaction, TalkBack or measured
+touch-target acceptance and creates no claim that suggested changes were applied.
 
 Gradle gate 1640 verified two workers, no parallel execution and a 3 GB Gradle heap;
 in-process Kotlin was selected, and owned daemon exit was verified. No JVM-test

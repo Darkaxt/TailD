@@ -21,6 +21,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"tailscale.com/ipn/store/mem"
 	"tailscale.com/tailcfg"
@@ -36,6 +37,8 @@ var harnessTestAPK = flag.String("android.delivery-harness-test-apk", "", "match
 var deliveryReadHelper = flag.String("android.delivery-read-helper", "", "private READ-only credential socket helper (optional)")
 var deliveryEndpoint = flag.String("android.delivery-endpoint", "", "existing live READ endpoint display name")
 var deliveryProfile = flag.String("android.delivery-profile", "", "existing live READ profile display name")
+
+var deliveryAuditOnly = flag.Bool("android.delivery-audit-only", false, "continue final runtime/recovery acceptance; original upgrade proof is separate")
 
 var deliveryAudit = flag.Bool("android.delivery-audit", false, "verify final Geography/firewall/traffic production payload")
 var deliveryShizukuAPK = flag.String("android.delivery-shizuku-apk", "", "verified official Shizuku manager for the owned emulator")
@@ -145,6 +148,7 @@ func TestTailDProductionDelivery(t *testing.T) {
 	}
 	var trafficDone chan error
 	trafficUID := ""
+	exportFileName := "TailD-signed-traffic-" + strconv.FormatInt(time.Now().UnixNano(), 10) + ".json"
 	var firewallFixture *appAccessNativeFixture
 	if *deliveryAudit {
 		if *appAccessFixtures == "" || *deliveryShizukuAPK == "" {
@@ -200,7 +204,13 @@ func TestTailDProductionDelivery(t *testing.T) {
 	args := []string{"-s", *adbSerial, "shell", "am", "instrument", "-w", "-r", "-e", "class", "io.github.darkaxt.taild.delivery.TailDDeliveryTest#productionUpgradeRecoveryAndAccessibility", "-e", "taild_delivery", "true", "-e", "control_url", server.URL, "-e", "source_revision", receipt.Source}
 	args = append(args, "-e", "candidate_code", fmt.Sprint(receipt.Code), "-e", "peer_name", peerName)
 	if *deliveryAudit {
-		args = append(args, "-e", "audit_release", "true", "-e", "traffic_uid", trafficUID)
+		args = append(args, "-e", "audit_release", "true", "-e", "traffic_uid", trafficUID, "-e", "traffic_export", exportFileName)
+		if *deliveryAuditOnly {
+			if !*deliveryResumeCandidate {
+				t.Fatal("Audit continuation requires retained candidate")
+			}
+			args = append(args, "-e", "audit_only", "true")
+		}
 	}
 	if *deliveryUICorrection {
 		args = append(args, "-e", "ui_correction", "true")
@@ -338,7 +348,7 @@ func TestTailDProductionDelivery(t *testing.T) {
 				phaseErr = fmt.Errorf("expected one exact current stable peer, got %d", matched)
 			}
 		case "production-firewall-backend":
-			firewallFixture.restartBackend()
+			firewallFixture.phase("app-access-ensure-backend")
 			firewallFixture.phase("app-access-before")
 		case "production-firewall-blocked":
 			firewallFixture.phase("app-access-blocked")
@@ -352,7 +362,7 @@ func TestTailDProductionDelivery(t *testing.T) {
 			}
 			phaseErr = <-trafficDone
 		case "production-traffic-export":
-			text := run("shell", "cat", "/sdcard/Download/TailD-signed-traffic.json")
+			text := run("shell", "cat", "/sdcard/Download/"+exportFileName)
 			var snapshot struct {
 				Format string
 				Facts  []struct {
@@ -491,7 +501,9 @@ func TestTailDProductionDelivery(t *testing.T) {
 		t.Fatalf("production native delivery: %v %v\n%s", err, scanner.Err(), result)
 	}
 	required := []string{"assert-node-continuity", "rejected-downgrade", "reinstall", "capture-talkback", "delivery-verified"}
-	if *deliveryUICorrection {
+	if *deliveryAuditOnly {
+		required = []string{"resumed-candidate", "recovery-baseline", "assert-node-continuity", "rejected-downgrade", "reinstall", "delivery-verified"}
+	} else if *deliveryUICorrection {
 		required = []string{"baseline-ready", "upgrade", "assert-node-continuity", "capture-ui-phone-light", "capture-ui-phone-dark", "capture-ui-rail-dark", "capture-ui-rail-light", "rejected-downgrade", "reinstall", "delivery-verified"}
 	} else if *deliveryFinalizeOnly {
 		required = []string{"capture-talkback", "delivery-verified"}
@@ -507,6 +519,10 @@ func TestTailDProductionDelivery(t *testing.T) {
 		if seen[phase] == 0 {
 			t.Fatalf("missing production acceptance phase %s", phase)
 		}
+	}
+	if *deliveryAuditOnly {
+		t.Log("Retained production-signed candidate runtime, firewall, traffic/export and recovery verified; original upgrade/theme evidence is separate")
+		return
 	}
 	if *deliveryUICorrection {
 		t.Log("Normally signed correction verified: in-place identity, owner-free list, Android self icon, phone/rail marks and DNS search/clear across live system themes, rejected downgrade and exact reinstall")

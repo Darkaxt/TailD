@@ -4,15 +4,16 @@ TailD expands the inherited TailDNS Android client with native Tailscale device
 views and observations, Control D DNS history and basic management, and a private
 seven-day Dashboard. It follows Android's automatic light/dark theme.
 
-Current release: [1.103.312.36](https://github.com/Darkaxt/TailD/releases/tag/v1.103.312.36)
-([APK](https://github.com/Darkaxt/TailD/releases/download/v1.103.312.36/taild-android.apk)).
+Current release: [1.103.312.37](https://github.com/Darkaxt/TailD/releases/tag/v1.103.312.37)
+([APK](https://github.com/Darkaxt/TailD/releases/download/v1.103.312.37/taild-android.apk)).
 The public package, existing signer, source/core identities and all payload hashes
 were independently verified. In-place upgrade and recovery checks used an isolated
 emulator; installation and continuity on a physical phone remain separate.
 
-This update makes the Android sequence a fourth numeric component, so stock
-ObtainX recognizes revisions as updates. It retains the compact device/navigation
-controls and rounded DNS search, including automatic system light/dark transitions.
+This update adds a compact offline Geography map, optional Shizuku app control
+in the Firewall tab, and Applications traffic in Dashboard. Numeric versions
+continue to support ObtainX ordering. Phone/tablet layouts follow automatic system
+light/dark mode.
 
 New Android releases use tags `v<upstream Android base>.<TailD Android sequence>`
 and the same four-component numeric APK versionName without the `v`. This makes
@@ -54,5 +55,15 @@ opens the full rule editor. A known decision offers only its opposite action; th
 editor also uses one inverse check/cross icon with an accessible label. Other
 management changes have explicit review.
 
-App/IP traffic auditing, ambiguous DNS attribution and app blocking are later
-Windows/Android work under [R33](TRAFFIC-AUDIT-AND-BLOCKING-SPECIFICATION.md).
+Android Applications measures IP bytes carried by the existing Tailscale VPN and
+records supported socket-owner and local DNS evidence. Shared UIDs stay grouped;
+domain byte allocations are equal-weight estimates. Explicit resolver-block
+responses can retain the observed query app identity. Direct/excluded traffic,
+encrypted DNS and drops before the VPN remain unobserved. Optional Usage Access
+provides separate coarse OS totals, never added to overlapping VPN counters.
+
+Firewall uses an optional Shizuku connection for reviewed app/UID block and unblock
+actions, with a private ownership journal and explicit recovery. It never globally
+resets another tool's rules. Neither audit collection nor opening the page enables
+enforcement. Windows auditing/enforcement and remaining cross-platform acceptance
+remain later [R33](TRAFFIC-AUDIT-AND-BLOCKING-SPECIFICATION.md) work.
