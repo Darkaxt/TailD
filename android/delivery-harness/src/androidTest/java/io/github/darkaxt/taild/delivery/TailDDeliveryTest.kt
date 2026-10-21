@@ -483,6 +483,7 @@ class TailDDeliveryTest {
       node(By.text(peerName))
       phase("assert-node-continuity")
       verifyUiCorrection()
+      if (arguments.getString("audit_release") == "true") verifyAuditRelease()
       phase("rejected-downgrade")
       phase("reinstall")
       launch()
@@ -630,6 +631,102 @@ class TailDDeliveryTest {
     click(By.desc("Clear domain or decision search"))
     assertTrue(node(By.clazz("android.widget.EditText")).text.isNullOrEmpty())
     phase("capture-ui-rail-light")
+  }
+
+  /** Exercise the normally signed/R8 package through its public UI only. */
+  private suspend fun verifyAuditRelease() {
+    fun shell(command: String) {
+      android.os.ParcelFileDescriptor.AutoCloseInputStream(automation.executeShellCommand(command))
+          .use { it.readBytes() }
+      device.waitForIdle()
+    }
+    fun dismissKeyboard() {
+      check(
+          device.wait(
+              object : Condition<UiDevice, Boolean> {
+                override fun apply(value: UiDevice) =
+                    automation.windows.any {
+                      it.type ==
+                          android.view.accessibility.AccessibilityWindowInfo.TYPE_INPUT_METHOD
+                    }
+              },
+              30_000,
+          )
+      )
+      device.pressBack()
+      device.waitForIdle()
+    }
+    shell("wm size 1080x2400")
+    shell("wm density 480")
+    phase("production-firewall-backend")
+    open("main/devices")
+    click(By.text("Firewall"))
+    click(By.text("Connect Shizuku"))
+    node(By.text(Pattern.compile("Allow all the time|Allow")), "moe.shizuku.privileged.api").click()
+    node(By.text("Android firewall state inspected."))
+    node(By.clazz("android.widget.EditText")).text = "TailD F0"
+    dismissKeyboard()
+    phase("capture-signed-firewall")
+    click(By.desc("Block app TailD F0 One"))
+    node(By.text("Every app sharing this UID is affected."))
+    click(By.text("Apply"))
+    node(By.text("TailD block active"))
+    phase("production-firewall-blocked")
+    click(By.desc("Remove TailD block for TailD F0 One"))
+    click(By.text("Apply"))
+    node(By.desc("Block app TailD F0 One"))
+    phase("production-firewall-restored")
+    analytics(true)
+    phase("production-traffic")
+    analytics(false)
+    open("main/devices")
+    click(By.text("Dashboard"))
+    click(By.text("Applications"))
+    click(By.desc("Refresh Dashboard"))
+    val uid = checkNotNull(arguments.getString("traffic_uid"))
+    val app = By.res("taild-traffic-app-$uid")
+    node(By.res("taild-traffic-content"))
+        .scrollUntil(Direction.DOWN, Until.findObject(By.copy(app).pkg(pkg)))
+    node(app)
+    phase("capture-signed-traffic-light")
+    node(By.res("taild-traffic-content")).scroll(Direction.UP, 1f)
+    click(By.text("Export selected snapshot"))
+    val picker =
+        checkNotNull(
+                context.packageManager.resolveActivity(
+                    Intent(Intent.ACTION_CREATE_DOCUMENT)
+                        .setType("application/json")
+                        .addCategory(Intent.CATEGORY_OPENABLE),
+                    0,
+                )
+            )
+            .activityInfo
+            .packageName
+    node(By.desc("Show roots"), picker).click()
+    device.waitForIdle()
+    val downloads = device.findObject(UiSelector().packageName(picker).text("Downloads"))
+    assertTrue(downloads.waitForExists(30_000))
+    assertTrue(downloads.click())
+    device.waitForIdle()
+    node(By.clazz("android.widget.EditText"), picker).text = "TailD-signed-traffic.json"
+    device.waitForIdle()
+    node(By.text(Pattern.compile("save", Pattern.CASE_INSENSITIVE)), picker).click()
+    node(By.text("Selected snapshot exported to your chosen document."))
+    phase("production-traffic-export")
+    shell("cmd uimode night yes")
+    node(By.text("Applications"))
+    phase("capture-signed-traffic-dark")
+    shell("wm size 1920x1200")
+    shell("wm density 240")
+    node(By.res("taild-main-navigation-rail"))
+    node(By.text("Applications"))
+    phase("capture-signed-traffic-rail")
+    shell("cmd uimode night no")
+    node(By.text("Applications"))
+    click(By.text("Geography"))
+    phase("capture-signed-geography-empty")
+    shell("wm size 1080x2400")
+    shell("wm density 480")
   }
 
   private fun matchingText(root: AccessibilityNodeInfo, text: String): List<AccessibilityNodeInfo> =

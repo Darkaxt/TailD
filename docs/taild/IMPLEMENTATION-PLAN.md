@@ -14,6 +14,15 @@ remain later scope. Geography, Android F0 and Android F2 are COMPLETE; the singl
 | Android traffic measurement (R33 F2) | COMPLETE | Real VPN UID/byte/DNS/EDE-block/native search/detail/SAF export, optional public OS accounting/revocation, live auto-dark and 1.5-font phone/tablet/landscape pass f2-real-path-r12. Actual Wi-Fi/mobile transitions, protocol-based readiness, excluded direct routes, immutable retained export after update/restart and native Preferences deletion pass. Real SQLite dedup/boundaries/retention/UTF-8 capacity/epoch and focused Go IPv6/fragment/TTL/queue/loss/no-replay contracts pass. Existing native Dashboard/export/restart/storage/read-only regression passes f2-dashboard-regression-r1. | None for F2. Production package/signing/delivery belongs to final delivery. |
 | Android integrated final delivery | ACTIVE | Geography, F0 and Android F2 COMPLETE; existing protected candidate/publication path available. | Exact-source gates, signed candidate, isolated production upgrade/recovery, one normal monotonic dotted release, independent public asset/package/source/map/notices verification and reviewed cleanup. |
 
+Final delivery preparation: next sequence 37 is available across all historical
+`+N` and dotted tags; no active Android signing/publication run exists. Release
+asset guards now require the exact ShizuWall/Shizuku notices. Focused payload
+contracts pass, and gate 1651 builds the external signed-package harness plus
+passes affected ActivityHistory, DashboardFacts and AppAccessPolicy regressions.
+It verifies two workers, no parallel execution, 3 GB Gradle heap, one fail-fast
+512 MB test fork and owned daemon exit with in-process Kotlin selected. Signed
+upgrade/enforcement/traffic/export and public delivery remain unverified.
+
 Current advancement blocker: final delivery acceptance is not yet satisfied
 (internal preparation; remain ACTIVE). No Android implementation blockers or
 tracked deferrals remain. F2 evidence is

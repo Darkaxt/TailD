@@ -72,8 +72,10 @@ class AndroidPayloadContract(unittest.TestCase):
                 data += ("a" * 40 + ("c" if wrong_core else "b") * 40 + "1.103.312").encode()
                 archive.writestr(f"lib/{abi}/libgojni.so", data)
             archive.writestr(release.METADATA, json.dumps(self.metadata))
-            archive.writestr("assets/taild-notices.txt", "TailD inherited notices; Natural Earth")
+            archive.writestr("assets/taild-notices.txt", "TailD inherited notices; Natural Earth; ShizuWall; Shizuku")
             archive.writestr("assets/taild-license.txt", "fixture license")
+            for name in ("taild-shizuwall-license.txt", "taild-shizuku-license.txt"):
+                archive.writestr("assets/" + name, (release.ROOT / "android/src/main/assets" / name).read_bytes())
             archive.writestr("assets/taild-map-license.txt", "GNU GENERAL PUBLIC LICENSE")
             archive.writestr("assets/taild-world-map.json", b"{}" if wrong_map else self.map_bytes)
             if duplicate:
@@ -82,12 +84,22 @@ class AndroidPayloadContract(unittest.TestCase):
     def test_all_architectures_and_both_embedded_source_identities_are_required(self):
         self.build()
         inventory = release.members(self.apk, self.metadata)
-        self.assertEqual(len(inventory), 9)
+        self.assertEqual(len(inventory), 11)
         self.build(wrong_abi=True)
         with self.assertRaises(AssertionError):
             release.members(self.apk, self.metadata)
         self.build(wrong_core=True)
         with self.assertRaises(AssertionError):
+            release.members(self.apk, self.metadata)
+
+    def test_missing_firewall_notice_cannot_be_shipped(self):
+        self.build()
+        with zipfile.ZipFile(self.apk) as archive:
+            members = {name: archive.read(name) for name in archive.namelist() if name != "assets/taild-shizuku-license.txt"}
+        with zipfile.ZipFile(self.apk, "w") as archive:
+            for name, data in members.items():
+                archive.writestr(name, data)
+        with self.assertRaises(KeyError):
             release.members(self.apk, self.metadata)
 
     def test_duplicate_metadata_cannot_shadow_the_signed_identity(self):

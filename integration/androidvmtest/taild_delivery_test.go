@@ -11,16 +11,19 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
 
 	"tailscale.com/ipn/store/mem"
+	"tailscale.com/tailcfg"
 	"tailscale.com/tsnet"
 	"tailscale.com/tstest/integration/testcontrol"
 )
@@ -33,6 +36,9 @@ var harnessTestAPK = flag.String("android.delivery-harness-test-apk", "", "match
 var deliveryReadHelper = flag.String("android.delivery-read-helper", "", "private READ-only credential socket helper (optional)")
 var deliveryEndpoint = flag.String("android.delivery-endpoint", "", "existing live READ endpoint display name")
 var deliveryProfile = flag.String("android.delivery-profile", "", "existing live READ profile display name")
+
+var deliveryAudit = flag.Bool("android.delivery-audit", false, "verify final Geography/firewall/traffic production payload")
+var deliveryShizukuAPK = flag.String("android.delivery-shizuku-apk", "", "verified official Shizuku manager for the owned emulator")
 
 var deliveryFinalizeOnly = flag.Bool("android.delivery-finalize", false, "finish cleanup and TalkBack on the retained candidate; prior migration and recovery evidence is separate")
 var deliveryUICorrection = flag.Bool("android.delivery-ui-correction", false, "verify the bounded device-list/navigation/search correction on the normally signed candidate")
@@ -120,7 +126,7 @@ func TestTailDProductionDelivery(t *testing.T) {
 	}
 	t.Cleanup(restore)
 	derp := runDERPAndSTUN(t, "127.0.0.1")
-	control := &testcontrol.Server{DERPMap: derp, AllOnline: true, AllNodesSameUser: true, MagicDNSDomain: "taild.test"}
+	control := &testcontrol.Server{DERPMap: derp, AllOnline: true, AllNodesSameUser: true, MagicDNSDomain: "taild.test", DNSConfig: &tailcfg.DNSConfig{Proxied: true}}
 	server := httptest.NewServer(control)
 	defer server.Close()
 	control.ExplicitBaseURL = server.URL
@@ -137,8 +143,65 @@ func TestTailDProductionDelivery(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	var trafficDone chan error
+	trafficUID := ""
+	var firewallFixture *appAccessNativeFixture
+	if *deliveryAudit {
+		if *appAccessFixtures == "" || *deliveryShizukuAPK == "" {
+			t.Fatal("Final delivery requires owned fixture and official manager APK")
+		}
+		run("install", "-r", *deliveryShizukuAPK)
+		fixture := &appAccessNativeFixture{t: t, run: run, uids: map[string]int{}, seen: map[string]int{}}
+		for _, name := range []string{"one", "two", "other"} {
+			run("install", "-r", "-t", filepath.Join(*appAccessFixtures, name+".apk"))
+			info := run("shell", "cmd", "package", "list", "packages", "-U", "io.github.darkaxt.taild.fixture."+name)
+			match := regexp.MustCompile(`uid:(\d+)`).FindStringSubmatch(info)
+			if len(match) != 2 {
+				t.Fatal("Owned fixture UID absent")
+			}
+			uid, _ := strconv.Atoi(match[1])
+			fixture.uids["0/io.github.darkaxt.taild.fixture."+name] = uid
+			if name == "one" {
+				trafficUID = match[1]
+			}
+		}
+		if fixture.uid(0, "one") != fixture.uid(0, "two") || fixture.uid(0, "one") == fixture.uid(0, "other") {
+			t.Fatal("Fixture shared UID identity changed")
+		}
+		run("push", filepath.Join(*appAccessFixtures, "dex/classes.dex"), "/data/local/tmp/taild-map37-f0-policy.dex")
+		fixture.server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			fixture.mu.Lock()
+			fixture.seen[r.URL.Path]++
+			fixture.mu.Unlock()
+			w.WriteHeader(200)
+		}))
+		defer fixture.server.Close()
+		firewallFixture = fixture
+		ip := fixtureStatus.TailscaleIPs[0].String()
+		control.AddDNSRecords(tailcfg.DNSRecord{Name: "alpha.taild.test", Type: "A", Value: ip}, tailcfg.DNSRecord{Name: "beta.taild.test", Type: "A", Value: ip})
+		listener, err := peer.Listen("tcp", ":18080")
+		if err != nil {
+			t.Fatal(err)
+		}
+		trafficDone = make(chan error, 1)
+		server := &http.Server{Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			body, err := io.ReadAll(r.Body)
+			if err != nil || len(body) != 8192 {
+				trafficDone <- fmt.Errorf("Fixture upload body: %v / %d", err, len(body))
+				http.Error(w, "fixture", 400)
+				return
+			}
+			_, err = w.Write([]byte(strings.Repeat("x", 32769)))
+			trafficDone <- err
+		})}
+		defer server.Close()
+		go server.Serve(listener)
+	}
 	args := []string{"-s", *adbSerial, "shell", "am", "instrument", "-w", "-r", "-e", "class", "io.github.darkaxt.taild.delivery.TailDDeliveryTest#productionUpgradeRecoveryAndAccessibility", "-e", "taild_delivery", "true", "-e", "control_url", server.URL, "-e", "source_revision", receipt.Source}
 	args = append(args, "-e", "candidate_code", fmt.Sprint(receipt.Code), "-e", "peer_name", peerName)
+	if *deliveryAudit {
+		args = append(args, "-e", "audit_release", "true", "-e", "traffic_uid", trafficUID)
+	}
 	if *deliveryUICorrection {
 		args = append(args, "-e", "ui_correction", "true")
 		for _, profile := range fixtureStatus.User {
@@ -274,6 +337,53 @@ func TestTailDProductionDelivery(t *testing.T) {
 			if initialID == "" || matched != 1 {
 				phaseErr = fmt.Errorf("expected one exact current stable peer, got %d", matched)
 			}
+		case "production-firewall-backend":
+			firewallFixture.restartBackend()
+			firewallFixture.phase("app-access-before")
+		case "production-firewall-blocked":
+			firewallFixture.phase("app-access-blocked")
+		case "production-firewall-restored":
+			firewallFixture.phase("app-access-unblocked")
+		case "production-traffic":
+			output := run("shell", "am", "broadcast", "-n", "io.github.darkaxt.taild.fixture.one/io.github.darkaxt.taild.fixture.TrafficReceiver", "--include-stopped-packages", "--es", "url", "http://"+fixtureStatus.TailscaleIPs[0].String()+":18080/traffic/native", "--ez", "resolver_block", "false")
+			if !strings.Contains(output, "STARTED") {
+				phaseErr = fmt.Errorf("Fixture traffic not started: %s", output)
+				break
+			}
+			phaseErr = <-trafficDone
+		case "production-traffic-export":
+			text := run("shell", "cat", "/sdcard/Download/TailD-signed-traffic.json")
+			var snapshot struct {
+				Format string
+				Facts  []struct {
+					Measured int64 `json:"measuredBytes"`
+					Source   struct {
+						UID        int               `json:"uid"`
+						Candidates []json.RawMessage `json:"candidates"`
+					}
+				}
+			}
+			if err := json.Unmarshal([]byte(text), &snapshot); err != nil {
+				phaseErr = err
+				break
+			}
+			var total int64
+			matchedApp, domains := false, false
+			uid, _ := strconv.Atoi(trafficUID)
+			for _, fact := range snapshot.Facts {
+				total += fact.Measured
+				matchedApp = matchedApp || fact.Source.UID == uid
+				domains = domains || len(fact.Source.Candidates) == 2
+			}
+			if snapshot.Format != "TailD-Android-traffic-v1" || total < 8192 || !matchedApp || !domains {
+				phaseErr = fmt.Errorf("Signed traffic export missing measured app/DNS evidence: bytes=%d uid=%t candidates=%t", total, matchedApp, domains)
+			}
+			if *taildCaptureDir != "" {
+				if err := os.WriteFile(filepath.Join(*taildCaptureDir, "signed-traffic-export.json"), []byte(text), 0600); err != nil {
+					phaseErr = err
+				}
+			}
+			run("shell", "am", "broadcast", "-n", "io.github.darkaxt.taild.fixture.one/io.github.darkaxt.taild.fixture.TrafficReceiver", "--es", "operation", "close")
 		case "upgrade", "reinstall":
 			run("install", "-r", *deliveryAPK)
 		case "rejected-downgrade":
@@ -389,6 +499,9 @@ func TestTailDProductionDelivery(t *testing.T) {
 		required = append(required, "resumed-candidate", "recovery-baseline")
 	} else {
 		required = append(required, "baseline-ready", "upgrade", "receive-ready", "assert-saved-file")
+	}
+	if *deliveryAudit {
+		required = append(required, "production-firewall-backend", "production-firewall-blocked", "production-firewall-restored", "production-traffic", "production-traffic-export", "capture-signed-traffic-light", "capture-signed-traffic-dark", "capture-signed-traffic-rail", "capture-signed-geography-empty")
 	}
 	for _, phase := range required {
 		if seen[phase] == 0 {

@@ -4,8 +4,10 @@ Your tailnet and DNS decisions, on Windows and Android.
 
 TailD expands **TailDNS connectivity** with **Control D analytics and incident
 management**. Windows also integrates **GlassWire traffic measurements** in the
-desktop interface. Android uses native device, DNS and scoped-history views with
-automatic system light/dark mode; app bandwidth and blocking remain later work.
+desktop interface. Android adds an offline geography map, optional Shizuku app
+controls, and opt-in VPN app/IP/domain traffic views with automatic system
+light/dark mode. Domain byte allocations remain estimates; excluded traffic stays
+outside the VPN measurements.
 
 [Download for Windows](https://github.com/Darkaxt/TailD/releases/latest) ·
 [Android downloads and upgrade notes](docs/taild/ANDROID.md) ·

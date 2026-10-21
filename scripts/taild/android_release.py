@@ -116,6 +116,10 @@ def members(apk: Path, metadata: dict) -> dict:
         assert result["assets/taild-world-map.json"]["sha256"] == metadata["country_map_sha256"]
         assert b"Natural Earth" in archive.read("assets/taild-notices.txt")
         assert b"GNU GENERAL PUBLIC LICENSE" in archive.read("assets/taild-map-license.txt")
+        notices = archive.read("assets/taild-notices.txt")
+        assert b"ShizuWall" in notices and b"Shizuku" in notices
+        for name in ("taild-shizuwall-license.txt", "taild-shizuku-license.txt"):
+            assert digest(archive.read("assets/" + name)) == digest((ROOT / "android/src/main/assets" / name).read_bytes())
     return result
 
 
