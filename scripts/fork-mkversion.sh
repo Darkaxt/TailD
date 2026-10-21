@@ -22,7 +22,11 @@ if [[ "$origin" != "https://github.com/Darkaxt/tailscale.git" ]]; then
 fi
 if [[ -n "${TAILDNS_RELEASE_SEQUENCE:-}" ]]; then
     frozen_version="$(tr -d '\r\n' < TAILSCALE_BASE_VERSION.txt)"
-    ./tool/go run tailscale.com/cmd/mkversion | bash scripts/append-taildns-version.sh "$TAILDNS_RELEASE_SEQUENCE" "$frozen_version"
+    # TailD's fourth numeric component must participate in updater ordering.
+    # The inherited TailDNS format remains the helper's default.
+    separator='+'
+    if [[ -f TAILD_ANDROID_SEQUENCE.txt ]]; then separator='.'; fi
+    ./tool/go run tailscale.com/cmd/mkversion | bash scripts/append-taildns-version.sh "$TAILDNS_RELEASE_SEQUENCE" "$frozen_version" "$separator"
 else
     exec ./tool/go run tailscale.com/cmd/mkversion
 fi

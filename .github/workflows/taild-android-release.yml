@@ -125,7 +125,8 @@ jobs:
           meta=json.loads(Path('candidate/build.json').read_text())
           assert meta['source_revision']==os.environ['GITHUB_SHA']
           assert meta['package']=='io.github.darkaxt.taildns' and meta['signer_sha256']==os.environ['EXPECTED_SIGNER']
-          assert re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+\+[1-9][0-9]*',meta['tag'])
+          assert re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+\.[1-9][0-9]*',meta['tag'])
+          assert meta['tag']==f"v{meta['upstream_android_version']}.{meta['taild_sequence']}"
           assert meta['version_name']==meta['tag'][1:]
           package=Path('release/package.txt').read_text()
           for text in ["package: name='io.github.darkaxt.taildns'",f"versionCode='{meta['version_code']}'",f"versionName='{meta['version_name']}'","application-label:'TailD'"]: assert text in package
@@ -189,11 +190,11 @@ jobs:
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs release/taild-android.apk > verified-signature.txt
           grep -Fx 'Signer #1 certificate SHA-256 digest: dcd0ede91eb7e0ed88a72b5289f84f8d4a61ccc22707f36378e15540b99d32e1' verified-signature.txt
           tag="$(python3 -c 'import json;print(json.load(open("release/build.json"))["tag"])')"
-          [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+\+[1-9][0-9]*$ ]]
+          [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+\.[1-9][0-9]*$ ]]
           test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" --jq .object.sha)" = "$GITHUB_SHA"
           test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)" = "$GITHUB_SHA"
           python3 - <<'PY'
-          import json,os,subprocess
+          import json,os,re,subprocess
           meta=json.load(open('release/build.json'))
           assert meta['source_revision']==os.environ['GITHUB_SHA']
           assert meta['version_name']==meta['tag'][1:]
@@ -204,10 +205,18 @@ jobs:
           old=int(next(line.split(': ',1)[1] for line in text.splitlines() if line.startswith('Android version code: ')))
           assert meta['version_code']>old
           releases=json.loads(subprocess.check_output(['gh','api','--paginate','repos/'+os.environ['GITHUB_REPOSITORY']+'/releases?per_page=100','--slurp']))
+          def android_sequence(tag):
+            match=re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+(?:\+|\.)([1-9][0-9]*)',tag)
+            assert match, 'Unrecognized historical Android tag'
+            return int(match[1])
+          refs=json.loads(subprocess.check_output(['gh','api','repos/'+os.environ['GITHUB_REPOSITORY']+'/git/matching-refs/tags/v']))
+          for ref in refs:
+            tag=ref['ref'].removeprefix('refs/tags/')
+            if tag!=meta['tag']: assert meta['taild_sequence']>android_sequence(tag)
           for page in releases:
             for release in page:
               if release['draft'] or release['prerelease'] or not release['tag_name'].startswith('v'): continue
-              seq=int(release['tag_name'].rsplit('+',1)[1])
+              seq=android_sequence(release['tag_name'])
               assert meta['taild_sequence']>seq
               asset=next(a for a in release['assets'] if a['name']=='build.json')
               old=json.loads(subprocess.check_output(['gh','api',asset['url'],'-H','Accept: application/octet-stream']))

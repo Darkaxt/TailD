@@ -2,6 +2,15 @@
 
 ## Android R37 distribution contract (October 20)
 
+October 21 authorized version correction: new Android names/tags use
+`<upstream Android base>.<sequence>` / `v<upstream Android base>.<sequence>`.
+The inherited three-component base and native runtime VERSION_SHORT/LONG stay
+unchanged; only the Android product suffix separator changes. Continue sequence
+and versionCode monotonicity across historical `+N` and new `.N` releases, retaining
+their artifacts. The inherited TailDNS formatter still defaults to `+`; TailD's
+version wrapper explicitly selects `.`. Windows retains its `windows-v...+N`
+format, package/signing channel and latest-release designation.
+
 The separate native Android deliverable is governed by the
 [Android specification](ANDROID-EXPANSION-PROPOSAL.md). Keep application ID
 `io.github.darkaxt.taildns`, existing connect/disconnect intents and the existing

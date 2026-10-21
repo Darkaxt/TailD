@@ -1,6 +1,11 @@
 # TailD remaining-product specification
 
-Version 1.15, 2026-10-20. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.16, 2026-10-21. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+
+October 21 Android version correction is authorized: replace `+N` with `.N` in
+new Android APK versionNames and tags, retaining the exact inherited base,
+monotonic sequence/versionCode, package and signing certificate. The Android
+specification v1.2 defines migration and ObtainX acceptance; Windows is unchanged.
 
 October 20 R37 Android implementation is authorized in this TailD fork. The
 [Android specification](ANDROID-EXPANSION-PROPOSAL.md) carries current Windows

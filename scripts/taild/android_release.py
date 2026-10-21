@@ -38,6 +38,12 @@ def write_json(path: Path, value: object) -> None:
     path.write_text(json.dumps(value, sort_keys=True, indent=2) + "\n", encoding="utf-8")
 
 
+def version_name(base: str, sequence: str | int) -> str:
+    assert re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", base)
+    assert re.fullmatch(r"[1-9][0-9]*", str(sequence))
+    return f"{base}.{sequence}"
+
+
 def prepare(_: argparse.Namespace) -> None:
     source = command("git", "rev-parse", "HEAD")
     assert re.fullmatch(r"[0-9a-f]{40}", source)
@@ -53,7 +59,7 @@ def prepare(_: argparse.Namespace) -> None:
     values = dict(line.split("=", 1) for line in version.splitlines() if "=" in line)
     values = {key: value.strip('"') for key, value in values.items()}
     assert values["VERSION_SHORT"] == base
-    assert values["TAILDNS_VERSION_NAME"] == f"{base}+{sequence}"
+    assert values["TAILDNS_VERSION_NAME"] == version_name(base, sequence)
     assert values["VERSION_EXTRA_HASH"] == source
     module = json.loads(command("bash", "tool/go", "list", "-m", "-json", "tailscale.com"))
     replace = module["Replace"]
@@ -70,8 +76,8 @@ def prepare(_: argparse.Namespace) -> None:
         "core_module": f"{replace['Path']} {replace['Version']}",
         "core_version": (Path(replace["Dir"]) / "VERSION.txt").read_text().strip(),
         "upstream_android_version": base, "taild_sequence": int(sequence),
-        "version_name": f"{base}+{sequence}", "version_code": code,
-        "tag": f"v{base}+{sequence}", "package": PACKAGE, "signer_sha256": SIGNER,
+        "version_name": version_name(base, sequence), "version_code": code,
+        "tag": f"v{version_name(base, sequence)}", "package": PACKAGE, "signer_sha256": SIGNER,
         "go_toolchain_revision": (ROOT / "go.toolchain.rev").read_text().strip(),
         "go_version": command("bash", "tool/go", "version"),
     }
@@ -80,6 +86,8 @@ def prepare(_: argparse.Namespace) -> None:
 
 
 def members(apk: Path, metadata: dict) -> dict:
+    name = version_name(metadata["upstream_android_version"], metadata["taild_sequence"])
+    assert metadata["version_name"] == name and metadata["tag"] == f"v{name}"
     assert apk.stat().st_size < 200 * 1024 * 1024
     result = {}
     abis = set()
@@ -98,7 +106,7 @@ def members(apk: Path, metadata: dict) -> dict:
                 abis.add(abi)
                 assert data[:4] == b"\x7fELF" and data[5] == 1
                 assert (data[4], struct.unpack_from("<H", data, 18)[0]) == ABIS[abi]
-                for identity in (metadata["source_revision"], metadata["core_revision"], metadata["version_name"].split("+")[0]):
+                for identity in (metadata["source_revision"], metadata["core_revision"], metadata["upstream_android_version"]):
                     assert identity.encode() in data, f"Native provenance missing: {abi}"
         assert abis == ABIS.keys()
         assert json.loads(archive.read(METADATA)) == metadata
@@ -125,7 +133,7 @@ def verify(args: argparse.Namespace) -> None:
     directory = args.directory.resolve()
     metadata = json.loads((directory / "build.json").read_text())
     assert metadata["package"] == PACKAGE and metadata["signer_sha256"] == SIGNER
-    assert metadata["tag"] == f"v{metadata['upstream_android_version']}+{metadata['taild_sequence']}"
+    assert metadata["tag"] == f"v{version_name(metadata['upstream_android_version'], metadata['taild_sequence'])}"
     assert metadata["version_name"] == metadata["tag"][1:]
     assert metadata["schema"] == metadata["history_schema"] == 1
     for field in ("source_revision", "core_revision", "go_toolchain_revision"):

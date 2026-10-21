@@ -1,5 +1,23 @@
 # TailD staged execution
 
+## Current execution - October 21 Android numeric version suffix
+
+Already authorized by the user's explicit `.N` correction. Android specification
+v1.2 is authoritative; this current record supersedes historical current labels.
+Desktop B12 remains BLOCKED/open and R33 remains outside this bounded correction.
+
+| Stage | Status | Acceptance satisfied | Acceptance remaining |
+| --- | --- | --- | --- |
+| Android version compatibility | COMPLETE | Dotted APK/tag formatter, unchanged native base/runtime stamps, strict artifact identity, legacy/dotted tag and release sequence guards pass focused regressions. Inherited TailDNS formatter and Windows retain `+`; package/signer are unchanged. | None. |
+| Android final delivery | ACTIVE | Existing protected candidate/publication path identified; sequence 36 follows all existing Android tags/releases. | Exact-source build/core gates, signed candidate, isolated upgrade/recovery, normal release and independent download verification, ObtainX offer, cleanup. |
+
+No tracked deferrals. Verification evidence will live at
+D:/Tools/taild-android-dot36-evidence-20261021. No physical installation is implied.
+Current-stage blockers are the remaining delivery gates, resolved through the
+existing candidate -> isolated acceptance -> publication path. Refactoring review:
+no new architecture or runtime abstraction is needed; version identity is shared
+by the existing preparer and verifier, with a bounded inherited formatter option.
+
 ## Current execution - October 21 upstream maintenance
 
 Already authorized by the existing maintenance heartbeat. This current record

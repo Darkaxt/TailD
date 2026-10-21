@@ -157,3 +157,15 @@ if printf '%s\n' "$sample" | bash scripts/append-taildns-version.sh 3 invalid >/
 fi
 
 echo 'TailDNS release version contract passed.'
+
+# TailD uses a real fourth numeric component; the native runtime stays unchanged.
+taild="$(printf '%s\n' "$sample" | bash scripts/append-taildns-version.sh 36 1.103.312 .)"
+source /dev/stdin <<< "$taild"
+test "$TAILDNS_VERSION_NAME" = '1.103.312.36'
+test "$VERSION_SHORT" = '1.103.312'
+test "$VERSION_LONG" = '1.103.312-tabcdef-g123456789'
+if printf '%s\n' "$sample" | bash scripts/append-taildns-version.sh 36 1.103.312 invalid >/dev/null 2>&1; then
+  echo 'Invalid TailD release suffix separator was accepted' >&2
+  exit 1
+fi
+echo 'TailD numeric release version contract passed.'

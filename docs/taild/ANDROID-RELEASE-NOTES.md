@@ -1,9 +1,11 @@
-This update removes redundant owner headings from the device list, shows the
-Android icon for this device even when its self-node OS metadata is omitted, and
-uses the official Tailscale/Control D navigation marks from TailD for Windows.
-The Domain/decision filter now uses the same rounded search style and clear
-control as the Tailscale tab. System light/dark tint and accessible destination
-labels remain supported.
+Android versions now use a fourth numeric component, such as 1.103.312.36,
+instead of a plus suffix. ObtainX can therefore recognize each TailD revision
+as an update. Existing TailDNS/TailD installations keep the same package, signing
+certificate and data. Windows versions and its update channel are unchanged.
+
+This release also incorporates the verified upstream fix that removes a duplicate
+profile-list request during startup and the current shared-core revision. Existing
+compact device/navigation/search controls and automatic system light/dark remain.
 
 TailD Android adds native Tailscale device/status views, opt-in scoped activity
 and TailDrop history, Control D setup/Recent DNS/basic management, and a private

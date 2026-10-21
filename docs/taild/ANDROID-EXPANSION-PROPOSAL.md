@@ -1,6 +1,6 @@
 # TailD Android specification
 
-Version 1.1, 2026-10-20. Authoritative Android extension to
+Version 1.2, 2026-10-21. Authoritative Android extension to
 [PRODUCT-SPECIFICATION.md](PRODUCT-SPECIFICATION.md), requirement R37.
 The historical filename is retained to preserve existing links.
 
@@ -12,6 +12,20 @@ production provider policy or closing desktop B12. Current stage status lives in
 below is superseded by this authority and the parity contract below.
 
 ## Confirmed direction
+
+The October 21 versioning correction replaces Android's `+N` release suffix with
+`.N`: APK versionName is `<upstream Android base>.<TailD Android sequence>` and
+the tag is `v<upstream Android base>.<TailD Android sequence>`. The upstream base
+remains the exact three-component inherited Android version. Continue the
+monotonic positive sequence across historical `+N` and new `.N` tags/releases;
+do not rename or replace old releases. Android versionCode must increase beyond
+both prior TailD APKs and the current TailDNS upgrade origin. Keep the package,
+certificate, signed source/core provenance and Windows version/channel unchanged.
+Acceptance requires the actual signed APK and public tag to agree, successful
+in-place upgrade/recovery in the isolated delivery harness, and ObtainX to offer
+the release while retaining Android-only title/APK filters. Once installed,
+equivalent dotted package/tag names must compare equal, and a later dotted
+sequence must compare newer. No ObtainX fork or pseudo installed-version tracking.
 
 - Android belongs to **Darkaxt/TailD**, which is an expanded TailDNS derivative.
   Implement TailD-specific Android features in this repository's inherited

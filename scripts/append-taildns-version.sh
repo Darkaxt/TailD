@@ -5,6 +5,11 @@ set -euo pipefail
 
 sequence="${1:-}"
 base_version="${2:-}"
+separator="${3:-+}"
+if [[ "$separator" != '+' && "$separator" != '.' ]]; then
+  echo 'Release suffix separator must be plus or dot.' >&2
+  exit 1
+fi
 if [[ ! "$sequence" =~ ^[1-9][0-9]*$ ]]; then
   echo 'TailDNS release sequence must be a positive integer.' >&2
   exit 1
@@ -56,4 +61,4 @@ for line in "${lines[@]}"; do
     *) printf '%s\n' "$line" ;;
   esac
 done
-printf 'TAILDNS_VERSION_NAME="%s+%s"\n' "$base_version" "$sequence"
+printf 'TAILDNS_VERSION_NAME="%s%s%s"\n' "$base_version" "$separator" "$sequence"

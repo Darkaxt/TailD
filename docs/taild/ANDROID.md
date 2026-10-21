@@ -15,11 +15,16 @@ this device, and uses the official Tailscale and Control D navigation marks.
 The domain/decision filter matches Tailscale's rounded search field and clear
 control, including automatic system light/dark transitions.
 
-Android releases use tags `v<upstream Android base>+<TailD Android sequence>`.
+New Android releases use tags `v<upstream Android base>.<TailD Android sequence>`
+and the same four-component numeric APK versionName without the `v`. This makes
+the TailD sequence participate in ObtainX's version ordering rather than being
+discarded as `+` build metadata. Historical `+34`/`+35` releases remain unchanged.
 Windows releases use `windows-v...` and remain on their existing update channel.
-Filter Android update tools to `^v[0-9]+\.[0-9]+\.[0-9]+\+[1-9][0-9]*$` and the
+Filter Android update tools by release title `^TailD Android ` and the
 `taild-android.apk` asset; do not use the repository's Windows latest-release URL
-as an Android package feed. Downloads and update origin belong to
+as an Android package feed. Enable fallback to older releases so newer Windows
+releases do not hide the latest Android release. Installed-version detection stays
+Standard, without pseudo tracking or version trimming. Downloads and update origin belong to
 [Darkaxt/TailD](https://github.com/Darkaxt/TailD/releases).
 
 The application ID remains `io.github.darkaxt.taildns`, with the existing TailDNS
