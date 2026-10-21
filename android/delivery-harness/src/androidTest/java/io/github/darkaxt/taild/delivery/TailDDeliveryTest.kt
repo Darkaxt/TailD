@@ -198,7 +198,33 @@ class TailDDeliveryTest {
     val selector = By.desc("Collect analytics").checkable(true)
     val control = node(selector)
     if (verifyOnly) assertEquals(enabled, control.isChecked)
-    else if (control.isChecked != enabled) click(selector)
+    else if (control.isChecked != enabled) {
+      // This setting can still be moving during a navigation transition. Invoke
+      // its actual accessibility click, then require the persisted UI state.
+      fun controls(root: AccessibilityNodeInfo): List<AccessibilityNodeInfo> =
+          (if (
+              root.packageName?.toString() == pkg &&
+                  root.contentDescription?.toString() == "Collect analytics" &&
+                  root.isCheckable
+          )
+              listOf(root)
+          else emptyList()) +
+              (0 until root.childCount).flatMap { index ->
+                root.getChild(index)?.let(::controls).orEmpty()
+              }
+      val target = controls(checkNotNull(automation.rootInActiveWindow)).single()
+      check(target.isEnabled && target.performAction(AccessibilityNodeInfo.ACTION_CLICK))
+      check(
+          device.wait(
+              object : Condition<UiDevice, Boolean> {
+                override fun apply(value: UiDevice): Boolean = find(selector)?.isChecked == enabled
+              },
+              30_000,
+          )
+      ) {
+        "Analytics setting did not reach the requested state"
+      }
+    }
     device.waitForIdle()
   }
 
@@ -379,14 +405,14 @@ class TailDDeliveryTest {
     return JsonArray(visit(checkNotNull(automation.rootInActiveWindow)))
   }
 
-  private fun savedHistoryMetadata() {
+  private fun savedHistoryMetadata(expected: String? = null): String {
     node(By.text("TailDrop history"))
-    val saved = By.textContains("taildrop.saved")
+    val saved = if (expected == null) By.textContains("taildrop.saved") else By.text(expected)
     if (find(saved) == null) {
       node(By.scrollable(true).hasDescendant(By.text("TailDrop history")))
           .scrollUntil(Direction.DOWN, Until.findObject(saved))
     }
-    node(saved)
+    return node(saved).text
   }
 
   @Test
@@ -490,17 +516,18 @@ class TailDDeliveryTest {
       return@runBlocking
     }
     if (arguments.getString("ui_correction") == "true") {
+      prepareFolder()
       alwaysOn(true)
       analytics(true)
       open("main/devices")
       node(By.text(peerName))
       click(By.text("TailDrop"))
       phase("receive-ready")
-      node(By.text("taild-delivery.txt"))
       content(By.text("Refresh history"))
       click(By.text("Refresh history"))
-      val baselineFact = content(By.textContains("taildrop.received")).text
-      assertTrue(baselineFact.contains("Daemon receipt observed"))
+      val baselineFact = savedHistoryMetadata()
+      assertTrue(baselineFact.contains("Saved to the selected Android document folder"))
+      phase("assert-saved-file")
       phase("baseline-history-recorded")
       open("main/devices")
       phase("baseline-ready")
@@ -509,12 +536,14 @@ class TailDDeliveryTest {
       signedPackage(checkNotNull(arguments.getString("candidate_code")).toLong())
       node(By.text(peerName))
       phase("assert-node-continuity")
+      folder()
+      node(By.textContains("TailDDelivery"))
       analytics(true, verifyOnly = true)
       open("main/devices")
       click(By.text("TailDrop"))
       content(By.text("Refresh history"))
       click(By.text("Refresh history"))
-      content(By.text(baselineFact))
+      savedHistoryMetadata(baselineFact)
       phase("upgrade-history-preserved")
       verifyUiCorrection()
       if (arguments.getString("audit_release") == "true") verifyAuditRelease()
@@ -522,13 +551,16 @@ class TailDDeliveryTest {
       phase("reinstall")
       launch()
       signedPackage(checkNotNull(arguments.getString("candidate_code")).toLong())
+      folder()
+      node(By.textContains("TailDDelivery"))
       analytics(arguments.getString("audit_release") != "true", verifyOnly = true)
       open("main/devices")
       node(By.text(peerName))
       click(By.text("TailDrop"))
       content(By.text("Refresh history"))
       click(By.text("Refresh history"))
-      content(By.text(baselineFact))
+      savedHistoryMetadata(baselineFact)
+      phase("assert-saved-file")
       phase("reinstall-history-preserved")
       phase("delivery-verified")
       return@runBlocking

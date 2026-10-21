@@ -9,7 +9,7 @@ are now required in this bounded refinement; .37 remains the verified baseline.
 | Stage | Status | Acceptance satisfied | Acceptance remaining |
 | --- | --- | --- | --- |
 | Integrated native UI refinement | COMPLETE | U1-U7 native phone/tablet/wide, font 1.5 and short-landscape density/targets/disclosures pass. Provider policy/restart, shared-UID/details/recovery, actual VPN traffic, SAF export, retained history and live automatic theme pass. Independent Huashu capture review passes. | None. |
-| Final Android update delivery | ACTIVE | Established exact-source candidate/sign/publication path; verified .37 baseline. | Exact-source gates, one monotonic normal signed release, isolated .37 upgrade/recovery, independent public artifact verification and reviewed scratch cleanup. |
+| Final Android update delivery | COMPLETE | Exact 9d2f427 source passed candidate 39654526171. Normal v1.103.312.38 reuses its signed bytes through publication 39659125801 attempt 2. Fresh isolated .37 upgrade/reinstall, retained identity/settings/file/history, themes, large text, firewall/traffic/export and downgrade rejection pass; all nine public assets independently match. Reviewed scratch cleanup is applied. | None. |
 
 U1-U7 reconciliation: missing binding selects the endpoint; normal and large-text
 navigation remains readable; Applications actions share a compact toolbar; Control D
@@ -37,8 +37,38 @@ Package contracts pass; gates 1667/1673 verify two workers, no parallel executio
 3 GB Gradle heap, in-process Kotlin and owned daemon exit (assembly tasks).
 Durable evidence is D:/Tools/taild-ui38-evidence-20261021.
 
-Only final signed delivery and scratch cleanup remain advancement blockers. No
-external execution blocker or tracked deferral. Windows B12/F1/F3 remain open.
+Final delivery: [v1.103.312.38](https://github.com/Darkaxt/TailD/releases/tag/v1.103.312.38)
+is normal/non-draft/non-prerelease from source
+`9d2f427af45d0fe92ad6dad295293ba866c6d419`, core
+`d9c112d927479d092f6d1132e16613f046f6ba51`, code 298767980 and existing
+pinned signer. Public APK SHA-256 is
+`b3c2a309e72ad037c89b29a2d82bb049d58bfb49a49615f06e3ef9f7b9ef5fd9`.
+Independent verification covers all nine asset bytes/sizes, 643 payload members,
+four ABIs, exact source tag, map/notices and unchanged Windows latest channel.
+The initial publication stopped at its missing-tag check; creating the exact
+verified source tag and rerunning only publication completed the same cycle.
+
+The complete fresh production-delivery38-final run passes on the normally signed
+R8 APK: .37 node/always-on association, selected document directory/grant, saved
+file and exact retained event survive upgrade and reinstall. System themes,
+360 dp/font 1.5, rail layouts, real shared-UID enforcement and restoration, VPN
+bytes/domain facts, actual SAF export and rejected downgrade pass. Unpackaged
+harness corrections configure the required directory, select the actual history
+scroll container and invoke/verify the real analytics toggle action before
+continuing. Earlier failed attempts are retained as failed; they are not final
+acceptance. Gates 1674-1677 assemble only that external harness with the verified
+two-worker/nonparallel/3 GB profile, selected in-process Kotlin and owned daemon
+exit. Production bytes did not change after candidate verification.
+
+Cleanup transaction `7c24c0afefaaf2ff736ffa0341aef09d` is applied: all 16,939
+reviewed generated members (17,577,211,995 logical bytes) were removed with no
+errors/exclusions. The exact scratch root is absent, owned emulators exited and
+the retired build-copy usage registration was removed. Compact receipts, logs,
+final captures and the driver correction patch are preserved in the evidence
+folder above. No physical deployment or production provider write is claimed.
+
+No UI38 acceptance blocker or tracked deferral remains; both stages are COMPLETE.
+Windows B12/F1/F3 remain open outside this Android UI release.
 
 ## Current execution - October 21 Android Geography map
 
