@@ -80,6 +80,7 @@ def prepare(_: argparse.Namespace) -> None:
         "tag": f"v{version_name(base, sequence)}", "package": PACKAGE, "signer_sha256": SIGNER,
         "go_toolchain_revision": (ROOT / "go.toolchain.rev").read_text().strip(),
         "go_version": command("bash", "tool/go", "version"),
+        "country_map_sha256": digest((ROOT / "android/src/main/assets/taild-world-map.json").read_bytes()),
     }
     write_json(ROOT / "android/src/main/assets/taild-build.json", metadata)
     print(json.dumps(metadata, sort_keys=True))
@@ -112,6 +113,9 @@ def members(apk: Path, metadata: dict) -> dict:
         assert json.loads(archive.read(METADATA)) == metadata
         assert b"TailD" in archive.read("assets/taild-notices.txt")
         assert "assets/taild-license.txt" in result
+        assert result["assets/taild-world-map.json"]["sha256"] == metadata["country_map_sha256"]
+        assert b"Natural Earth" in archive.read("assets/taild-notices.txt")
+        assert b"GNU GENERAL PUBLIC LICENSE" in archive.read("assets/taild-map-license.txt")
     return result
 
 

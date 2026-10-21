@@ -10,17 +10,21 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.*
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import java.time.Instant
 import java.time.ZoneOffset
@@ -42,6 +46,7 @@ fun DashboardView(
     onControlD: () -> Unit,
     onPreferences: () -> Unit,
 ) {
+  var geographyDetails by rememberSaveable { mutableStateOf(false) }
   val state by model.state.collectAsState()
   val provider by controlD.state.collectAsState()
   val recording by history.enabled.collectAsState()
@@ -100,35 +105,53 @@ fun DashboardView(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-      item {
-        Text(
-            if (recording) "Analytics recording enabled"
-            else "Analytics recording off · retained observations preserved",
-            style = MaterialTheme.typography.labelLarge,
-        )
-        Text(
-            "${state.window.from} → ${state.window.until} · UTC, end exclusive",
-            style = MaterialTheme.typography.bodySmall,
-        )
-        Text(
-            "Retained observations; incomplete source coverage and gaps remain unknown.",
-            style = MaterialTheme.typography.bodySmall,
-        )
-        state.exportNotice?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-        if (state.exportWriting)
-            LinearProgressIndicator(
-                Modifier.fillMaxWidth().semantics {
-                  contentDescription = "Writing selected snapshot"
-                }
-            )
-      }
+      if (tab != 1 || state.exportNotice != null || state.exportWriting)
+          item {
+            if (tab != 1) {
+              Text(
+                  if (recording) "Analytics recording enabled"
+                  else "Analytics recording off · retained observations preserved",
+                  style = MaterialTheme.typography.labelLarge,
+              )
+              Text(
+                  "${state.window.from} → ${state.window.until} · UTC, end exclusive",
+                  style = MaterialTheme.typography.bodySmall,
+              )
+              Text(
+                  "Retained observations; incomplete source coverage and gaps remain unknown.",
+                  style = MaterialTheme.typography.bodySmall,
+              )
+            }
+            state.exportNotice?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+            if (state.exportWriting)
+                LinearProgressIndicator(
+                    Modifier.fillMaxWidth().semantics {
+                      contentDescription = "Writing selected snapshot"
+                    }
+                )
+          }
       if (tab == 0 || tab == 1) {
         item {
-          Text(
-              "Control D · ${provider.endpointName}${provider.clientName?.let { " / $it" }.orEmpty()}",
-              style = MaterialTheme.typography.titleMedium,
-          )
-          TextButton(onClick = onControlD) { Text("Change endpoint/client or open Recent DNS") }
+          if (tab == 1) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+              Text(
+                  "${provider.endpointName}${provider.clientName?.let { " / $it" }.orEmpty()}",
+                  Modifier.weight(1f),
+                  style = MaterialTheme.typography.bodyMedium,
+                  maxLines = 1,
+                  overflow = TextOverflow.Ellipsis,
+              )
+              IconButton(onClick = onControlD) {
+                Icon(Icons.Default.Settings, "Change endpoint or client")
+              }
+            }
+          } else {
+            Text(
+                "Control D · ${provider.endpointName}${provider.clientName?.let { " / $it" }.orEmpty()}",
+                style = MaterialTheme.typography.titleMedium,
+            )
+            TextButton(onClick = onControlD) { Text("Change endpoint/client or open Recent DNS") }
+          }
           if (state.dnsLoading)
               LinearProgressIndicator(
                   Modifier.fillMaxWidth().semantics { contentDescription = "Reading DNS dashboard" }
@@ -138,13 +161,19 @@ fun DashboardView(
             TextButton(onClick = model::retryDns) { Text("Retry DNS query") }
           }
           provider.historyError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-          if (provider.busyHistory)
+          if (provider.busyHistory && tab == 1)
+              LinearProgressIndicator(
+                  Modifier.fillMaxWidth().semantics {
+                    contentDescription = "Synchronizing DNS history"
+                  }
+              )
+          else if (provider.busyHistory)
               Text(
                   provider.historyProgress
                       ?: "Provider history synchronization is running in the app.",
                   style = MaterialTheme.typography.bodySmall,
               )
-          Text(provider.page.coverage, style = MaterialTheme.typography.bodySmall)
+          if (tab != 1) Text(provider.page.coverage, style = MaterialTheme.typography.bodySmall)
         }
         val data = state.dns?.takeIf { it.binding == provider.binding }
         if (data != null) {
@@ -194,15 +223,55 @@ fun DashboardView(
             }
           } else
               item {
-                Text("Provider DNS-answer geography", style = MaterialTheme.typography.titleLarge)
-                Text(
-                    "Country coverage · ${data.countryCoverage} / ${data.total}\nASN coverage · ${data.asnCoverage} / ${data.total}"
-                )
-                Text(
-                    "Each observation counts in every returned answer group; groups may overlap. Missing geography stays Unknown.",
-                    style = MaterialTheme.typography.bodySmall,
-                )
-                Ranking("Answer countries", remember(data) { data.countries }) {
+                DnsCountryMap(data.countries) {
+                  model.dnsDetails(data, DashboardDnsFilter(country = it))
+                }
+                TextButton(
+                    onClick = { geographyDetails = !geographyDetails },
+                    modifier =
+                        Modifier.semantics {
+                          stateDescription = if (geographyDetails) "Expanded" else "Collapsed"
+                        },
+                ) {
+                  Text("Coverage & details")
+                  Icon(
+                      Icons.Default.ArrowDropDown,
+                      null,
+                      Modifier.rotate(if (geographyDetails) 180f else 0f),
+                  )
+                }
+                if (geographyDetails) {
+                  Text(
+                      "Provider DNS-answer geography",
+                      style = MaterialTheme.typography.titleMedium,
+                  )
+                  Text(
+                      "Country coverage · ${data.countryCoverage} / ${data.total}\nASN coverage · ${data.asnCoverage} / ${data.total}"
+                  )
+                  Text(
+                      if (recording) "Analytics recording enabled"
+                      else "Analytics recording off · retained observations preserved",
+                      style = MaterialTheme.typography.bodySmall,
+                  )
+                  Text(
+                      "${data.window.from} → ${data.window.until} · UTC, end exclusive",
+                      style = MaterialTheme.typography.bodySmall,
+                  )
+                  Text(provider.page.coverage, style = MaterialTheme.typography.bodySmall)
+                  Text(
+                      "Each observation counts in every returned answer group; groups may overlap. Unobserved countries stay neutral and coverage gaps remain unknown.",
+                      style = MaterialTheme.typography.bodySmall,
+                  )
+                  Text(
+                      "Made with Natural Earth · offline country boundaries; not routes or device location.",
+                      style = MaterialTheme.typography.bodySmall,
+                  )
+                }
+                Ranking(
+                    "Answer countries",
+                    remember(data) { data.countries },
+                    limit = data.countries.size,
+                ) {
                   model.dnsDetails(data, DashboardDnsFilter(country = it))
                 }
                 Ranking("Answer ASNs", remember(data) { data.asns }) {
@@ -357,9 +426,14 @@ fun DashboardView(
 }
 
 @Composable
-private fun Ranking(title: String, values: Map<String, Long>, onSelect: (String) -> Unit) {
+private fun Ranking(
+    title: String,
+    values: Map<String, Long>,
+    limit: Int = 10,
+    onSelect: (String) -> Unit,
+) {
   Text(title, style = MaterialTheme.typography.titleMedium)
-  values.entries.take(10).forEach { (label, count) ->
+  values.entries.take(limit).forEach { (label, count) ->
     ListItem(
         headlineContent = { Text(label) },
         trailingContent = { Text(count.toString()) },

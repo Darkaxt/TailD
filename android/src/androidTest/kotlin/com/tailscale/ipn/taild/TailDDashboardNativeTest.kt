@@ -144,6 +144,7 @@ class TailDDashboardNativeTest {
         )
         scrollTo("taild-dashboard-details", "Close").click()
         dashboardTab("Geography")
+        dashboardContent("Coverage & details").click()
         dashboardContent("Provider DNS-answer geography")
         dashboardContent("Country coverage · 125 / 125", contains = true)
         val dark = CompletableDeferred<Unit>()

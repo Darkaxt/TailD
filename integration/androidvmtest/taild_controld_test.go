@@ -196,6 +196,10 @@ func TestTailDDashboardNativeUI(t *testing.T) {
 	runControlDNative(t, []controlDNativeStep{{"phone-dashboard", "TailDDashboardNativeTest"}, {"tablet-dashboard-restart", "TailDDashboardRestartTest"}, {"tablet-storage", "TailDDashboardStorageTest"}})
 }
 
+func TestTailDGeographyNativeUI(t *testing.T) {
+	runControlDNative(t, []controlDNativeStep{{"phone-map", "TailDGeographyNativeTest"}, {"tablet-map", "TailDGeographyNativeTest"}})
+}
+
 func runControlDNative(t *testing.T, steps []controlDNativeStep) {
 	if *taildTestAPK == "" {
 		t.Skip("explicit instrumentation APK required")
@@ -218,6 +222,10 @@ func runControlDNative(t *testing.T, steps []controlDNativeStep) {
 		run("install", "-r", "-t", apk)
 	}
 	fixture := newNativeControlDFixture()
+	if len(steps) > 0 && steps[0].class == "TailDGeographyNativeTest" {
+		fixture.csv = strings.Replace(fixture.csv, ",US,64500", ",US;DE,64500", 1)
+		fixture.csv = strings.Replace(fixture.csv, ",US,64500", ",,64500", 1)
+	}
 	server := httptest.NewTLSServer(fixture)
 	defer server.Close()
 	defer func() {
@@ -234,6 +242,9 @@ func runControlDNative(t *testing.T, steps []controlDNativeStep) {
 	t.Cleanup(func() { run("reverse", "--remove", mapping) })
 	digest := sha256.Sum256(server.Certificate().Raw)
 	const pkg = "io.github.darkaxt.taildns"
+	// A fresh owned emulator has no VPN grant; MainActivity's ordinary preparation
+	// dialog would obscure every native fixture action. This is test setup only.
+	run("shell", "appops", "set", pkg, "ACTIVATE_VPN", "allow")
 	for _, step := range steps {
 		run("shell", "am", "force-stop", pkg)
 		if strings.HasPrefix(step.name, "phone-") {
@@ -244,6 +255,11 @@ func runControlDNative(t *testing.T, steps []controlDNativeStep) {
 			run("shell", "wm", "size", "1680x1800")
 			run("shell", "wm", "density", "320")
 			run("shell", "cmd", "uimode", "night", "yes")
+		}
+		if step.class == "TailDGeographyNativeTest" {
+			// Override the ordinary tablet fixture's dark baseline: each map
+			// workflow proves a real light-to-dark transition on a fresh process.
+			run("shell", "cmd", "uimode", "night", "no")
 		}
 		landscape := "false"
 		font := "1.0"
@@ -293,6 +309,11 @@ func runControlDNative(t *testing.T, steps []controlDNativeStep) {
 			}
 			result.output = output.String()
 			result.scanErr = scanner.Err()
+			if result.scanErr != nil {
+				// Observe command completion even when an unexpected oversized diagnostic
+				// line exceeds Scanner's budget; an unread pipe would deadlock Wait.
+				io.Copy(io.Discard, stdout)
+			}
 			result.processErr = cmd.Wait()
 			close(exited)
 			close(phases)
@@ -385,6 +406,9 @@ func runControlDNative(t *testing.T, steps []controlDNativeStep) {
 			t.Fatalf("Control D native %s: %v %v\n%s", step.name, result.processErr, result.scanErr, result.output)
 		}
 		required := []string{"capture-recent", "capture-reconciled", "assert-after-restart", "assert-after-reconcile"}
+		if step.class == "TailDGeographyNativeTest" {
+			required = []string{"capture-map-light", "capture-map-drilldown", "capture-map-dark", "capture-map-empty", "capture-map-scope", "assert-read-only-dashboard"}
+		}
 		if step.name == "phone-initial" {
 			required = []string{"capture-recent", "capture-editor", "stale-policy", "drop-next-write", "assert-after-unknown", "capture-unknown"}
 		}

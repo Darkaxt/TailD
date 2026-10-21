@@ -1387,6 +1387,14 @@ define coverage; managing DNS does not imply every public Internet flow is tunne
 Use the user's equal-weight `1/N` candidate model where DNS/IP evidence is
 ambiguous. A conditional estimate is not exact domain-byte measurement.
 
+October 21 user steering requires considering the ShizuWall app/UID-control
+integration before traffic capture, combined with Tailscale per-connection bytes
+and local/provider DNS evidence for app -> domain -> upload/download views. The
+fresh source assessment and capability/ownership limits are recorded in R33;
+the subsequent explicit instruction authorizes Android implementation directly
+after Geography, with app/UID control (F0) before measurement (F2). Real-device
+privilege grants remain separate, and Windows B12/F1/F3 remain open.
+
 [R33's specification](TRAFFIC-AUDIT-AND-BLOCKING-SPECIFICATION.md) owns F1 Windows
 audit/weighted views, F2 Android audit/weighted views and F3 app blocking on both.
 All are NOT STARTED. Their final verification and dependencies are explicit there.

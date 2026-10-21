@@ -26,3 +26,16 @@ BSD or GPL by this attribution. The Tailscale nine-dot symbol retains its circle
 positions and five dimmed dots from the inherited Tailscale web icon (core
 4b17755738ec51bb9e94a83e65ef972b8b52260a). Copyright Tailscale Inc. and
 Contributors. Both marks retain their owners' rights; no endorsement is claimed.
+
+Offline Geography map: taild-world-map.json is a projected derivative of the
+Windows world-50m.json country topology from Safing Portmaster commit
+4e59231aa551697abd4ce85ed1ec7720fac2c3d2, SHA-256
+c8598aca2a616f5fcdda15a95c5ee2d7c2be4ecc30edf67943c79e5ae97ee6e5.
+Retain its upstream GPL-3.0 distribution/source notice; license text is bundled
+as taild-map-license.txt. Original country geography is Natural Earth data,
+public domain: https://www.naturalearthdata.com/about/terms-of-use/ .
+Made with Natural Earth. Static boundaries do not represent network routes or
+device location. Reproduce the projected asset with scripts/taild/android_country_map.mjs
+and the pinned desktop topology. Build-time d3-geo 3.1.1 and topojson-client 3.1.0
+are ISC-licensed; no JavaScript library, remote map service or copied Portmaster
+renderer code is included in the Android runtime.

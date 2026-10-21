@@ -20,6 +20,8 @@ class AndroidPayloadContract(unittest.TestCase):
         self.metadata = {"source_revision": "a" * 40, "core_revision": "b" * 40,
                          "upstream_android_version": "1.103.312", "taild_sequence": 36,
                          "version_name": "1.103.312.36", "tag": "v1.103.312.36"}
+        self.map_bytes = (release.ROOT / "android/src/main/assets/taild-world-map.json").read_bytes()
+        self.metadata["country_map_sha256"] = release.digest(self.map_bytes)
 
     def test_dotted_version_preserves_the_three_part_upstream_base(self):
         self.assertEqual(release.version_name("1.103.312", "36"), "1.103.312.36")
@@ -55,7 +57,12 @@ class AndroidPayloadContract(unittest.TestCase):
             with self.subTest(tag=tag), self.assertRaises(AssertionError):
                 sequence(tag)
 
-    def build(self, wrong_abi=False, wrong_core=False, duplicate=False):
+    def test_signed_metadata_binds_offline_map_bytes(self):
+        self.build(wrong_map=True)
+        with self.assertRaises(AssertionError):
+            release.members(self.apk, self.metadata)
+
+    def build(self, wrong_abi=False, wrong_core=False, duplicate=False, wrong_map=False):
         with zipfile.ZipFile(self.apk, "w") as archive:
             for abi, (elf_class, machine) in release.ABIS.items():
                 data = bytearray(64)
@@ -65,15 +72,17 @@ class AndroidPayloadContract(unittest.TestCase):
                 data += ("a" * 40 + ("c" if wrong_core else "b") * 40 + "1.103.312").encode()
                 archive.writestr(f"lib/{abi}/libgojni.so", data)
             archive.writestr(release.METADATA, json.dumps(self.metadata))
-            archive.writestr("assets/taild-notices.txt", "TailD inherited notices")
+            archive.writestr("assets/taild-notices.txt", "TailD inherited notices; Natural Earth")
             archive.writestr("assets/taild-license.txt", "fixture license")
+            archive.writestr("assets/taild-map-license.txt", "GNU GENERAL PUBLIC LICENSE")
+            archive.writestr("assets/taild-world-map.json", b"{}" if wrong_map else self.map_bytes)
             if duplicate:
                 archive.writestr(release.METADATA, json.dumps(self.metadata))
 
     def test_all_architectures_and_both_embedded_source_identities_are_required(self):
         self.build()
         inventory = release.members(self.apk, self.metadata)
-        self.assertEqual(len(inventory), 7)
+        self.assertEqual(len(inventory), 9)
         self.build(wrong_abi=True)
         with self.assertRaises(AssertionError):
             release.members(self.apk, self.metadata)

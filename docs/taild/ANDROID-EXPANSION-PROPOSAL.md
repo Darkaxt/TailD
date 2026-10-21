@@ -1,6 +1,6 @@
 # TailD Android specification
 
-Version 1.2, 2026-10-21. Authoritative Android extension to
+Version 1.3, 2026-10-21. Authoritative Android extension to
 [PRODUCT-SPECIFICATION.md](PRODUCT-SPECIFICATION.md), requirement R37.
 The historical filename is retained to preserve existing links.
 
@@ -40,6 +40,39 @@ sequence must compare newer. No ObtainX fork or pseudo installed-version trackin
   Control D records DNS facts server-side; Android reads those facts later.
   DNS ingestion is synchronization, not packet capture or app attribution.
 - Existing README screenshots may remain slightly outdated.
+
+## October 21 Geography correction
+
+The user identified the missing map in the shipped Geography destination. The
+subsequent screenshot feedback requires map-first presentation: only a compact
+endpoint/client row precedes it. Put source/retention text, exact UTC window,
+recording status, country/ASN coverage and explanatory metadata in a collapsed
+Coverage & details section below the map. Keep actionable errors visible. This
+instruction makes an offline native world map required, replacing the earlier
+optional-map wording. Reuse the pinned Windows country dataset and retain its
+source/license notices. No tile service, location permission, WebView or VPN/DNS
+change is needed. The map uses the same immutable endpoint/client/window/revision
+snapshot as country rankings, details and exports. Observed countries are shaded;
+unobserved countries stay neutral. Unknown/unmapped observations remain visible
+and selectable in the country list, and overlapping answer-country groups remain
+explicit. A map country tap opens the matching existing country-filtered details.
+The list provides equivalent accessible actions with at least 48 dp targets.
+
+Use a 2:1 projection fitted uniformly inside the available content width, capped
+at 40 percent of screen height for landscape/short displays. Include 360 dp phones
+and 840 dp tablet layouts, with no distorted/clipped shape or horizontal scroll.
+Respect automatic system light/dark changes, font scale 1.5, empty data and scope
+changes. Package the map offline and independently verify its asset and notices
+in the signed final APK. Acceptance includes native map rendering, country tap ->
+exact matching observations/export scope, unknown/empty states and live theme
+transition retaining the current tab/data. No physical-device acceptance is implied.
+
+The traffic assessment is followed by explicit October 21 authority to proceed
+directly into implementation when ready. After Geography closes, implement the
+ShizuWall-style Android app/UID control stage (R33 F0), then Android Tailscale
+measurement (F2), then one integrated verified Android release. Preserve the
+separate unresolved Windows scope/B12 and real-device privilege boundaries.
+R33 owns the detailed identity, counter, DNS, estimation and recovery contracts.
 
 ## Source-verified starting point
 
@@ -177,7 +210,7 @@ labels; do not shrink a desktop table/sidebar into a phone screen.
 | Control D Recent DNS | Provider timestamps, domain/type, actual action/reason, selected device/client and available answer metadata; search/filter and open related policy. |
 | Basic management | Create Block/explicit Bypass rules; inspect/edit supported custom rules; enable/disable existing rules, filters and services; supported simple profile options. Unsupported Spoof/Redirect editing must never coerce an action into Block. |
 | Dashboard overview | DNS request/outcome totals, trends, top domains and supported reasons, observed tailnet activity and TailDrop totals. Panels link to matching scoped facts. |
-| Geography | Provider-supplied DNS-answer country/ASN counts with explicit missing coverage. Reuse offline map assets only when licensing and mobile layout fit; ranked country/ASN drill-down is required even without a map. |
+| Geography | Provider-supplied DNS-answer country/ASN counts with explicit missing coverage. Offline native country map and ranked country/ASN drill-down are required; preserve licensing, mobile layout and unknowns. |
 | History controls | One opt-in Collect analytics preference, retention, source freshness/coverage, explicit history deletion and scoped private export. Recording off preserves live controls and retained history. |
 
 For A1–A4, omit application bandwidth, process attribution, socket history,
@@ -354,6 +387,78 @@ Android lifecycle and signing/migration are the largest acceptance risks. Treat
 this as several integrated development slices, not a quick WebView/reskin task.
 The plan is technically credible without a new server, firewall, root permission
 or desktop dependency. No calendar-duration promise is inferred from inspection.
+
+## October 21 smart exit-node trigger evaluation
+
+The user requests evaluation for a subsequent Windows and Android update, not
+activation during the current Geography/F0/F2 implementation. The intended
+behavior is an opt-in extension of exit-node selection: use the prioritized
+eligible exit node when away from its Internet egress, and suspend only the exit
+route when already sharing that egress. Tailscale remains connected. This is
+distinct from upstream `auto:any`, which chooses a recommended exit node.
+
+Reuse native VPN-bypassing sockets before considering an excluded helper app.
+The current Android `libtailscale/backend.go` already connects
+`VpnService.protect` and `App.bindSocketToNetwork` to core `netns`. The latter
+currently binds to `NetworkChangeCallback.cachedDefaultNetwork`; it is not yet a
+probe API for every prioritized underlying network. A dedicated probe can
+protect its own socket, bind to the selected eligible non-VPN `Network`, and use
+that network's DNS resolution. It must verify protection/binding success and must
+not accept an ordinary VPN-routed request as direct-egress evidence. Do not
+exclude TailD's whole package, enable global bypass, rebind the process, or turn
+off the VPN to measure an address. The existing per-app split-tunnel exclusion
+could support a separately excluded helper, but no helper is needed merely to
+obtain this native socket capability. Preserve administrator restrictions.
+
+The pinned Windows core already uses `net/netns/netns_windows.go` to bind sockets
+to a default interface outside Tailscale WinTun. Evaluate a narrow probe through
+the existing owning daemon/native boundary, with explicit physical-interface and
+IPv4/IPv6 binding when testing additional eligible interfaces. Do not assume the
+existing default-interface dialer exposes arbitrary interface priority or add a
+privileged service solely for this feature.
+
+The proposed decision records pair a stable exit-node identity with fresh direct
+egress observations and the actual active underlying network generation. Probe
+only available networks allowed by system policy and user metering preferences;
+an inactive mobile connection need not be awakened to test it. Resolve/probe via
+the same bound network; reject stale results after network, profile or candidate
+changes. Compare like address families. IPv6 host addresses may differ on one
+LAN, so equality of individual IPv6 addresses is not a same-network test.
+Matching public IPv4 is evidence of shared egress, not proof of the same LAN
+(CGNAT/shared NAT); report that distinction and assess local reachability as
+corroboration before offering a same-LAN claim.
+
+Each candidate also needs trustworthy direct-egress evidence. Tailscale/STUN
+endpoint metadata can be a hint, but may include stale, local or multiple
+addresses. An arbitrary exit-capable peer does not automatically expose a fresh
+public-IP observation API. Evaluate existing authenticated peer capabilities
+first; if a TailD peer/helper is necessary, document that compatibility boundary
+rather than silently installing software or assuming every exit node supports it.
+The public-IP discovery service and its privacy/availability contract must be
+selected explicitly in the eventual implementation design; no new external
+probe service has been enabled by this evaluation.
+
+The eventual implementation must preserve manual overrides, administrator-forced
+exit nodes, profile/DNS ownership and configured candidate order. Reevaluate on
+actual network/candidate events, cancel or disregard obsolete generations, and
+avoid route-write loops caused by the trigger's own changes. Unknown/offline or
+failed-probe results must remain visible and cannot be treated as an IP mismatch
+or authority to silently disable a previously selected exit route. Explicitly
+specify unavailable-candidate behavior before implementation.
+
+Required evaluation/acceptance cases are: an active exit node while a protected
+probe still reports direct egress; home/away transitions; two simultaneous
+underlying networks with different priorities; Wi-Fi/mobile handover; IPv4-only,
+IPv6-only and dual stack; shared NAT/CGNAT; stale/offline peers; captive portal and
+probe failure; manual override, managed policy and restart recovery. Verify both
+Windows and Android with actual route/readback evidence before claiming delivery.
+This evaluation adds no ACTIVE implementation stage and does not authorize live
+routing changes on the user's devices.
+
+References: [Android socket protection](https://developer.android.com/reference/android/net/VpnService#protect(int)),
+[network-specific sockets](https://developer.android.com/reference/android/net/Network#bindSocket(java.net.Socket)),
+[Windows interface socket options](https://learn.microsoft.com/en-us/windows/win32/winsock/ipproto-ip-socket-options),
+and [upstream automatic exit nodes](https://tailscale.com/docs/features/exit-nodes/auto-exit-nodes).
 
 ## Evidence and external references
 

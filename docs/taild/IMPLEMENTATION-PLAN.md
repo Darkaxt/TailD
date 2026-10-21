@@ -1,5 +1,32 @@
 # TailD staged execution
 
+## Current execution - October 21 Android Geography map
+
+Already authorized by the user's missing-map feedback. Android specification v1.3
+is authoritative. The version-format delivery below is COMPLETE. B12 remains
+BLOCKED/open; R33 Android implementation is now authorized after Geography; Windows F1/F3
+remain later scope. Geography is COMPLETE; the single ACTIVE stage is Android F0.
+
+| Stage | Status | Acceptance satisfied | Acceptance remaining |
+| --- | --- | --- | --- |
+| Geography correction and traffic assessment | COMPLETE | Offline pinned map/notices, exact country touch/list drill-down, unknown/empty/scope isolation and live auto-dark pass native phone/tablet and large-text checks. Explicitly asserted landscape viewports pass compact-landscape-r2. Map provenance and release-asset guards pass focused checks. Existing native Dashboard/export/restart/storage workflow passes dashboard-regression-r1. R33 source assessment is recorded; no capture/privilege changes activated. | None. |
+| Android app/UID control integration (R33 F0) | ACTIVE | October 21 direct implementation authority and source integration assessment recorded; Geography COMPLETE. | Resolve identity/backend/owned-rule design; integrated native controls; isolated block/unblock, backend loss, reboot, shared UID/profile and coexistence/recovery acceptance. |
+| Android traffic measurement (R33 F2) | NOT STARTED | Shared IP/DNS/equal-weight semantics specified. | F0 COMPLETE; real existing-path counters -> UID/app -> candidates/byte estimates -> native app views/drill-down/export, opt-in/lifecycle/coverage and regression verification. |
+| Android integrated final delivery | NOT STARTED | Existing protected candidate/publication path available. | Geography, F0 and Android F2 COMPLETE; exact-source gates, signed candidate, isolated production upgrade/recovery, one normal monotonic dotted release, independent public asset/package/source/map/notices verification and reviewed cleanup. |
+
+Current advancement blocker: F0's actual optional backend/control/recovery workflow
+is not yet implemented or verified (internal; resolve in F0). No tracked deferrals.
+Geography closure review found no required refactor: native paths reuse the existing
+snapshot/filter/query/export boundary and design system; the static asset and build
+guard add no new runtime service. Native evidence and inspected captures are retained
+at D:/Tools/taild-android-map37-evidence-20261021. Gradle gates 1625/1627/1628/1629
+verified two workers, no parallel execution and a 3 GB Gradle heap with in-process
+Kotlin; each confirmed owned daemon exit. Gate 1625 owns focused unit-test evidence;
+the later tasks build the native test APK and do not claim JVM-test execution.
+The subsequent
+Windows/Android smart exit-node trigger is evaluation only, recorded in the Android
+specification; it creates no concurrent implementation stage or live routing action.
+
 ## Current execution - October 21 Android numeric version suffix
 
 Already authorized by the user's explicit `.N` correction. Android specification
