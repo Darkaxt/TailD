@@ -1,20 +1,23 @@
-TailD Android 1.103.312.38 makes Control D results-first: compact endpoint/actions,
-tabs and search leave most of the phone viewport for DNS entries. Client/profile,
-shared-profile impact, Write setup, policy reload and coverage are in Scope &
-coverage. Actionable errors and unresolved policy writes remain visible.
+TailD Android 1.103.312.39 brings app traffic into Firewall. Each app/shared-UID
+row shows received and sent bytes for the last 24 hours and a compact hourly
+graph. Apps sort by combined traffic descending, then alphabetically. Viewing
+traffic and installed-app metadata does not require Shizuku; optional blocking
+keeps its existing explicit setup and reviewed actions.
 
-DNS entries show relative times, decision and its inverse icon action, First seen
-and seven-day Total. Tap a domain for exact UTC/reason details; Edit retains the
-full rule editor and shared-profile review. Existing READ/WRITE separation stays.
+The diagnosis icon opens a separate page with a larger hourly graph, accessible
+hour values, package/UID/profile/version/signing metadata, observed destinations,
+DNS questions/replies, domain estimates and snapshot export. Unknown and previous
+installation identities stay separate. Resolver context never inflates app totals.
+Dashboard Applications remains available.
 
-Applications has compact Coverage, Export and OS totals controls. Firewall shows
-shared-UID impact up front, with package identifiers behind an information button.
-Dashboard has readable large-text controls, a Select endpoint empty-state action,
-a centered 840 dp maximum content width and dismissible export feedback that does
-not displace other tabs. Large-text phone navigation keeps all names readable.
+Fix Control D's "Provider record is outside the requested scope" error when its
+whole-second CSV response overlaps fractional request boundaries. TailD requests
+an explicit whole-second envelope and retains only the exact local half-open
+interval, preserving duplicate events and scope/resource checks.
 
-Automatic system light/dark mode, official product marks, 48 dp touch targets,
-retained private history and frozen export scopes are preserved. This is an
-in-place update using the existing package and signing certificate. Windows
-retains its separate release channel. No automatic firewall or provider-policy
-change is introduced.
+These are observed VPN bytes, not guaranteed whole-device totals. Direct/excluded
+traffic, encrypted/unobserved DNS and traffic blocked before the VPN remain outside
+that observer. Endpoint DNS history alone cannot identify the originating APK.
+Automatic light/dark mode, retained history, existing package/signing identity and
+the separate Windows channel are preserved. No provider policy, app rule, routing
+or device setting changes automatically.

@@ -11,6 +11,71 @@ import org.junit.Test
 /** Storage edge contracts supplement the real VPN fixture; they do not replace it. */
 class TrafficStoreIntegrationTest {
   @Test
+  fun firewallTotalsSortHourlyAndInstallationOwnership() {
+    val one = AppAccessPackage("test.one", "Zeta", listOf("cert"), 1, 2, 3)
+    val app = AppAccessIdentity(10123, listOf(one))
+    fun identity(value: AppAccessIdentity) =
+        JSONObject()
+            .put("uid", value.uid)
+            .put("label", value.packages.joinToString(" / ") { it.label })
+            .put(
+                "packages",
+                JSONArray(
+                    value.packages.map { pkg ->
+                      JSONObject()
+                          .put("package", pkg.name)
+                          .put("versionCode", pkg.version)
+                          .put("firstInstallTime", pkg.installed)
+                          .put("lastUpdateTime", pkg.updated)
+                          .put("signerSha256", JSONArray(pkg.signers))
+                    }
+                ),
+            )
+    fun row(
+        owner: JSONObject,
+        bytes: Long,
+        sent: Boolean,
+        at: Long,
+        query: JSONObject? = null,
+    ): TrafficRow {
+      val fact =
+          JSONObject().put("identity", owner).put("uid", owner.getInt("uid")).put("upload", sent)
+      if (query != null)
+          fact.put("dns", JSONObject().put("queryIdentity", query).put("blocked", true))
+      return TrafficRow(at, at, bytes, 1, fact.toString(), at, at)
+    }
+    val other = AppAccessIdentity(10124, listOf(one.copy(name = "test.two", label = "Alpha")))
+    val stale = identity(app.copy(packages = listOf(one.copy(version = 2))))
+    val rows =
+        listOf(
+            row(identity(app), 300, true, 3600000),
+            row(identity(app), 200, false, 7200000),
+            row(identity(other), 500, false, 3600000),
+            row(stale, 900, true, 3600000),
+            row(
+                JSONObject()
+                    .put("uid", 1000)
+                    .put("label", "System UID 1000")
+                    .put("packages", JSONArray()),
+                1000,
+                false,
+                7200000,
+                identity(app),
+            ),
+        )
+    val data = TrafficSnapshot(1, 86400001, 1, rows, 0, "fixture", "[]")
+    val result = firewallTrafficApps(listOf(app, other), data)
+    assertEquals(listOf("System UID 1000", "Zeta", "Alpha", "Zeta"), result.map { it.label })
+    val current = result.single { it.current == app }
+    assertEquals(300L, current.sent)
+    assertEquals(200L, current.received)
+    assertEquals(500L, current.hourly.sumOf { it.second })
+    assertEquals(300L, current.hourly.single { it.first == 3600000L }.second)
+    assertFalse(trafficIdentityMatches(stale, app))
+    assertEquals(rows.sumOf { it.bytes }, result.sumOf { it.total })
+  }
+
+  @Test
   fun dedupFrozenWindowsRetentionAndDeletedEpoch() {
     assumeTrue(Build.HARDWARE in listOf("ranchu", "goldfish"))
     val context =

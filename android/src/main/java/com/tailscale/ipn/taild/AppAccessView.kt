@@ -33,7 +33,11 @@ import com.tailscale.ipn.ui.theme.searchBarColors
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun AppAccessView() {
+internal fun AppAccessView(
+    installed: List<AppAccessIdentity> = emptyList(),
+    traffic: TrafficSnapshot? = null,
+    onDiagnosis: ((FirewallTrafficApp) -> Unit)? = null,
+) {
   val context = LocalContext.current
   val model = remember { App.get().tailDAppAccess }
   val state by model.state.collectAsState()
@@ -41,50 +45,76 @@ internal fun AppAccessView() {
   val focus = LocalFocusManager.current
   var search by rememberSaveable { mutableStateOf("") }
   var expanded by rememberSaveable { mutableStateOf<Int?>(null) }
+  var setupDetails by rememberSaveable { mutableStateOf(false) }
+  val snapshot = state.snapshot
+  val apps =
+      remember(snapshot?.apps, installed, traffic, search) {
+        firewallTrafficApps(snapshot?.apps ?: installed, traffic).filter { app ->
+          app.label.contains(search, true) ||
+              app.current?.packages?.any {
+                it.label.contains(search, true) || it.name.contains(search, true)
+              } == true
+        }
+      }
   DisposableEffect(model) {
     model.open()
     onDispose { model.close() }
   }
   LazyColumn(
       Modifier.fillMaxSize().imePadding().testTag("taild-app-access"),
-      contentPadding = PaddingValues(16.dp),
-      verticalArrangement = Arrangement.spacedBy(12.dp),
+      contentPadding =
+          PaddingValues(horizontal = 16.dp, vertical = if (onDiagnosis == null) 16.dp else 8.dp),
+      verticalArrangement = Arrangement.spacedBy(if (onDiagnosis == null) 12.dp else 8.dp),
   ) {
-    item {
-      Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text("App access", Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
-        IconButton(onClick = model::refresh, enabled = state.connected && !state.busy) {
-          Icon(Icons.Default.Refresh, "Refresh app access")
-        }
-      }
-      Text(state.status, style = MaterialTheme.typography.bodySmall)
-      if (!state.journalAvailable)
-          Text(
-              "The ownership journal is unavailable. Policy changes are disabled.",
-              color = MaterialTheme.colorScheme.error,
-          )
-      if (!state.connected) {
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-          TextButton(onClick = model::connect, enabled = !state.busy) { Text("Connect Shizuku") }
-          TextButton(onClick = { uri.openUri("https://shizuku.rikka.app/guide/setup/") }) {
-            Text("Shizuku setup")
+    if (
+        onDiagnosis == null ||
+            setupDetails ||
+            !state.journalAvailable ||
+            state.error != null ||
+            state.busy
+    )
+        item {
+          if (onDiagnosis == null)
+              Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "App access",
+                    Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                IconButton(onClick = model::refresh, enabled = state.connected && !state.busy) {
+                  Icon(Icons.Default.Refresh, "Refresh app access")
+                }
+              }
+          if (onDiagnosis == null || setupDetails)
+              Text(state.status, style = MaterialTheme.typography.bodySmall)
+          if (!state.journalAvailable)
+              Text(
+                  "The ownership journal is unavailable. Policy changes are disabled.",
+                  color = MaterialTheme.colorScheme.error,
+              )
+          if (!state.connected && (onDiagnosis == null || setupDetails)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+              TextButton(onClick = model::connect, enabled = !state.busy) {
+                Text("Connect Shizuku")
+              }
+              TextButton(onClick = { uri.openUri("https://shizuku.rikka.app/guide/setup/") }) {
+                Text("Shizuku setup")
+              }
+            }
           }
+          state.error?.let {
+            Text(
+                it,
+                Modifier.testTag("taild-app-access-error"),
+                color = MaterialTheme.colorScheme.error,
+            )
+          }
+          if (state.busy)
+              LinearProgressIndicator(Modifier.fillMaxWidth().testTag("taild-app-access-busy"))
         }
-      }
-      state.error?.let {
-        Text(
-            it,
-            Modifier.testTag("taild-app-access-error"),
-            color = MaterialTheme.colorScheme.error,
-        )
-      }
-      if (state.busy)
-          LinearProgressIndicator(Modifier.fillMaxWidth().testTag("taild-app-access-busy"))
-    }
-    val snapshot = state.snapshot
-    if (snapshot != null) {
+    if (snapshot != null || onDiagnosis != null) {
       item {
-        if (snapshot.profiles.size > 1)
+        if (snapshot != null && snapshot.profiles.size > 1)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
               snapshot.profiles.forEach { profile ->
                 FilterChip(
@@ -95,33 +125,59 @@ internal fun AppAccessView() {
                 )
               }
             }
-        OutlinedTextField(
-            search,
-            { search = it },
-            Modifier.fillMaxWidth().testTag("taild-app-access-search"),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focus.clearFocus() }),
-            placeholder = { Text("App / package") },
-            shape = MaterialTheme.shapes.extraLarge,
-            colors = MaterialTheme.colorScheme.searchBarColors,
-            leadingIcon = { Icon(Icons.Outlined.Search, "Search apps") },
-        )
-      }
-      val apps =
-          snapshot.apps
-              .filter { app ->
-                app.packages.any {
-                  it.label.contains(search, true) || it.name.contains(search, true)
-                }
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+          OutlinedTextField(
+              search,
+              { search = it },
+              Modifier.weight(1f).testTag("taild-app-access-search"),
+              singleLine = true,
+              keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+              keyboardActions = KeyboardActions(onDone = { focus.clearFocus() }),
+              placeholder = { Text("App / package") },
+              shape = MaterialTheme.shapes.extraLarge,
+              colors = MaterialTheme.colorScheme.searchBarColors,
+              leadingIcon = { Icon(Icons.Outlined.Search, "Search apps") },
+          )
+          if (onDiagnosis != null)
+              IconButton(onClick = { setupDetails = !setupDetails }) {
+                Icon(
+                    Icons.Default.Info,
+                    if (setupDetails) "Hide firewall setup" else "Firewall setup & coverage",
+                )
               }
-              .sortedBy { it.packages.first().label.lowercase() }
-      items(apps, key = { it.uid }) { app ->
+        }
+      }
+      items(apps, key = { it.key }) { row ->
+        val app = row.current
+        if (app == null) {
+          Row(
+              Modifier.fillMaxWidth().testTag("taild-firewall-app"),
+              verticalAlignment = Alignment.CenterVertically,
+          ) {
+            Column(Modifier.weight(1f)) {
+              Text(row.label, maxLines = 2, overflow = TextOverflow.Ellipsis)
+              Text(
+                  "↓ ${trafficBytes(row.received)} · ↑ ${trafficBytes(row.sent)}",
+                  style = MaterialTheme.typography.bodySmall,
+              )
+              HourlyTrafficGraph(row.hourly, Modifier.fillMaxWidth().height(24.dp))
+              Text("Recorded identity", style = MaterialTheme.typography.labelSmall)
+            }
+            IconButton(onClick = { onDiagnosis?.invoke(row) }) {
+              Icon(Icons.Default.Info, "Diagnose ${row.label}")
+            }
+          }
+          HorizontalDivider()
+          return@items
+        }
         val owned = state.owned.singleOrNull { it.identity.uid == app.uid }
-        val present = app.uid in snapshot.blockedUids
+        val present = app.uid in snapshot?.blockedUids.orEmpty()
         val same = owned?.identity?.fingerprint == app.fingerprint
         val pending = owned != null && (owned.phase != "ACTIVE" || !present || !same)
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            Modifier.fillMaxWidth().testTag("taild-firewall-app"),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
           Column(Modifier.weight(1f)) {
             Text(
                 app.packages.joinToString(" / ") { it.label },
@@ -133,11 +189,20 @@ internal fun AppAccessView() {
                     "Shared UID · ${app.packages.size} apps affected",
                     style = MaterialTheme.typography.labelMedium,
                 )
+            if (onDiagnosis != null)
+                Column {
+                  Text(
+                      if (traffic == null) "Traffic unavailable"
+                      else "↓ ${trafficBytes(row.received)} · ↑ ${trafficBytes(row.sent)}",
+                      style = MaterialTheme.typography.bodySmall,
+                  )
+                  HourlyTrafficGraph(row.hourly, Modifier.fillMaxWidth().height(24.dp))
+                }
             Text(
                 when {
-                  !state.connected -> "Current app rule state unknown · backend disconnected"
+                  !state.connected || snapshot == null -> "Rule unknown"
                   pending -> "Recorded change needs reconciliation"
-                  present && same && snapshot.chainEnabled -> "TailD block active"
+                  present && same && snapshot?.chainEnabled == true -> "TailD block active"
                   present && same -> "TailD rule present · Android filter inactive"
                   present -> "Existing rule · not owned by TailD"
                   else -> "No TailD block"
@@ -145,8 +210,17 @@ internal fun AppAccessView() {
                 style = MaterialTheme.typography.bodySmall,
             )
           }
-          IconButton(onClick = { expanded = if (expanded == app.uid) null else app.uid }) {
-            Icon(Icons.Default.Info, "App details for ${app.packages.first().label}")
+          IconButton(
+              onClick = {
+                if (onDiagnosis != null) onDiagnosis(row)
+                else expanded = if (expanded == app.uid) null else app.uid
+              }
+          ) {
+            Icon(
+                Icons.Default.Info,
+                if (onDiagnosis != null) "Diagnose ${row.label}"
+                else "App details for ${app.packages.first().label}",
+            )
           }
           if (pending)
               TextButton(
@@ -156,7 +230,9 @@ internal fun AppAccessView() {
                 Text("Reconcile")
               }
           else if (
-              app.uid != Process.myUid() &&
+              state.connected &&
+                  snapshot != null &&
+                  app.uid != Process.myUid() &&
                   app.packages.none { it.name == context.packageName } &&
                   (!present || same)
           ) {
@@ -168,6 +244,7 @@ internal fun AppAccessView() {
                 enabled =
                     state.journalAvailable &&
                         state.connected &&
+                        snapshot != null &&
                         !state.busy &&
                         state.owned.all { it.phase == "ACTIVE" },
             ) {

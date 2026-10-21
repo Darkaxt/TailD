@@ -166,6 +166,48 @@ class TailDLayoutNativeTest {
             .onNodeWithTag("taild-traffic-content")
             .performScrollToNode(hasTestTag("taild-traffic-search"))
         phase("capture-layout-applications")
+        click(By.text("Firewall"))
+        compose.onNodeWithText("Last 24 hours").assertIsDisplayed()
+        compose.waitUntil(30_000) {
+          compose
+              .onAllNodes(hasContentDescription("Diagnose ", substring = true))
+              .fetchSemanticsNodes()
+              .isNotEmpty()
+        }
+        val firstApp =
+            compose.onAllNodesWithTag("taild-firewall-app").fetchSemanticsNodes().minOf {
+              it.boundsInRoot.top
+            }
+        val appViewport =
+            compose.onNodeWithTag("taild-app-viewport").fetchSemanticsNode().boundsInRoot
+        val appList = compose.onNodeWithTag("taild-app-access").fetchSemanticsNode().boundsInRoot
+        assertTrue(
+            "Firewall results retain half the viewport: $firstApp $appList $appViewport",
+            (appList.bottom - firstApp) / appViewport.height >= 0.5f,
+        )
+        phase("capture-layout-firewall-traffic")
+        compose.onNodeWithTag("taild-app-access-search").performScrollTo().performTextInput("TailD")
+        compose.onNodeWithTag("taild-app-access-search").performImeAction()
+        compose
+            .onNodeWithTag("taild-app-access")
+            .performScrollToNode(hasContentDescription("Diagnose TailD"))
+        val diagnosisTarget =
+            compose
+                .onNodeWithContentDescription("Diagnose TailD")
+                .fetchSemanticsNode()
+                .touchBoundsInRoot
+        assertTrue(
+            "Diagnosis has a 48 dp target",
+            diagnosisTarget.width >= 48 * density - 1 && diagnosisTarget.height >= 48 * density - 1,
+        )
+        compose.onNodeWithContentDescription("Diagnose TailD").performClick()
+        compose.onNodeWithTag("taild-app-diagnosis").assertIsDisplayed()
+        compose.onNodeWithTag("taild-app-access").assertDoesNotExist()
+        compose.onNodeWithText("io.github.darkaxt.taildns").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Version code", substring = true).assertExists()
+        phase("capture-layout-diagnosis")
+        compose.onNodeWithContentDescription("Back to Firewall").performScrollTo().performClick()
+        compose.onNodeWithTag("taild-app-access-search").assertTextContains("TailD")
         // Real export feedback and frozen content are exercised in the existing Dashboard/traffic
         // tests.
         phase("assert-read-only-dashboard")

@@ -26,6 +26,13 @@ private class NativeAppAccess(
       rail.performScrollToNode(hasText("Firewall"))
     }
     compose.onNodeWithText("Firewall").performClick()
+    if (
+        compose
+            .onAllNodesWithContentDescription("Firewall setup & coverage")
+            .fetchSemanticsNodes()
+            .isNotEmpty()
+    )
+        compose.onNodeWithContentDescription("Firewall setup & coverage").performClick()
   }
 
   fun ready(afterBackendRestart: Boolean = false) {
@@ -178,12 +185,12 @@ class TailDAppAccessNativeTest {
       ui.ready()
       compose.onNodeWithText("Shared UID · 2 apps affected").performScrollTo().assertIsDisplayed()
       compose.onNodeWithText("io.github.darkaxt.taild.fixture.one").assertDoesNotExist()
-      ui.action("App details for TailD F0 One")
+      ui.action("Diagnose TailD F0 One / TailD F0 Two")
       compose
           .onNodeWithText("io.github.darkaxt.taild.fixture.one")
           .performScrollTo()
           .assertIsDisplayed()
-      ui.action("App details for TailD F0 One")
+      compose.onNodeWithContentDescription("Back to Firewall").performScrollTo().performClick()
       compose.onNodeWithText("io.github.darkaxt.taild.fixture.one").assertDoesNotExist()
       // Resume the previous owned run through the actual reviewed removal UI.
       // Never clear its journal or reset a platform chain to manufacture a baseline.

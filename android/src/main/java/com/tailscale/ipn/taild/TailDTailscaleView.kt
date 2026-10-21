@@ -120,7 +120,7 @@ fun TailDTailscaleView(
             )
           }
       Column(Modifier.weight(1f)) {
-        if (destination != 1)
+        if (destination != 1 && destination != 3)
             Text(
                 listOf(
                     "TailD · Tailscale",
@@ -178,7 +178,13 @@ fun TailDTailscaleView(
               savedDestinations.SaveableStateProvider(destination) {
                 if (destination == 1)
                     ControlDView(App.get().tailDControlD, settingsNav.onNavigateToDNSSettings)
-                else if (destination == 3) AppAccessView()
+                else if (destination == 3)
+                    FirewallView(
+                        onPreferences = {
+                          selected = 4
+                          destination = 0
+                        }
+                    )
                 else
                     DashboardView(
                         App.get().tailDDashboard,

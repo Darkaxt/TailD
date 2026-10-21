@@ -447,8 +447,12 @@ class ControlDApi(client: OkHttpClient = OkHttpClient()) {
     cdRequire(Regex("[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?").matches(region))
     val query =
         mapOf(
-                "startTime" to from.toString(),
-                "endTime" to until.toString(),
+                "startTime" to from.truncatedTo(java.time.temporal.ChronoUnit.SECONDS).toString(),
+                "endTime" to
+                    until
+                        .truncatedTo(java.time.temporal.ChronoUnit.SECONDS)
+                        .let { if (it == until) it else it.plusSeconds(1) }
+                        .toString(),
                 "endpointId" to binding.endpoint,
             )
             .entries

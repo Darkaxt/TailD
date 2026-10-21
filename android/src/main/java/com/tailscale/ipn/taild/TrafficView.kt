@@ -358,44 +358,7 @@ internal fun TrafficView(
       }
       HorizontalDivider()
     }
-    items(detailRows, key = { it.metadata }) { row ->
-      val fact = row.fact
-      Column {
-        Text(
-            "${fact.optString("remote","Unknown IP")}:${fact.optInt("remotePort")} · ${if(fact.optInt("protocol")==6) "TCP" else if(fact.optInt("protocol")==17) "UDP" else "IP ${fact.optInt("protocol")}"} · ${trafficBytes(row.bytes)}",
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        Text(
-            "Bytes owner UID ${row.uid} · ${Instant.ofEpochMilli(row.first)}",
-            style = MaterialTheme.typography.bodySmall,
-        )
-        val dns = fact.optJSONObject("dns")
-        if (dns != null) {
-          val status =
-              if (dns.optBoolean("blocked")) "Resolver reports Blocked (EDE)"
-              else if (dns.optBoolean("response")) "DNS response ${dns.optInt("code")}"
-              else "Observed DNS question"
-          Text("${dns.optString("name")} · $status", style = MaterialTheme.typography.bodySmall)
-          if (dns.optBoolean("blocked"))
-              Text(
-                  "Query owner UID ${dns.optInt("queryUid",-1)}; missing/system owners do not identify an app.",
-                  style = MaterialTheme.typography.bodySmall,
-              )
-        }
-        val candidates = fact.optJSONArray("candidates") ?: org.json.JSONArray()
-        if (candidates.length() == 0)
-            Text("Domain unassigned", style = MaterialTheme.typography.bodySmall)
-        for (i in 0 until candidates.length()) Text(
-            "${candidates.getJSONObject(i).getString("name")} · 1/${candidates.length()} estimate (${row.bytes}/${candidates.length()} bytes)",
-            style = MaterialTheme.typography.bodySmall,
-        )
-        fact
-            .optString("unknown")
-            .takeIf { it.isNotEmpty() }
-            ?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-        HorizontalDivider()
-      }
-    }
+    items(detailRows, key = { it.metadata }) { row -> TrafficFactContent(row) }
     if (osDetails)
         item {
           usage?.let { os ->
@@ -418,6 +381,61 @@ internal fun TrafficView(
           }
           TextButton(onClick = onRefresh) { Text("Refresh snapshot") }
         }
+  }
+}
+
+@Composable
+internal fun TrafficFactContent(row: TrafficRow) {
+  val fact = row.fact
+  Column {
+    Text(
+        "${fact.optString("remote","Unknown IP")}:${fact.optInt("remotePort")} · ${if(fact.optInt("protocol")==6) "TCP" else if(fact.optInt("protocol")==17) "UDP" else "IP ${fact.optInt("protocol")}"} · ${trafficBytes(row.bytes)}",
+        style = MaterialTheme.typography.bodyMedium,
+    )
+    Text(
+        "Bytes owner UID ${row.uid} · ${Instant.ofEpochMilli(row.first)}",
+        style = MaterialTheme.typography.bodySmall,
+    )
+    Text(
+        "${row.packets} observed packets · ${if (row.upload) "Sent" else "Received"} · last ${Instant.ofEpochMilli(row.last)}",
+        style = MaterialTheme.typography.bodySmall,
+    )
+    val dns = fact.optJSONObject("dns")
+    if (dns != null) {
+      val status =
+          if (dns.optBoolean("blocked")) "Resolver reports Blocked (EDE)"
+          else if (dns.optBoolean("response")) "DNS response ${dns.optInt("code")}"
+          else "Observed DNS question"
+      Text("${dns.optString("name")} · $status", style = MaterialTheme.typography.bodySmall)
+      if (dns.optBoolean("blocked"))
+          Text(
+              "Query owner UID ${dns.optInt("queryUid",-1)}; missing/system owners do not identify an app.",
+              style = MaterialTheme.typography.bodySmall,
+          )
+    }
+    val candidates = fact.optJSONArray("candidates") ?: org.json.JSONArray()
+    if (candidates.length() == 0)
+        Text("Domain unassigned", style = MaterialTheme.typography.bodySmall)
+    for (i in 0 until candidates.length()) Text(
+        "${candidates.getJSONObject(i).getString("name")} · 1/${candidates.length()} estimate (${row.bytes}/${candidates.length()} bytes)",
+        style = MaterialTheme.typography.bodySmall,
+    )
+    fact
+        .optString("unknown")
+        .takeIf { it.isNotEmpty() }
+        ?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+    var observationDetails by remember(row.metadata) { mutableStateOf(false) }
+    TextButton(onClick = { observationDetails = !observationDetails }) {
+      Text("Observation details")
+    }
+    if (observationDetails) {
+      Text(
+          "Owner lookup ${Instant.ofEpochMilli(row.lookupFirst)} → ${Instant.ofEpochMilli(row.lookupLast)}",
+          style = MaterialTheme.typography.bodySmall,
+      )
+      Text(fact.toString(2), style = MaterialTheme.typography.bodySmall)
+    }
+    HorizontalDivider()
   }
 }
 

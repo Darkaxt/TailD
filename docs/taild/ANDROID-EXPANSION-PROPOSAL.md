@@ -1,6 +1,6 @@
 # TailD Android specification
 
-Version 1.4, 2026-10-21. Authoritative Android extension to
+Version 1.5, 2026-10-21. Authoritative Android extension to
 [PRODUCT-SPECIFICATION.md](PRODUCT-SPECIFICATION.md), requirement R37.
 The historical filename is retained to preserve existing links.
 
@@ -10,6 +10,39 @@ Android release. It does not authorize unrelated device deployment, changing
 production provider policy or closing desktop B12. Current stage status lives in
 [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md); historical planning language
 below is superseded by this authority and the parity contract below.
+
+## October 21 Firewall traffic and diagnosis
+
+The user authorizes the following integrated update and normal final Android
+release. Existing blocking, history, privacy, theme and package contracts remain.
+
+- U8: Firewall is the primary app traffic entry. Show received and sent totals
+  per app/shared UID for the last 24 hours. The user's subsequent one-day
+  simplification replaces selectable periods in this view; Dashboard retains its
+  own periods. Show a compact clock-hour traffic graph per row and a larger graph
+  with accessible hourly values on the diagnosis page. Partial edge hours remain
+  within the exact rolling day, local labels include timezone, and graph bytes
+  reconcile to the row total without duplicating resolver context bytes.
+  Sort by combined measured bytes descending, then app name alphabetically with
+  deterministic ties. Traffic inspection works without Shizuku; optional blocking
+  still requires its existing authorized backend. Preserve unassigned/system and
+  historical installation identities separately; never relabel reused UIDs.
+- U9: An accessible diagnosis icon opens a separate full content page with Back,
+  app/package/UID/profile/version/install/update/signer metadata, totals, observed
+  IP/protocol/time/packet and DNS resolution/block evidence, equal-weight domain
+  candidates and unknown/coverage disclosures. Keep the list compact. Retain exact
+  snapshot scope and export; system resolver context must not inflate app bytes.
+  Existing Dashboard Applications remains available. No provider policy writes.
+- U10: Handle the verified Control D whole-second CSV boundary behavior using an
+  explicit transport envelope and exact local half-open interval filtering.
+  Continue rejecting mismatched endpoints, malformed timestamps and records outside
+  that envelope. Preserve duplicate DNS events and truncation/resource accounting.
+  Verify fractional-boundary live READ behavior and focused regressions.
+
+Use existing Material colors/type, 48 dp diagnosis targets, wrapping narrow/large
+text rows and centered 840 dp wide content. Results must retain at least half the
+phone viewport. Verify native navigation, sorting, shared/reused identity, metadata,
+no-backend viewing, live automatic theme, retained upgrade and independent release.
 
 ## October 21 review-driven UI refinement
 

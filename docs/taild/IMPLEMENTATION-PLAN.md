@@ -1,5 +1,38 @@
 # TailD staged execution
 
+## Current execution — October 21 Firewall traffic and diagnosis
+
+Already authorized by the user's Firewall row/diagnosis request and Dashboard
+error report. Android specification v1.5 U8–U10 is authoritative; .38 is baseline.
+Desktop B12 remains BLOCKED and Windows F1/F3 remain outside this update.
+
+| Stage | Status | Acceptance satisfied | Acceptance remaining |
+| --- | --- | --- | --- |
+| Integrated Firewall traffic and provider-boundary correction | COMPLETE | U8–U10 integrated: 24-hour Firewall totals/clock-hour graphs, exact identity/sorting/context-byte reconciliation, separate diagnosis/Back/metadata/export path, normal package inventory without Shizuku, preserved blocking boundaries. CSV regression and live GET envelope pass. Native default/font-1.5/short-landscape phone/tablet/wide checks pass, including at least 50% results space and 48 dp diagnosis targets. | None for source/native implementation. Normally signed real traffic, live theme and upgrade acceptance belong to final delivery below. |
+| Final Android update delivery | ACTIVE | Standing final release authorization; independently verified normal .38 baseline. | Exact-source signed candidate, isolated upgrade/runtime verification, normal publication and independent asset/package/source/signer verification; reviewed cleanup. |
+
+Evidence: D:/Tools/taild-firewall39-evidence-20261021. Native default-r2, large and
+landscape-large pass the complete scope/selection/diagnosis flows; source contracts
+and fractional CSV unit regression pass. Actual native JSON accounting proves
+sorting ties, distinct installation generations, incoming/outgoing sums, hourly
+reconciliation and exclusion of other-UID resolver bytes. The original UI test
+waited for an unmounted lazy row; search/scroll correction resolves that failure.
+A later capture attempt reused existing filenames; a fresh capture directory
+resolves that diagnostic failure without a product workaround.
+
+The live GET-only reproduction returned seven records 500 ms before a fractional
+start. Explicit second bounds succeed, with exact local half-open filtering and
+unchanged endpoint/client guards. Physical .38 recording and Tailscale DNS were
+enabled; endpoint history was readable. No provider policy or phone setting was
+changed. The physical phone disconnected during validation; final delivery uses
+only the isolated owned emulator and does not claim a physical .39 deployment.
+
+Refactoring assessment: reuse the existing private TrafficStore/query/export and
+one original optional Shizuku controller. TrafficFactContent is shared with the
+existing Dashboard. The normal package inventory serves backend-free viewing;
+it cannot authorize a policy operation. No additional observer, scheduler, VPN,
+provider wrapper or required consolidation was introduced. No tracked deferral.
+
 ## Current execution - October 21 review-driven UI refinement
 
 Already authorized by the user's instruction to act on the review results.

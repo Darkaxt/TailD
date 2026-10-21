@@ -11,6 +11,25 @@ class ControlDContractTest {
   private val until = Instant.parse("2026-10-20T10:00:00Z")
 
   @Test
+  fun csvUsesSecondEnvelopeButOwnsExactHalfOpenFractionalWindow() {
+    val start = from.plusMillis(500)
+    val end = from.plusSeconds(1).plusMillis(500)
+    val header = "timestamp,endpointId,clientId,question,action\n"
+    fun row(at: Instant) = "$at,endpoint,phone,test.invalid,0\n"
+    val rows = header + row(from) + row(start) + row(start) + row(end) + row(from.plusSeconds(2))
+    val parsed = parseControlDCsv(rows, binding, start, end)
+    assertEquals(listOf(start, start), parsed.facts.map { it.at })
+    assertFalse(parsed.truncated)
+    assertTrue(parseControlDCsv(rows, binding, start, end, limit = 1).truncated)
+    assertThrows(ControlDFailure::class.java) {
+      parseControlDCsv(header + row(from.minusSeconds(1)), binding, start, end)
+    }
+    assertThrows(ControlDFailure::class.java) {
+      parseControlDCsv(header + row(from.plusSeconds(3)), binding, start, end)
+    }
+  }
+
+  @Test
   fun csvPreservesIdenticalOccurrencesAndExactClientScope() {
     val header =
         "timestamp,endpointId,clientId,profileId,question,action,rrType,trigger,answers\r\n"

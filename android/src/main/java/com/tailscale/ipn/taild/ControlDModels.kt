@@ -557,18 +557,28 @@ fun parseControlDCsv(
         }
     cdRequire(raw["endpointId"] == binding.endpoint, "Provider returned a different endpoint")
     val fact = ControlDDnsFact(raw)
+    // CSV transport uses whole-second bounds. Keep that envelope separate from
+    // exact local ownership; fractional catch-up windows must not fail or overlap.
+    val envelopeFrom = from.truncatedTo(java.time.temporal.ChronoUnit.SECONDS)
+    val envelopeUntil =
+        until.truncatedTo(java.time.temporal.ChronoUnit.SECONDS).let {
+          if (it == until) it else it.plusSeconds(1)
+        }
     cdRequire(
-        fact.at >= from && fact.at <= until && fact.question.length in 1..4096,
+        fact.at >= envelopeFrom && fact.at <= envelopeUntil && fact.question.length in 1..4096,
         "Provider record is outside the requested scope",
     )
-    if (fact.at == until)
-        continue // Provider end can be inclusive; local ownership is [from,until).
     count++
     if (count > limit) {
       truncated = true
       break
     }
-    if (binding.client == null || raw["clientId"] == binding.client) facts += fact
+    if (
+        fact.at >= from &&
+            fact.at < until &&
+            (binding.client == null || raw["clientId"] == binding.client)
+    )
+        facts += fact
   }
   return ControlDDnsSlice(binding, from, until, facts, truncated)
 }
