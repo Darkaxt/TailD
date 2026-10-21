@@ -220,9 +220,26 @@ class TailDDeliveryTest {
     open("settings")
     content(By.text("Collect analytics"))
     val selector = By.desc("Collect analytics").checkable(true)
-    val control = node(selector)
-    if (verifyOnly) assertEquals(enabled, control.isChecked)
-    else if (control.isChecked != enabled) {
+    var observed: Boolean? = null
+    check(
+        device.wait(
+            object : Condition<UiDevice, Boolean> {
+              override fun apply(value: UiDevice): Boolean {
+                val current = find(selector) ?: return false
+                return try {
+                  observed = current.isChecked
+                  true
+                } catch (_: StaleObjectException) {
+                  // Read-only acquisition; no setting action has been dispatched.
+                  false
+                }
+              }
+            },
+            30_000,
+        )
+    )
+    if (verifyOnly) assertEquals(enabled, observed)
+    else if (observed != enabled) {
       // This setting can still be moving during a navigation transition. Invoke
       // its actual accessibility click, then require the persisted UI state.
       fun controls(root: AccessibilityNodeInfo): List<AccessibilityNodeInfo> =
@@ -241,7 +258,8 @@ class TailDDeliveryTest {
       check(
           device.wait(
               object : Condition<UiDevice, Boolean> {
-                override fun apply(value: UiDevice): Boolean = find(selector)?.isChecked == enabled
+                override fun apply(value: UiDevice): Boolean =
+                    value.hasObject(By.copy(selector).checked(enabled).pkg(pkg))
               },
               30_000,
           )
@@ -751,6 +769,25 @@ class TailDDeliveryTest {
     shell("cmd uimode night no")
   }
 
+  private fun openFirewallList() {
+    open("main/devices")
+    click(By.text("Firewall"))
+    val screen =
+        device.wait(
+            object : Condition<UiDevice, String?> {
+              override fun apply(value: UiDevice): String? =
+                  when {
+                    value.hasObject(By.res("taild-app-diagnosis").pkg(pkg)) -> "diagnosis"
+                    value.hasObject(By.res("taild-firewall-ready").pkg(pkg)) -> "list"
+                    else -> null
+                  }
+            },
+            30_000,
+        ) ?: error("Retained Firewall screen did not finish loading")
+    if (screen == "diagnosis") click(By.desc("Back to Firewall"))
+    node(By.res("taild-firewall-ready"))
+  }
+
   /** Verify the new diagnosis export against the retained real-traffic delivery fixture. */
   @Test
   fun appDiagnosisExportRetainsScope() {
@@ -759,8 +796,7 @@ class TailDDeliveryTest {
     device = UiDevice.getInstance(instrumentation)
     signedPackage()
     val uid = checkNotNull(arguments.getString("traffic_uid")).toInt()
-    open("main/devices")
-    click(By.text("Firewall"))
+    openFirewallList()
     click(By.desc("Refresh app traffic"))
     node(By.res("taild-firewall-ready"))
     check(device.wait(Until.gone(By.res("taild-app-access-busy").pkg(pkg)), 30_000))
@@ -779,10 +815,15 @@ class TailDDeliveryTest {
     )
     device.pressBack()
     device.waitForIdle()
-    val diagnosis = By.desc("Diagnose TailD F0 One / TailD F0 Two")
-    node(By.res("taild-app-access"))
-        .scrollUntil(Direction.DOWN, Until.findObject(By.copy(diagnosis).pkg(pkg)))
-    click(diagnosis)
+    val currentRow = By.res("taild-firewall-app").hasDescendant(By.desc("Block app TailD F0 One"))
+    val list = node(By.res("taild-app-access"))
+    if (!device.hasObject(By.copy(currentRow).pkg(pkg)))
+        list.scrollUntil(Direction.DOWN, Until.findObject(By.copy(currentRow).pkg(pkg)))
+    // Resumed fixture installs create new generations. Select the current installation,
+    // not an older recorded row with the same display label and larger byte totals.
+    val diagnosis = node(currentRow).findObject(By.desc("Diagnose TailD F0 One / TailD F0 Two"))
+    diagnosis.click()
+    device.waitForIdle()
     node(By.desc(Pattern.compile("Hourly observed traffic; peak .*")))
     click(By.desc("Export app diagnosis snapshot"))
     val picker =
@@ -839,6 +880,43 @@ class TailDDeliveryTest {
     )
   }
 
+  /** Caller updates only the owned traffic fixtures after the current-installation export check. */
+  @Test
+  fun historicalDiagnosisRetainsPackageMetadata() {
+    assumeTrue(Build.HARDWARE in listOf("ranchu", "goldfish"))
+    assumeTrue(arguments.getString("taild_delivery") == "true")
+    device = UiDevice.getInstance(instrumentation)
+    signedPackage()
+    openFirewallList()
+    click(By.desc("Refresh app traffic"))
+    node(By.res("taild-firewall-ready"))
+    check(device.wait(Until.gone(By.res("taild-app-access-busy").pkg(pkg)), 30_000))
+    enterText(By.clazz("android.widget.EditText"), "TailD F0")
+    val currentRow = By.res("taild-firewall-app").hasDescendant(By.desc("Block app TailD F0 One"))
+    if (!device.hasObject(By.copy(currentRow).pkg(pkg)))
+        node(By.res("taild-app-access"))
+            .scrollUntil(Direction.DOWN, Until.findObject(By.copy(currentRow).pkg(pkg)))
+    node(currentRow).findObject(By.desc("Diagnose TailD F0 One / TailD F0 Two")).click()
+    node(By.text("No recorded traffic"))
+    node(By.text("No retained destinations in this day."))
+    click(By.desc("Back to Firewall"))
+    node(By.res("taild-app-access")).scroll(Direction.UP, 1f)
+    val recordedRow =
+        By.res("taild-firewall-app")
+            .hasDescendant(By.text("Recorded identity"))
+            .hasDescendant(By.desc("Diagnose TailD F0 One / TailD F0 Two"))
+    if (!device.hasObject(By.copy(recordedRow).pkg(pkg)))
+        node(By.res("taild-app-access"))
+            .scrollUntil(Direction.DOWN, Until.findObject(By.copy(recordedRow).pkg(pkg)))
+    node(recordedRow).findObject(By.desc("Diagnose TailD F0 One / TailD F0 Two")).click()
+    node(By.desc(Pattern.compile("Hourly observed traffic; peak .*")))
+    click(By.desc("App & coverage details"))
+    node(By.res("taild-firewall-details"))
+    node(By.text("Previous installation"))
+    content(By.text("io.github.darkaxt.taild.fixture.one"))
+    click(By.text("Close"))
+  }
+
   /** Exercise the normally signed/R8 package through its public UI only. */
   private suspend fun verifyAuditRelease() {
     fun shell(command: String) {
@@ -865,9 +943,10 @@ class TailDDeliveryTest {
     shell("wm size 1080x2400")
     shell("wm density 480")
     phase("production-firewall-backend")
-    open("main/devices")
-    click(By.text("Firewall"))
-    click(By.desc("Firewall setup & coverage"))
+    openFirewallList()
+    node(By.res("taild-app-access"))
+    if (!device.hasObject(By.desc("Hide firewall setup").pkg(pkg)))
+        click(By.desc("Firewall setup & coverage"))
     val entry =
         device.wait(
             object : Condition<UiDevice, UiObject2?> {
@@ -887,8 +966,8 @@ class TailDDeliveryTest {
               .click()
     }
     node(By.textContains("Android firewall state inspected."))
-    node(By.clazz("android.widget.EditText")).click()
-    node(By.clazz("android.widget.EditText")).text = "TailD F0"
+    click(By.clazz("android.widget.EditText"))
+    enterText(By.clazz("android.widget.EditText"), "TailD F0")
     dismissKeyboard()
     phase("capture-signed-firewall")
     click(By.desc("Block app TailD F0 One"))
@@ -903,21 +982,31 @@ class TailDDeliveryTest {
     analytics(true)
     phase("production-traffic")
     analytics(false)
-    open("main/devices")
-    click(By.text("Firewall"))
+    openFirewallList()
     click(By.desc("Refresh app traffic"))
-    node(By.clazz("android.widget.EditText")).click()
-    node(By.clazz("android.widget.EditText")).text = "TailD F0"
+    node(By.res("taild-firewall-ready"))
+    check(device.wait(Until.gone(By.res("taild-app-access-busy").pkg(pkg)), 30_000))
+    click(By.clazz("android.widget.EditText"))
+    enterText(By.clazz("android.widget.EditText"), "TailD F0")
     dismissKeyboard()
     node(By.text("Last 24 hours"))
-    val diagnosis = By.desc("Diagnose TailD F0 One / TailD F0 Two")
-    node(By.res("taild-app-access"))
-        .scrollUntil(Direction.DOWN, Until.findObject(By.copy(diagnosis).pkg(pkg)))
+    val currentRow = By.res("taild-firewall-app").hasDescendant(By.desc("Block app TailD F0 One"))
+    val list = node(By.res("taild-app-access"))
+    if (!device.hasObject(By.copy(currentRow).pkg(pkg)))
+        list.scrollUntil(Direction.DOWN, Until.findObject(By.copy(currentRow).pkg(pkg)))
+    // Resumed fixture installs create new generations. Select the current installation,
+    // not an older recorded row with the same display label and larger byte totals.
+    val diagnosis = node(currentRow).findObject(By.desc("Diagnose TailD F0 One / TailD F0 Two"))
     phase("capture-signed-firewall-hourly")
-    click(diagnosis)
+    diagnosis.click()
+    device.waitForIdle()
     node(By.res("taild-app-diagnosis"))
     node(By.desc(Pattern.compile("Hourly observed traffic; peak .*")))
-    node(By.text("io.github.darkaxt.taild.fixture.one"))
+    node(By.res("taild-diagnosis-table-heading"))
+    node(By.res("taild-diagnosis-destination-row"))
+    click(By.desc("App & coverage details"))
+    content(By.text("io.github.darkaxt.taild.fixture.one"))
+    click(By.text("Close"))
     phase("capture-signed-diagnosis-light")
     shell("cmd uimode night yes")
     node(By.res("taild-app-diagnosis"))

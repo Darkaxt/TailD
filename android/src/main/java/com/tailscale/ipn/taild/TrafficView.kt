@@ -265,7 +265,7 @@ internal fun TrafficView(
       recordingError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
       if (data != null) {
         Text(
-            "${trafficBytes(data.received)} received · ${trafficBytes(data.sent)} sent",
+            "IN ${trafficBytes(data.received)} · OUT ${trafficBytes(data.sent)}",
             style = MaterialTheme.typography.titleMedium,
         )
         Text("Observed VPN traffic · this device", style = MaterialTheme.typography.labelLarge)
@@ -328,7 +328,7 @@ internal fun TrafficView(
       ) {
         Text(identity.getString("label"), style = MaterialTheme.typography.titleMedium)
         Text(
-            "UID $uid · ${trafficBytes(rows.filter {!it.upload}.sumOf {it.bytes})} received · ${trafficBytes(rows.filter {it.upload}.sumOf {it.bytes})} sent"
+            "UID $uid · IN ${trafficBytes(rows.filter {!it.upload}.sumOf {it.bytes})} · OUT ${trafficBytes(rows.filter {it.upload}.sumOf {it.bytes})}"
         )
         val blocked =
             data
@@ -365,7 +365,7 @@ internal fun TrafficView(
             Text(os.coverage, style = MaterialTheme.typography.bodySmall)
             Text("Read ${Instant.ofEpochMilli(os.at)}", style = MaterialTheme.typography.bodySmall)
             for (row in os.rows) Text(
-                "${row.labels.joinToString(" / ").ifEmpty { "UID ${row.uid}" }} · ${trafficBytes(row.received)} received · ${trafficBytes(row.sent)} sent",
+                "${row.labels.joinToString(" / ").ifEmpty { "UID ${row.uid}" }} · IN ${trafficBytes(row.received)} · OUT ${trafficBytes(row.sent)}",
                 style = MaterialTheme.typography.bodySmall,
             )
           }
@@ -397,7 +397,7 @@ internal fun TrafficFactContent(row: TrafficRow) {
         style = MaterialTheme.typography.bodySmall,
     )
     Text(
-        "${row.packets} observed packets · ${if (row.upload) "Sent" else "Received"} · last ${Instant.ofEpochMilli(row.last)}",
+        "${row.packets} observed packets · ${if (row.upload) "OUT" else "IN"} · last ${Instant.ofEpochMilli(row.last)}",
         style = MaterialTheme.typography.bodySmall,
     )
     val dns = fact.optJSONObject("dns")

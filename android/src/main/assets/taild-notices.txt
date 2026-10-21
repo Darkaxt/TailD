@@ -56,3 +56,8 @@ https://github.com/AhmetCanArslan/ShizuWall/tree/8a51d90ec7fed3d2e53e027fe997052
 TailD's modified vector is in android/src/main/res/drawable/taild_brand_shizuwall.xml
 at https://github.com/Darkaxt/TailD . This mark identifies the integration
 reference; no endorsement or bundling of the standalone ShizuWall app is claimed.
+
+Traffic and latency charts use Vico 1.15.0, Apache-2.0.
+Copyright 2023 by Patryk Goworowski and Patrick Michalik.
+Source and license: https://github.com/patrykandpatrick/vico/tree/v1.15.0
+The Apache License text is bundled as apache-2.0.txt.

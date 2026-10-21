@@ -166,6 +166,69 @@ class TailDLayoutNativeTest {
             .onNodeWithTag("taild-traffic-content")
             .performScrollToNode(hasTestTag("taild-traffic-search"))
         phase("capture-layout-applications")
+        val layoutAt = System.currentTimeMillis() - 100
+        val packets = org.json.JSONArray()
+        fun layoutPacket(
+            index: Int,
+            sent: Boolean,
+            name: String? = null,
+            blocked: Boolean = false,
+        ) {
+          val fact =
+              org.json
+                  .JSONObject()
+                  .put("at", layoutAt)
+                  .put("bytes", if (name == null) (60000 / (index + 1)) else 64)
+                  .put("packets", 1)
+                  .put(
+                      "scope",
+                      org.json.JSONObject().put("id", "layout-table").put("configuration", "{}"),
+                  )
+                  .put("upload", sent)
+                  .put("protocol", if (name == null) 6 else 17)
+                  .put("local", "100.64.0.2")
+                  .put("remote", if (name == null) "203.0.113.${index + 1}" else "100.100.100.100")
+                  .put("localPort", 40000 + index)
+                  .put("remotePort", if (name == null) 443 else 53)
+                  .put("uid", context.applicationInfo.uid)
+                  .put("lookupAt", layoutAt)
+                  .put("candidates", org.json.JSONArray())
+          if (name != null)
+              fact.put(
+                  "dns",
+                  org.json
+                      .JSONObject()
+                      .put("id", index)
+                      .put("name", name)
+                      .put("canonical", name)
+                      .put("type", 1)
+                      .put("class", 1)
+                      .put("response", !sent)
+                      .put("blocked", blocked),
+              )
+          packets.put(fact)
+        }
+        repeat(5) { layoutPacket(it, it % 2 == 0) }
+        layoutPacket(5, true, "alpha.layout.invalid")
+        layoutPacket(6, false, "alpha.layout.invalid", blocked = true)
+        layoutPacket(7, true, "beta.layout.invalid")
+        layoutPacket(8, false, "beta.layout.invalid")
+        TrafficStore(context).use { store ->
+          store.clear()
+          val session = "layout-table-${System.nanoTime()}"
+          assertTrue(
+              store.commit(
+                  org.json
+                      .JSONObject()
+                      .put("session", session)
+                      .put("sequence", 1)
+                      .put("dropped", 0)
+                      .put("unacknowledged", 0)
+                      .put("facts", packets),
+                  session,
+              )
+          )
+        }
         click(By.text("Firewall"))
         compose.onNodeWithText("Last 24 hours").assertIsDisplayed()
         compose.waitUntil(30_000) {
@@ -220,8 +283,46 @@ class TailDLayoutNativeTest {
         compose.onNodeWithContentDescription("Diagnose TailD").performClick()
         compose.onNodeWithTag("taild-app-diagnosis").assertIsDisplayed()
         compose.onNodeWithTag("taild-app-access").assertDoesNotExist()
+        compose.onNodeWithTag("taild-diagnosis-hourly-chart").assertIsDisplayed()
+        val diagnosisBounds =
+            compose.onNodeWithTag("taild-app-diagnosis").fetchSemanticsNode().boundsInRoot
+        val heading =
+            compose.onNodeWithTag("taild-diagnosis-table-heading").fetchSemanticsNode().boundsInRoot
+        if (context.resources.configuration.fontScale <= 1.01f)
+            assertTrue(
+                "Diagnosis table begins within 340 dp",
+                heading.top - diagnosisBounds.top <= 340 * density + 1,
+            )
+        compose
+            .onNodeWithTag("taild-app-diagnosis")
+            .performScrollToNode(hasTestTag("taild-diagnosis-destination-row"))
+        assertTrue(
+            compose
+                .onAllNodesWithTag("taild-diagnosis-destination-row")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        )
+        compose.onNodeWithText("DNS (2)").performScrollTo().performClick()
+        compose.onNodeWithText("alpha.layout.invalid").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Most seen ↓").performScrollTo().performClick()
+        compose.onNodeWithText("Name A–Z ↑").assertIsDisplayed()
+        compose.onNodeWithTag("taild-app-diagnosis").performScrollToIndex(0)
+        phase("capture-layout-diagnosis-dns")
+        compose
+            .onNodeWithTag("taild-app-diagnosis")
+            .performScrollToNode(hasTestTag("taild-diagnosis-dns-row"))
+        compose.onAllNodesWithTag("taild-diagnosis-dns-row").onFirst().performClick()
+        compose.onNodeWithText("Packet records (2)").performScrollTo().performClick()
+        compose.onNodeWithText("Close").performClick()
+        compose.onNodeWithText("Destinations (6)").performScrollTo().performClick()
+        compose
+            .onNodeWithContentDescription("App & coverage details")
+            .performScrollTo()
+            .performClick()
         compose.onNodeWithText("io.github.darkaxt.taildns").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Version code", substring = true).assertExists()
+        compose.onNodeWithText("Close").performClick()
+        compose.onNodeWithTag("taild-app-diagnosis").performScrollToIndex(0)
         phase("capture-layout-diagnosis")
         compose.onNodeWithContentDescription("Back to Firewall").performScrollTo().performClick()
         compose.onNodeWithTag("taild-app-access-search").assertTextContains("TailD")

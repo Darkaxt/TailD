@@ -5,14 +5,9 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,12 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.tailscale.ipn.App
-import com.tailscale.ipn.R
 import java.time.Instant
 import java.util.Locale
 import kotlinx.coroutines.CancellationException
@@ -278,149 +271,6 @@ internal fun FirewallView(onPreferences: () -> Unit) {
           }
         }
       }
-}
-
-@Composable
-internal fun FirewallDiagnosisView(selection: FirewallDiagnosis, onBack: () -> Unit) {
-  val entry = selection.app
-  val data = selection.snapshot
-  val model = App.get().tailDDashboard
-  val context = LocalContext.current
-  val exportState by model.state.collectAsState()
-  val feedback = remember { SnackbarHostState() }
-  val exporter =
-      rememberLauncherForActivityResult(
-          ActivityResultContracts.CreateDocument("application/json")
-      ) {
-        model.writeExport(context.contentResolver, it)
-      }
-  LaunchedEffect(exportState.exportNotice) {
-    exportState.exportNotice?.let { notice ->
-      feedback.showSnackbar(notice, withDismissAction = true)
-      model.dismissExportNotice(notice)
-    }
-  }
-  val relevant =
-      remember(selection) {
-        data?.rows.orEmpty().filter {
-          it.fact.getJSONObject("identity").toString() in entry.recorded ||
-              it.fact.optJSONObject("dns")?.optJSONObject("queryIdentity")?.toString() in
-                  entry.recorded
-        }
-      }
-  Box(Modifier.fillMaxSize()) {
-    LazyColumn(
-        Modifier.align(Alignment.TopCenter)
-            .widthIn(max = 840.dp)
-            .fillMaxSize()
-            .testTag("taild-app-diagnosis"),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-      item {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-          IconButton(onClick = onBack) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back to Firewall")
-          }
-          Text(entry.label, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
-          if (data != null)
-              IconButton(
-                  onClick = {
-                    if (model.prepareTrafficExport(data.copy(rows = relevant), null))
-                        exporter.launch("TailD-app-traffic-${data.revision}.json")
-                  }
-              ) {
-                Icon(
-                    painterResource(R.drawable.baseline_drive_folder_upload_24),
-                    "Export app diagnosis snapshot",
-                )
-              }
-        }
-        Text(
-            if (data == null) "Traffic snapshot unavailable"
-            else "${trafficBytes(entry.received)} received · ${trafficBytes(entry.sent)} sent",
-            style = MaterialTheme.typography.titleMedium,
-        )
-        Text("Observed VPN traffic · this device", style = MaterialTheme.typography.labelLarge)
-        HourlyTrafficGraph(entry.hourly, Modifier.fillMaxWidth().height(80.dp))
-        if (entry.hourly.isNotEmpty()) {
-          val format =
-              java.time.format.DateTimeFormatter.ofPattern("HH:mm z")
-                  .withZone(java.time.ZoneId.systemDefault())
-          Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(
-                format.format(Instant.ofEpochMilli(entry.hourly.first().first)),
-                style = MaterialTheme.typography.labelSmall,
-            )
-            Text(
-                format.format(Instant.ofEpochMilli(entry.hourly.last().first)),
-                style = MaterialTheme.typography.labelSmall,
-            )
-          }
-          var hourlyDetails by remember { mutableStateOf(false) }
-          TextButton(onClick = { hourlyDetails = !hourlyDetails }) { Text("Hourly traffic") }
-          if (hourlyDetails)
-              entry.hourly.forEach { (hour, bytes) ->
-                Text(
-                    "${format.format(Instant.ofEpochMilli(hour))} · ${trafficBytes(bytes)}",
-                    style = MaterialTheme.typography.bodySmall,
-                )
-              }
-        }
-        data?.let {
-          Text(
-              "${Instant.ofEpochMilli(it.from)} → ${Instant.ofEpochMilli(it.until)} UTC",
-              style = MaterialTheme.typography.bodySmall,
-          )
-        }
-        if (entry.current == null)
-            Text(
-                "Recorded identity · not assigned to a current installation",
-                style = MaterialTheme.typography.bodySmall,
-            )
-        entry.current?.let { current ->
-          Text("UID ${current.uid} · Profile ${current.profile}")
-          current.packages.forEach { pkg ->
-            Text(pkg.name, style = MaterialTheme.typography.titleSmall)
-            Text(
-                "Version code ${pkg.version}\nInstalled ${Instant.ofEpochMilli(pkg.installed)}\nUpdated ${Instant.ofEpochMilli(pkg.updated)}",
-                style = MaterialTheme.typography.bodySmall,
-            )
-            pkg.signers.forEach {
-              Text("Signer SHA-256 $it", style = MaterialTheme.typography.bodySmall)
-            }
-          }
-        }
-        var coverage by remember { mutableStateOf(false) }
-        TextButton(onClick = { coverage = !coverage }) { Text("Coverage & identity details") }
-        if (coverage) {
-          Text(
-              data?.coverage ?: "Traffic snapshot unavailable",
-              style = MaterialTheme.typography.bodySmall,
-          )
-          Text(
-              "Resolver context can be owned by another UID; its bytes are excluded from this app's totals. Control D history is endpoint/client scoped and does not establish app ownership.",
-              style = MaterialTheme.typography.bodySmall,
-          )
-          data?.let {
-            Text(
-                "${it.boundaryBytes} unallocated boundary bytes · revision ${it.revision}\n${it.sessions}",
-                style = MaterialTheme.typography.bodySmall,
-            )
-          }
-          entry.recorded.forEach {
-            Text(JSONObject(it).toString(2), style = MaterialTheme.typography.bodySmall)
-          }
-        }
-        if (relevant.isEmpty())
-            Text(
-                "No retained traffic or attributed DNS observations in this period. This does not prove no activity."
-            )
-      }
-      items(relevant, key = { it.metadata }) { TrafficFactContent(it) }
-    }
-    SnackbarHost(feedback, Modifier.align(Alignment.BottomCenter))
-  }
 }
 
 @Composable

@@ -11,6 +11,70 @@ import org.junit.Test
 /** Storage edge contracts supplement the real VPN fixture; they do not replace it. */
 class TrafficStoreIntegrationTest {
   @Test
+  fun diagnosisTablesKeepMeasuredBytesAndDnsCountsDistinct() {
+    val owner = JSONObject().put("uid", 10123).put("label", "Fixture").put("packages", JSONArray())
+    val resolver =
+        JSONObject().put("uid", 1000).put("label", "Resolver").put("packages", JSONArray())
+    fun observation(
+        bytes: Long,
+        upload: Boolean,
+        address: String,
+        dns: JSONObject? = null,
+        context: Boolean = false,
+    ): TrafficRow {
+      val fact =
+          JSONObject()
+              .put("identity", if (context) resolver else owner)
+              .put("uid", if (context) 1000 else 10123)
+              .put("upload", upload)
+              .put("remote", address)
+              .put("remotePort", if (dns == null) 443 else 53)
+              .put("protocol", if (dns == null) 6 else 17)
+      if (dns != null) fact.put("dns", dns.put("queryIdentity", owner))
+      else
+          fact.put(
+              "candidates",
+              JSONArray()
+                  .put(JSONObject().put("name", "alpha.test"))
+                  .put(JSONObject().put("name", "beta.test")),
+          )
+      return TrafficRow(3600001, 3600001, bytes, 1, fact.toString(), 3600001, 3600001)
+    }
+    fun dns(name: String, response: Boolean, blocked: Boolean = false) =
+        JSONObject().put("name", name).put("response", response).put("blocked", blocked)
+    val rows =
+        listOf(
+            observation(100, true, "203.0.113.1"),
+            observation(400, false, "203.0.113.1"),
+            observation(60, true, "100.100.100.100", dns("alpha.test", false)),
+            observation(70, true, "100.100.100.100", dns("beta.test", false)),
+            observation(
+                90,
+                false,
+                "100.100.100.100",
+                dns("alpha.test", true, true),
+                context = true,
+            ),
+            observation(80, false, "100.100.100.100", dns("beta.test", true)),
+        )
+    val entry = FirewallTrafficApp("fixture", "Fixture", null, setOf(owner.toString()), 230, 480)
+    val destinations = firewallDestinations(entry, rows)
+    assertEquals(listOf(500L, 210L), destinations.map { it.total })
+    assertEquals(230L, destinations.sumOf { it.sent })
+    assertEquals(480L, destinations.sumOf { it.received })
+    assertEquals(listOf("alpha.test", "beta.test"), destinations.first().candidates)
+    val names = firewallDnsNames(rows)
+    assertEquals(listOf("alpha.test", "beta.test"), names.map { it.name })
+    assertEquals(listOf(1L, 1L), names.map { it.questions })
+    assertEquals(listOf(1L, 1L), names.map { it.replies })
+    assertEquals(listOf(1L, 0L), names.map { it.blocked })
+    val owned = rows.filter { it.uid == 10123 }
+    val data = TrafficSnapshot(1, 86400001, 1, rows, 0, "fixture", "[]")
+    assertEquals(480L, hourlyTraffic(owned.filter { !it.upload }, data).sumOf { it.second })
+    assertEquals(230L, hourlyTraffic(owned.filter { it.upload }, data).sumOf { it.second })
+  }
+
+  @Test
   fun firewallTotalsSortHourlyAndInstallationOwnership() {
     val one = AppAccessPackage("test.one", "Zeta", listOf("cert"), 1, 2, 3)
     val app = AppAccessIdentity(10123, listOf(one))

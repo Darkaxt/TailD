@@ -1,6 +1,6 @@
 # TailD Android specification
 
-Version 1.5, 2026-10-21. Authoritative Android extension to
+Version 1.6, 2026-10-22. Authoritative Android extension to
 [PRODUCT-SPECIFICATION.md](PRODUCT-SPECIFICATION.md), requirement R37.
 The historical filename is retained to preserve existing links.
 
@@ -16,7 +16,7 @@ below is superseded by this authority and the parity contract below.
 The user authorizes the following integrated update and normal final Android
 release. Existing blocking, history, privacy, theme and package contracts remain.
 
-- U8: Firewall is the primary app traffic entry. Show received and sent totals
+- U8: Firewall is the primary app traffic entry. Show IN and OUT totals
   per app/shared UID for the last 24 hours. The user's subsequent one-day
   simplification replaces selectable periods in this view; Dashboard retains its
   own periods. Show a compact clock-hour traffic graph per row and a larger graph
@@ -40,6 +40,21 @@ release. Existing blocking, history, privacy, theme and package contracts remain
   Continue rejecting mismatched endpoints, malformed timestamps and records outside
   that envelope. Preserve duplicate DNS events and truncation/resource accounting.
   Verify fractional-boundary live READ behavior and focused regressions.
+
+- U11: The October 22 design correction replaces the diagnosis event dump with
+  an analysis screen: compact app header and IN/OUT totals, a Vico chart
+  using the already-pinned dependency with separate hourly IN/OUT series,
+  local-hour and byte axes, and compact sortable destination and DNS tables.
+  Destination totals and relative bars use measured IP traffic only. DNS rows
+  show observed questions/replies/blocked replies; ambiguous domains remain
+  candidates, never exact measured domain bytes. Preserve zero-data states,
+  system-resolver context exclusion, exact identity generations and export.
+  App identity, exact boundaries, coverage and raw packet records are on-demand.
+  Phone 360 dp default: table header starts within 340 dp of the content top,
+  and normal rows have 48 dp touch targets. At font 1.5 and short landscape,
+  chart/controls and all columns remain readable and vertically scrollable.
+  Verify populated native tables, sorting, disclosures, chart/accounting sums,
+  current/historical metadata, light/dark and signed real traffic/export.
 
 Use existing Material colors/type, 48 dp diagnosis targets, wrapping narrow/large
 text rows and centered 840 dp wide content. Results must retain at least half the

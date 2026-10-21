@@ -163,7 +163,7 @@ internal fun AppAccessView(
             Column(Modifier.weight(1f)) {
               Text(row.label, maxLines = 2, overflow = TextOverflow.Ellipsis)
               Text(
-                  "↓ ${trafficBytes(row.received)} · ↑ ${trafficBytes(row.sent)}",
+                  "IN ${trafficBytes(row.received)} · OUT ${trafficBytes(row.sent)}",
                   style = MaterialTheme.typography.bodySmall,
               )
               HourlyTrafficGraph(row.hourly, Modifier.fillMaxWidth().height(24.dp))
@@ -199,7 +199,7 @@ internal fun AppAccessView(
                 Column {
                   Text(
                       if (traffic == null) "Traffic unavailable"
-                      else "↓ ${trafficBytes(row.received)} · ↑ ${trafficBytes(row.sent)}",
+                      else "IN ${trafficBytes(row.received)} · OUT ${trafficBytes(row.sent)}",
                       style = MaterialTheme.typography.bodySmall,
                   )
                   HourlyTrafficGraph(row.hourly, Modifier.fillMaxWidth().height(24.dp))

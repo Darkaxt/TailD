@@ -3,13 +3,13 @@
 ## Current execution — October 21 Firewall traffic and diagnosis
 
 Already authorized by the user's Firewall row/diagnosis request and Dashboard
-error report. Android specification v1.5 U8–U10 is authoritative; .38 is baseline.
+error report. Android specification v1.6 U8–U11 is authoritative; .38 is baseline.
 Desktop B12 remains BLOCKED and Windows F1/F3 remain outside this update.
 
 | Stage | Status | Acceptance satisfied | Acceptance remaining |
 | --- | --- | --- | --- |
 | Integrated Firewall traffic and provider-boundary correction | COMPLETE | U8–U10 integrated: 24-hour Firewall totals/clock-hour graphs, exact identity/sorting/context-byte reconciliation, separate diagnosis/Back/metadata/export path, normal package inventory without Shizuku, preserved blocking boundaries. CSV regression and live GET envelope pass. Native default/font-1.5/short-landscape phone/tablet/wide checks pass, including at least 50% results space and 48 dp diagnosis targets. | None for source/native implementation. Normally signed real traffic, live theme and upgrade acceptance belong to final delivery below. |
-| Final Android update delivery | ACTIVE | Standing final release authorization; independently verified normal .38 baseline. | Exact-source signed candidate, isolated upgrade/runtime verification, normal publication and independent asset/package/source/signer verification; reviewed cleanup. |
+| Final Android update delivery | ACTIVE | Standing final release authorization; independently verified .38 baseline; U8–U11 source/native checks, populated Vico chart and destination/DNS tables with IN/OUT labels, default/large/short-landscape visual acceptance. | Exact-source signed candidate, real traffic/export/current and historical identity/recovery, normal publication and independent verification; reviewed cleanup. |
 
 Evidence: D:/Tools/taild-firewall39-evidence-20261021. Native default-r2, large and
 landscape-large pass the complete scope/selection/diagnosis flows; source contracts
@@ -57,6 +57,29 @@ checks pass on phone/tablet/wide, including setup visibility without scrolling,
 focus across toggles/refresh, half-viewport results, 48 dp diagnosis targets and
 separate-page navigation. Gate 1690 verifies two workers, nonparallel execution,
 3 GB Gradle with in-process Kotlin, successful assembly and owned daemon exit.
+
+October 22 user correction (U11): the diagnosis view is too close to a raw
+observation log. The third unpublished candidate (39675713775, 0919959) is held.
+Its package/source/signatures, fresh .38 upgrade/history and system-theme matrix
+pass. Real blocking/restoration and fixture traffic pass, but final audit/export
+has not passed. External harness continuations exposed stale read handles,
+retained setup/diagnosis state and ambiguous same-label historical selection;
+these are test-driver corrections, never a runtime acceptance pass.
+Implement the compact Vico chart and destination/DNS tables within this single
+ACTIVE delivery stage, then rebuild the same unpublished sequence. No release
+is authorized before U11 and every remaining acceptance gate pass.
+
+U11 source/native acceptance passes: analysis-final-default and analysis-final-large
+cover phone/tablet/wide; analysis-axis-landscape passes the short large-text matrix.
+Visual review corrected a clipped compact hour axis; 88 dp short-window chart,
+inline totals and HH ticks remain readable. Default table heading remains within
+340 dp; metadata and lazy packet records are on demand. Actual native accounting
+keeps IN/OUT sums distinct and excludes resolver context; destination/DNS sorting
+and selection pass. The current source reuses the pinned Vico 1.15 dependency
+and Material theme. No new observer or dependency upgrade, no tracked deferral.
+Local gate verifies two workers, nonparallel execution, 3 GB Gradle/in-process
+Kotlin, successful assembly and owned daemon exit. Final signed runtime, export,
+normal public delivery and cleanup remain unresolved acceptance criteria.
 
 ## Current execution - October 21 review-driven UI refinement
 
