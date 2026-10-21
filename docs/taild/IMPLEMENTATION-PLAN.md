@@ -10,16 +10,28 @@ No device deployment or provider-policy change belongs to this cycle.
 | --- | --- | --- | --- |
 | Core promotion and Windows release | COMPLETE | Trusted exact-head core PR 34 reviewed and merged as d9c112d; normal windows-v1.105.0+36 independently verified against the existing Ed25519 key and all five payloads. | None. |
 | TailDNS Android promotion and release | COMPLETE | Exact-head trusted Android/core checks, unchanged-tree PR 24 merge ce33814, normal v1.103.312+34 APK/package/signer/provenance/ABI and companion verification. | None. |
-| TailD inheritance and Windows delivery | ACTIVE | All ten overlay source inputs unchanged; independent Go module origin/checksum agrees. Inheritance run 39553876395 reproduced the reviewed-core guard failure before promotion. | Align reviewed pins and immutable signer tooling; focused regressions, GitHub checked ancestry promotion, fresh Windows package/recovery/signing gates and normal release verification. |
-| Final maintenance reconciliation | NOT STARTED | SleepManager upstream 851a1bd is fully incorporated (17 ahead, 0 behind); v0.7.3.1 assets retain their verified digests. | Final remote source/release health and exact temporary-artifact cleanup. |
+| TailD inheritance and Windows delivery | COMPLETE | Reviewed pins and immutable signer closure aligned; actual-core overlay and package/recovery checks passed. Inheritance 39554230941 checked/promoted b6229c9 with exact TailDNS ce33814 ancestry. All fresh release gates passed in 39555896862; normal windows-v1.105.0+28 independently verified against all signed manifests, 444 members, exact R36 assets, runtime notices and core identity. | None. |
+| Final maintenance reconciliation | COMPLETE | All promoted source/release workflows are successful with no running or queued cycle; no upstream updater candidate remains. SleepManager upstream 851a1bd is fully incorporated (17 ahead, 0 behind); v0.7.3.1 assets retain their verified digests. Reviewed cleanup ticket is applied, all 5,503 generated members removed, and the exact scratch root is absent. | None. |
 
 The bounded repair keeps the guard fail-closed and advances its exact source,
 require/replace, module checksum, build stamp and signed-manifest identity together.
 GitHub still owns the actual TailDNS ancestry merge, read-only verification and
 isolated fast-forward promotion. No inherited workflow or product channel is
 enabled/redirected. The previously reviewed signer closure is unchanged apart
-from the core identity constants; its new immutable reference follows verification.
+from the core identity constants; its verified immutable reference is 1fbe991.
 No tracked deferrals. Evidence: D:/Tools/taildns-upstream-verification-20261021.
+Public +28 installer SHA-256:
+aa22256db3fdce12664c4c0fa765f78cfc0cd053336b06467483e5ee280249a8,
+117,322,413 bytes. Source b6229c9af268841db5c1d75232998a18020c3770,
+core d9c112d927479d092f6d1132e16613f046f6ba51, signer tooling 1fbe991.
+Ed25519 signing is verified; Authenticode remains absent. Fresh CI refusal/recovery
+is explicitly not a real-tailnet migration test. No device installation or B12
+real rollout/rollback/final acceptance is claimed. TailD Android +35 is unchanged.
+Cleanup initially retained empty read-only Go-module directories. Their reviewed
+identities and absence of regular files were rechecked, only their DOS read-only
+attribute was cleared, and the same native cleanup ticket completed successfully.
+The signed receipts and compact verification evidence remain at the durable path
+above; the public releases retain the independently verified installable artifacts.
 
 ## Current execution - October 20 Android device-list correction
 
