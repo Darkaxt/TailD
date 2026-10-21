@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="taild_collect_analytics">Collect analytics</string>
-    <string name="taild_collect_analytics_detail">Record observations while TailD is active. Retain private history for 7 days; gaps remain unknown.</string>
+    <string name="taild_collect_analytics_detail">Record private activity, DNS and VPN app/IP byte metadata for up to 7 days, within the storage limit. Gaps remain unknown.</string>
     <string name="taild_use_exit_node">Use exit node</string>
     <string name="taild_run_exit_node">Run as exit node</string>
     <string name="taild_exit_node_unavailable">Selected node unavailable</string>
     <string name="taild_last_online">Last online: %1$s. Exact time: %2$s</string>
     <string name="taild_exit_node_failed">Exit node change failed. Current settings are still shown; check connection and management policy before trying again.</string>
     <string name="taild_delete_history">Delete local history</string>
-    <string name="taild_delete_history_detail">Remove TailD activity history from this app. Recording and VPN settings stay as configured. Provider history is unchanged.</string>
+    <string name="taild_delete_history_detail">Remove local activity, DNS and traffic history from this app. Recording and VPN settings stay as configured. Control D cloud history is unchanged.</string>
 </resources>

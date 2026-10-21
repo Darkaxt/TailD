@@ -5,6 +5,7 @@ package libtailscale
 
 import (
 	"context"
+	"github.com/tailscale/tailscale-android/libtailscale/trafficaudit"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -36,6 +37,9 @@ func newApp(dataDir, directFileRoot string, hardwareAttestationPref bool, appCtx
 		dataDir:        dataDir,
 		appCtx:         appCtx,
 	}
+	a.traffic = trafficaudit.New(func(protocol int, local, remote string, lp, rp uint16) int32 {
+		return int32(appCtx.TrafficOwner(protocol, local, remote, int(lp), int(rp)))
+	}, appCtx.CommitTrafficJSON)
 	a.ready.Add(2)
 
 	a.store = newStateStore(a.appCtx)

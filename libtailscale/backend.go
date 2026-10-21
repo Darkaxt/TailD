@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/tailscale/tailscale-android/libtailscale/trafficaudit"
 	"log"
 	"net/http"
 	"os"
@@ -42,6 +43,7 @@ import (
 )
 
 type App struct {
+	traffic *trafficaudit.Observer
 	dataDir string
 
 	// passes along SAF file information for the taildrop manager
@@ -94,6 +96,7 @@ func start(dataDir, directFileRoot string, hwAttestationPref bool, appCtx AppCon
 }
 
 type backend struct {
+	traffic    *trafficaudit.Observer
 	engine     wgengine.Engine
 	backend    *ipnlocal.LocalBackend
 	sys        *tsd.System
@@ -311,6 +314,7 @@ func (a *App) newBackend(dataDir string, appCtx AppContext, store *stateStore,
 
 	logf := logger.Logf(log.Printf)
 	b := &backend{
+		traffic:  a.traffic,
 		devices:  newTUNDevices(),
 		settings: settings,
 		appCtx:   appCtx,

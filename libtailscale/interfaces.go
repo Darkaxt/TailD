@@ -18,6 +18,10 @@ func Start(dataDir, directFileRoot string, hwAttestationPref bool, appCtx AppCon
 // AppContext provides a context within which the Application is running. This
 // context is a hook into functionality that's implemented on the Java side.
 type AppContext interface {
+	// Fixed off-packet-path metadata callbacks; no payload or arbitrary RPC.
+	TrafficOwner(protocol int, local, remote string, localPort, remotePort int) int
+	CommitTrafficJSON(batch string) bool
+
 	// Log logs the given tag and logLine
 	Log(tag, logLine string)
 
@@ -134,6 +138,9 @@ type ParcelFileDescriptor interface {
 // Application encapsulates the running Tailscale Application. There is only a
 // single instance of Application per Android application.
 type Application interface {
+	// ConfigureTraffic starts an opt-in epoch or stops acquisition for an empty ID.
+	ConfigureTraffic(session string) string
+
 	// CallLocalAPI provides a mechanism for calling Tailscale's HTTP localapi
 	// without having to call over the network.
 	CallLocalAPI(timeoutMillis int, method, endpoint string, body InputStream) (LocalAPIResponse, error)

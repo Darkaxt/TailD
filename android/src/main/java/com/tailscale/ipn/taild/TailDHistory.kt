@@ -24,6 +24,18 @@ import kotlinx.coroutines.withContext
 class TailDHistory(context: Context, scope: CoroutineScope) {
   private val preferences = context.getSharedPreferences("taild.analytics", Context.MODE_PRIVATE)
   private val database = ActivityDatabase(context)
+  private val traffic = TrafficStore(context)
+  private val trafficGate = Any()
+  @Volatile private var trafficNative: libtailscale.Application? = null
+  @Volatile private var trafficSession = ""
+  @Volatile private var desiredRecording = preferences.getBoolean("enabled", false)
+  private val _trafficRevision = MutableStateFlow(0L)
+  val trafficRevision = _trafficRevision.asStateFlow()
+  private val _trafficDeletion = MutableStateFlow(0L)
+  val trafficDeletion = _trafficDeletion.asStateFlow()
+  private val _trafficError = MutableStateFlow<String?>(null)
+  val trafficError = _trafficError.asStateFlow()
+  private var trafficPaused = false
   private val commands = Channel<Command>(Channel.UNLIMITED)
   private val reducer = ActivityHistoryReducer()
   private var currentScope = ""
@@ -38,6 +50,18 @@ class TailDHistory(context: Context, scope: CoroutineScope) {
 
   private sealed interface Command {
     data class Enable(val value: Boolean) : Command
+
+    data class AttachTraffic(val native: libtailscale.Application) : Command
+
+    data class FinishTraffic(val status: String) : Command
+
+    data class Traffic(val json: String, val done: CompletableDeferred<Boolean>) : Command
+
+    data class QueryTraffic(
+        val from: Long,
+        val until: Long,
+        val done: CompletableDeferred<TrafficSnapshot>,
+    ) : Command
 
     data class Observe(val at: Long, val snapshot: ActivitySnapshot) : Command
 
@@ -70,6 +94,48 @@ class TailDHistory(context: Context, scope: CoroutineScope) {
           for (command in commands) {
             try {
               when (command) {
+                is Command.Traffic -> {
+                  try {
+                    val accepted =
+                        if (_enabled.value && desiredRecording)
+                            traffic.commit(org.json.JSONObject(command.json), trafficSession)
+                        else false
+                    if (accepted) _trafficRevision.value++
+                    command.done.complete(accepted)
+                  } catch (_: Exception) {
+                    trafficPaused = true
+                    _trafficError.value =
+                        "Traffic recording paused: history could not be stored. Resolve storage, then switch Collect analytics off and on."
+                    stopTraffic()
+                    command.done.complete(false)
+                  }
+                  continue
+                }
+                is Command.QueryTraffic -> {
+                  try {
+                    command.done.complete(traffic.snapshot(command.from, command.until))
+                  } catch (problem: Exception) {
+                    command.done.completeExceptionally(
+                        IllegalStateException(
+                            "Traffic history unavailable",
+                            if (com.tailscale.ipn.BuildConfig.DEBUG) problem else null,
+                        )
+                    )
+                  }
+                  continue
+                }
+                is Command.FinishTraffic -> {
+                  traffic.finish(command.status)
+                  continue
+                }
+                is Command.AttachTraffic -> {
+                  synchronized(trafficGate) {
+                    trafficNative?.let { traffic.finish(it.configureTraffic("")) }
+                    trafficNative = command.native
+                    configureTraffic()
+                  }
+                  continue
+                }
                 is Command.Query -> {
                   try {
                     val removed =
@@ -110,6 +176,9 @@ class TailDHistory(context: Context, scope: CoroutineScope) {
                 is Command.Enable -> {
                   check(preferences.edit().putBoolean("enabled", command.value).commit())
                   _enabled.value = command.value
+                  trafficPaused = false
+                  _trafficError.value = null
+                  synchronized(trafficGate) { configureTraffic() }
                   reducer.reset()
                   started = false
                   if (command.value) {
@@ -171,6 +240,10 @@ class TailDHistory(context: Context, scope: CoroutineScope) {
                     delete("activity", null, null)
                     delete("checkpoint", null, null)
                   }
+                  traffic.clear()
+                  _trafficDeletion.value++
+                  _trafficRevision.value++
+                  synchronized(trafficGate) { configureTraffic() }
                   reducer.reset()
                   started = false
                 }
@@ -201,6 +274,11 @@ class TailDHistory(context: Context, scope: CoroutineScope) {
       while (true) {
         val pending = commands.tryReceive().getOrNull() ?: break
         when (pending) {
+          is Command.Traffic -> pending.done.complete(false)
+          is Command.QueryTraffic ->
+              pending.done.completeExceptionally(
+                  IllegalStateException("Traffic history unavailable")
+              )
           is Command.Query ->
               pending.done.completeExceptionally(
                   IllegalStateException("Activity history unavailable")
@@ -216,12 +294,20 @@ class TailDHistory(context: Context, scope: CoroutineScope) {
           else -> Unit
         }
       }
+      synchronized(trafficGate) {
+        trafficSession = ""
+        trafficNative?.configureTraffic("")
+        trafficNative = null
+      }
+      traffic.close()
       database.close()
     }
     commands.trySend(Command.Refresh(null))
   }
 
   fun setEnabled(value: Boolean) {
+    desiredRecording = value
+    if (!value) stopTraffic()
     commands.trySend(Command.Enable(value))
   }
 
@@ -230,7 +316,41 @@ class TailDHistory(context: Context, scope: CoroutineScope) {
   }
 
   fun deleteHistory() {
+    stopTraffic()
     commands.trySend(Command.Delete)
+  }
+
+  /** Called only from the native off-path observer worker. One batch waits for one actor ack. */
+  fun commitTraffic(json: String): Boolean =
+      kotlinx.coroutines.runBlocking {
+        val done = CompletableDeferred<Boolean>()
+        if (commands.trySend(Command.Traffic(json, done)).isFailure) false else done.await()
+      }
+
+  fun attachTraffic(native: libtailscale.Application) {
+    commands.trySend(Command.AttachTraffic(native))
+  }
+
+  private fun stopTraffic() =
+      synchronized(trafficGate) {
+        trafficSession = ""
+        trafficNative?.let { commands.trySend(Command.FinishTraffic(it.configureTraffic(""))) }
+      }
+
+  // Only called by the actor while holding trafficGate. No network/routing call.
+  private fun configureTraffic() {
+    val session =
+        if (_enabled.value && desiredRecording && !trafficPaused)
+            java.util.UUID.randomUUID().toString()
+        else ""
+    trafficSession = session
+    trafficNative?.let { traffic.finish(it.configureTraffic(session)) }
+  }
+
+  suspend fun queryTraffic(from: Long, until: Long): TrafficSnapshot {
+    val done = CompletableDeferred<TrafficSnapshot>()
+    commands.send(Command.QueryTraffic(from, until, done))
+    return done.await()
   }
 
   internal suspend fun awaitIdle() {

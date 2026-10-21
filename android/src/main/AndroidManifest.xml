@@ -29,6 +29,8 @@
         android:name="android.hardware.touchscreen"
         android:required="false" />
 
+    <!-- Optional OS traffic summaries; the user grants Usage Access in Settings. -->
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
     <application
         android:name=".App"
         android:allowBackup="false"

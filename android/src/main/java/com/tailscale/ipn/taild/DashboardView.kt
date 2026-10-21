@@ -94,242 +94,272 @@ fun DashboardView(
         Icon(Icons.Default.Info, "About TailD and source health")
       }
     }
-    ScrollableTabRow(tab, edgePadding = 0.dp, modifier = Modifier.testTag("taild-dashboard-tabs")) {
-      listOf("Overview", "Geography", "Activity", "Sources & health").forEachIndexed { index, label
-        ->
+    val destinations =
+        listOf(
+            0 to "Overview",
+            4 to "Applications",
+            1 to "Geography",
+            2 to "Activity",
+            3 to "Sources & health",
+        )
+    ScrollableTabRow(
+        destinations.indexOfFirst { it.first == tab },
+        edgePadding = 0.dp,
+        modifier = Modifier.testTag("taild-dashboard-tabs"),
+    ) {
+      destinations.forEach { (index, label) ->
         Tab(selected = tab == index, onClick = { tab = index }, text = { Text(label) })
       }
     }
-    LazyColumn(
-        Modifier.fillMaxSize().navigationBarsPadding().testTag("taild-dashboard-content"),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-      if (tab != 1 || state.exportNotice != null || state.exportWriting)
-          item {
-            if (tab != 1) {
-              Text(
-                  if (recording) "Analytics recording enabled"
-                  else "Analytics recording off · retained observations preserved",
-                  style = MaterialTheme.typography.labelLarge,
-              )
-              Text(
-                  "${state.window.from} → ${state.window.until} · UTC, end exclusive",
-                  style = MaterialTheme.typography.bodySmall,
-              )
-              Text(
-                  "Retained observations; incomplete source coverage and gaps remain unknown.",
-                  style = MaterialTheme.typography.bodySmall,
-              )
-            }
-            state.exportNotice?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-            if (state.exportWriting)
-                LinearProgressIndicator(
-                    Modifier.fillMaxWidth().semantics {
-                      contentDescription = "Writing selected snapshot"
-                    }
-                )
-          }
-      if (tab == 0 || tab == 1) {
-        item {
-          if (tab == 1) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-              Text(
-                  "${provider.endpointName}${provider.clientName?.let { " / $it" }.orEmpty()}",
-                  Modifier.weight(1f),
-                  style = MaterialTheme.typography.bodyMedium,
-                  maxLines = 1,
-                  overflow = TextOverflow.Ellipsis,
-              )
-              IconButton(onClick = onControlD) {
-                Icon(Icons.Default.Settings, "Change endpoint or client")
-              }
-            }
-          } else {
-            Text(
-                "Control D · ${provider.endpointName}${provider.clientName?.let { " / $it" }.orEmpty()}",
-                style = MaterialTheme.typography.titleMedium,
-            )
-            TextButton(onClick = onControlD) { Text("Change endpoint/client or open Recent DNS") }
-          }
-          if (state.dnsLoading)
-              LinearProgressIndicator(
-                  Modifier.fillMaxWidth().semantics { contentDescription = "Reading DNS dashboard" }
-              )
-          state.dnsError?.let {
-            Text(it, color = MaterialTheme.colorScheme.error)
-            TextButton(onClick = model::retryDns) { Text("Retry DNS query") }
-          }
-          provider.historyError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-          if (provider.busyHistory && tab == 1)
-              LinearProgressIndicator(
-                  Modifier.fillMaxWidth().semantics {
-                    contentDescription = "Synchronizing DNS history"
-                  }
-              )
-          else if (provider.busyHistory)
-              Text(
-                  provider.historyProgress
-                      ?: "Provider history synchronization is running in the app.",
-                  style = MaterialTheme.typography.bodySmall,
-              )
-          if (tab != 1) Text(provider.page.coverage, style = MaterialTheme.typography.bodySmall)
+    if (tab == 4)
+        TrafficView(
+            history,
+            state.window,
+            state.exportNotice,
+            { model.refresh() },
+            model::crossCheckTraffic,
+        ) { data, identity ->
+          if (model.prepareTrafficExport(data, identity))
+              exporter.launch("TailD-traffic-${data.revision}.json")
         }
-        val data = state.dns?.takeIf { it.binding == provider.binding }
-        if (data != null) {
-          if (tab == 0) {
-            item {
-              TextButton(onClick = { model.dnsDetails(data) }) {
-                Text(
-                    "${data.total} stored DNS observations",
-                    style = MaterialTheme.typography.headlineSmall,
-                )
-              }
-              Text(
-                  "Snapshot through ${data.window.until} UTC",
-                  style = MaterialTheme.typography.bodySmall,
-              )
-              val decisions = remember(data) { data.decisions }
-              FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                decisions.forEach { (label, count) ->
-                  OutlinedButton(
-                      onClick = { model.dnsDetails(data, DashboardDnsFilter(decision = label)) }
-                  ) {
-                    Text("$label · $count")
-                  }
-                }
-              }
-              if (data.total == 0L)
-                  Text(
-                      "No stored observations in this scope/window. This is not proof of no DNS activity."
-                  )
-              DnsTrend(data) { from, until ->
-                model.dnsDetails(data, DashboardDnsFilter(bucketFrom = from, bucketUntil = until))
-              }
-            }
-            item {
-              Ranking("Top domains", remember(data) { data.domains }) {
-                model.dnsDetails(data, DashboardDnsFilter(domain = it))
-              }
-              Ranking("Reported reasons", remember(data) { data.reasons }) {
-                model.dnsDetails(data, DashboardDnsFilter(reason = it))
-              }
-              TextButton(
-                  onClick = { exportDns(data, DashboardDnsFilter()) },
-                  enabled = !state.exportPending && !state.exportWriting,
-              ) {
-                Text("Export scoped DNS snapshot")
-              }
-            }
-          } else
+    else
+        LazyColumn(
+            Modifier.fillMaxSize().navigationBarsPadding().testTag("taild-dashboard-content"),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+          if (tab != 1 || state.exportNotice != null || state.exportWriting)
               item {
-                DnsCountryMap(data.countries) {
-                  model.dnsDetails(data, DashboardDnsFilter(country = it))
-                }
-                TextButton(
-                    onClick = { geographyDetails = !geographyDetails },
-                    modifier =
-                        Modifier.semantics {
-                          stateDescription = if (geographyDetails) "Expanded" else "Collapsed"
-                        },
-                ) {
-                  Text("Coverage & details")
-                  Icon(
-                      Icons.Default.ArrowDropDown,
-                      null,
-                      Modifier.rotate(if (geographyDetails) 180f else 0f),
-                  )
-                }
-                if (geographyDetails) {
-                  Text(
-                      "Provider DNS-answer geography",
-                      style = MaterialTheme.typography.titleMedium,
-                  )
-                  Text(
-                      "Country coverage · ${data.countryCoverage} / ${data.total}\nASN coverage · ${data.asnCoverage} / ${data.total}"
-                  )
+                if (tab != 1) {
                   Text(
                       if (recording) "Analytics recording enabled"
                       else "Analytics recording off · retained observations preserved",
+                      style = MaterialTheme.typography.labelLarge,
+                  )
+                  Text(
+                      "${state.window.from} → ${state.window.until} · UTC, end exclusive",
                       style = MaterialTheme.typography.bodySmall,
                   )
                   Text(
-                      "${data.window.from} → ${data.window.until} · UTC, end exclusive",
-                      style = MaterialTheme.typography.bodySmall,
-                  )
-                  Text(provider.page.coverage, style = MaterialTheme.typography.bodySmall)
-                  Text(
-                      "Each observation counts in every returned answer group; groups may overlap. Unobserved countries stay neutral and coverage gaps remain unknown.",
-                      style = MaterialTheme.typography.bodySmall,
-                  )
-                  Text(
-                      "Made with Natural Earth · offline country boundaries; not routes or device location.",
+                      "Retained observations; incomplete source coverage and gaps remain unknown.",
                       style = MaterialTheme.typography.bodySmall,
                   )
                 }
-                Ranking(
-                    "Answer countries",
-                    remember(data) { data.countries },
-                    limit = data.countries.size,
-                ) {
-                  model.dnsDetails(data, DashboardDnsFilter(country = it))
-                }
-                Ranking("Answer ASNs", remember(data) { data.asns }) {
-                  model.dnsDetails(data, DashboardDnsFilter(asn = it))
-                }
-              }
-        }
-      }
-      if (tab == 0 || tab == 2)
-          item {
-            Text("Observed Tailscale / TailDrop", style = MaterialTheme.typography.titleMedium)
-            if (state.activityLoading)
-                LinearProgressIndicator(
-                    Modifier.fillMaxWidth().semantics {
-                      contentDescription = "Reading local activity dashboard"
-                    }
-                )
-            state.activityError?.let {
-              Text(it, color = MaterialTheme.colorScheme.error)
-              TextButton(onClick = model::retryActivity) { Text("Retry activity query") }
-            }
-            state.activity?.let { data ->
-              TextButton(onClick = { model.activityDetails(data) }) {
-                Text(
-                    "${data.rows.size} local observations",
-                    style = MaterialTheme.typography.titleLarge,
-                )
-              }
-              Text(
-                  "Snapshot through ${data.window.until} UTC. Local baselines and gaps are retained; unseen events remain unknown.",
-                  style = MaterialTheme.typography.bodySmall,
-              )
-              if (tab == 2)
-                  Ranking("Recorded event kinds", remember(data) { data.kinds }) {
-                    model.activityDetails(data, it)
-                  }
-              FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf(
-                        "taildrop.sent" to "Outgoing results",
-                        "taildrop.received" to "Daemon receipts",
-                        "taildrop.saved" to "Document saves",
+                state.exportNotice?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+                if (state.exportWriting)
+                    LinearProgressIndicator(
+                        Modifier.fillMaxWidth().semantics {
+                          contentDescription = "Writing selected snapshot"
+                        }
                     )
-                    .forEach { (kind, label) ->
-                      OutlinedButton(onClick = { model.activityDetails(data, kind) }) {
-                        Text("$label · ${data.kinds[kind] ?: 0}")
+              }
+          if (tab == 0 || tab == 1) {
+            item {
+              if (tab == 1) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                  Text(
+                      "${provider.endpointName}${provider.clientName?.let { " / $it" }.orEmpty()}",
+                      Modifier.weight(1f),
+                      style = MaterialTheme.typography.bodyMedium,
+                      maxLines = 1,
+                      overflow = TextOverflow.Ellipsis,
+                  )
+                  IconButton(onClick = onControlD) {
+                    Icon(Icons.Default.Settings, "Change endpoint or client")
+                  }
+                }
+              } else {
+                Text(
+                    "Control D · ${provider.endpointName}${provider.clientName?.let { " / $it" }.orEmpty()}",
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                TextButton(onClick = onControlD) {
+                  Text("Change endpoint/client or open Recent DNS")
+                }
+              }
+              if (state.dnsLoading)
+                  LinearProgressIndicator(
+                      Modifier.fillMaxWidth().semantics {
+                        contentDescription = "Reading DNS dashboard"
+                      }
+                  )
+              state.dnsError?.let {
+                Text(it, color = MaterialTheme.colorScheme.error)
+                TextButton(onClick = model::retryDns) { Text("Retry DNS query") }
+              }
+              provider.historyError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+              if (provider.busyHistory && tab == 1)
+                  LinearProgressIndicator(
+                      Modifier.fillMaxWidth().semantics {
+                        contentDescription = "Synchronizing DNS history"
+                      }
+                  )
+              else if (provider.busyHistory)
+                  Text(
+                      provider.historyProgress
+                          ?: "Provider history synchronization is running in the app.",
+                      style = MaterialTheme.typography.bodySmall,
+                  )
+              if (tab != 1) Text(provider.page.coverage, style = MaterialTheme.typography.bodySmall)
+            }
+            val data = state.dns?.takeIf { it.binding == provider.binding }
+            if (data != null) {
+              if (tab == 0) {
+                item {
+                  TextButton(onClick = { model.dnsDetails(data) }) {
+                    Text(
+                        "${data.total} stored DNS observations",
+                        style = MaterialTheme.typography.headlineSmall,
+                    )
+                  }
+                  Text(
+                      "Snapshot through ${data.window.until} UTC",
+                      style = MaterialTheme.typography.bodySmall,
+                  )
+                  val decisions = remember(data) { data.decisions }
+                  FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    decisions.forEach { (label, count) ->
+                      OutlinedButton(
+                          onClick = { model.dnsDetails(data, DashboardDnsFilter(decision = label)) }
+                      ) {
+                        Text("$label · $count")
                       }
                     }
-              }
-              TextButton(
-                  onClick = { exportActivity(data, null, "") },
-                  enabled = !state.exportPending && !state.exportWriting,
-              ) {
-                Text("Export scoped local observations")
-              }
+                  }
+                  if (data.total == 0L)
+                      Text(
+                          "No stored observations in this scope/window. This is not proof of no DNS activity."
+                      )
+                  DnsTrend(data) { from, until ->
+                    model.dnsDetails(
+                        data,
+                        DashboardDnsFilter(bucketFrom = from, bucketUntil = until),
+                    )
+                  }
+                }
+                item {
+                  Ranking("Top domains", remember(data) { data.domains }) {
+                    model.dnsDetails(data, DashboardDnsFilter(domain = it))
+                  }
+                  Ranking("Reported reasons", remember(data) { data.reasons }) {
+                    model.dnsDetails(data, DashboardDnsFilter(reason = it))
+                  }
+                  TextButton(
+                      onClick = { exportDns(data, DashboardDnsFilter()) },
+                      enabled = !state.exportPending && !state.exportWriting,
+                  ) {
+                    Text("Export scoped DNS snapshot")
+                  }
+                }
+              } else
+                  item {
+                    DnsCountryMap(data.countries) {
+                      model.dnsDetails(data, DashboardDnsFilter(country = it))
+                    }
+                    TextButton(
+                        onClick = { geographyDetails = !geographyDetails },
+                        modifier =
+                            Modifier.semantics {
+                              stateDescription = if (geographyDetails) "Expanded" else "Collapsed"
+                            },
+                    ) {
+                      Text("Coverage & details")
+                      Icon(
+                          Icons.Default.ArrowDropDown,
+                          null,
+                          Modifier.rotate(if (geographyDetails) 180f else 0f),
+                      )
+                    }
+                    if (geographyDetails) {
+                      Text(
+                          "Provider DNS-answer geography",
+                          style = MaterialTheme.typography.titleMedium,
+                      )
+                      Text(
+                          "Country coverage · ${data.countryCoverage} / ${data.total}\nASN coverage · ${data.asnCoverage} / ${data.total}"
+                      )
+                      Text(
+                          if (recording) "Analytics recording enabled"
+                          else "Analytics recording off · retained observations preserved",
+                          style = MaterialTheme.typography.bodySmall,
+                      )
+                      Text(
+                          "${data.window.from} → ${data.window.until} · UTC, end exclusive",
+                          style = MaterialTheme.typography.bodySmall,
+                      )
+                      Text(provider.page.coverage, style = MaterialTheme.typography.bodySmall)
+                      Text(
+                          "Each observation counts in every returned answer group; groups may overlap. Unobserved countries stay neutral and coverage gaps remain unknown.",
+                          style = MaterialTheme.typography.bodySmall,
+                      )
+                      Text(
+                          "Made with Natural Earth · offline country boundaries; not routes or device location.",
+                          style = MaterialTheme.typography.bodySmall,
+                      )
+                    }
+                    Ranking(
+                        "Answer countries",
+                        remember(data) { data.countries },
+                        limit = data.countries.size,
+                    ) {
+                      model.dnsDetails(data, DashboardDnsFilter(country = it))
+                    }
+                    Ranking("Answer ASNs", remember(data) { data.asns }) {
+                      model.dnsDetails(data, DashboardDnsFilter(asn = it))
+                    }
+                  }
             }
           }
-      if (tab == 3) item { TailDSourceHealth(controlD, history, onPreferences) }
-    }
+          if (tab == 0 || tab == 2)
+              item {
+                Text("Observed Tailscale / TailDrop", style = MaterialTheme.typography.titleMedium)
+                if (state.activityLoading)
+                    LinearProgressIndicator(
+                        Modifier.fillMaxWidth().semantics {
+                          contentDescription = "Reading local activity dashboard"
+                        }
+                    )
+                state.activityError?.let {
+                  Text(it, color = MaterialTheme.colorScheme.error)
+                  TextButton(onClick = model::retryActivity) { Text("Retry activity query") }
+                }
+                state.activity?.let { data ->
+                  TextButton(onClick = { model.activityDetails(data) }) {
+                    Text(
+                        "${data.rows.size} local observations",
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                  }
+                  Text(
+                      "Snapshot through ${data.window.until} UTC. Local baselines and gaps are retained; unseen events remain unknown.",
+                      style = MaterialTheme.typography.bodySmall,
+                  )
+                  if (tab == 2)
+                      Ranking("Recorded event kinds", remember(data) { data.kinds }) {
+                        model.activityDetails(data, it)
+                      }
+                  FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(
+                            "taildrop.sent" to "Outgoing results",
+                            "taildrop.received" to "Daemon receipts",
+                            "taildrop.saved" to "Document saves",
+                        )
+                        .forEach { (kind, label) ->
+                          OutlinedButton(onClick = { model.activityDetails(data, kind) }) {
+                            Text("$label · ${data.kinds[kind] ?: 0}")
+                          }
+                        }
+                  }
+                  TextButton(
+                      onClick = { exportActivity(data, null, "") },
+                      enabled = !state.exportPending && !state.exportWriting,
+                  ) {
+                    Text("Export scoped local observations")
+                  }
+                }
+              }
+          if (tab == 3) item { TailDSourceHealth(controlD, history, onPreferences) }
+        }
   }
   val dnsDetails = state.dnsDetails?.takeIf { it.binding == provider.binding }
   val activityDetails = state.activityDetails
@@ -520,6 +550,7 @@ fun TailDSourceHealth(controlD: ControlDModel, history: TailDHistory, onPreferen
   val provider by controlD.state.collectAsState()
   val recording by history.enabled.collectAsState()
   val error by history.error.collectAsState()
+  val trafficError by history.trafficError.collectAsState()
   Text("History & source health", style = MaterialTheme.typography.titleLarge)
   Text("Retention · 7 days\nRecording · ${if(recording) "Enabled" else "Disabled"}")
   TextButton(onClick = onPreferences) { Text("Collection preferences") }
@@ -527,6 +558,17 @@ fun TailDSourceHealth(controlD: ControlDModel, history: TailDHistory, onPreferen
   Text(
       error
           ?: "Records only what the existing app/VPN notification bus observes. Baselines and gaps are explicit."
+  )
+  Text("VPN traffic", style = MaterialTheme.typography.titleMedium)
+  Text(
+      trafficError
+          ?: if (recording)
+              "Observes IP bytes carried by this device's existing VPN. App ownership requires Android 10 or later; unsupported and missing owners remain unassigned. Direct/excluded traffic is not observed."
+          else "Recording is off; retained traffic can still be read."
+  )
+  Text(
+      "Traffic retention · at most 7 days, 20,000 fact buckets and 24 MiB of metadata. Pruning and collection gaps are reported in Applications.",
+      style = MaterialTheme.typography.bodySmall,
   )
   Text("Control D DNS", style = MaterialTheme.typography.titleMedium)
   Text(

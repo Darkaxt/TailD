@@ -1407,7 +1407,7 @@ privilege grants remain separate, and Windows B12/F1/F3 remain open.
 
 [R33's specification](TRAFFIC-AUDIT-AND-BLOCKING-SPECIFICATION.md) owns F0 Android
 app/UID control, F1 Windows audit/weighted views, F2 Android audit/weighted views
-and F3 remaining explicit enforcement/Windows acceptance. F0 is COMPLETE; F2 is ACTIVE; F1/F3
+and F3 remaining explicit enforcement/Windows acceptance. F0 and F2 are COMPLETE; integrated Android delivery is ACTIVE; F1/F3
 are NOT STARTED at this amendment. The execution ledger owns subsequent verified
 status transitions. Android F0/F2 are activated by the subsequent implementation
 instruction above; Windows F1/F3 remain named required later stages, outside

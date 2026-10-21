@@ -44,6 +44,7 @@ class DashboardModel(
   private var opened = false
   private var tailnet: String? = null
   private var generation = 0L
+  private var trafficCrossCheckGeneration = 0L
   private var dnsJob: Job? = null
   private var activityJob: Job? = null
   private var dnsDirty = true
@@ -57,6 +58,8 @@ class DashboardModel(
   private sealed interface Export {
     data class Dns(val data: DashboardDnsSnapshot, val filter: DashboardDnsFilter) : Export
 
+    data class Traffic(val data: TrafficSnapshot, val identity: String?) : Export
+
     data class Activity(
         val data: DashboardActivitySnapshot,
         val kind: String?,
@@ -65,6 +68,21 @@ class DashboardModel(
   }
 
   init {
+    scope.launch {
+      history.trafficDeletion.drop(1).collect {
+        synchronized(this@DashboardModel) {
+          if (pendingExport is Export.Traffic) {
+            pendingExport = null
+            mutable.update { state ->
+              state.copy(
+                  exportPending = false,
+                  exportNotice = "Traffic history deleted. Select a new snapshot before exporting.",
+              )
+            }
+          }
+        }
+      }
+    }
     scope.launch {
       controlD.state
           .map { Triple(it.binding, it.page.revision, it.page.window) }
@@ -143,6 +161,38 @@ class DashboardModel(
 
   fun dnsDetails(data: DashboardDnsSnapshot, filter: DashboardDnsFilter = DashboardDnsFilter()) {
     mutable.update { it.copy(dnsDetails = data, dnsFilter = filter, activityDetails = null) }
+  }
+
+  @Synchronized
+  fun crossCheckTraffic(traffic: TrafficSnapshot) {
+    val request = ++trafficCrossCheckGeneration
+    val epoch = generation
+    val binding = controlD.state.value.binding
+    if (binding == null) {
+      mutable.update {
+        it.copy(
+            exportNotice = "Select a Control D endpoint/client to cross-check provider history."
+        )
+      }
+      return
+    }
+    scope.launch(Dispatchers.IO) {
+      try {
+        val window =
+            DashboardWindow(Instant.ofEpochMilli(traffic.from), Instant.ofEpochMilli(traffic.until))
+        val (revision, rows) = controlD.store.facts(binding, window.from, window.until)
+        synchronized(this@DashboardModel) {
+          if (
+              trafficCrossCheckGeneration == request &&
+                  generation == epoch &&
+                  controlD.state.value.binding == binding
+          )
+              dnsDetails(DashboardDnsSnapshot(binding, window, revision, rows))
+        }
+      } catch (_: Exception) {
+        mutable.update { it.copy(exportNotice = "Provider history cross-check unavailable.") }
+      }
+    }
   }
 
   fun activityDetails(data: DashboardActivitySnapshot, kind: String? = null) {
@@ -300,6 +350,10 @@ class DashboardModel(
   }
 
   @Synchronized
+  fun prepareTrafficExport(data: TrafficSnapshot, identity: String?): Boolean =
+      prepareExport(Export.Traffic(data, identity))
+
+  @Synchronized
   fun prepareDnsExport(data: DashboardDnsSnapshot, filter: DashboardDnsFilter): Boolean =
       prepareExport(Export.Dns(data, filter))
 
@@ -341,6 +395,7 @@ class DashboardModel(
         checkNotNull(resolver.openOutputStream(uri, "wt")).bufferedWriter(Charsets.UTF_8).use {
             writer ->
           when (captured) {
+            is Export.Traffic -> writer.write(captured.data.export(captured.identity))
             is Export.Dns -> captured.data.export(captured.filter, writer)
             is Export.Activity -> captured.data.export(captured.kind, captured.search, writer)
           }

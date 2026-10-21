@@ -306,6 +306,7 @@ class App : UninitializedApp(), libtailscale.AppContext, ViewModelStoreOwner {
     Request.setApp(app)
     Notifier.setApp(app)
     val history = tailDHistory
+    history.attachTraffic(app)
     Notifier.start(applicationScope) { notification ->
       history.observe(
           Notifier.state.value,
@@ -334,6 +335,33 @@ class App : UninitializedApp(), libtailscale.AppContext, ViewModelStoreOwner {
     }
     Client(applicationScope)
         .editPrefs(Ipn.MaskedPrefs().apply { WantRunning = wantRunning }, callback)
+  }
+
+  override fun commitTrafficJSON(batch: String?): Boolean =
+      batch != null && tailDHistory.commitTraffic(batch)
+
+  override fun trafficOwner(
+      protocol: Long,
+      local: String?,
+      remote: String?,
+      localPort: Long,
+      remotePort: Long,
+  ): Long {
+    if (android.os.Build.VERSION.SDK_INT < 29 || local == null || remote == null) return -1
+    return try {
+      val cm = getSystemService(android.net.ConnectivityManager::class.java)
+      cm.getConnectionOwnerUid(
+              protocol.toInt(),
+              java.net.InetSocketAddress(java.net.InetAddress.getByName(local), localPort.toInt()),
+              java.net.InetSocketAddress(
+                  java.net.InetAddress.getByName(remote),
+                  remotePort.toInt(),
+              ),
+          )
+          .toLong()
+    } catch (_: Exception) {
+      -1L
+    }
   }
 
   // encryptToPref a byte array of data using the Jetpack Security

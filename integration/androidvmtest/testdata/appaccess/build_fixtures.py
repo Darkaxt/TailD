@@ -24,7 +24,7 @@ def main():
     classes, dex = out / 'classes', out / 'dex'
     classes.mkdir(); dex.mkdir()
     run(args.java / 'bin/javac.exe', '--release', '8', '-cp', platform, '-d', classes,
-        source / 'ProbeReceiver.java', source / 'PolicyControl.java')
+        source / 'ProbeReceiver.java', source / 'PolicyControl.java', source / 'TrafficReceiver.java')
     jar = out / 'fixture.jar'
     with zipfile.ZipFile(jar, 'w') as archive:
         for path in classes.rglob('*.class'):
@@ -45,6 +45,7 @@ def main():
 <uses-permission android:name="android.permission.INTERNET"/>
 <application android:label="TailD F0 {label}" android:debuggable="true" android:usesCleartextTraffic="true" android:allowBackup="false">
 <receiver android:name="io.github.darkaxt.taild.fixture.ProbeReceiver" android:exported="true"/>
+<receiver android:name="io.github.darkaxt.taild.fixture.TrafficReceiver" android:exported="true"/>
 </application></manifest>''', encoding='utf-8')
         unsigned, aligned, apk = [out / (suffix + ending) for ending in ['-unsigned.apk', '-aligned.apk', '.apk']]
         run(tools / 'aapt2.exe', 'link', '-I', platform, '--manifest', manifest, '-o', unsigned)
@@ -59,7 +60,7 @@ def main():
     receipt = {'schema': 1, 'fixtures': inventory,
                'policy_dex_sha256': hashlib.sha256((dex / 'classes.dex').read_bytes()).hexdigest(),
                'sources': {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
-                           for p in [source / 'ProbeReceiver.java', source / 'PolicyControl.java']}}
+                           for p in [source / 'ProbeReceiver.java', source / 'PolicyControl.java', source / 'TrafficReceiver.java']}}
     (out / 'fixtures.json').write_text(json.dumps(receipt, indent=2), encoding='utf-8')
     print(json.dumps({'inventory': str(out / 'fixtures.json'), 'policy_dex': str(dex / 'classes.dex')}))
 

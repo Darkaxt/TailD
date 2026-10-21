@@ -193,6 +193,88 @@ process restart, backend loss and reboot recovery. Only task-owned emulator apps
 and policies may be changed during these checks. No physical-device grant or
 production blocking is authorized by this implementation contract.
 
+## F2 Android implementation contract
+
+Use the existing Android `tun.Device` boundary in `libtailscale/net.go`: wrap
+its real kernel descriptor, observe returned Read packets and only successfully
+written Write packets, and preserve every return value/device event/lifecycle.
+Read is upload; Write is download. The pinned unmonitored Android NativeTun returns
+bytes from Write despite its interface documentation describing packets. Preserve
+that actual return value; account successful complete writes and retain partial
+success bytes without inventing packet/destination identity. Replacement-device retries must not count a
+failed write as delivered. Do not replace the core's connection counter, resolver,
+netlog consumer or shared-core pin for this observation seam.
+
+The native observer is off by default and follows Collect analytics. Use one
+bounded metadata queue per recording session and an off-path worker; no UID
+lookup, JNI call, persistence or blocking send belongs on the packet path. Copy
+only bounded DNS-message data for off-path metadata parsing; discard it after
+parsing and never persist/export payloads. Preserve packet lengths, protocol,
+addresses/ports, observation time, recording/session and immutable TUN route/DNS
+configuration identity. Stamp the existing physical-network change generation on
+observations and invalidate DNS joins across that generation; network events are
+zero-byte coverage records, never fabricated packets. Count unsupported parsing, missing ownership, queue loss
+and ambiguous sink outcomes explicitly. Turning recording off or deleting history
+invalidates the old session without changing the VPN or replaying a batch.
+
+Use the active VPN owner's public API 29+ TCP/UDP tuple lookup off the packet
+path. Preserve the lookup time/method, invalid/missing owner and system-resolver
+ownership; never substitute a foreground app or relabel old facts after UID or
+installation reuse. Snapshot the UID's package set/certificate/install generation
+when available; shared UIDs stay grouped. Declare package-query visibility only
+for the required app/UID audit view. API 26-28 and unsupported tuples remain
+measured but unassigned. A later socket lookup is source evidence with its
+inherent timing limits, not a packet-embedded UID.
+
+Keep local traffic in its own version-1 private SQLite/WAL file, serialized by
+the existing history writer, leaving existing activity/DNS databases intact.
+Recording, deletion and callback acknowledgement use that actor's boundary.
+Persist session sequence/readback and counter updates transactionally so a batch
+cannot add bytes twice. Retain at most seven days and a bounded fact budget;
+record pruning/loss coverage. Aggregate measured facts in bounded source time
+buckets with first/last observation times and candidate-set identity. Exact-window
+queries include wholly contained facts and separately report overlapping boundary
+buckets as unallocated range coverage; never silently clip or prorate counters.
+Freeze the selected result/window/revision for detail and export.
+
+Local DNS metadata includes actual questions, answer addresses/TTL, response codes
+and resolver address. Join question/reply evidence within its recording/TUN/resolver
+scope, retaining unknown query ownership. DNS stub ownership does not identify the
+calling app. Device/profile DNS candidate evidence can be shared across apps only
+within its proven matching capture scope. Use only preceding eligible answers,
+strict versioned ASCII DNS comparison (preserving raw names), the 300-second
+analytical window constrained by observed TTL, distinct candidate names and exact
+1/N rational estimates. Keep unmatched measured bytes and rounded display totals
+separate from those exact estimates. NXDOMAIN, no answer or a zero address alone
+is not proof of blocking. An explicit resolver Block signal may be shown as such;
+otherwise preserve the raw DNS outcome. Provider decisions remain separately
+scoped; do not assign them to an app or use their answers for byte attribution
+without verified matching device/client/resolver evidence.
+
+Dashboard Applications shows this device's observed VPN traffic: app/UID groups,
+received/sent bytes, IP/protocol destinations, candidate domains, equal-weight
+estimates, unassigned data and source coverage. App detail links to separately
+labeled Control D history for cross-checking the same selected period. Native
+search, drill-down and private export use the selected immutable snapshot. App
+blocking remains in the main Firewall tab and is independent of collection.
+
+Evaluate Android NetworkStatsManager through the ordinary app's optional Usage
+Access grant for broader app totals. Prefer this public path over adding privileged
+stats RPC. Show its OS time-bucket/snapshot scope and current-versus-historical UID
+identity limitations separately from TUN facts. Prove VPN-owner/app accounting in
+the owned fixture; do not sum overlapping sources or present missing permission,
+unsupported network types or delayed OS counters as zero. Usage Access is explicit,
+revocable and unnecessary for retained/basic DNS views or TUN audit collection.
+
+Acceptance first proves the complete real path using existing testcontrol/DERP,
+a tsnet peer, real fixture apps and the actual TailD VPN: packet bytes -> UID ->
+observed DNS/candidates -> Applications/detail/export. Include explicit blocked
+DNS evidence versus pre-TUN app-block unknowns, shared UID, loss, opt-out/delete,
+retention, restart/network/scope changes, source overlap and live automatic theme.
+Then finish broader OS-usage capability/accounting acceptance and integrated
+regressions. No mock counter or manually seeded database replaces that real path.
+All live changes remain confined to the owned isolated emulator/test tailnet.
+
 ## Required product behavior
 
 1. Show source-observed app-to-IP traffic on Windows and Android, with time,
@@ -379,7 +461,7 @@ them. All R33 stages must eventually pass before the R33 extension is called com
 | --- | --- | --- | --- |
 | F1 — Windows app/IP audit and weighted domain view | NOT STARTED | Existing desktop Stage 10 and Android A1–A4 acceptance complete; implementation subsequently authorized. | Real existing-path/source traffic -> measured app/IP record -> local/provider DNS candidates -> equal weights -> matching dashboard/drill-down/export; IPv4/IPv6, shared-IP/dedup/scope-change/unknown cases and exact once-only byte reconciliation. Extra connection/permit/block claims need their actual source proof. |
 | F0 — Android app/UID control integration | COMPLETE | Geography COMPLETE; real enforcement/recovery and four-destination theme/layout acceptance verified in the execution ledger. | Explicit optional Shizuku setup -> profile/UID-aware app selection -> authorized isolated block -> real prevented connection -> effective readback -> unblock/recovery; backend loss, reboot and owned-rule coexistence. No traffic capture in this stage. |
-| F2 — Android app/IP audit and weighted domain view | ACTIVE | F0 COMPLETE; shared domain/accounting semantics specified; focused fixtures are verified within F2 before acceptance; no parallel ACTIVE stage. | Real traffic through the current Tailscale path -> UID/app identity where supported -> measured IP/counters -> local/provider DNS candidates -> identical weighted semantics -> native dashboard/drill-down/export. Verify excluded routes, version capabilities, process restart, network transitions and unchanged VPN/DNS behavior. |
+| F2 — Android app/IP audit and weighted domain view | COMPLETE | F0 COMPLETE; shared domain/accounting semantics specified; focused fixtures are verified within F2 before acceptance; no parallel ACTIVE stage. | Real traffic through the current Tailscale path -> UID/app identity where supported -> measured IP/counters -> local/provider DNS candidates -> identical weighted semantics -> native dashboard/drill-down/export. Verify excluded routes, version capabilities, process restart, network transitions and unchanged VPN/DNS behavior. |
 | F3 — Explicit app traffic blocking on both platforms | NOT STARTED | F1 and F2 COMPLETE. | User selects exact app/scope -> preview/confirm -> authorized platform rule -> real prevented connection -> visible effective state -> unblock -> restored connectivity. Verify separate audit-only use, owned-rule recovery, reboot/backend loss, shared identities and coexistence with existing firewall/Tailscale policy on Windows and Android. |
 
 Future source/backend capability gaps belong to their named stage and block that

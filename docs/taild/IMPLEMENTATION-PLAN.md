@@ -5,17 +5,33 @@
 Already authorized by the user's missing-map feedback. Android specification v1.3
 is authoritative. The version-format delivery below is COMPLETE. B12 remains
 BLOCKED/open; R33 Android implementation is now authorized after Geography; Windows F1/F3
-remain later scope. Geography and Android F0 are COMPLETE; the single ACTIVE stage is Android F2.
+remain later scope. Geography, Android F0 and Android F2 are COMPLETE; the single ACTIVE stage is Android integrated final delivery.
 
 | Stage | Status | Acceptance satisfied | Acceptance remaining |
 | --- | --- | --- | --- |
 | Geography correction and traffic assessment | COMPLETE | Offline pinned map/notices, exact country touch/list drill-down, unknown/empty/scope isolation and live auto-dark pass native phone/tablet and large-text checks. Explicitly asserted landscape viewports pass compact-landscape-r2. Map provenance and release-asset guards pass focused checks. Existing native Dashboard/export/restart/storage workflow passes dashboard-regression-r1. R33 source assessment is recorded; no capture/privilege changes activated. | None. |
 | Android app/UID control integration (R33 F0) | COMPLETE | Main Firewall tab/official icon; optional typed Shizuku backend/private journal. Real shared-UID block/unblock, backend loss/reconnect, process restart, profile isolation, same/other-chain coexistence, stale-identity refusal and fresh reboot reconciliation pass f0-final-r1/f0-final-reboot-r2. Lost-response recovery, cross-profile recorded-rule recovery and live automatic theme pass at 1.5 font scale in phone and asserted landscape (f0-failure-large-r3/f0-failure-landscape-r2). Bundled licenses/icon, service classes and protected provider independently verified in current debug APK; focused unchanged policy contracts pass. | None for F0. Production/R8/signed-package acceptance belongs to integrated final delivery. |
-| Android traffic measurement (R33 F2) | ACTIVE | F0 COMPLETE; shared IP/DNS/equal-weight and per-app blocked-domain evidence semantics specified. | Real existing-path counters -> UID/app -> candidates/byte estimates -> native app views/drill-down/export, whole-app totals/overlap distinction where supported, opt-in/lifecycle/coverage and regression verification. |
-| Android integrated final delivery | NOT STARTED | Existing protected candidate/publication path available. | Geography, F0 and Android F2 COMPLETE; exact-source gates, signed candidate, isolated production upgrade/recovery, one normal monotonic dotted release, independent public asset/package/source/map/notices verification and reviewed cleanup. |
+| Android traffic measurement (R33 F2) | COMPLETE | Real VPN UID/byte/DNS/EDE-block/native search/detail/SAF export, optional public OS accounting/revocation, live auto-dark and 1.5-font phone/tablet/landscape pass f2-real-path-r12. Actual Wi-Fi/mobile transitions, protocol-based readiness, excluded direct routes, immutable retained export after update/restart and native Preferences deletion pass. Real SQLite dedup/boundaries/retention/UTF-8 capacity/epoch and focused Go IPv6/fragment/TTL/queue/loss/no-replay contracts pass. Existing native Dashboard/export/restart/storage/read-only regression passes f2-dashboard-regression-r1. | None for F2. Production package/signing/delivery belongs to final delivery. |
+| Android integrated final delivery | ACTIVE | Geography, F0 and Android F2 COMPLETE; existing protected candidate/publication path available. | Exact-source gates, signed candidate, isolated production upgrade/recovery, one normal monotonic dotted release, independent public asset/package/source/map/notices verification and reviewed cleanup. |
 
-Current advancement blocker: F2's integrated measured-traffic workflow is not yet
-implemented or verified (internal; resolve within F2 before final delivery).
+Current advancement blocker: final delivery acceptance is not yet satisfied
+(internal preparation; remain ACTIVE). No Android implementation blockers or
+tracked deferrals remain. F2 evidence is
+D:/Tools/taild-android-map37-evidence-20261021/f2-acceptance.json. Native r12
+uses an actual PeerAPI HTTP response to establish post-transition data-path
+readiness; failed one-shot UDP/TSMP diagnostics are retained as failed/cancelled,
+never acceptance evidence. No product retry, deadline, route or provider change
+was introduced to make those tests pass. Closure review found no required
+consolidation: the descriptor delegate, bounded metadata worker, existing history
+actor and immutable view/export boundary have explicit ownership.
+
+Gradle gate 1648 (product + native tests) and 1650 (test-only synchronization)
+verified two workers, no parallel execution, a 3 GB Gradle heap and owned daemon
+exit with in-process Kotlin selected. These were assembly tasks, not JVM-test
+execution. Focused parser/accounting tests and real Android SQLite/native tests
+supply F2 acceptance; required production checks still belong to delivery.
+
+
 F0 has no remaining blockers or tracked deferrals. Its closure evidence is
 D:/Tools/taild-android-map37-evidence-20261021/f0-acceptance.json. The lifecycle
 fix clears both the remote record and SDK callback cache on view teardown;
@@ -24,6 +40,15 @@ use the correct selected profile and completed-inspection state. Refactoring
 review found no required new abstraction: the fixed typed backend, application
 controller and private journal directly own this feature's lifecycle and rules.
 No physical-device privilege grant or production firewall change is claimed.
+
+Post-delivery request (October 21): after the completed Android app and its final
+release are verified, launch one bounded independent agent for a read-only layout
+review and prioritized improvement suggestions. Cover current rendered phone/tablet,
+large-text and light/dark layouts using the actual final package and captures.
+Use the inherited main model at Low effort under the standing worker policy.
+This is a post-delivery review, not another implementation stage or authority to
+apply a redesign. Do not launch it while F2/final delivery remain incomplete.
+
 Gradle gate 1640 verified two workers, no parallel execution and a 3 GB Gradle heap;
 in-process Kotlin was selected, and owned daemon exit was verified. No JVM-test
 execution is claimed for this build; unchanged policy-test evidence is gate 1631.

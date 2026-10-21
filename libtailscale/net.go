@@ -4,8 +4,12 @@
 package libtailscale
 
 import (
+	"crypto/rand"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/tailscale/tailscale-android/libtailscale/trafficaudit"
 	"log"
 	"net/netip"
 	"runtime/debug"
@@ -234,7 +238,18 @@ func (b *backend) updateTUN(rcfg *router.Config, dcfg *dns.OSConfig) (err error)
 	}
 	b.logger.Logf("updateTUN: created TUN device")
 
-	b.devices.add(tunDev)
+	// The immutable descriptor generation prevents joins across routing/DNS changes.
+	var generation [16]byte
+	if _, err := rand.Read(generation[:]); err != nil {
+		// Observation identity failure never changes or breaks VPN delivery.
+		b.devices.add(tunDev)
+	} else {
+		configuration, _ := json.Marshal(struct {
+			Routes *router.Config
+			DNS    *dns.OSConfig
+		}{rcfg, dcfg})
+		b.devices.add(&trafficaudit.Device{Device: tunDev, Observer: b.traffic, Scope: trafficaudit.Scope{ID: hex.EncodeToString(generation[:]), Configuration: string(configuration)}})
+	}
 	b.logger.Logf("updateTUN: added TUN device")
 
 	if b.devices.Up() {
@@ -272,6 +287,7 @@ func (b *backend) NetworkChanged(ifname string) {
 	}()
 
 	// Set the interface name and alert the monitor.
+	b.traffic.MarkNetwork(ifname)
 	netmon.UpdateLastKnownDefaultRouteInterface(ifname)
 	if b.netMon != nil {
 		b.netMon.InjectEvent()

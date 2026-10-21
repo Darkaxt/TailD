@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
@@ -27,6 +28,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
@@ -52,6 +54,7 @@ import com.tailscale.ipn.ui.viewModel.AppViewModel
 import com.tailscale.ipn.ui.viewModel.SettingsNav
 import com.tailscale.ipn.ui.viewModel.SettingsViewModel
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SettingsView(
     settingsNav: SettingsNav,
@@ -257,6 +260,7 @@ fun SettingsView(
   if (showDeleteHistoryDialog) {
     AlertDialog(
         onDismissRequest = { showDeleteHistoryDialog = false },
+        modifier = Modifier.semantics { testTagsAsResourceId = true },
         title = { Text(stringResource(R.string.taild_delete_history)) },
         text = { Text(stringResource(R.string.taild_delete_history_detail)) },
         confirmButton = {
@@ -265,7 +269,8 @@ fun SettingsView(
                 history.deleteHistory()
                 App.get().tailDControlD.clearHistory()
                 showDeleteHistoryDialog = false
-              }
+              },
+              modifier = Modifier.testTag("taild-delete-history-confirm"),
           ) {
             Text(stringResource(R.string.taild_delete_history))
           }
