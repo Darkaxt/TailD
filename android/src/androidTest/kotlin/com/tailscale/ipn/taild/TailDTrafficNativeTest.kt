@@ -217,7 +217,7 @@ class TailDTrafficNativeTest {
       node(By.text("Cross-check Control D history for this period"))
       phase("capture-traffic-details")
       // The same native SAF launcher must deliver the frozen selected snapshot.
-      node(By.text("Export selected snapshot")).click()
+      node(By.desc("Export selected snapshot")).click()
       val picker =
           context.packageManager
               .resolveActivity(
@@ -229,8 +229,16 @@ class TailDTrafficNativeTest {
               .activityInfo
               .packageName
       fun documentNode(selector: BySelector): UiObject2 =
-          device.wait(Until.findObject(By.copy(selector).pkg(picker)), 30000)
-              ?: error("Document picker missing $selector")
+          device.wait(
+              object : Condition<UiDevice, UiObject2?> {
+                override fun apply(device: UiDevice): UiObject2? {
+                  if (android.os.Build.VERSION.SDK_INT >= 33)
+                      instrumentation.uiAutomation.clearCache()
+                  return device.findObject(By.copy(selector).pkg(picker))
+                }
+              },
+              30000,
+          ) ?: error("Document picker missing $selector")
       documentNode(By.desc("Show roots")).click()
       device.waitForIdle()
       val downloads = device.findObject(UiSelector().packageName(picker).text("Downloads"))
@@ -246,6 +254,10 @@ class TailDTrafficNativeTest {
               )
           )
           .click()
+      assertTrue(
+          "Save closes the actual document picker",
+          device.wait(Until.gone(By.pkg(picker)), 30000),
+      )
       app.tailDDashboard.state.first {
         !it.exportPending && !it.exportWriting && it.exportNotice != null
       }

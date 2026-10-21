@@ -266,8 +266,10 @@ class TailDControlDInitialTest {
         click(By.text("No endpoint selected"))
         click(By.text("Emulator endpoint"))
         ready { it.policy != null && !it.busyPolicy && !it.busyHistory }
+        click(By.desc("Scope & coverage"))
         click(By.text("All clients"))
         click(By.text("This emulator"))
+        scrollTo("", "Close scope details").click()
         ready {
           it.binding?.client == "phone" &&
               it.policy != null &&
@@ -298,7 +300,8 @@ class TailDControlDInitialTest {
         assertEquals(100, model.state.value.page.rows.size)
         assertTrue(model.state.value.page.rows.all { it.fact.action == 0 })
         phase("capture-recent")
-        content("Add separate Write access").click()
+        click(By.desc("Scope & coverage"))
+        scrollTo("", "Add separate Write access").click()
         scrollTo("", "taild-api-token", resource = true).text = "write-fixture"
         click(By.text("Verify and save"))
         ready { it.hasWrite && !it.busySetup }
@@ -320,7 +323,8 @@ class TailDControlDInitialTest {
         // Freeze an older reload after its rules were read. The direct action
         // must own the policy shown after its fresh post-write readback.
         phase("hold-old-policy")
-        click(By.desc("Reload policy"))
+        click(By.desc("Scope & coverage"))
+        scrollTo("", "Reload policy", description = true).click()
         phase("policy-waiting")
         content("Allow blocked.invalid with Bypass", description = true).click()
         ready { !it.busyWrite && rule("blocked.invalid")?.objectAt("action")?.number("do") == 1 }

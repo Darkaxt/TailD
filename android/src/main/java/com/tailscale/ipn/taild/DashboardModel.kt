@@ -40,6 +40,11 @@ class DashboardModel(
 ) {
   private val mutable = MutableStateFlow(DashboardState())
   val state = mutable.asStateFlow()
+
+  fun dismissExportNotice(notice: String) {
+    mutable.update { if (it.exportNotice == notice) it.copy(exportNotice = null) else it }
+  }
+
   private var visible = false
   private var opened = false
   private var tailnet: String? = null

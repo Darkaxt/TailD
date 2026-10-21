@@ -200,6 +200,10 @@ func TestTailDGeographyNativeUI(t *testing.T) {
 	runControlDNative(t, []controlDNativeStep{{"phone-map", "TailDGeographyNativeTest"}, {"tablet-map", "TailDGeographyNativeTest"}})
 }
 
+func TestTailDLayoutNativeUI(t *testing.T) {
+	runControlDNative(t, []controlDNativeStep{{"phone-layout", "TailDLayoutNativeTest"}, {"tablet-layout", "TailDLayoutNativeTest"}, {"wide-layout", "TailDLayoutNativeTest"}})
+}
+
 func runControlDNative(t *testing.T, steps []controlDNativeStep) {
 	if *taildTestAPK == "" {
 		t.Skip("explicit instrumentation APK required")
@@ -258,6 +262,10 @@ func runControlDNative(t *testing.T, steps []controlDNativeStep) {
 			run("shell", "cmd", "uimode", "night", "no")
 		} else {
 			run("shell", "wm", "size", "1680x1800")
+			if step.name == "wide-layout" {
+				pixels := "1800x2560"
+				run("shell", "wm", "size", pixels)
+			}
 			run("shell", "wm", "density", "320")
 			run("shell", "cmd", "uimode", "night", "yes")
 		}
@@ -267,13 +275,16 @@ func runControlDNative(t *testing.T, steps []controlDNativeStep) {
 			run("shell", "cmd", "uimode", "night", "no")
 		}
 		landscape := "false"
+		if step.name == "wide-layout" {
+			landscape = "true"
+		}
 		font := "1.0"
 		if *nativeProviderLayout != "" {
 			if *nativeProviderLayout != "large" && *nativeProviderLayout != "landscape-large" {
 				t.Fatal("unsupported provider layout")
 			}
 			font = "1.5"
-			if strings.HasPrefix(step.name, "phone-") && *nativeProviderLayout == "large" {
+			if strings.HasPrefix(step.name, "phone-") && *nativeProviderLayout == "large" && step.class != "TailDLayoutNativeTest" {
 				run("shell", "wm", "size", "1236x2745")
 			}
 			if *nativeProviderLayout == "landscape-large" {
@@ -306,7 +317,7 @@ func runControlDNative(t *testing.T, steps []controlDNativeStep) {
 			for scanner.Scan() {
 				line := scanner.Text()
 				fmt.Fprintln(&output, line)
-				if strings.HasPrefix(line, "INSTRUMENTATION_STATUS: taild_failure=") {
+				if strings.HasPrefix(line, "INSTRUMENTATION_STATUS: taild_failure=") || strings.HasPrefix(line, "INSTRUMENTATION_STATUS: taild_layout_density=") {
 					t.Log(line)
 				}
 				const marker = "INSTRUMENTATION_STATUS: taild_phase="
@@ -421,6 +432,9 @@ func runControlDNative(t *testing.T, steps []controlDNativeStep) {
 		}
 		if step.class == "TailDGeographyNativeTest" {
 			required = []string{"capture-map-light", "capture-map-drilldown", "capture-map-dark", "capture-map-empty", "capture-map-scope", "assert-read-only-dashboard"}
+		}
+		if step.class == "TailDLayoutNativeTest" {
+			required = []string{"capture-layout-empty", "capture-layout-control-d", "capture-layout-map", "capture-layout-applications", "assert-read-only-dashboard"}
 		}
 		if step.name == "phone-initial" {
 			required = []string{"capture-recent", "capture-editor", "stale-policy", "drop-next-write", "assert-after-unknown", "capture-unknown"}

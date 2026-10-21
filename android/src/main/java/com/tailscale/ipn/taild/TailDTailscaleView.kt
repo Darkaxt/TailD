@@ -5,25 +5,30 @@ import android.content.ClipData
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.tailscale.ipn.App
 import com.tailscale.ipn.R
@@ -63,10 +68,17 @@ fun TailDTailscaleView(
       }
   ) {
     val useRail = maxWidth >= 600.dp || maxHeight < 480.dp
-    Row(Modifier.fillMaxSize().then(if (useRail) Modifier.navigationBarsPadding() else Modifier)) {
+    val largeText = LocalDensity.current.fontScale >= 1.3f
+    Row(
+        Modifier.fillMaxSize()
+            .testTag("taild-app-viewport")
+            .then(if (useRail) Modifier.navigationBarsPadding() else Modifier)
+    ) {
       if (useRail)
           NavigationRail(
-              Modifier.verticalScroll(rememberScrollState()).testTag("taild-main-navigation-rail")
+              Modifier.width(if (largeText) 128.dp else 96.dp)
+                  .verticalScroll(rememberScrollState())
+                  .testTag("taild-main-navigation-rail")
           ) {
             NavigationRailItem(
                 selected = destination == 0,
@@ -78,7 +90,7 @@ fun TailDTailscaleView(
                       Modifier.size(24.dp),
                   )
                 },
-                label = { Text("Tailscale", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                label = { Text("Tailscale", maxLines = 2) },
             )
             NavigationRailItem(
                 selected = destination == 1,
@@ -86,7 +98,7 @@ fun TailDTailscaleView(
                 icon = {
                   Icon(painterResource(R.drawable.taild_brand_controld), null, Modifier.size(24.dp))
                 },
-                label = { Text("Control D", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                label = { Text("Control D", maxLines = 2) },
             )
             NavigationRailItem(
                 selected = destination == 3,
@@ -98,26 +110,27 @@ fun TailDTailscaleView(
                       Modifier.size(24.dp),
                   )
                 },
-                label = { Text("Firewall", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                label = { Text("Firewall", maxLines = 2) },
             )
             NavigationRailItem(
                 selected = destination == 2,
                 onClick = { destination = 2 },
                 icon = { Icon(Icons.Default.Info, null) },
-                label = { Text("Dashboard", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                label = { Text("Dashboard", maxLines = 2) },
             )
           }
       Column(Modifier.weight(1f)) {
-        Text(
-            listOf(
-                "TailD · Tailscale",
-                "TailD · Control D",
-                "TailD · Dashboard",
-                "TailD · Firewall",
-            )[destination],
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-        )
+        if (destination != 1)
+            Text(
+                listOf(
+                    "TailD · Tailscale",
+                    "TailD · Control D",
+                    "TailD · Dashboard",
+                    "TailD · Firewall",
+                )[destination],
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            )
         if (destination == 0) {
           ScrollableTabRow(
               selectedTabIndex = selected,
@@ -179,7 +192,64 @@ fun TailDTailscaleView(
                     )
               }
             }
-        if (!useRail)
+        if (!useRail && largeText) {
+          Surface(color = MaterialTheme.colorScheme.surfaceContainer) {
+            Column(Modifier.navigationBarsPadding().testTag("taild-main-navigation-large")) {
+              listOf(
+                      listOf(0 to "Tailscale", 1 to "Control D"),
+                      listOf(3 to "Firewall", 2 to "Dashboard"),
+                  )
+                  .forEach { row ->
+                    Row(Modifier.fillMaxWidth()) {
+                      row.forEach { (index, label) ->
+                        Row(
+                            Modifier.weight(1f)
+                                .heightIn(min = 48.dp)
+                                .background(
+                                    if (destination == index)
+                                        MaterialTheme.colorScheme.secondaryContainer
+                                    else MaterialTheme.colorScheme.surfaceContainer,
+                                    MaterialTheme.shapes.medium,
+                                )
+                                .selectable(
+                                    selected = destination == index,
+                                    role = Role.Tab,
+                                    onClick = { destination = index },
+                                )
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                          val tint =
+                              if (destination == index) MaterialTheme.colorScheme.primary
+                              else MaterialTheme.colorScheme.onSurfaceVariant
+                          if (index == 2) Icon(Icons.Default.Info, null, tint = tint)
+                          else
+                              Icon(
+                                  painterResource(
+                                      when (index) {
+                                        0 -> R.drawable.taild_brand_tailscale
+                                        1 -> R.drawable.taild_brand_controld
+                                        else -> R.drawable.taild_brand_shizuwall
+                                      }
+                                  ),
+                                  null,
+                                  Modifier.size(24.dp),
+                                  tint = tint,
+                              )
+                          Text(
+                              label,
+                              maxLines = 2,
+                              style = MaterialTheme.typography.labelLarge,
+                              color = tint,
+                          )
+                        }
+                      }
+                    }
+                  }
+            }
+          }
+        } else if (!useRail)
             NavigationBar {
               NavigationBarItem(
                   selected = destination == 0,
@@ -191,7 +261,14 @@ fun TailDTailscaleView(
                         Modifier.size(24.dp),
                     )
                   },
-                  label = { Text("Tailscale", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                  label = {
+                    Text(
+                        "Tailscale",
+                        maxLines = 2,
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                  },
               )
               NavigationBarItem(
                   selected = destination == 1,
@@ -203,7 +280,14 @@ fun TailDTailscaleView(
                         Modifier.size(24.dp),
                     )
                   },
-                  label = { Text("Control D", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                  label = {
+                    Text(
+                        "Control D",
+                        maxLines = 2,
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                  },
               )
               NavigationBarItem(
                   selected = destination == 3,
@@ -215,13 +299,27 @@ fun TailDTailscaleView(
                         Modifier.size(24.dp),
                     )
                   },
-                  label = { Text("Firewall", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                  label = {
+                    Text(
+                        "Firewall",
+                        maxLines = 2,
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                  },
               )
               NavigationBarItem(
                   selected = destination == 2,
                   onClick = { destination = 2 },
                   icon = { Icon(Icons.Default.Info, null) },
-                  label = { Text("Dashboard", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                  label = {
+                    Text(
+                        "Dashboard",
+                        maxLines = 2,
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                  },
               )
             }
       }

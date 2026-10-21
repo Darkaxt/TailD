@@ -16,15 +16,19 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.tailscale.ipn.R
 import com.tailscale.ipn.ui.theme.searchBarColors
 import java.time.Instant
 import kotlinx.coroutines.Dispatchers
@@ -160,11 +164,11 @@ internal fun readAppUsage(context: Context, from: Long, until: Long): AppUsageSn
   )
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun TrafficView(
     history: TailDHistory,
     window: DashboardWindow,
-    exportNotice: String?,
     onRefresh: () -> Unit,
     onProvider: (TrafficSnapshot) -> Unit,
     onExport: (TrafficSnapshot, String?) -> Unit,
@@ -241,7 +245,7 @@ internal fun TrafficView(
   LazyColumn(
       Modifier.fillMaxSize().navigationBarsPadding().testTag("taild-traffic-content"),
       contentPadding = PaddingValues(16.dp),
-      verticalArrangement = Arrangement.spacedBy(12.dp),
+      verticalArrangement = Arrangement.spacedBy(8.dp),
   ) {
     item {
       OutlinedTextField(
@@ -262,10 +266,29 @@ internal fun TrafficView(
       if (data != null) {
         Text(
             "${trafficBytes(data.received)} received · ${trafficBytes(data.sent)} sent",
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleMedium,
         )
         Text("Observed VPN traffic · this device", style = MaterialTheme.typography.labelLarge)
-        TextButton(onClick = { coverage = !coverage }) { Text("Coverage & details") }
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+          TextButton(onClick = { coverage = !coverage }, modifier = Modifier.weight(1f)) {
+            Text("Coverage & details")
+          }
+          IconButton(
+              onClick = { onExport(data, details) },
+              modifier = Modifier.testTag("taild-traffic-export"),
+          ) {
+            Icon(
+                painterResource(R.drawable.baseline_drive_folder_upload_24),
+                "Export selected snapshot",
+            )
+          }
+          IconButton(
+              onClick = { osDetails = !osDetails },
+              modifier = Modifier.testTag("taild-traffic-os-totals"),
+          ) {
+            Icon(Icons.AutoMirrored.Filled.List, "OS app totals")
+          }
+        }
         if (coverage) {
           Text(data.coverage, style = MaterialTheme.typography.bodySmall)
           Text(
@@ -283,8 +306,6 @@ internal fun TrafficView(
         }
         if (data.rows.isEmpty())
             Text("No retained VPN packets in this period. This does not prove no traffic.")
-        TextButton(onClick = { onExport(data, details) }) { Text("Export selected snapshot") }
-        exportNotice?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
       }
     }
     items(
@@ -375,30 +396,28 @@ internal fun TrafficView(
         HorizontalDivider()
       }
     }
-    item {
-      TextButton(onClick = { osDetails = !osDetails }) { Text("OS app totals") }
-      if (osDetails) {
-        usage?.let { os ->
-          Text(os.coverage, style = MaterialTheme.typography.bodySmall)
-          Text("Read ${Instant.ofEpochMilli(os.at)}", style = MaterialTheme.typography.bodySmall)
-          for (row in os.rows) Text(
-              "${row.labels.joinToString(" / ").ifEmpty { "UID ${row.uid}" }} · ${trafficBytes(row.received)} received · ${trafficBytes(row.sent)} sent",
-              style = MaterialTheme.typography.bodySmall,
-          )
+    if (osDetails)
+        item {
+          usage?.let { os ->
+            Text(os.coverage, style = MaterialTheme.typography.bodySmall)
+            Text("Read ${Instant.ofEpochMilli(os.at)}", style = MaterialTheme.typography.bodySmall)
+            for (row in os.rows) Text(
+                "${row.labels.joinToString(" / ").ifEmpty { "UID ${row.uid}" }} · ${trafficBytes(row.received)} received · ${trafficBytes(row.sent)} sent",
+                style = MaterialTheme.typography.bodySmall,
+            )
+          }
+          TextButton(
+              onClick = {
+                context.startActivity(
+                    Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+              }
+          ) {
+            Text("Manage Usage Access")
+          }
+          TextButton(onClick = onRefresh) { Text("Refresh snapshot") }
         }
-        TextButton(
-            onClick = {
-              context.startActivity(
-                  Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
-                      .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-              )
-            }
-        ) {
-          Text("Manage Usage Access")
-        }
-        TextButton(onClick = onRefresh) { Text("Refresh snapshot") }
-      }
-    }
   }
 }
 

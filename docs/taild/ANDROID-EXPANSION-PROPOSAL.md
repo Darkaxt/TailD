@@ -1,6 +1,6 @@
 # TailD Android specification
 
-Version 1.3, 2026-10-21. Authoritative Android extension to
+Version 1.4, 2026-10-21. Authoritative Android extension to
 [PRODUCT-SPECIFICATION.md](PRODUCT-SPECIFICATION.md), requirement R37.
 The historical filename is retained to preserve existing links.
 
@@ -10,6 +10,49 @@ Android release. It does not authorize unrelated device deployment, changing
 production provider policy or closing desktop B12. Current stage status lives in
 [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md); historical planning language
 below is superseded by this authority and the parity contract below.
+
+## October 21 review-driven UI refinement
+
+The user's follow-up authorizes acting on the seven recorded layout findings,
+using Huashu critique guidance within the existing native Material design and
+publishing one verified Android update. No direction-selection/manual integration
+checkpoint is added. This is a bounded refinement, not a replacement UI.
+
+- U1: Geography without a binding offers a prominent Select endpoint action
+  adjacent to the empty-state explanation. Retry is for an actual query failure.
+- U2: Dashboard period controls and secondary actions have an intentional
+  large-text arrangement. At 360 dp/font scale 1.5, destination names remain
+  readable and primary content remains reachable without clipped controls.
+- U3: Applications places Coverage, Export and optional OS totals in one compact,
+  wrapping action row. Keep the observed-VPN/device scope visible and preserve
+  immutable export/detail selection and coverage disclosure.
+- U4: Control D is results-first. A compact endpoint/action bar replaces the
+  repeated destination title and retention heading. Tabs and search are the only
+  other permanent rows above results. Scope details contains client selection,
+  profile/affected endpoints, separate Write setup, policy reload and coverage;
+  actionable errors and unresolved writes remain visible. Shared impact remains
+  explicit at mutation review. DNS rows show domain, decision/inverse action,
+  relative time, First seen and seven-day Total; expand a row for exact UTC and
+  reason metadata. At 360 dp/font 1.0 the first result starts within the top 35%
+  of the app viewport and at least 60% remains for results. At font 1.5 controls
+  remain accessible and results retain at least half the viewport. Verify actual
+  populated native bounds and captures, not only control presence.
+- U5: Firewall emphasizes app name, policy state and shared-UID affected-app
+  count. Package identifiers are available through accessible row details.
+  Explicit shared-UID change review, ownership and inverse actions stay intact.
+- U6: Dashboard/traffic content has a centered working column capped at 840 dp
+  on wide screens; phone search fills the available width. No horizontal overflow.
+- U7: Export feedback uses an accessible dismissible overlay/status surface and
+  does not occupy another tab's scrolling content or displace its map/results.
+
+Use the existing theme, official marks, rounded search and 4/8/16 dp spacing;
+retain 48 dp interactive targets. Verify the real native UI at phone/tablet,
+portrait/landscape, automatic light/dark and font scale 1.5, including scope
+selection, shared-UID disclosure, detail/coverage expansion and actual SAF export.
+Record before/after captures and reconcile all seven findings. Final delivery
+requires the established exact-source signed candidate, isolated upgrade/recovery
+and independent public APK/package/signer/source/assets verification. Preserve
+physical-device/provider boundaries and unresolved Windows B12/F1/F3.
 
 ## Confirmed direction
 

@@ -1,6 +1,7 @@
 // Copyright (c) TailD contributors. SPDX-License-Identifier: BSD-3-Clause
 package com.tailscale.ipn.taild
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,8 +24,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.tailscale.ipn.R
 import com.tailscale.ipn.ui.theme.searchBarColors
@@ -76,7 +79,8 @@ fun ControlDView(model: ControlDModel, onDNSSettings: () -> Unit) {
   var setup by remember { mutableStateOf<ControlDCredentials.Access?>(null) }
   var endpointsOpen by remember { mutableStateOf(false) }
   var clientsOpen by remember { mutableStateOf(false) }
-  var impactOpen by rememberSaveable { mutableStateOf(false) }
+  var detailsOpen by rememberSaveable { mutableStateOf(false) }
+  var expandedEntry by rememberSaveable { mutableStateOf<String?>(null) }
   var editor by rememberSaveable(stateSaver = ruleEditorSaver) { mutableStateOf<RuleEditor?>(null) }
   var acknowledge by remember { mutableStateOf(false) }
   LaunchedEffect(model) { model.open() }
@@ -122,189 +126,429 @@ fun ControlDView(model: ControlDModel, onDNSSettings: () -> Unit) {
                 (eventProfile != null && eventProfile != state.policy?.profile),
         )
   }
-  Column(Modifier.fillMaxSize()) {
-    FlowRow(
-        Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-      Text(
-          if (state.busyHistory) "Reading history"
-          else if (state.transient != null) "Transient DNS view" else "Retained DNS view",
-          Modifier.align(Alignment.CenterVertically),
-          style = MaterialTheme.typography.labelMedium,
-      )
-      Box {
-        TextButton(
-            onClick = { endpointsOpen = true },
-            enabled = !state.busyWrite && !state.busySetup && state.inventory != null,
+  BoxWithConstraints(Modifier.fillMaxSize()) {
+    val headerFraction = if (maxHeight < 480.dp && maxWidth >= 600.dp) 0.5f else 1f
+    Column(Modifier.fillMaxSize()) {
+      FlowRow(Modifier.fillMaxWidth()) {
+        Row(
+            Modifier.fillMaxWidth(headerFraction).padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-          Text(state.endpointName)
-          Icon(Icons.Default.ArrowDropDown, null)
-        }
-        DropdownMenu(expanded = endpointsOpen, onDismissRequest = { endpointsOpen = false }) {
-          state.inventory?.endpoints?.forEach { endpoint ->
-            DropdownMenuItem(
-                text = { Text(endpoint.name) },
-                onClick = {
-                  endpointsOpen = false
-                  model.select(endpoint)
-                },
-            )
-          }
-        }
-      }
-      if (state.binding != null && (state.clients.isNotEmpty() || state.clientName != null))
-          Box {
-            TextButton(onClick = { clientsOpen = true }, enabled = !state.busyWrite) {
-              Text(state.clientName ?: "All clients")
+          Box(Modifier.weight(1f)) {
+            TextButton(
+                onClick = { endpointsOpen = true },
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                contentPadding = PaddingValues(horizontal = 12.dp),
+                enabled = !state.busyWrite && !state.busySetup && state.inventory != null,
+            ) {
+              Column(Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
+                Text(state.endpointName, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                if (state.binding != null)
+                    Text(
+                        state.clientName ?: "All clients",
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+              }
               Icon(Icons.Default.ArrowDropDown, null)
             }
-            DropdownMenu(expanded = clientsOpen, onDismissRequest = { clientsOpen = false }) {
-              val endpoint = state.inventory?.endpoints?.find { it.id == state.binding?.endpoint }
-              DropdownMenuItem(
-                  text = { Text("All clients · endpoint scope") },
-                  onClick = {
-                    clientsOpen = false
-                    endpoint?.let { model.select(it) }
-                  },
-              )
-              state.clients.forEach { client ->
+            DropdownMenu(expanded = endpointsOpen, onDismissRequest = { endpointsOpen = false }) {
+              state.inventory?.endpoints?.forEach { endpoint ->
                 DropdownMenuItem(
-                    text = { Text(client.name) },
+                    text = { Text(endpoint.name) },
                     onClick = {
-                      clientsOpen = false
-                      endpoint?.let { model.select(it, client) }
+                      endpointsOpen = false
+                      model.select(endpoint)
                     },
                 )
               }
             }
           }
-      state.policy?.let {
-        Text(
-            it.profileName,
-            Modifier.align(Alignment.CenterVertically),
-            style = MaterialTheme.typography.labelMedium,
-        )
-      }
-      IconButton(
-          onClick = model::refreshPolicy,
-          enabled = !state.busyPolicy && !state.busyWrite && state.binding != null && state.hasRead,
-      ) {
-        Icon(Icons.Default.Refresh, "Reload policy")
-      }
-      IconButton(
-          onClick = { setup = ControlDCredentials.Access.READ },
-          enabled = !state.busyWrite,
-      ) {
-        Icon(Icons.Default.Settings, "Control D setup")
-      }
-    }
-    TabRow(selectedTabIndex = tab) {
-      Tab(selected = tab == 0, onClick = { tab = 0 }, text = { Text("Recent DNS") })
-      Tab(selected = tab == 1, onClick = { tab = 1 }, text = { Text("Profile policy") })
-    }
-    LazyColumn(
-        Modifier.fillMaxSize().navigationBarsPadding().testTag("taild-control-d-content"),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-      item {
-        state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-        state.notice?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-        if (state.busyWrite)
-            LinearProgressIndicator(
-                Modifier.fillMaxWidth().semantics {
-                  contentDescription = "Checking explicit change"
-                }
-            )
-        if (!state.hasRead) {
-          Text(
-              "Connect a READ credential, then select the endpoint/client used by your resolver. DNS settings are independent."
-          )
-          Button(onClick = { setup = ControlDCredentials.Access.READ }) { Text("Set up Control D") }
-        }
-        state.policy?.let { policy ->
-          TextButton(onClick = { impactOpen = !impactOpen }) {
-            Text("Shared profile · ${policy.affectedNames.size} affected endpoints")
+          IconButton(onClick = { detailsOpen = true }) {
+            Icon(Icons.Default.Info, "Scope & coverage")
           }
-          if (impactOpen) {
+          IconButton(
+              onClick = { setup = ControlDCredentials.Access.READ },
+              enabled = !state.busyWrite,
+          ) {
+            Icon(Icons.Default.Settings, "Control D setup")
+          }
+        }
+        TabRow(selectedTabIndex = tab, modifier = Modifier.fillMaxWidth(headerFraction)) {
+          listOf("Recent DNS", "Profile policy").forEachIndexed { index, label ->
+            Tab(
+                selected = tab == index,
+                onClick = { tab = index },
+                modifier = Modifier.heightIn(min = 48.dp),
+            ) {
+              Text(
+                  label,
+                  Modifier.padding(8.dp),
+                  style = MaterialTheme.typography.labelLarge,
+                  maxLines = 2,
+              )
+            }
+          }
+        }
+      }
+      LazyColumn(
+          Modifier.fillMaxSize().navigationBarsPadding().testTag("taild-control-d-content"),
+          contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+          verticalArrangement = Arrangement.spacedBy(4.dp),
+      ) {
+        item {
+          state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+          state.notice?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+          if (state.busyWrite)
+              LinearProgressIndicator(
+                  Modifier.fillMaxWidth().semantics {
+                    contentDescription = "Checking explicit change"
+                  }
+              )
+          if (!state.hasRead) {
+            Text(
+                "Connect a READ credential, then select the endpoint/client used by your resolver. DNS settings are independent."
+            )
+            Button(onClick = { setup = ControlDCredentials.Access.READ }) {
+              Text("Set up Control D")
+            }
+          }
+          if (state.unresolved) {
+            Text(
+                "An earlier change has an unresolved outcome. No policy write will be retried.",
+                color = MaterialTheme.colorScheme.error,
+            )
+            FlowRow {
+              TextButton(onClick = model::reconcile, enabled = !state.busyWrite && state.hasRead) {
+                Text("Reconcile current policy")
+              }
+              TextButton(
+                  onClick = { acknowledge = true },
+                  enabled = !state.busyWrite && state.policy != null,
+              ) {
+                Text("Accept current policy…")
+              }
+            }
+          }
+        }
+        if (tab == 0) {
+          item {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+              OutlinedTextField(
+                  value = state.search,
+                  onValueChange = model::search,
+                  placeholder = {
+                    Text(
+                        "Domain / decision",
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                  },
+                  modifier = Modifier.weight(1f).onFocusChanged { searchFocused = it.isFocused },
+                  singleLine = true,
+                  textStyle = MaterialTheme.typography.bodyMedium,
+                  shape = MaterialTheme.shapes.extraLarge,
+                  colors = MaterialTheme.colorScheme.searchBarColors,
+                  leadingIcon = { Icon(Icons.Outlined.Search, "Search domains or decisions") },
+                  trailingIcon = {
+                    if (searchFocused) {
+                      IconButton(
+                          onClick = {
+                            focusManager.clearFocus()
+                            model.search("")
+                          }
+                      ) {
+                        Icon(
+                            if (state.search.isEmpty()) Icons.Outlined.Close
+                            else Icons.Outlined.Clear,
+                            "Clear domain or decision search",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                      }
+                    }
+                  },
+              )
+              IconButton(
+                  onClick = { model.refreshHistory(full = true) },
+                  enabled = !state.busyHistory && state.binding != null && state.hasRead,
+              ) {
+                Icon(Icons.Default.Refresh, "Refresh DNS")
+              }
+            }
+            if (state.busyHistory) {
+              LinearProgressIndicator(Modifier.fillMaxWidth())
+              TextButton(onClick = model::cancelHistoryRead) { Text("Cancel history read") }
+            }
+            state.historyError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            if (displayedRows.isEmpty() && !state.busyHistory)
+                Text(
+                    if (state.search.isBlank())
+                        "No observations in this scope's recent window. This is not proof of no DNS activity."
+                    else "No matching domain or decision in this recent window."
+                )
+          }
+          items(displayedRows, key = { it.key }) { entry ->
+            val fact = entry.fact
+            val summary = state.page.summaries[fact.question to fact.type]
+            Column(Modifier.fillMaxWidth().testTag("taild-dns-entry")) {
+              Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(
+                    Modifier.weight(1f)
+                        .heightIn(min = 48.dp)
+                        .clickable {
+                          expandedEntry = if (expandedEntry == entry.key) null else entry.key
+                        }
+                        .semantics {
+                          contentDescription = "DNS details for ${fact.question}"
+                          stateDescription =
+                              if (expandedEntry == entry.key) "Expanded" else "Collapsed"
+                        }
+                        .padding(vertical = 4.dp)
+                ) {
+                  Text(
+                      fact.question,
+                      style = MaterialTheme.typography.titleMedium,
+                      maxLines = 2,
+                      overflow = TextOverflow.Ellipsis,
+                  )
+                  Text(
+                      "${fact.decision} · ${fact.type} · ${relativeLastSeen(fact.at.toString(), now)}",
+                      color =
+                          if (fact.action == 0) MaterialTheme.colorScheme.error
+                          else MaterialTheme.colorScheme.onSurfaceVariant,
+                      style = MaterialTheme.typography.bodySmall,
+                  )
+                }
+                val existing =
+                    state.policy
+                        ?.resources
+                        ?.get("rules")
+                        ?.takeIf { it.state == "available" }
+                        ?.objects()
+                        ?.find { it.text("PK") == fact.question }
+                val quick =
+                    writable &&
+                        fact.profile != null &&
+                        fact.profile == state.policy?.profile &&
+                        fact.action in 0..3 &&
+                        (existing == null || existing.objectAt("action")?.number("do") in 0..1)
+                if (fact.action != 0)
+                    IconButton(onClick = { model.incident(fact, 0) }, enabled = quick) {
+                      Icon(painterResource(R.drawable.taild_block), "Block ${fact.question}")
+                    }
+                if (fact.action != 1)
+                    IconButton(onClick = { model.incident(fact, 1) }, enabled = quick) {
+                      Icon(Icons.Default.Check, "Allow ${fact.question} with Bypass")
+                    }
+                IconButton(
+                    onClick = {
+                      edit(fact.question, fact.profile, fact.action !in 0..3, fact.action)
+                    },
+                    enabled = !state.busyWrite,
+                ) {
+                  Icon(Icons.Default.Settings, "Edit rule for ${fact.question}")
+                }
+              }
+              Text(
+                  "First seen · ${summary?.firstSeen?.let { relativeLastSeen(it.toString(), now) } ?: "Not retained"} · Total · ${summary?.total ?: "Not retained"} (7 days)",
+                  style = MaterialTheme.typography.bodySmall,
+              )
+              if (expandedEntry == entry.key) {
+                Text(
+                    "${fact.question}\n${fact.type} · ${fact.at} UTC",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Text(fact.reason, style = MaterialTheme.typography.bodySmall)
+                Text(
+                    "First seen · ${summary?.firstSeen ?: "Not retained"} UTC",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+              }
+              HorizontalDivider(Modifier.padding(top = 4.dp))
+            }
+          }
+        } else {
+          item {
+            Text("Profile policy", style = MaterialTheme.typography.titleLarge)
+            Text(
+                "Browsing uses READ access. Management changes are reviewed against fresh policy and affect the shared profile.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+            TextButton(onClick = { edit("") }, enabled = !state.busyWrite && state.policy != null) {
+              Text("Create custom rule")
+            }
+            if (state.busyPolicy) LinearProgressIndicator(Modifier.fillMaxWidth())
+          }
+          listOf(
+                  "rules" to "Custom rules",
+                  "filters" to "Filters",
+                  "services" to "Services",
+                  "options" to "Profile options",
+              )
+              .forEach { (kind, title) ->
+                val resource = state.policy?.resources?.get(kind)
+                item(key = "heading-$kind") {
+                  Text(title, style = MaterialTheme.typography.titleMedium)
+                  if (resource != null && resource.state != "available")
+                      Text(
+                          resource.message ?: "This category is unavailable",
+                          color = MaterialTheme.colorScheme.error,
+                      )
+                }
+                val rows = resource?.takeIf { it.state == "available" }?.objects().orEmpty()
+                items(rows, key = { "$kind-${it.text("PK")}" }) { row ->
+                  val id = row.text("PK").orEmpty()
+                  val action = row.objectAt("action")
+                  val enabled =
+                      when (kind) {
+                        "rules",
+                        "services" -> action?.number("status") == 1
+                        "options" -> row.text("value") == "1"
+                        else -> row.number("status") == 1
+                      }
+                  val supported =
+                      when (kind) {
+                        "rules",
+                        "services" -> action?.number("do") in 0..1
+                        "options" -> row.text("type") == "toggle"
+                        else -> true
+                      }
+                  ListItem(
+                      headlineContent = {
+                        Text(
+                            if (kind == "rules") id
+                            else
+                                row.text("name")
+                                    ?: row.text("title")
+                                    ?: "Unnamed ${title.lowercase()}"
+                        )
+                      },
+                      supportingContent = {
+                        Text(
+                            if (!supported) "Unsupported action/type · read only"
+                            else if (enabled) "Enabled" else "Disabled"
+                        )
+                      },
+                      trailingContent = {
+                        if (kind == "rules")
+                            IconButton(onClick = { edit(id) }, enabled = !state.busyWrite) {
+                              Icon(Icons.Default.Settings, "Edit $id")
+                            }
+                        else
+                            Switch(
+                                checked = enabled,
+                                enabled = writable && supported,
+                                modifier =
+                                    Modifier.semantics {
+                                      contentDescription =
+                                          row.text("name") ?: row.text("title") ?: title
+                                    },
+                                onCheckedChange = { desired ->
+                                  val change =
+                                      when (kind) {
+                                        "filters" ->
+                                            ControlDChange.Filter(
+                                                action?.text("lvl") ?: id,
+                                                desired,
+                                            )
+                                        "services" ->
+                                            ControlDChange.Service(
+                                                id,
+                                                action?.number("do") ?: -1,
+                                                desired,
+                                            )
+                                        else -> ControlDChange.Option(id, desired)
+                                      }
+                                  model.prepare(change)
+                                },
+                            )
+                      },
+                  )
+                }
+              }
+        }
+      }
+    }
+  }
+  if (detailsOpen)
+      ModalBottomSheet(
+          onDismissRequest = { detailsOpen = false },
+          sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+      ) {
+        Column(
+            Modifier.fillMaxWidth()
+                .heightIn(max = 520.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+          Text("Scope & coverage", style = MaterialTheme.typography.titleLarge)
+          Text(state.endpointName, style = MaterialTheme.typography.titleMedium)
+          if (state.binding != null && (state.clients.isNotEmpty() || state.clientName != null))
+              Box {
+                TextButton(onClick = { clientsOpen = true }, enabled = !state.busyWrite) {
+                  Text(state.clientName ?: "All clients")
+                  Icon(Icons.Default.ArrowDropDown, null)
+                }
+                DropdownMenu(expanded = clientsOpen, onDismissRequest = { clientsOpen = false }) {
+                  val endpoint =
+                      state.inventory?.endpoints?.find { it.id == state.binding?.endpoint }
+                  DropdownMenuItem(
+                      text = { Text("All clients · endpoint scope") },
+                      onClick = {
+                        clientsOpen = false
+                        endpoint?.let { model.select(it) }
+                      },
+                  )
+                  state.clients.forEach { client ->
+                    DropdownMenuItem(
+                        text = { Text(client.name) },
+                        onClick = {
+                          clientsOpen = false
+                          endpoint?.let { model.select(it, client) }
+                        },
+                    )
+                  }
+                }
+              }
+          state.policy?.let { policy ->
+            Text(policy.profileName, style = MaterialTheme.typography.titleMedium)
+            Text("Shared profile · ${policy.affectedNames.size} affected endpoints")
             Text(
                 "Changes affect every endpoint below. Allow creates an explicit Bypass rule and may override filter blocks.",
                 style = MaterialTheme.typography.bodySmall,
             )
             policy.affectedNames.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
           }
-        }
-        if (!state.hasWrite && state.hasRead)
-            TextButton(onClick = { setup = ControlDCredentials.Access.WRITE }) {
-              Text("Add separate Write access")
-            }
-        if (state.unresolved) {
-          Text(
-              "An earlier change has an unresolved outcome. No policy write will be retried.",
-              color = MaterialTheme.colorScheme.error,
-          )
-          FlowRow {
-            TextButton(onClick = model::reconcile, enabled = !state.busyWrite && state.hasRead) {
-              Text("Reconcile current policy")
-            }
-            TextButton(
-                onClick = { acknowledge = true },
-                enabled = !state.busyWrite && state.policy != null,
-            ) {
-              Text("Accept current policy…")
-            }
-          }
-        }
-      }
-      if (tab == 0) {
-        item {
-          Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            OutlinedTextField(
-                value = state.search,
-                onValueChange = model::search,
-                placeholder = {
-                  Text(
-                      "Domain / decision",
-                      style = MaterialTheme.typography.bodyLarge,
-                      maxLines = 1,
-                  )
-                },
-                modifier = Modifier.weight(1f).onFocusChanged { searchFocused = it.isFocused },
-                singleLine = true,
-                shape = MaterialTheme.shapes.extraLarge,
-                colors = MaterialTheme.colorScheme.searchBarColors,
-                leadingIcon = { Icon(Icons.Outlined.Search, "Search domains or decisions") },
-                trailingIcon = {
-                  if (searchFocused) {
-                    IconButton(
-                        onClick = {
-                          focusManager.clearFocus()
-                          model.search("")
-                        }
-                    ) {
-                      Icon(
-                          if (state.search.isEmpty()) Icons.Outlined.Close
-                          else Icons.Outlined.Clear,
-                          "Clear domain or decision search",
-                          tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                      )
-                    }
-                  }
-                },
-            )
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Reload policy", Modifier.weight(1f))
             IconButton(
-                onClick = { model.refreshHistory(full = true) },
-                enabled = !state.busyHistory && state.binding != null && state.hasRead,
+                onClick = {
+                  model.refreshPolicy()
+                  detailsOpen = false
+                },
+                enabled =
+                    !state.busyPolicy && !state.busyWrite && state.binding != null && state.hasRead,
             ) {
-              Icon(Icons.Default.Refresh, "Refresh DNS")
+              Icon(Icons.Default.Refresh, "Reload policy")
             }
           }
-          if (state.busyHistory) {
-            LinearProgressIndicator(Modifier.fillMaxWidth())
-            TextButton(onClick = model::cancelHistoryRead) { Text("Cancel history read") }
-          }
+          if (!state.hasWrite && state.hasRead)
+              TextButton(
+                  onClick = {
+                    detailsOpen = false
+                    setup = ControlDCredentials.Access.WRITE
+                  }
+              ) {
+                Text("Add separate Write access")
+              }
+          Text(
+              if (state.busyHistory) "Reading history"
+              else if (state.transient != null) "Transient DNS view" else "Retained DNS view",
+              style = MaterialTheme.typography.labelLarge,
+          )
           Text(
               "Latest 100 observations in 15 minutes. First seen and Total use all retained observations in the last 7 days, independently of search. Gaps do not mean zero activity.",
               style = MaterialTheme.typography.bodySmall,
@@ -314,169 +558,9 @@ fun ControlDView(model: ControlDModel, onDNSSettings: () -> Unit) {
                   "Current provider rows are transient; First seen and Total still describe retained history.",
                   style = MaterialTheme.typography.bodySmall,
               )
-          state.historyError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-          if (displayedRows.isEmpty() && !state.busyHistory)
-              Text(
-                  if (state.search.isBlank())
-                      "No observations in this scope's recent window. This is not proof of no DNS activity."
-                  else "No matching domain or decision in this recent window."
-              )
+          TextButton(onClick = { detailsOpen = false }) { Text("Close scope details") }
         }
-        items(displayedRows, key = { it.key }) { entry ->
-          val fact = entry.fact
-          val summary = state.page.summaries[fact.question to fact.type]
-          Column(Modifier.fillMaxWidth()) {
-            Text(fact.question, style = MaterialTheme.typography.titleMedium)
-            Text("${fact.type} · ${fact.at} UTC", style = MaterialTheme.typography.bodySmall)
-            FlowRow(
-                verticalArrangement = Arrangement.Center,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-              Text(
-                  fact.decision,
-                  Modifier.align(Alignment.CenterVertically),
-                  color =
-                      if (fact.action == 0) MaterialTheme.colorScheme.error
-                      else MaterialTheme.colorScheme.onSurface,
-                  style = MaterialTheme.typography.labelLarge,
-              )
-              val existing =
-                  state.policy
-                      ?.resources
-                      ?.get("rules")
-                      ?.takeIf { it.state == "available" }
-                      ?.objects()
-                      ?.find { it.text("PK") == fact.question }
-              val quick =
-                  writable &&
-                      fact.profile != null &&
-                      fact.profile == state.policy?.profile &&
-                      fact.action in 0..3 &&
-                      (existing == null || existing.objectAt("action")?.number("do") in 0..1)
-              if (fact.action != 0)
-                  IconButton(onClick = { model.incident(fact, 0) }, enabled = quick) {
-                    Icon(painterResource(R.drawable.taild_block), "Block ${fact.question}")
-                  }
-              if (fact.action != 1)
-                  IconButton(onClick = { model.incident(fact, 1) }, enabled = quick) {
-                    Icon(Icons.Default.Check, "Allow ${fact.question} with Bypass")
-                  }
-              IconButton(
-                  onClick = {
-                    edit(fact.question, fact.profile, fact.action !in 0..3, fact.action)
-                  },
-                  enabled = !state.busyWrite,
-              ) {
-                Icon(Icons.Default.Settings, "Edit rule for ${fact.question}")
-              }
-            }
-            Text(fact.reason, style = MaterialTheme.typography.bodySmall)
-            Text(
-                "First seen · ${summary?.firstSeen ?: "Not retained"}\nTotal · ${summary?.total ?: "Not retained"} · retained 7 days",
-                style = MaterialTheme.typography.bodySmall,
-            )
-            HorizontalDivider(Modifier.padding(top = 8.dp))
-          }
-        }
-      } else {
-        item {
-          Text("Profile policy", style = MaterialTheme.typography.titleLarge)
-          Text(
-              "Browsing uses READ access. Management changes are reviewed against fresh policy and affect the shared profile.",
-              style = MaterialTheme.typography.bodySmall,
-          )
-          TextButton(onClick = { edit("") }, enabled = !state.busyWrite && state.policy != null) {
-            Text("Create custom rule")
-          }
-          if (state.busyPolicy) LinearProgressIndicator(Modifier.fillMaxWidth())
-        }
-        listOf(
-                "rules" to "Custom rules",
-                "filters" to "Filters",
-                "services" to "Services",
-                "options" to "Profile options",
-            )
-            .forEach { (kind, title) ->
-              val resource = state.policy?.resources?.get(kind)
-              item(key = "heading-$kind") {
-                Text(title, style = MaterialTheme.typography.titleMedium)
-                if (resource != null && resource.state != "available")
-                    Text(
-                        resource.message ?: "This category is unavailable",
-                        color = MaterialTheme.colorScheme.error,
-                    )
-              }
-              val rows = resource?.takeIf { it.state == "available" }?.objects().orEmpty()
-              items(rows, key = { "$kind-${it.text("PK")}" }) { row ->
-                val id = row.text("PK").orEmpty()
-                val action = row.objectAt("action")
-                val enabled =
-                    when (kind) {
-                      "rules",
-                      "services" -> action?.number("status") == 1
-                      "options" -> row.text("value") == "1"
-                      else -> row.number("status") == 1
-                    }
-                val supported =
-                    when (kind) {
-                      "rules",
-                      "services" -> action?.number("do") in 0..1
-                      "options" -> row.text("type") == "toggle"
-                      else -> true
-                    }
-                ListItem(
-                    headlineContent = {
-                      Text(
-                          if (kind == "rules") id
-                          else
-                              row.text("name")
-                                  ?: row.text("title")
-                                  ?: "Unnamed ${title.lowercase()}"
-                      )
-                    },
-                    supportingContent = {
-                      Text(
-                          if (!supported) "Unsupported action/type · read only"
-                          else if (enabled) "Enabled" else "Disabled"
-                      )
-                    },
-                    trailingContent = {
-                      if (kind == "rules")
-                          IconButton(onClick = { edit(id) }, enabled = !state.busyWrite) {
-                            Icon(Icons.Default.Settings, "Edit $id")
-                          }
-                      else
-                          Switch(
-                              checked = enabled,
-                              enabled = writable && supported,
-                              modifier =
-                                  Modifier.semantics {
-                                    contentDescription =
-                                        row.text("name") ?: row.text("title") ?: title
-                                  },
-                              onCheckedChange = { desired ->
-                                val change =
-                                    when (kind) {
-                                      "filters" ->
-                                          ControlDChange.Filter(action?.text("lvl") ?: id, desired)
-                                      "services" ->
-                                          ControlDChange.Service(
-                                              id,
-                                              action?.number("do") ?: -1,
-                                              desired,
-                                          )
-                                      else -> ControlDChange.Option(id, desired)
-                                    }
-                                model.prepare(change)
-                              },
-                          )
-                    },
-                )
-              }
-            }
       }
-    }
-  }
   setup?.let { access ->
     ControlDSetupDialog(state, access, model, onDNSSettings, onClose = { setup = null })
   }

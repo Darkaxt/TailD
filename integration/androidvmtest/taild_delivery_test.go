@@ -504,7 +504,7 @@ func TestTailDProductionDelivery(t *testing.T) {
 	if *deliveryAuditOnly {
 		required = []string{"resumed-candidate", "recovery-baseline", "assert-node-continuity", "rejected-downgrade", "reinstall", "delivery-verified"}
 	} else if *deliveryUICorrection {
-		required = []string{"baseline-ready", "upgrade", "assert-node-continuity", "capture-ui-phone-light", "capture-ui-phone-dark", "capture-ui-rail-dark", "capture-ui-rail-light", "rejected-downgrade", "reinstall", "delivery-verified"}
+		required = []string{"receive-ready", "baseline-history-recorded", "baseline-ready", "upgrade", "upgrade-history-preserved", "reinstall-history-preserved", "assert-node-continuity", "capture-ui-phone-light", "capture-ui-phone-dark", "capture-ui-rail-dark", "capture-ui-rail-light", "capture-ui-phone-large", "capture-ui-phone-large-dark", "rejected-downgrade", "reinstall", "delivery-verified"}
 	} else if *deliveryFinalizeOnly {
 		required = []string{"capture-talkback", "delivery-verified"}
 	} else if *deliveryResumeCandidate {

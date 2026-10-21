@@ -1,5 +1,45 @@
 # TailD staged execution
 
+## Current execution - October 21 review-driven UI refinement
+
+Already authorized by the user's instruction to act on the review results.
+Android specification v1.4 U1-U7 is authoritative. The seven prior suggestions
+are now required in this bounded refinement; .37 remains the verified baseline.
+
+| Stage | Status | Acceptance satisfied | Acceptance remaining |
+| --- | --- | --- | --- |
+| Integrated native UI refinement | COMPLETE | U1-U7 native phone/tablet/wide, font 1.5 and short-landscape density/targets/disclosures pass. Provider policy/restart, shared-UID/details/recovery, actual VPN traffic, SAF export, retained history and live automatic theme pass. Independent Huashu capture review passes. | None. |
+| Final Android update delivery | ACTIVE | Established exact-source candidate/sign/publication path; verified .37 baseline. | Exact-source gates, one monotonic normal signed release, isolated .37 upgrade/recovery, independent public artifact verification and reviewed scratch cleanup. |
+
+U1-U7 reconciliation: missing binding selects the endpoint; normal and large-text
+navigation remains readable; Applications actions share a compact toolbar; Control D
+has compact scope/search/tabs, expandable row metadata and a scope sheet; Firewall
+shows shared-UID count with package details on demand; wide Dashboard content is
+capped at 840 dp; export feedback is a dismissible overlay cleared on tab change.
+No required refactor is outstanding: existing models, state ownership and immutable
+query/export boundaries are retained. No new infrastructure or provider write path.
+
+Final native layout-acceptance2-default/large/landscape passes real scope selection,
+retained DNS, exact metadata, map/details and 48 dp toolbar touch targets. Normal
+phone results occupy 1388/2264 (61%) of the app viewport; font 1.5 phone retains
+1302/2264 (57.5%); short large-text landscape retains 538/996 (54%). Scope/tabs
+share a row on short landscapes; normal portrait shows six complete DNS entries.
+The independent inherited-model Low-effort Huashu reviewer confirms readable
+required content and no required visual correction in the final captures.
+
+Interaction acceptance: control-d-final, dashboard-final-r2, appaccess-final-r2,
+appaccess-final-recovery-r2 and traffic-final-r2 pass. The traffic run continued
+through a diagnosed disposable-emulator SIM/carrier-configuration repair, then
+proved actual mobile/Wi-Fi transition, excluded direct route, document export,
+retained restart and deletion. No product network workaround was added. Firewall
+recovery checks actual readback before scrolling to the lazy inverse control.
+Package contracts pass; gates 1667/1673 verify two workers, no parallel execution,
+3 GB Gradle heap, in-process Kotlin and owned daemon exit (assembly tasks).
+Durable evidence is D:/Tools/taild-ui38-evidence-20261021.
+
+Only final signed delivery and scratch cleanup remain advancement blockers. No
+external execution blocker or tracked deferral. Windows B12/F1/F3 remain open.
+
 ## Current execution - October 21 Android Geography map
 
 Already authorized by the user's missing-map feedback. Android specification v1.3

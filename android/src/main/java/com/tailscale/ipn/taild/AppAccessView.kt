@@ -11,6 +11,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
@@ -39,6 +40,7 @@ internal fun AppAccessView() {
   val uri = LocalUriHandler.current
   val focus = LocalFocusManager.current
   var search by rememberSaveable { mutableStateOf("") }
+  var expanded by rememberSaveable { mutableStateOf<Int?>(null) }
   DisposableEffect(model) {
     model.open()
     onDispose { model.close() }
@@ -126,10 +128,11 @@ internal fun AppAccessView() {
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
-            Text(
-                app.packages.joinToString(" · ") { it.name },
-                style = MaterialTheme.typography.bodySmall,
-            )
+            if (app.packages.size > 1)
+                Text(
+                    "Shared UID · ${app.packages.size} apps affected",
+                    style = MaterialTheme.typography.labelMedium,
+                )
             Text(
                 when {
                   !state.connected -> "Current app rule state unknown · backend disconnected"
@@ -141,11 +144,9 @@ internal fun AppAccessView() {
                 },
                 style = MaterialTheme.typography.bodySmall,
             )
-            if (app.packages.size > 1)
-                Text(
-                    "Shared UID · ${app.packages.size} apps affected",
-                    style = MaterialTheme.typography.bodySmall,
-                )
+          }
+          IconButton(onClick = { expanded = if (expanded == app.uid) null else app.uid }) {
+            Icon(Icons.Default.Info, "App details for ${app.packages.first().label}")
           }
           if (pending)
               TextButton(
@@ -179,6 +180,10 @@ internal fun AppAccessView() {
                   )
             }
           }
+        }
+        if (expanded == app.uid) {
+          Text("UID ${app.uid}", style = MaterialTheme.typography.bodySmall)
+          app.packages.forEach { Text(it.name, style = MaterialTheme.typography.bodySmall) }
         }
         HorizontalDivider()
       }

@@ -4,6 +4,7 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Rule
@@ -93,14 +94,23 @@ private class NativeAppAccess(
         .performScrollTo()
         .assertIsDisplayed()
     compose.onNodeWithText("Apply").performClick()
+    // Removing the recovery banner changes the lazy list's viewport. Observe
+    // actual readback first, then bring the inverse control back into composition.
     compose.waitUntil(30_000) {
-      compose
-          .onAllNodesWithContentDescription(
-              if (blocked) "Remove TailD block for TailD F0 One" else "Block app TailD F0 One"
-          )
-          .fetchSemanticsNodes()
-          .isNotEmpty()
+      val state = com.tailscale.ipn.App.get().tailDAppAccess.state.value
+      !state.busy &&
+          (state.error != null ||
+              (state.status == "App rule changed and read back." &&
+                  state.owned.any {
+                    it.identity.packages.any { p ->
+                      p.name == "io.github.darkaxt.taild.fixture.one"
+                    }
+                  } == blocked))
     }
+    compose.onNodeWithTag("taild-app-access-error").assertDoesNotExist()
+    val inverse = if (blocked) "Remove TailD block for TailD F0 One" else "Block app TailD F0 One"
+    compose.onNodeWithTag("taild-app-access").performScrollToNode(hasContentDescription(inverse))
+    compose.onNodeWithContentDescription(inverse).assertIsDisplayed()
   }
 
   fun refresh() {
@@ -131,7 +141,18 @@ class TailDAppAccessNativeTest {
       val ui = NativeAppAccess(fixture, compose)
       ui.open()
       fixture.phase("app-access-ensure-backend")
-      compose.waitUntil(30_000) { Shizuku.pingBinder() }
+      // Binder arrival is a real SDK event. Advancing Compose's virtual frame
+      // clock while Android is laying out the permission window re-enters measure.
+      val binderReady = CompletableDeferred<Unit>()
+      val listener = Shizuku.OnBinderReceivedListener { binderReady.complete(Unit) }
+      Shizuku.addBinderReceivedListenerSticky(listener)
+      try {
+        binderReady.await()
+      } finally {
+        Shizuku.removeBinderReceivedListener(listener)
+      }
+      fixture.instrumentation.waitForIdleSync()
+      fixture.phase("app-access-binder-ready")
       val granted =
           Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED
       if (
@@ -155,6 +176,15 @@ class TailDAppAccessNativeTest {
         manager.click()
       }
       ui.ready()
+      compose.onNodeWithText("Shared UID · 2 apps affected").performScrollTo().assertIsDisplayed()
+      compose.onNodeWithText("io.github.darkaxt.taild.fixture.one").assertDoesNotExist()
+      ui.action("App details for TailD F0 One")
+      compose
+          .onNodeWithText("io.github.darkaxt.taild.fixture.one")
+          .performScrollTo()
+          .assertIsDisplayed()
+      ui.action("App details for TailD F0 One")
+      compose.onNodeWithText("io.github.darkaxt.taild.fixture.one").assertDoesNotExist()
       // Resume the previous owned run through the actual reviewed removal UI.
       // Never clear its journal or reset a platform chain to manufacture a baseline.
       if (com.tailscale.ipn.App.get().tailDAppAccess.state.value.owned.isNotEmpty()) {

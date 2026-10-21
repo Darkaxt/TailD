@@ -4,6 +4,7 @@ package androidvmtest
 import (
 	"bufio"
 	"context"
+	"flag"
 	"fmt"
 	"io"
 	"net"
@@ -28,6 +29,8 @@ import (
 	"tailscale.com/tstest/integration/testcontrol"
 )
 
+var trafficExpectedAVD = flag.String("android.traffic-expected-avd", "", "exact owned AVD name for native traffic acceptance")
+
 func TestTailDTrafficNativeUI(t *testing.T) {
 	if *taildTestAPK == "" {
 		t.Skip("explicit native APK fixtures required")
@@ -43,7 +46,7 @@ func TestTailDTrafficNativeUI(t *testing.T) {
 		}
 		return string(out)
 	}
-	if strings.TrimSpace(run("shell", "getprop", "ro.boot.qemu.avd_name")) != "taild-map37-isolated" {
+	if *trafficExpectedAVD == "" || strings.TrimSpace(run("shell", "getprop", "ro.boot.qemu.avd_name")) != *trafficExpectedAVD {
 		t.Fatal("owned AVD identity mismatch")
 	}
 	const pkg = "io.github.darkaxt.taildns"

@@ -3,6 +3,7 @@ package com.tailscale.ipn.taild
 import android.content.ComponentCallbacks
 import android.content.res.Configuration
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithText
 import androidx.test.uiautomator.*
 import java.time.Instant
 import kotlinx.coroutines.*
@@ -99,8 +100,16 @@ class TailDDashboardNativeTest {
                 .packageName
         assertTrue(device.wait(Until.hasObject(By.pkg(picker)), 30_000))
         fun documentNode(selector: BySelector): UiObject2 =
-            device.wait(Until.findObject(By.copy(selector).pkg(picker)), 30_000)
-                ?: error("Document picker node missing: $selector")
+            device.wait(
+                object : Condition<UiDevice, UiObject2?> {
+                  override fun apply(device: UiDevice): UiObject2? {
+                    if (android.os.Build.VERSION.SDK_INT >= 33)
+                        instrumentation.uiAutomation.clearCache()
+                    return device.findObject(By.copy(selector).pkg(picker))
+                  }
+                },
+                30_000,
+            ) ?: error("Document picker node missing: $selector")
         documentNode(By.desc("Show roots")).click()
         device.waitForIdle()
         val downloads = device.findObject(UiSelector().packageName(picker).text("Downloads"))
@@ -110,6 +119,7 @@ class TailDDashboardNativeTest {
         val filename = "TailD-dashboard-native-${System.currentTimeMillis()}.json"
         documentNode(By.clazz("android.widget.EditText")).text = filename
         device.waitForIdle()
+        phase("capture-document-save-ready")
         documentNode(
                 By.text(
                     java.util.regex.Pattern.compile(
@@ -119,6 +129,10 @@ class TailDDashboardNativeTest {
                 )
             )
             .click()
+        assertTrue(
+            "Save closes the actual document picker",
+            device.wait(Until.gone(By.pkg(picker)), 30_000),
+        )
         dashboard.state.first { !it.exportPending && !it.exportWriting && it.exportNotice != null }
         val uri = checkNotNull(dashboard.exportedDocumentForTest)
         val delivered =
@@ -133,7 +147,7 @@ class TailDDashboardNativeTest {
         device.pressBack()
         assertTrue(
             "Document cancellation returns to TailD",
-            device.wait(Until.hasObject(By.pkg(context.packageName)), 30_000),
+            device.wait(Until.gone(By.pkg(picker)), 30_000),
         )
         dashboard.state.first { !it.exportPending && it.exportNotice == "Export cancelled." }
         assertEquals(124, output.getValue("records").jsonArray.size)
@@ -144,6 +158,8 @@ class TailDDashboardNativeTest {
         )
         scrollTo("taild-dashboard-details", "Close").click()
         dashboardTab("Geography")
+        dashboard.state.first { it.exportNotice == null }
+        compose.onNodeWithText("Export cancelled.").assertDoesNotExist()
         dashboardContent("Coverage & details").click()
         dashboardContent("Provider DNS-answer geography")
         dashboardContent("Country coverage · 125 / 125", contains = true)
