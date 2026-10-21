@@ -9,12 +9,13 @@ Desktop B12 remains BLOCKED/open and R33 remains outside this bounded correction
 | Stage | Status | Acceptance satisfied | Acceptance remaining |
 | --- | --- | --- | --- |
 | Android version compatibility | COMPLETE | Dotted APK/tag formatter, unchanged native base/runtime stamps, strict artifact identity, legacy/dotted tag and release sequence guards pass focused regressions. Inherited TailDNS formatter and Windows retain `+`; package/signer are unchanged. | None. |
-| Android final delivery | ACTIVE | Existing protected candidate/publication path identified; sequence 36 follows all existing Android tags/releases. | Exact-source build/core gates, signed candidate, isolated upgrade/recovery, normal release and independent download verification, ObtainX offer, cleanup. |
+| Android final delivery | COMPLETE | Exact d71dddeda source passed candidate 39572906227 and publication 39578304804. Public v1.103.312.36 package/code/signer, nine assets, 638 members/four ABIs and provenance independently verified. Isolated +35 upgrade/recovery and four phone/rail light/dark layouts passed; stock ObtainX 2.21.0 offered, downloaded and installed .36, then reported Up to date with the exact public APK hash. Both owned emulators exited; reviewed cleanup removed all 6,980 scratch members. | None for this correction; physical deployment is not claimed. |
 
-No tracked deferrals. Verification evidence will live at
-D:/Tools/taild-android-dot36-evidence-20261021. No physical installation is implied.
-Current-stage blockers are the remaining delivery gates, resolved through the
-existing candidate -> isolated acceptance -> publication path. Refactoring review:
+No blockers or tracked deferrals remain for this correction. Evidence lives at
+D:/Tools/taild-android-dot36-evidence-20261021. The signed APK source is d71dddeda;
+a post-publication test-only IME visibility wait fixes an observed harness Back
+race, with unchanged production bytes passing resumed native acceptance.
+No physical installation is implied. Refactoring review:
 no new architecture or runtime abstraction is needed; version identity is shared
 by the existing preparer and verifier, with a bounded inherited formatter option.
 
