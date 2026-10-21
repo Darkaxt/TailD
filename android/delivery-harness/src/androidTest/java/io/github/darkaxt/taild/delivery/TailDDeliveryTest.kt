@@ -589,6 +589,22 @@ class TailDDeliveryTest {
       editor.text = value
       node(By.desc("Search domains or decisions"))
       assertEquals(value, node(By.clazz("android.widget.EditText")).text)
+      // Setting text does not prove the keyboard has finished appearing. Back
+      // before that transition closes MainActivity instead of dismissing the IME.
+      check(
+          device.wait(
+              object : Condition<UiDevice, Boolean> {
+                override fun apply(value: UiDevice): Boolean =
+                    automation.windows.any {
+                      it.type ==
+                          android.view.accessibility.AccessibilityWindowInfo.TYPE_INPUT_METHOD
+                    }
+              },
+              30_000,
+          )
+      ) {
+        "Search keyboard must be visible before dismissing it"
+      }
       device.pressBack()
       device.waitForIdle()
     }

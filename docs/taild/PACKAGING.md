@@ -45,7 +45,7 @@ Verified first Android delivery: v1.103.312+34, code 298751830, source
 28b0deb7805710f50689f4aa133ed911f74e504d. Candidate 39451115770 and publication
 39466380329 preserve the same tested APK bytes. Independent public verification
 checks all nine assets, pinned signer and 636 payload members across four ABIs.
-Current Android correction delivery: v1.103.312+35, code 298753760, exact source
+Previous Android correction delivery: v1.103.312+35, code 298753760, exact source
 54a265e2dd27b6fae369d80ed60cb529327f4ad4 and unchanged core above. Candidate
 39479150613 and normal publication 39481591655 preserve the same tested bytes.
 Independent public verification covers nine assets, the existing certificate,
@@ -54,6 +54,20 @@ phone/rail light/dark search/navigation, rejected downgrade and reinstall pass;
 the external harness-only assertion correction is documented separately from
 the production APK source. The current reconciliation and physical-device
 limits are in IMPLEMENTATION-PLAN.md.
+
+Current numeric-version delivery: v1.103.312.36, code 298762150, source
+d71dddeda9422163e550a721ea5f9d2932ad323f and core
+d9c112d927479d092f6d1132e16613f046f6ba51. Candidate 39572906227 and normal
+publication 39578304804 contain identical bytes. Independent public verification
+covers all nine assets and 638 APK members across four ABIs, with the unchanged
+signing certificate. APK SHA-256:
+cda34a8cab94238f01c93e8ca45d942d34753614dca6a26e54c6f2cdc8aba7ac.
+The initial native run owns verified +35 -> .36 identity continuity. It exposed
+a test-only Back/IME race on the wide layout; a keyboard-visible condition in the
+self-targeted harness fixes that test. The resumed unchanged candidate passes
+all four phone/rail theme captures, search/clear, downgrade refusal and reinstall.
+This harness-only change is recorded after publication and is absent from the
+production APK; no production behavior was patched to hide a test failure.
 
 ## Historical Windows Stage 9 contract
 

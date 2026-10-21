@@ -193,9 +193,10 @@ The Windows reference release is
 including compact device controls and DNS incident actions, seven-day historical
 cross-checks and the analytics reconnection repair. The October 16 gallery may
 show older layouts; its facts are explicitly synthetic, with capture provenance.
-Android [1.103.312+34](https://github.com/Darkaxt/TailD/releases/tag/v1.103.312%2B34)
+Android [1.103.312.36](https://github.com/Darkaxt/TailD/releases/tag/v1.103.312.36)
 is published and independently verified. It updates the existing TailDNS package
-with the same signer. The [Android guide](docs/taild/ANDROID.md) covers downloads
+with the same signer. Its fourth numeric version component lets ObtainX detect
+TailD revisions as updates. The [Android guide](docs/taild/ANDROID.md) covers downloads
 and upgrade limits; the [execution ledger](docs/taild/IMPLEMENTATION-PLAN.md) records
 the isolated upgrade, recovery, theme, accessibility and live READ evidence.
 
