@@ -45,6 +45,19 @@ ready snapshot and reject the stale error. Rebuild the same unpublished .39
 sequence from the corrected source; signing/public runtime/export/publication
 and cleanup remain acceptance blockers of the single ACTIVE final delivery stage.
 
+The second unpublished candidate (39671289877, source 9bb5585) verified its
+signature and upgrade continuity but stopped at setup visibility: keyed lazy
+scroll anchoring retained the search row while newly expanded setup was inserted
+above the viewport. Put optional setup after the stable search item, preserving
+focus and requiring its status and Connect control to be displayed without a
+scroll. Rebuild the same unpublished sequence; neither rejected candidate is a
+published release.
+Fresh setup-visible-default, setup-visible-large and setup-visible-landscape
+checks pass on phone/tablet/wide, including setup visibility without scrolling,
+focus across toggles/refresh, half-viewport results, 48 dp diagnosis targets and
+separate-page navigation. Gate 1690 verifies two workers, nonparallel execution,
+3 GB Gradle with in-process Kotlin, successful assembly and owned daemon exit.
+
 ## Current execution - October 21 review-driven UI refinement
 
 Already authorized by the user's instruction to act on the review results.

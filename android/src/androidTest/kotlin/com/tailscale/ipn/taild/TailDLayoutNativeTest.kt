@@ -186,6 +186,10 @@ class TailDLayoutNativeTest {
             (appList.bottom - firstApp) / appViewport.height >= 0.5f,
         )
         phase("capture-layout-firewall-traffic")
+        compose.onNodeWithContentDescription("Firewall setup & coverage").performClick()
+        compose.onNodeWithTag("taild-app-access-status").assertIsDisplayed()
+        compose.onNodeWithText("Connect Shizuku").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Hide firewall setup").performClick()
         compose.onNodeWithTag("taild-app-access-search").performScrollTo().performTextInput("TailD")
         compose.onNodeWithContentDescription("Firewall setup & coverage").performClick()
         compose.onNodeWithTag("taild-app-access-search").assertIsFocused()

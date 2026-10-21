@@ -66,52 +66,6 @@ internal fun AppAccessView(
           PaddingValues(horizontal = 16.dp, vertical = if (onDiagnosis == null) 16.dp else 8.dp),
       verticalArrangement = Arrangement.spacedBy(if (onDiagnosis == null) 12.dp else 8.dp),
   ) {
-    if (
-        onDiagnosis == null ||
-            setupDetails ||
-            !state.journalAvailable ||
-            state.error != null ||
-            state.busy
-    )
-        item(key = "firewall-status") {
-          if (onDiagnosis == null)
-              Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    "App access",
-                    Modifier.weight(1f),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                IconButton(onClick = model::refresh, enabled = state.connected && !state.busy) {
-                  Icon(Icons.Default.Refresh, "Refresh app access")
-                }
-              }
-          if (onDiagnosis == null || setupDetails)
-              Text(state.status, style = MaterialTheme.typography.bodySmall)
-          if (!state.journalAvailable)
-              Text(
-                  "The ownership journal is unavailable. Policy changes are disabled.",
-                  color = MaterialTheme.colorScheme.error,
-              )
-          if (!state.connected && (onDiagnosis == null || setupDetails)) {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-              TextButton(onClick = model::connect, enabled = !state.busy) {
-                Text("Connect Shizuku")
-              }
-              TextButton(onClick = { uri.openUri("https://shizuku.rikka.app/guide/setup/") }) {
-                Text("Shizuku setup")
-              }
-            }
-          }
-          state.error?.let {
-            Text(
-                it,
-                Modifier.testTag("taild-app-access-error"),
-                color = MaterialTheme.colorScheme.error,
-            )
-          }
-          if (state.busy)
-              LinearProgressIndicator(Modifier.fillMaxWidth().testTag("taild-app-access-busy"))
-        }
     if (snapshot != null || onDiagnosis != null) {
       item(key = "firewall-search") {
         if (snapshot != null && snapshot.profiles.size > 1)
@@ -147,6 +101,58 @@ internal fun AppAccessView(
               }
         }
       }
+    }
+    if (
+        onDiagnosis == null ||
+            setupDetails ||
+            !state.journalAvailable ||
+            state.error != null ||
+            state.busy
+    )
+        item(key = "firewall-status") {
+          if (onDiagnosis == null)
+              Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "App access",
+                    Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                IconButton(onClick = model::refresh, enabled = state.connected && !state.busy) {
+                  Icon(Icons.Default.Refresh, "Refresh app access")
+                }
+              }
+          if (onDiagnosis == null || setupDetails)
+              Text(
+                  state.status,
+                  Modifier.testTag("taild-app-access-status"),
+                  style = MaterialTheme.typography.bodySmall,
+              )
+          if (!state.journalAvailable)
+              Text(
+                  "The ownership journal is unavailable. Policy changes are disabled.",
+                  color = MaterialTheme.colorScheme.error,
+              )
+          if (!state.connected && (onDiagnosis == null || setupDetails)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+              TextButton(onClick = model::connect, enabled = !state.busy) {
+                Text("Connect Shizuku")
+              }
+              TextButton(onClick = { uri.openUri("https://shizuku.rikka.app/guide/setup/") }) {
+                Text("Shizuku setup")
+              }
+            }
+          }
+          state.error?.let {
+            Text(
+                it,
+                Modifier.testTag("taild-app-access-error"),
+                color = MaterialTheme.colorScheme.error,
+            )
+          }
+          if (state.busy)
+              LinearProgressIndicator(Modifier.fillMaxWidth().testTag("taild-app-access-busy"))
+        }
+    if (snapshot != null || onDiagnosis != null) {
       items(apps, key = { it.key }) { row ->
         val app = row.current
         if (app == null) {
