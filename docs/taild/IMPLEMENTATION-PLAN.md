@@ -1,5 +1,26 @@
 # TailD staged execution
 
+## Current execution - October 21 upstream maintenance
+
+Already authorized by the existing maintenance heartbeat. This current record
+supersedes historical current-work labels; desktop B12 remains BLOCKED and open.
+No device deployment or provider-policy change belongs to this cycle.
+
+| Stage | Status | Acceptance satisfied | Acceptance remaining |
+| --- | --- | --- | --- |
+| Core promotion and Windows release | COMPLETE | Trusted exact-head core PR 34 reviewed and merged as d9c112d; normal windows-v1.105.0+36 independently verified against the existing Ed25519 key and all five payloads. | None. |
+| TailDNS Android promotion and release | COMPLETE | Exact-head trusted Android/core checks, unchanged-tree PR 24 merge ce33814, normal v1.103.312+34 APK/package/signer/provenance/ABI and companion verification. | None. |
+| TailD inheritance and Windows delivery | ACTIVE | All ten overlay source inputs unchanged; independent Go module origin/checksum agrees. Inheritance run 39553876395 reproduced the reviewed-core guard failure before promotion. | Align reviewed pins and immutable signer tooling; focused regressions, GitHub checked ancestry promotion, fresh Windows package/recovery/signing gates and normal release verification. |
+| Final maintenance reconciliation | NOT STARTED | SleepManager upstream 851a1bd is fully incorporated (17 ahead, 0 behind); v0.7.3.1 assets retain their verified digests. | Final remote source/release health and exact temporary-artifact cleanup. |
+
+The bounded repair keeps the guard fail-closed and advances its exact source,
+require/replace, module checksum, build stamp and signed-manifest identity together.
+GitHub still owns the actual TailDNS ancestry merge, read-only verification and
+isolated fast-forward promotion. No inherited workflow or product channel is
+enabled/redirected. The previously reviewed signer closure is unchanged apart
+from the core identity constants; its new immutable reference follows verification.
+No tracked deferrals. Evidence: D:/Tools/taildns-upstream-verification-20261021.
+
 ## Current execution - October 20 Android device-list correction
 
 Already authorized: remove redundant owner headings, show Android for the local

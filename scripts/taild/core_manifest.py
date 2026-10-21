@@ -4,9 +4,9 @@ import json
 from pathlib import Path
 
 NAMES=('taildns-installer.exe','taildns-ipn.exe','taildns.exe','taildnsd.exe','tailscale.exe')
-CORE='28b0deb7805710f50689f4aa133ed911f74e504d'
-CORE_MODULE='v1.103.0-pre.0.20261018053300-28b0deb78057'
-CORE_SUM='h1:3Kmm0k+cmuI5LngQOEkvf9N92fPjZXTDZV7r/pP22zM='
+CORE='d9c112d927479d092f6d1132e16613f046f6ba51'
+CORE_MODULE='v1.103.0-pre.0.20261021053124-d9c112d92747'
+CORE_SUM='h1:rRsSqwy4O4XTY6GR8wK1o5zDx3DVB0lxNX7n4yTmv3I='
 
 
 def make(package,provenance,subversion):
