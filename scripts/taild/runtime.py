@@ -33,6 +33,7 @@ import connectivity
 import recent_dns
 import reader
 import tailscale_activity
+import app_dns
 
 
 class RuntimeError(reader.ReaderError):
@@ -277,7 +278,11 @@ class Collector:
         self.write_error = False
         self.diagnostics = {'state':'not-published'}
         self.config = dict(DEFAULTS)
+        self.app_dns_thread=None
+        self.app_dns_stop=threading.Event()
+        self.app_dns_revision=None
         self.sources = {'traffic':{'state':'disabled'}, 'dns':{'state':'disabled'},
+                        'app_dns':{'state':'disabled'},
                         'context':{'state':'not-configured' if cli is None else 'not-collected'}}
         self.not_before = {'traffic':0, 'dns':0}
         self._transient_token = None
@@ -386,7 +391,7 @@ class Collector:
             return self.session()
         if request == {'op':'shutdown'}:
             return {'state':'stopping'}
-        if request['op'] not in ('state','configure','analytics-state','analytics-configure','pause','resume','refresh','query','delete','cleanup','credential','credential-remove','window-opened','window-closed',*desktop_api.OPERATIONS,*management.OPERATIONS,*connectivity.OPERATIONS,*recent_dns.OPERATIONS,*tailscale_activity.OPERATIONS):
+        if request['op'] not in ('state','configure','analytics-state','analytics-configure','pause','resume','refresh','query','delete','cleanup','credential','credential-remove','window-opened','window-closed',*desktop_api.OPERATIONS,*management.OPERATIONS,*connectivity.OPERATIONS,*recent_dns.OPERATIONS,*tailscale_activity.OPERATIONS,*app_dns.OPERATIONS):
             raise RuntimeError('invalid-command')
         try:
             op=request['op'];body=request.get('body') or {}
@@ -434,12 +439,30 @@ class Collector:
                 with self.condition:
                     if self.closing:raise RuntimeError('stopping')
                     return self._execute(None,op,body)
-            if op in ('view-query','view-catalog','export-query') or op=='saved-query' and body=={'action':'list'}:
+            if op in ('view-query','view-catalog','export-query','app-dns-read','app-dns-export') or op=='saved-query' and body=={'action':'list'}:
                 with self.condition:
                     if self.closing or self.store is None:raise RuntimeError('stopping')
                     store=self.store
                 view=store.read_view(now=self.now())
                 try:
+                    if op.startswith('app-dns-'):
+                        with self.condition:
+                            host=self.config['host_scope'];provider=self.config['provider'];source=dict(self.sources['app_dns'])
+                        request=dict(body)
+                        if op=='app-dns-export':
+                            if request.pop('format',None)!='json':raise analytics.QueryError('Expected JSON app export')
+                            if type(request.get('revision')) is not int:raise analytics.QueryError('Export requires the displayed revision')
+                        result=app_dns.read(view,request,host=host,provider=provider,status=source)
+                        if op=='app-dns-export':
+                            if request.get('path') is None:raise analytics.QueryError('Select an app before exporting')
+                            result={**result,'apps':[result['selected']] if result['selected'] else []}
+                            content=history.packed(app_dns.wire(result))
+                            if len(content.encode())>6*1024*1024:raise analytics.QueryError('Narrow the app export',code='resource-limit')
+                            return {'content':content,'format':'json','revision':result['revision'],
+                                'row_count':len(result['observations']),'coverage_incomplete':True}
+                        result=app_dns.wire(result)
+                        if len(history.packed(result).encode())>8*1024*1024:raise analytics.QueryError('Narrow the app interval',code='resource-limit')
+                        return result
                     if op=='view-catalog':view.db.execute('BEGIN')
                     return desktop_api.DesktopAPI(view).dispatch(op,body,on_result=on_result)
                 finally:view.close()
@@ -530,6 +553,14 @@ class Collector:
             self.config_revision+=1
             self.activity_epoch+=1
             return result
+        if op=='app-dns-delete':
+            if body!={'confirm':True}:raise RuntimeError('invalid-command')
+            if self.write_error:raise RuntimeError('write-error')
+            with store.transaction():
+                store.db.execute("DELETE FROM snapshots WHERE kind='app-dns'")
+                store.db.execute('INSERT INTO suppressions VALUES(?,?,?,?,NULL)',('app-dns',None,0,history.instant(self.now())+1))
+                store._bump()
+            return {'deleted':True}
         if op in desktop_api.OPERATIONS:
             if self.write_error and op in ('retention','saved-query','delete-snapshots') and body.get('action')!='list':
                 raise RuntimeError('write-error')
@@ -865,6 +896,9 @@ class Collector:
 
     def _deliver(self, store, command):
         op,body,future = command
+        if op=='_app_dns_finished':
+            self.app_dns_thread.join();self.app_dns_thread=None
+            return
         if op=='_activity_finished':
             self.activity_thread.join()
             self.activity_thread=self.activity_stream=None
@@ -1037,6 +1071,61 @@ class Collector:
         self.activity_thread=threading.Thread(target=collect,name='TailD Tailscale observations')
         self.activity_thread.start()
 
+    def _synchronize_app_dns(self):
+        enabled=self.config['activity'] and not (self.closing or self.paused or self.write_error)
+        if self.app_dns_thread is not None:
+            if not enabled or self.app_dns_revision!=self.config_revision:self.app_dns_stop.set()
+            return
+        if not enabled:
+            self.sources['app_dns']={'state':'disabled'};return
+        if self.app_dns_revision==self.config_revision:return
+        self.app_dns_revision=self.config_revision
+        if not hasattr(self.reader,'request'):
+            self.sources['app_dns']={'state':'unavailable'};return
+        self.app_dns_stop.clear();host=self.config['host_scope']
+        self.sources['app_dns']={'state':'starting'}
+        def observe():
+            session=None;after=0;lost=0
+            try:
+                while not self.app_dns_stop.is_set():
+                    batch=self.reader.request({'op':'app-dns','enabled':True,'session':session,'after':after})
+                    if batch.get('state')!='observing':raise reader.ReaderError('dns-source-unavailable')
+                    if batch.get('events'):
+                        binding=None
+                        if self.cli is not None:
+                            try:
+                                context=analytics.capture_context(self.cli)
+                                if (context.get('backend_state')=='Running' and context.get('dns_accepted') is True and
+                                    context.get('local_override') is True and context.get('resolver_applied') is True and context.get('portal_mode') is False):
+                                    binding={'endpoint':context.get('resolver_endpoint'),'at':context['captured_at_utc'],
+                                        'method':'active-resolver-point-observation-after-batch'}
+                            except analytics.QueryError:pass
+                        batch={**batch,'events':[{**fact,'binding':binding} for fact in batch['events']]}
+                        self._commit(lambda:app_dns.import_batch(self.store,batch,host))
+                    session=batch['session'];after=batch['sequence']
+                    lost+=batch['lost']
+                    self.sources['app_dns']={k:batch[k] for k in ('state','sequence','lost','unassigned','errors','etw_events_lost')}
+                    self.sources['app_dns']['lost']=lost
+                    self.sources['app_dns']['last_success_utc']=self.now()
+                    # Five-second harvest cadence only; never cancels the trace or
+                    # classifies an in-flight operation by elapsed time.
+                    if after==batch.get('latest_sequence',after):self.app_dns_stop.wait(5)
+            except reader.ReaderError as error:self.sources['app_dns']={'state':error.state}
+            except (OSError,ValueError,sqlite3.Error):self.sources['app_dns']={'state':'source-error'}
+            finally:
+                try:
+                    while True:
+                        final=self.reader.request({'op':'app-dns','enabled':False,'session':session,'after':after})
+                        if not final.get('events'):break
+                        self._commit(lambda:app_dns.import_batch(self.store,final,host))
+                        session=final['session'];after=final['sequence']
+                except (reader.ReaderError,OSError,ValueError,sqlite3.Error):
+                    self.sources['app_dns']={'state':'final-drain-unavailable'}
+                with self.condition:
+                    self.queue.append(('_app_dns_finished',None,None));self.condition.notify()
+        self.app_dns_thread=threading.Thread(target=observe,name='TailD process DNS harvest')
+        self.app_dns_thread.start()
+
     def _run(self):
         store = None
         self.due = {'traffic':0, 'dns':0}
@@ -1058,8 +1147,9 @@ class Collector:
             while True:
                 self._synchronize_live(store)
                 self._synchronize_activity()
+                self._synchronize_app_dns()
                 with self.condition:
-                    if self.closing and not self.acquisitions and self.live_thread is None and self.activity_thread is None and not self.queue:
+                    if self.closing and not self.acquisitions and self.live_thread is None and self.activity_thread is None and self.app_dns_thread is None and not self.queue:
                         break
                     if self.wake_pending and not self.closing:
                         self.config_revision += 1
@@ -1095,10 +1185,11 @@ class Collector:
                 self.closing = True
             if self.live_stream is not None:self.live_stream.cancel()
             if self.activity_stream is not None:self.activity_stream.cancel()
+            self.app_dns_stop.set()
             # An in-flight source may still return facts after explicit shutdown
             # or a writer defect. Drain its commits/completion before closing the
             # store; never strand a future, orphan a thread or discard its result.
-            while self.acquisitions or self.live_thread is not None or self.activity_thread is not None or self.queue:
+            while self.acquisitions or self.live_thread is not None or self.activity_thread is not None or self.app_dns_thread is not None or self.queue:
                 with self.condition:
                     if not self.queue:
                         self.condition.wait()

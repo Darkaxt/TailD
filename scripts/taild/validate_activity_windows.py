@@ -79,10 +79,13 @@ def run(shell,output,live=False,live_only=False):
                             'NoFileSharingReason':'Peer is offline'}}
                     session.collector.connectivity.call=daemon
                     page=session.page;page.set_default_timeout(0);errors=[];page.on('pageerror',lambda error:errors.append(str(error)))
+                    # Match this retained-history fixture's owner clock. Wall time
+                    # must not move its requested start beyond the fixture end.
+                    page.clock.set_fixed_time(datetime.fromisoformat(END.replace('Z','+00:00')))
                     settled(page);before=geometry(page)
                     (root/'dashboard-geometry.json').write_text(json.dumps(before,indent=2),encoding='utf-8')
                     page.locator('#category-tailscale').click()
-                    page.wait_for_function("()=>document.querySelectorAll('#connection-devices tbody tr').length===2",timeout=0)
+                    page.wait_for_function("()=>document.querySelectorAll('#connection-devices tbody tr').length===3",timeout=0)
                     assert page.locator('#nav-devices').count()==0
                     expect(page.locator('#connection-devices')).to_contain_text('TailDrop')
                     recording(page,False)
@@ -101,11 +104,11 @@ def run(shell,output,live=False,live_only=False):
                     page.locator('#activity-reload').click();ready(page)
                     expect(page.locator('#activity-source')).to_have_text('connected')
                     page.locator('#nav-connection').click()
-                    page.wait_for_function("()=>document.querySelectorAll('#connection-devices tbody tr').length===2",timeout=0)
+                    page.wait_for_function("()=>document.querySelectorAll('#connection-devices tbody tr').length===3",timeout=0)
                     offline=page.locator('#connection-devices tbody tr').filter(has_text='Fixture tablet')
-                    expect(offline.locator('td').nth(3)).to_contain_text(page.evaluate("new Date('2026-10-13T09:00:00Z').toLocaleString()"))
-                    expect(page.locator('#connection-devices tbody tr').filter(has_text='Fixture phone').locator('td').nth(3)).to_contain_text('Online now')
-                    expect(page.locator('#connection-devices thead')).to_contain_text('last online')
+                    expect(offline.locator('time')).to_have_attribute('title',page.evaluate("new Date('2026-10-13T09:00:00Z').toLocaleString()"))
+                    expect(page.locator('#connection-devices tbody tr').filter(has_text='Fixture phone').locator('time')).to_contain_text('Online now')
+                    expect(page.locator('#connection-devices thead')).to_contain_text('Last online')
                     expect(page.locator('#connection-devices')).to_contain_text('test@example.invalid')
                     expect(page.locator('#connection-devices')).to_contain_text('100.64.0.3')
                     expect(offline).to_contain_text('SSH advertised')
@@ -132,6 +135,13 @@ def run(shell,output,live=False,live_only=False):
                     expect(page.locator('#tailscale-history-table')).to_contain_text('Received by daemon')
                     expect(page.locator('#tailscale-history-table')).to_contain_text('Failed')
                     assert 'C:' not in page.locator('#tailscale-history-table').inner_text()
+                    expect(page.locator('#taildrop-open-downloads')).to_be_visible()
+                    if zoom==100:
+                        page.evaluate("""()=>{window.__taildropReplies=[];window.chrome.webview.addEventListener('message',e=>{
+                          if(e.data?.data?.opened===true)window.__taildropReplies.push(e.data)});} """)
+                        page.locator('#taildrop-open-downloads').click()
+                        page.wait_for_function('()=>window.__taildropReplies.length===1',timeout=0)
+                        assert page.evaluate('window.__taildropReplies[0].ok===true')
                     capture_preview(session,root/'taildrop.png')
                     page.locator('#tailscale-history-search').fill('failed');page.locator('#activity-reload').click();ready(page)
                     expect(page.locator('#tailscale-history-table tbody tr')).to_have_count(3)

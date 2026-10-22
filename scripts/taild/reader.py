@@ -102,10 +102,41 @@ def pipe_name(name):
 
 class GlassWireSource:
     """The privileged side alone discovers and resolves installed source paths."""
-    def __init__(self, directory=None):
+    def __init__(self, directory=None, *, owner_sid=None):
         # Explicit directory is for isolated verification. Production CLI does
         # not accept one; installer-provisioned source selection is not IPC input.
         self.directory = directory
+        self.owner_sid=owner_sid
+        self.dns_trace=None
+
+    def after_disconnect(self):
+        if self.dns_trace is not None:
+            self.dns_trace.close();self.dns_trace=None
+
+    def process_dns(self,request):
+        if (set(request)!={'op','enabled','session','after'} or type(request['enabled']) is not bool or
+            type(request['after']) is not int or not 0<=request['after']<=2**63-1 or
+            request['session'] is not None and (not isinstance(request['session'],str) or
+                not re.fullmatch('[a-f0-9-]{36}',request['session']))):raise ReaderError('invalid-command')
+        if not self.owner_sid:raise ReaderError('denied')
+        if not request['enabled']:
+            if self.dns_trace is None:return {'state':'disabled','events':[]}
+            self.dns_trace.close()
+            result=self.dns_trace.read(request['after'] if request['session']==self.dns_trace.session else 0)
+            result['state']='disabled'
+            # Keep stopped observations until the owner's subsequent cursor
+            # acknowledges its last committed batch. Never lose the final five
+            # seconds merely because the user turned recording off.
+            if request['session']==self.dns_trace.session and request['after']>=result['latest_sequence']:
+                self.dns_trace=None
+            return result
+        import dns_trace
+        if self.dns_trace is None:
+            source=dns_trace.Trace(self.owner_sid)
+            try:source.start()
+            except OSError:raise ReaderError('dns-source-unavailable') from None
+            self.dns_trace=source
+        return self.dns_trace.read(request['after'] if request['session']==self.dns_trace.session else 0)
 
     def catalog(self):
         data = glasswire.discover(self.directory)
@@ -121,6 +152,7 @@ class GlassWireSource:
     def dispatch(self, request):
         if not isinstance(request, dict):
             raise ReaderError('invalid-command')
+        if request.get('op')=='app-dns':return self.process_dns(request)
         if request == {'op':'catalog'}:
             return self.catalog()
         if set(request) != {'op','database','start','end','limit'} or request['op'] != 'traffic':
@@ -459,7 +491,7 @@ def main(argv=None):
         if args.ready_event != 'Local\\Darkaxt.TailD.Ready.'+args.instance:
             parser.error('ready event must be bound to the selected instance')
         ready_handle = win32event.OpenEvent(win32con.EVENT_MODIFY_STATE, False, args.ready_event)
-    server = PipeServer(args.instance, args.owner_sid, GlassWireSource(), ready_handle=ready_handle)
+    server = PipeServer(args.instance, args.owner_sid, GlassWireSource(owner_sid=args.owner_sid), ready_handle=ready_handle)
     try:
         server.serve()
     except KeyboardInterrupt:

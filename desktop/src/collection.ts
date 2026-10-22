@@ -122,11 +122,10 @@ export class Collection implements OnDestroy {
   imports:[CommonModule,FormsModule,SfngToggleSwitchComponent],template:`
   <div class="analytics-preference">
     <div class="row"><div><div class="row-title">Collect analytics</div>
-      <small class="hint">Record Tailscale activity and available DNS/traffic integrations.</small></div>
+      <small class="hint" id="analytics-preference-status" role="status">{{busy()?'Reading / saving recording preference…':enabled()?'Recording Tailscale activity and available DNS/traffic integrations.':'Off · retained history remains available.'}}</small></div>
       <sfng-toggle name="Collect analytics" controlId="analytics-toggle" [ngModel]="enabled()" #recordingControl="ngModel"
         (ngModelChange)="configure($event,recordingControl)" [disabled]="busy()||!state()" /></div>
 
-    <small class="hint" id="analytics-preference-status" role="status">{{busy()?'Reading / saving recording preference…':enabled()?'Recording enabled · available integrations are selected automatically.':'Recording disabled · retained history only.'}}</small>
     <p class="error" role="alert" *ngIf="error()">{{error()}}</p>
   </div>`})
 export class AnalyticsPreference {

@@ -6,6 +6,7 @@ import {command} from './bridge';
 import {DashboardWidgetComponent} from './portmaster/panel';
 import {Evidence} from './evidence';
 import {resolutionReason,resolutionCategories} from './resolution-reason';
+import {relativeSeen} from './device-presentation';
 
 type RecordValue=Record<string,any>;
 @Component({selector:'taild-control-d',standalone:true,
@@ -28,22 +29,22 @@ type RecordValue=Record<string,any>;
         <p class="hint">Browsing uses READ access. Explicit changes use the separate Write credential. Allow creates a Bypass rule and can override filter blocks.</p></details>
     </div>
     <app-dashboard-widget label="Recent DNS · incident resolutions" brand="controld" id="management-recent" *ngIf="section==='recent'">
-      <div class="incident-recent-controls"><label>Search resolutions<input id="incident-dns-search" [ngModel]="dnsSearch" placeholder="Domain / decision" (ngModelChange)="searchChanged($event)"></label>
+      <div class="incident-recent-controls"><label class="rounded-search"><span class="sr-only">Search resolutions</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="m15 15 6 6" /></svg><input id="incident-dns-search" [ngModel]="dnsSearch" placeholder="Domain / decision" (ngModelChange)="searchChanged($event)"></label>
         <label class="incident-confirm"><input type="checkbox" [(ngModel)]="observe"> Follow recent activity</label>
         <button id="incident-dns-refresh" class="icon-button" [disabled]="reading()" (click)="recent()" aria-label="Refresh DNS" [title]="reading()?'Reading recent DNS':'Refresh DNS'" [attr.aria-busy]="reading()"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 7v5h-5M4 17v-5h5M6.1 7a7 7 0 0 1 11.8-2L20 8M4 16l2.1 3A7 7 0 0 0 17.9 17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
         <span class="badge" [class.good]="liveState()==='connected'">Live stream: {{liveState()}}</span></div>
-      <p class="hint">Latest 100 stored observations in the last 15 minutes for the selected endpoint. First seen and Total cover each question/type in retained history over the last 7 days, independent of search. Streaming follows the collection binding, not this selection. Gaps do not mean zero activity.</p>
+      <details class="recent-coverage"><summary>Recent 15 minutes · totals over 7 days</summary><p class="hint">Latest 100 stored observations for the selected endpoint. First seen and Total cover each question/type in retained history over the last 7 days, independent of search. Streaming follows the collection binding, not this selection. Gaps do not mean zero activity.</p></details>
       <div class="recent-content" [attr.aria-busy]="reading()">
       <div class="recent-loading" *ngIf="reading()&&!recentRows().length" role="status" id="recent-loading"><div class="loading-dialog"><div class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></div><strong>Reading recent DNS</strong><span>Reading this endpoint's local observations</span></div></div>
       <div *ngIf="recentError()" class="error" role="alert">{{recentError()}}</div>
       <div class="table-scroll incident-table"><table><thead><tr><th>Time</th><th>Question</th><th>Decision / reason</th><th>First seen</th><th>Total</th></tr></thead><tbody>
-        <tr *ngFor="let r of recentRows()"><td>{{time(r.timestamp)}}</td><td>{{r.question}} <small>{{r.type}}</small></td><td>
+        <tr *ngFor="let r of recentRows()"><td><time [title]="exactTime(r.timestamp)">{{firstSeen(r.timestamp)}}</time></td><td><strong>{{r.question}}</strong> <small>{{r.type}}</small></td><td>
           <div class="decision-heading"><strong class="decision-badge" [ngClass]="decisionClass(r.outcome)">{{decisionLabel(r.outcome)}}</strong><span class="decision-actions">
             <button *ngIf="r.outcome!=='block'" class="icon-button decision-action-block" (click)="incident(r,0)" [disabled]="busy()||!snapshot()||r.profile!==snapshot()?.profile" aria-label="Block" [title]="'Block '+r.question+' in the shared profile'"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8" /><path d="m6.3 6.3 11.4 11.4" fill="none" stroke="currentColor" stroke-width="1.8" /></svg></button>
             <button *ngIf="r.outcome!=='allow'" class="icon-button decision-action-allow" (click)="incident(r,1)" [disabled]="busy()||!snapshot()||r.profile!==snapshot()?.profile" aria-label="Allow" [title]="'Allow '+r.question+' with a Bypass rule in the shared profile'"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
             <button class="icon-button edit-rule-icon" (click)="editQuestion(r)" [disabled]="busy()||!snapshot()||r.profile!==snapshot()?.profile" [attr.aria-label]="'Edit rule for '+r.question" title="Edit rule"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m14 5 5 5M4 20l5-1L20 8a2.8 2.8 0 0 0-4-4L5 15l-1 5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" /></svg></button>
-          </span></div><p>{{reason(r)}}</p>
-          <details><summary>Decision details</summary><p class="hint">Classification: {{categories(r).join(', ')||'Not supplied'}}</p><p class="hint">Category labels describe the domain; the provider trigger above identifies the decision cause. Names from current policy are display labels, not historical policy proof.</p><taild-evidence [data]="r.fact" /></details></td><td><time [title]="exactTime(r.first_seen)">{{firstSeen(r.first_seen)}}</time></td><td>{{r.total}}</td></tr>
+          </span></div>
+          <details><summary [title]="reason(r)">{{reason(r)}} · details</summary><p class="hint">Classification: {{categories(r).join(', ')||'Not supplied'}}</p><p class="hint">Category labels describe the domain; the provider trigger above identifies the decision cause. Names from current policy are display labels, not historical policy proof.</p><taild-evidence [data]="r.fact" /></details></td><td><time [title]="exactTime(r.first_seen)">{{firstSeen(r.first_seen)}}</time></td><td>{{r.total}}</td></tr>
       </tbody></table></div>
       <p class="empty-state" *ngIf="!recentRows().length&&!reading()&&!recentError()">{{dnsSearch?'No resolutions match this search in the selected endpoint’s recent window. Clear the search to see stored activity.':'No stored resolutions in this endpoint’s recent window. Check its last activity and the collection binding; this is not proof of no DNS traffic.'}}</p>
       </div><p class="hint">Actions require current policy verification and a matching event profile. Policy loading does not block reading resolutions.</p>
@@ -123,7 +124,7 @@ type RecordValue=Record<string,any>;
   </section>`})
 export class ControlDManagement implements OnDestroy {
   @Input() collectionState='Connecting';
-  firstSeen(value:number){return new Date(value/1000).toLocaleString()}
+  firstSeen(value:number){return relativeSeen(new Date(value/1000).toISOString(),false)}
   exactTime(value:number){return new Date(value/1000).toISOString()}
   @Input() section:'recent'|'policy'='recent';@ViewChild('policyDialog') policyDialog?:ElementRef<HTMLDialogElement>;
   tabs=['Rules','Filters','Services','Profile Options'];tab=signal('Rules');snapshot=signal<RecordValue|null>(null);

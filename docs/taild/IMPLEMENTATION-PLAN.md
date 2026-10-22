@@ -1,5 +1,13 @@
 # TailD staged execution
 
+## Current execution — October 22 Windows app DNS and UI
+
+Already authorized by the user's explicit switch to Windows implementation.
+[R38](WINDOWS-APP-DNS.md) owns requirements, design metrics and the single-ACTIVE
+stage reconciliation. Windows app-domain workflow and remaining module
+refinements are COMPLETE; final delivery is ACTIVE. B12 remains separately BLOCKED.
+One final Windows release follows the entire verified R38 scope, not each stage.
+
 ## Current execution - October 22 upstream maintenance
 
 Already authorized by the maintenance heartbeat. R02-R04/R17-R18 and the inherited

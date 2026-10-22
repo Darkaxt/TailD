@@ -23,7 +23,8 @@ interface ConnectivityState {revision:string;profile:string;account:string;state
   <section id="connectivity-window" class="connectivity-workspace" [attr.aria-busy]="busy()">
     <div class="connectivity-toolbar"><span class="badge" [class.good]="state()?.state==='Running'">{{state()?.state||(busy()?'Reading device…':'Unavailable')}}</span>
       <button *ngIf="state() as s" id="connectivity-toggle" class="connection-switch" role="switch" aria-label="Connect this device" [attr.aria-checked]="s.prefs.WantRunning" [class.on]="s.prefs.WantRunning" [disabled]="busy()||!s.profile||!s.can_disconnect" (click)="s.prefs.WantRunning?ask('disconnect'):edit('connected',true)"><span aria-hidden="true"></span></button>
-      <button id="connectivity-reload" (click)="load()" [disabled]="busy()">Reload device</button>
+      <div class="connection-account" *ngIf="state() as s"><strong>{{s.account || s.self.owner || 'This device'}}</strong><span class="hint">{{s.state==='Running'?'Connected':s.state==='Stopped'?'Disconnected':s.state}} · {{s.self.name}}</span></div>
+      <button id="connectivity-reload" class="icon-button" (click)="load()" [disabled]="busy()" aria-label="Reload device" title="Reload device"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M20 12a8 8 0 1 0-2 6M20 7l-3-3" /></svg></button>
       <span class="hint" role="status">{{busy()?'Reading / applying device settings…':notice()}}</span></div>
     <div *ngIf="error()" id="connectivity-error" class="error" role="alert">{{error()}}</div>
     <ng-container *ngIf="state() as s">
@@ -54,16 +55,19 @@ interface ConnectivityState {revision:string;profile:string;account:string;state
           <div class="row" *ngIf="s.prefs.ExitNodeID"><span>Allow local network access</span><sfng-toggle name="Allow local network access" controlId="connectivity-exit-lan" [ngModel]="s.prefs.ExitNodeAllowLANAccess" (ngModelChange)="edit('exit-node-lan',$event)" [disabled]="busy()||!s.can_exit||!s.can_exit_lan" /></div>
         </ng-container>
         <div class="row" *ngIf="s.show_run_exit"><span>Run as exit node</span><sfng-toggle name="Run as exit node" controlId="connectivity-run-exit" [ngModel]="s.prefs.RunExitNode" (ngModelChange)="edit('run-exit-node',$event)" [disabled]="busy()||!s.can_run_exit" /></div>
-        <p class="hint">Changes save automatically through the same local daemon API as the tray. A changed profile or setting requires reload.</p>
+        <details class="preference-details"><summary>How preferences apply</summary><p class="hint">Changes save automatically through the same local daemon API as the tray. A changed profile or setting requires reload. Managed preferences stay visible but cannot be edited.</p></details>
         <button id="connectivity-reset" *ngIf="s.show_reset" [disabled]="busy()||!s.can_reset" (click)="ask('reset')">Reset to defaults…</button>
       </app-dashboard-widget>
       <app-dashboard-widget label="Custom DNS resolver" brand="tailscale" *ngIf="view==='DNS resolver'">
+        <div class="resolver-primary"><h2>{{resolverProvider()}}</h2><p>{{s.resolver.Applied?'Custom resolver applied':s.resolver.Configured?'Saved resolver is not currently applied':'Using the tailnet DNS configuration'}}</p></div>
         <div class="resolver-state"><span class="badge" [class.good]="dnsAccepted()">Tailnet DNS · {{dnsAccepted()?'Enabled':'Disabled'}}</span>
           <span class="badge" [class.good]="s.resolver.Applied">Custom override · {{s.resolver.Applied?'Applied':s.resolver.Configured?'Saved, not applied':'Not configured'}}</span></div>
         <p class="hint">{{s.resolver.Configured?s.resolver.Reason:'No per-device endpoint is saved. The tailnet DNS preference does not configure a custom provider.'}}</p>
+        <details class="resolver-editor" [open]="!s.resolver.Configured"><summary>{{s.resolver.Configured?'Edit DNS resolver':'Configure DNS resolver'}}</summary>
         <label>HTTPS DNS endpoint<input id="connectivity-resolver" [(ngModel)]="endpoint" placeholder="https://dns.controld.com/your-endpoint" (blur)="saveResolver()" (keydown.enter)="$event.preventDefault();saveResolver()" [disabled]="busy()||!s.can_resolver" maxlength="2048"></label>
         <p class="hint">A valid endpoint saves when you leave the field. Saved and applied are separate states; this does not prove provider reachability.</p>
         <button id="connectivity-resolver-disable" [disabled]="busy()||!s.can_resolver||!s.resolver.Configured" (click)="edit('resolver-enabled',false)">Disable custom resolver</button>
+        </details>
         <p class="hint" *ngIf="s.resolver.CaptivePortal">Temporary captive-portal handling is active. Your saved provider is retained.</p>
       </app-dashboard-widget>
     </ng-container>
@@ -87,6 +91,8 @@ export class Connectivity {
     !search||[peer.name,peer.owner,...peer.addresses,...peer.tags].some(value=>value?.toLocaleLowerCase().includes(search)))}
   time(value:string|null){return value?new Date(value).toLocaleString():'Not reported in this live snapshot'}
   dnsAccepted(){return this.state()?.preferences.find(pref=>pref.id==='use-dns')?.value===true}
+  resolverProvider(){const s=this.state();if(!s?.resolver.Configured)return 'Tailnet DNS';
+    try{const host=new URL(s.resolver.Endpoint).hostname;return host==='dns.controld.com'?'Control D':host.endsWith('.nextdns.io')||host==='dns.nextdns.io'?'NextDNS':host}catch{return 'Custom DNS resolver'}}
   async load(){if(this.busy())return;this.busy.set(true);this.error.set('');this.confirming.set(null);
     try{const s=await command<ConnectivityState>('connectivity-read');this.state.set(s);this.adminVisibility.emit(s.show_admin);this.endpoint=s.resolver.Endpoint||''}
     catch(e){this.error.set((e as Error).message);this.state.set(null)}finally{this.busy.set(false)}}

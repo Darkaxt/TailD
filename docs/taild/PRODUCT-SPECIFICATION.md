@@ -1,6 +1,11 @@
 # TailD remaining-product specification
 
-Version 1.17, 2026-10-21. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.18, 2026-10-22. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+
+October 22 Windows continuation is explicitly authorized: [R38](WINDOWS-APP-DNS.md)
+adds process-aware per-app DNS/blocked-decision evidence and Android-led refinement
+of the selected Windows modules. It activates this bounded scope independently of
+the parked B12 real-rollout boundary; no B12 or wider R33 F3 acceptance is waived.
 
 October 21 Android continuation is authorized after Geography: optional app/UID
 control (R33 F0) precedes Android traffic measurement (F2), followed by one

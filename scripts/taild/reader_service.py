@@ -44,7 +44,7 @@ class Service(win32serviceutil.ServiceFramework):
             ready=win32event.CreateEvent(None,True,False,None)
             errors=[]
             with self.lifecycle:
-                self.server=reader.PipeServer(packaged.reader_instance(sid),sid,reader.GlassWireSource(),ready_handle=ready)
+                self.server=reader.PipeServer(packaged.reader_instance(sid),sid,reader.GlassWireSource(owner_sid=sid),ready_handle=ready)
                 if self.stop_requested:self.server.stop()
             def serve():
                 try:self.server.serve()

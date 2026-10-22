@@ -6,6 +6,7 @@ const webview=(window as unknown as {chrome?:{webview:WebView}}).chrome?.webview
 let sequence=0;
 const pending=new Map<number,{lane:string;resolve:(value:unknown)=>void;reject:(error:Error)=>void;progress?:(value:unknown)=>void;count?:number;batch?:ProgressiveBatch}>();
 const errors:Record<string,string>={
+  'taildrop-folder-unavailable':'Windows could not open your Downloads folder. Check its location and access permissions.',
   'history-corrupt':'Local history could not be read: SQLite reported a malformed database. History is preserved; collection status is shown separately. Diagnose the history before attempting recovery.',
   'history-busy':'Local history is busy. Wait for the active operation, then refresh the view.',
   'history-read-failed':'Local history could not be read. History is preserved; check Sources & health and refresh explicitly.',
@@ -65,7 +66,7 @@ webview?.addEventListener('message',event=>{
 });
 export function command<T=unknown>(op:string,body:unknown={},progress?:(value:unknown)=>void):Promise<T>{
   if(!webview)return Promise.reject(new Error('Open TailD using its desktop launcher.'));
-  const lane=['connectivity-read','connectivity-edit','connectivity-reset','connectivity-about','activity-read','activity-configure','activity-delete','analytics-state','analytics-configure'].includes(op)?'device':
+  const lane=['connectivity-read','connectivity-edit','connectivity-reset','connectivity-about','activity-read','activity-configure','activity-delete','analytics-state','analytics-configure','taildrop-open-downloads'].includes(op)?'device':
     ['management-read','management-prepare','management-apply','management-cancel'].includes(op)?'policy':op==='recent-dns'?'recent':'analytics';
   if([...pending.values()].filter(request=>request.lane===lane).length>=(lane==='analytics'?4:2))return Promise.reject(new Error('An operation is already pending.'));
   const id=++sequence;

@@ -50,6 +50,21 @@ def run(shell,output):
                 reports[-1]['preferences_ready_ms']=page.evaluate('performance.now()')-origin
                 page.locator('#analytics-toggle').focus();expect(page.locator('#analytics-toggle')).to_be_focused()
                 page.screenshot(path=str(root/'preferences.png'),full_page=True)
+                expect(page.locator('.preference-details')).not_to_have_attribute('open','')
+                page.locator('#nav-resolver').click()
+                page.wait_for_function("()=>document.querySelector('#connectivity-window')?.getAttribute('aria-busy')==='false'",timeout=0)
+                expect(page.locator('.resolver-primary')).to_contain_text('Custom resolver applied')
+                expect(page.locator('.resolver-editor')).not_to_have_attribute('open','')
+                page.locator('.resolver-editor summary').click()
+                expect(page.locator('#connectivity-resolver')).to_have_value('https://dns.example.invalid/test')
+                page.screenshot(path=str(root/'resolver.png'),full_page=True)
+                # Intended running state is not a successful connection.
+                daemon.status['BackendState']='Starting';page.locator('#connectivity-reload').click()
+                page.wait_for_function("()=>document.querySelector('#connectivity-window')?.getAttribute('aria-busy')==='false'",timeout=0)
+                expect(page.locator('.connection-account')).to_contain_text('Starting')
+                expect(page.locator('.connection-account')).not_to_contain_text('Connected')
+                assert daemon.writes==[],daemon.writes
+                reports[-1]['resolver_and_actual_connection_state']=True
             finally:session.close()
     (output/'connection.json').write_text(json.dumps({'ok':True,'reports':reports},indent=2),encoding='utf-8')
     print(json.dumps({'ok':True,'reports':reports}))

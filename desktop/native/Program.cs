@@ -21,7 +21,7 @@ internal sealed class BridgeError(string state) : Exception
         "management-write-rejected" or "management-outcome-unknown" or "management-account-mismatch" or
         "management-read-credential-required" or "management-write-credential-required" or "management-resource-unavailable" or
         "connectivity-unavailable" or "connectivity-denied" or "connectivity-conflict" or "connectivity-confirm-required" or
-        "connectivity-invalid-resolver" or "connectivity-outcome-unknown" ? state:"unavailable";
+        "connectivity-invalid-resolver" or "connectivity-outcome-unknown" or "taildrop-folder-unavailable" ? state:"unavailable";
 }
 
 internal static class Program
@@ -71,7 +71,7 @@ internal sealed class OwnerBridge : IDisposable
         IntPtr security,uint disposition,uint flags,IntPtr template);
     public static OwnerLane LaneFor(string op)=>op switch {
         "connectivity-read" or "connectivity-edit" or "connectivity-reset" or "connectivity-about" or
-        "activity-read" or "activity-configure" or "activity-delete" or "analytics-state" or "analytics-configure"=>OwnerLane.Device,
+        "activity-read" or "activity-configure" or "activity-delete" or "analytics-state" or "analytics-configure" or "taildrop-open-downloads"=>OwnerLane.Device,
         "management-read" or "management-prepare" or "management-apply" or "management-cancel"=>OwnerLane.Policy,
         "recent-dns"=>OwnerLane.Recent,_=>OwnerLane.Analytics};
     public OwnerBridge(string instance,uint pid,OwnerLane lane=OwnerLane.Analytics)
@@ -87,7 +87,7 @@ internal sealed class OwnerBridge : IDisposable
         // Native allowlist: renderer cannot request a session token, arbitrary
         // SQL, path, shell command, source access or arbitrary filesystem operation.
         if(op is not ("state" or "configure" or "pause" or "resume" or "refresh" or "credential" or "shutdown" or "window-closed" or
-            "credential-remove" or "view-query" or "view-catalog" or "saved-query" or "export-query" or "retention" or "delete" or "delete-snapshots" or "cleanup" or
+            "credential-remove" or "view-query" or "view-catalog" or "saved-query" or "export-query" or "app-dns-read" or "app-dns-export" or "app-dns-delete" or "retention" or "delete" or "delete-snapshots" or "cleanup" or
             "management-read" or "management-prepare" or "management-apply" or "management-cancel" or
             "connectivity-read" or "connectivity-edit" or "connectivity-reset" or "connectivity-about" or "recent-dns" or
             "activity-read" or "activity-configure" or "activity-delete" or "analytics-state" or "analytics-configure"))
@@ -308,7 +308,7 @@ internal sealed class CollectionWindow : Form
                 data=JsonSerializer.SerializeToElement(new{png=Convert.ToBase64String(png.ToArray())});
             }else
 #endif
-            data=op=="open-product-link"?await OpenProductLink(body):op=="export-query"?await Export(body):await
+            data=op=="taildrop-open-downloads"?OpenDownloads(body):op=="open-product-link"?await OpenProductLink(body):op is "export-query" or "app-dns-export"?await Export(body,op):await
                 (lane switch {OwnerLane.Device=>settingsBridge,OwnerLane.Policy=>policyBridge,OwnerLane.Recent=>recentBridge,_=>bridge}).Request(op,body,partial=>{
                 if(!view.IsDisposed&&!disposingWindow)view.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(new{id,ok=true,progress=true,data=partial}));
             });
@@ -318,6 +318,22 @@ internal sealed class CollectionWindow : Form
         catch(Exception error){if(!view.IsDisposed)view.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(new{
             id,ok=false,state=error is BridgeError known?known.State:error is InvalidDataException?"invalid-command":"unavailable"}));}
         finally{if(admitted)Interlocked.Decrement(ref active[(int)lane]);}
+    }
+    [DllImport("shell32.dll",CharSet=CharSet.Unicode,PreserveSig=true)]
+    private static extern int SHGetKnownFolderPath(in Guid folder,uint flags,IntPtr token,out IntPtr path);
+    private static JsonElement OpenDownloads(JsonElement body)
+    {
+        if(body.EnumerateObject().Any())throw new InvalidDataException();
+        var folder=new Guid("374DE290-123F-4565-9164-39C4925E467B");IntPtr pointer=IntPtr.Zero;
+        try{
+            if(SHGetKnownFolderPath(in folder,0,IntPtr.Zero,out pointer)!=0)throw new IOException();
+            var path=Marshal.PtrToStringUni(pointer);
+            if(path==null||!Directory.Exists(path))throw new IOException();
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path){UseShellExecute=true});
+            return JsonSerializer.SerializeToElement(new{opened=true});
+        }catch(Exception error)when(error is IOException or System.ComponentModel.Win32Exception or UnauthorizedAccessException){
+            throw new BridgeError("taildrop-folder-unavailable");
+        }finally{if(pointer!=IntPtr.Zero)Marshal.FreeCoTaskMem(pointer);}
     }
     private async Task<JsonElement> OpenProductLink(JsonElement body)
     {
@@ -335,7 +351,7 @@ internal sealed class CollectionWindow : Form
         System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url){UseShellExecute=true});
         return JsonSerializer.SerializeToElement(new{opened=true});
     }
-    private async Task<JsonElement> Export(JsonElement body)
+    private async Task<JsonElement> Export(JsonElement body,string operation="export-query")
     {
         var format=body.GetProperty("format").GetString();
         if(format is not ("json" or "csv"))throw new InvalidDataException();
@@ -349,7 +365,7 @@ internal sealed class CollectionWindow : Form
             if((directory.Attributes&FileAttributes.ReparsePoint)!=0)throw new BridgeError("invalid-export-destination");
         // Fetch after explicit destination selection; a changed revision fails
         // before creating a file. Renderer never supplies or receives a path.
-        var result=await bridge.Request("export-query",body);
+        var result=await bridge.Request(operation,body);
         var bytes=Encoding.UTF8.GetBytes(result.GetProperty("content").GetString()!);
         if(bytes.Length>6*1024*1024)throw new InvalidDataException();
         var sid=WindowsIdentity.GetCurrent().User!;
