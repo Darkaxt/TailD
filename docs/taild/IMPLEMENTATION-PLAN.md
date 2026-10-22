@@ -1,5 +1,27 @@
 # TailD staged execution
 
+## Current execution - October 22 upstream maintenance
+
+Already authorized by the maintenance heartbeat. R02-R04/R17-R18 and the inherited
+local-DNS specification govern this cycle. Desktop B12 remains BLOCKED and open;
+no device installation, provider write or production-history testing is authorized.
+
+| Stage | Status | Acceptance satisfied | Acceptance remaining |
+| --- | --- | --- | --- |
+| Core promotion and Windows release | COMPLETE | Exact-head trusted PR 35, unchanged-tree merge 3fe3e22 and normal windows-v1.105.0+37 independently verified against the pinned Ed25519 key, checksums, source/version/architecture and all five payloads. | None. |
+| TailDNS Android promotion and release | COMPLETE | Trusted candidate 9cc6b203, unchanged-tree PR 25 merge 7fe05ea6, normal v1.103.312+35 independently verified: package/code/pinned signer, branding, four native libraries/exact core and all seven assets/companion payloads. | None. |
+| TailD inheritance and Windows release | ACTIVE | Core overlay input files are unchanged; exact new module/source/checksum reviewed. Inheritance 39732391419 correctly refused the obsolete pin guard. | Align core build/manifest/signing identities without weakening guards; resume GitHub checked inheritance and exact ancestry; fresh production/isolated installer/recovery/signing gates, normal Windows release and independent download verification. |
+| Final reconciliation and cleanup | NOT STARTED | SleepManager upstream 851a1bd fully incorporated: fork main f7b2e7e is 17 ahead/0 behind; v0.7.3.1 four asset digests still match prior independent verification. | Exact remote/release/workflow readback and reviewed scratch cleanup. |
+
+The actionable internal advancement blocker is the expected reviewed-core pin
+mismatch in test_reviewed_build_pins_match_inherited_module. New inherited source
+3fe3e22 differs only in Go 1.27.3/toolchain metadata and scoped Windows DNS logic
+and tests. No reviewed overlay target changed. Advance the exact require/replace,
+module checksum, toolchain revision, build stamp, overlay guard and canonical
+signer inventory together, retain the isolated immutable signer closure, then let
+GitHub perform the actual TailDNS ancestry merge/check/fast-forward promotion.
+No tracked deferral. Evidence: D:/Tools/taildns-upstream-verification-20261022.
+
 ## Current execution — October 21 Firewall traffic and diagnosis
 
 Already authorized by the user's Firewall row/diagnosis request and Dashboard
