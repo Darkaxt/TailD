@@ -70,7 +70,7 @@ native served-asset screenshots, not only source or static mockups.
 | --- | --- | --- | --- |
 | Windows app-domain workflow | COMPLETE | Private DNS Client source works under reduced reader privileges through the actual owner-authenticated pipe; stopped final batches drain and acknowledge. Real Windows success/failure and same-endpoint Control D blocked correlation pass without provider writes. Private snapshots, DNS-only apps, conservative outcomes, exact 1/N accounting, revision-bound app export/deletion and 100%/150% native served layout/search/filter/drill-down checks pass. | None for this feature stage. Final packaged source, installer and release gates belong to final delivery. |
 | Remaining Android-led module refinements | COMPLETE | Actual connection state/account, compact analytics and exit preference rows, resolver status/editor disclosure, rounded Recent DNS search and denser relative-time rows, opposite-action icons/floating editor, TailDrop IN/OUT/relative dates and fixed Windows Known Folder action verified in the actual native host at 100%/150%; keyboard/search/deletion/error/permission contracts preserved. | None. |
-| Final Windows delivery | ACTIVE | Integrated real-source and native feature/module checks pass. | Final reconciliation, affected gates, commit/push, one normal signed-manifest release and independent package verification. |
+| Final Windows delivery | COMPLETE | Exact-source checks, fresh hosted package/install/upgrade/rollback/uninstall and complete-product failed-migration refusal gates pass. Normal windows-v1.105.0+30 is independently downloaded and verified: pinned release/package/core signatures, source/core/base/sequence/channel, every payload member, runtime identities/notices, frozen app_dns/dns_trace modules and exact native-tested UI assets. | None. |
 
 No required tracked deferrals. B12 and wider F3 are preserved separate scope.
 
@@ -87,11 +87,20 @@ Stage-closure design-debt assessment: no material duplicate state owner or requi
 consolidation was found. The existing reader, writer, snapshot table and native
 export path are reused; no new service, dependency, privilege or schema is added.
 
-Pre-release reconciliation: W01–W04 pass real source/owner-pipe/history and focused
+Final reconciliation: W01–W04 pass real source/owner-pipe/history and focused
 behavioral checks; W05–W06 pass native served-asset module/interaction checks.
 The complete backend contracts and production Angular build pass on the current
-source. W07 remains open only for the final fresh hosted package/installer gates,
-normal publication and independent delivered-artifact verification. Local device
+source. W07 passes fresh hosted package/installer gates, normal publication and
+independent delivered-artifact verification. Local device
 installation is not part of this release. The exact UI bundle and compact evidence
 are preserved under the evidence directory above. DNS counts explicitly count
 resolver observations, including separate A/AAAA completions, not unique app requests.
+
+Delivery: [windows-v1.105.0+30](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B30),
+source 4cf466c7998210664a8a6c29a726ae78e6b3a175, successful release run
+39853099554. Installer size 117,401,678 bytes; SHA-256
+9cda36c0f05a997c9a9d58b6681776531fdfb1e3cfab9681b86f501e24b13e90.
+History schema remains 4; Ed25519 manifest signing does not add Authenticode
+signatures. All R38 requirements are satisfied; B12 and wider R33 acceptance stay
+separately open. The original temporary native histories/build mirrors are
+expendable after compact evidence preservation; their paths are historical.

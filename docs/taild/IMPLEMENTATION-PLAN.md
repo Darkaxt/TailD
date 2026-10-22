@@ -4,8 +4,9 @@
 
 Already authorized by the user's explicit switch to Windows implementation.
 [R38](WINDOWS-APP-DNS.md) owns requirements, design metrics and the single-ACTIVE
-stage reconciliation. Windows app-domain workflow and remaining module
-refinements are COMPLETE; final delivery is ACTIVE. B12 remains separately BLOCKED.
+stage reconciliation. Windows app-domain workflow, remaining module refinements
+and final delivery are COMPLETE in independently verified windows-v1.105.0+30
+from 4cf466c. B12 remains separately BLOCKED.
 One final Windows release follows the entire verified R38 scope, not each stage.
 
 ## Current execution - October 22 upstream maintenance

@@ -1,5 +1,19 @@
 # Stage 9 local packaging contract
 
+## October 22 Windows app-domain delivery
+
+Normal windows-v1.105.0+30 delivers R38 from exact source
+4cf466c7998210664a8a6c29a726ae78e6b3a175. Successful workflow 39853099554
+includes fresh installer/upgrade/rollback/uninstall and failed-migration refusal
+gates. Independent download verifies all 444 payload members, pinned Ed25519
+release/package/core manifests, unchanged exact core 3fe3e22e43e6, schema 4,
+bundled runtime identities/notices, frozen app-DNS modules and exact native-tested
+JS/CSS. Installer size: 117,401,678 bytes; SHA-256:
+9cda36c0f05a997c9a9d58b6681776531fdfb1e3cfab9681b86f501e24b13e90.
+Executables remain without Authenticode signatures. Evidence:
+D:/Tools/taild-windows-appdns40-evidence-20261022. No local installation or B12
+real rollout/rollback acceptance is claimed. Android is unchanged.
+
 ## October 22 verified upstream maintenance delivery
 
 Normal windows-v1.105.0+29 is published from exact checked main
