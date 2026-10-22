@@ -135,6 +135,7 @@ class AppDnsTest(unittest.TestCase):
         with self.assertRaises(reader.ReaderError):source.dispatch({'op':'app-dns','enabled':True,'session':None,'after':0})
         with self.assertRaises(reader.ReaderError):source.dispatch({'op':'app-dns','enabled':True,'session':None,'after':0,'provider':'arbitrary'})
 
+    @unittest.skipUnless(__import__('os').name=='nt','Windows owning-user runtime boundary; verified by the Windows native acceptance')
     def test_owning_runtime_dispatch_read_export_delete_and_precision(self):
         import runtime
         collector=runtime.Collector(Path(self.temp.name)/'runtime',None,now=lambda:END)
