@@ -10,17 +10,42 @@ no device installation, provider write or production-history testing is authoriz
 | --- | --- | --- | --- |
 | Core promotion and Windows release | COMPLETE | Exact-head trusted PR 35, unchanged-tree merge 3fe3e22 and normal windows-v1.105.0+37 independently verified against the pinned Ed25519 key, checksums, source/version/architecture and all five payloads. | None. |
 | TailDNS Android promotion and release | COMPLETE | Trusted candidate 9cc6b203, unchanged-tree PR 25 merge 7fe05ea6, normal v1.103.312+35 independently verified: package/code/pinned signer, branding, four native libraries/exact core and all seven assets/companion payloads. | None. |
-| TailD inheritance and Windows release | ACTIVE | Core overlay input files are unchanged; exact new module/source/checksum reviewed. Inheritance 39732391419 correctly refused the obsolete pin guard. | Align core build/manifest/signing identities without weakening guards; resume GitHub checked inheritance and exact ancestry; fresh production/isolated installer/recovery/signing gates, normal Windows release and independent download verification. |
-| Final reconciliation and cleanup | NOT STARTED | SleepManager upstream 851a1bd fully incorporated: fork main f7b2e7e is 17 ahead/0 behind; v0.7.3.1 four asset digests still match prior independent verification. | Exact remote/release/workflow readback and reviewed scratch cleanup. |
+| TailD inheritance and Windows release | COMPLETE | Reviewed overlay/pin/signing identities aligned with unchanged key and fail-closed checks. Inheritance 39732945620 checked/promoted exact a519e833 with TailDNS 7fe05ea6 ancestry. Release 39735041474 passed backend, production Windows, fresh installer/upgrade/rollback/uninstall and failed-first-migration recovery, isolated signing/publication. Normal windows-v1.105.0+29 independently verified: all 444 payload members, three pinned manifests, exact source/core, runtime/notices and R36 UI assets. | None. |
+| Final reconciliation and cleanup | COMPLETE | Exact remote ancestry/releases/required workflows verified. SleepManager remains 17 ahead/0 behind; v0.7.3.1 four asset digests and TailD Android .39 nine asset digests are unchanged. Reviewed cleanup applied to all 18,248 members; exact scratch root absent. | None for this promotion/release cycle. Separate dependency-bot compatibility issue below remains visible. |
 
-The actionable internal advancement blocker is the expected reviewed-core pin
-mismatch in test_reviewed_build_pins_match_inherited_module. New inherited source
-3fe3e22 differs only in Go 1.27.3/toolchain metadata and scoped Windows DNS logic
-and tests. No reviewed overlay target changed. Advance the exact require/replace,
-module checksum, toolchain revision, build stamp, overlay guard and canonical
-signer inventory together, retain the isolated immutable signer closure, then let
-GitHub perform the actual TailDNS ancestry merge/check/fast-forward promotion.
-No tracked deferral. Evidence: D:/Tools/taildns-upstream-verification-20261022.
+The initial core guard failure (39732391419) is resolved by 21cde9b/873c064:
+exact require/replace, sums, toolchain revision, overlay guard, build stamp and
+canonical signer core inventory advance together. Actual downloaded-core overlay
+preservation, package-manifest/release-channel and signer mismatch/tamper tests
+pass. GitHub performs the ancestry merge and isolated fast-forward promotion.
+The immutable signer closure 21cde9b1c8fae30c1aa119daad778be7364f5eb9 changes only
+core identity constants in core_manifest.py relative to prior trusted tooling;
+key pins and canonical checks remain. All inherited workflows remain disabled.
+No further refactoring is required and no required tracked deferral remains.
+
+TailD public source a519e8331eee4bf317aecc1e645bc77e64e22635/core
+3fe3e22e43e60d2ddb8378be418b78e810c310e5 verifies as 1.105.0+29, Windows amd64,
+history schema 4. Installer is 117,328,339 bytes, SHA-256
+efe5d60c23132620998a95ec3b047a92068b695613e72976369748e11b69b0c7.
+Ed25519 release/package/core verification is distinct from Authenticode: product
+executables and installer remain not Authenticode-signed. CI's opaque account
+fixtures do not establish real-device B12 acceptance. No device or policy changed.
+
+Cleanup 7e0feef84c69f24d48575ae423aba92e applied: 18,248 reviewed members and
+930,195,514 logical file bytes removed, no errors/exclusions, scratch root absent.
+After regular files were removed, Go cache's empty read-only directories remained.
+Their reviewed identities/absence of files were rechecked, only DOS read-only
+attributes cleared, and the same native helper ticket finished deletion.
+Compact evidence: D:/Tools/taildns-upstream-verification-20261022.
+
+Separate diagnostic: GitHub's dynamic Dependabot run 39733037966 on 873c064
+reported security_update_not_possible for Vite: @angular/build@20.3.39 requires
+7.3.6 while the reported lowest patched version is 7.3.7. It is not a failing
+required promotion/release gate (all pass on a519e833), and no unverified dependency
+override was introduced. A compatible upstream framework/dependency update is
+still needed for that bot advisory; do not describe all GitHub automation as green.
+The unrelated dependency PR remains unmerged. This diagnostic is outside the
+bounded core-promotion repair and does not change the verified release evidence.
 
 ## Current execution — October 21 Firewall traffic and diagnosis
 

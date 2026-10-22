@@ -1,5 +1,28 @@
 # Stage 9 local packaging contract
 
+## October 22 verified upstream maintenance delivery
+
+Normal windows-v1.105.0+29 is published from exact checked main
+a519e8331eee4bf317aecc1e645bc77e64e22635, containing TailDNS
+7fe05ea6cdcdd6852d5a6bba8e4ccf3eb1642268 and shared core
+3fe3e22e43e60d2ddb8378be418b78e810c310e5. Inheritance 39732945620 and full
+release 39735041474 pass with fresh isolated installer/upgrade/rollback/uninstall
+and failed-first-migration recovery gates. Immutable signer tooling is 21cde9b;
+production-key isolation, canonical manifests and the TailD channel are unchanged.
+Independent public extraction verifies all 444 package members, release/package/
+core signatures and key identity, exact source/core/architecture/history schema,
+runtime notices and identical native R36 JS/CSS assets. Installer: 117,328,339
+bytes; SHA-256 efe5d60c23132620998a95ec3b047a92068b695613e72976369748e11b69b0c7.
+The installer and product executables are not Authenticode-signed.
+
+Preceding dependency releases are independently verified TailDNS Windows
+windows-v1.105.0+37 (all five matching-core binaries and pinned Ed25519 manifest)
+and TailDNS Android v1.103.312+35 (existing APK package/certificate, code 298774800,
+four native libraries with exact core/module provenance, all seven assets and
+companion Windows payloads). TailD Android v1.103.312.39 and SleepManager
+v0.7.3.1 assets are unchanged. No device installation, provider change or real B12
+acceptance is claimed. Evidence: D:/Tools/taildns-upstream-verification-20261022.
+
 ## Android R37 distribution contract (October 20)
 
 October 21 authorized version correction: new Android names/tags use
