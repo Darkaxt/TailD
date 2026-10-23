@@ -9,11 +9,25 @@ R17-R18 and the inherited local-DNS specification. No device/provider changes.
 | --- | --- | --- | --- |
 | Core promotion and Windows release | COMPLETE | Trusted exact candidate d6e7c4c, unchanged-tree merge 2836228 and signed windows-v1.105.0+38 independently verified: pinned key, checksums, source/version/architecture and all five payloads. Diff only normalizes Go formatting. | None. |
 | TailDNS Android promotion and release | COMPLETE | Trusted exact candidate 9ed9a467, unchanged-tree merge 398717c; normal v1.103.312+36 independently verified: existing package/signer, code 298789240, branding, four libraries/exact core and all seven assets/companion payloads. | None. |
-| TailD inheritance and Windows release | ACTIVE | Inheritance 39910344952 correctly refused the new module before overlay review. Reviewed core diff leaves all overlay inputs and product contracts unchanged. | Align reviewed module/overlay/build/signer identities; pass focused regressions and ordinary checked GitHub promotion, then full signed Windows release and independent verification. |
-| Final reconciliation and cleanup | NOT STARTED | SleepManager initially remains 17 ahead/0 behind. | Confirm exact final source/releases/workflows and clean only current task scratch. |
+| TailD inheritance and Windows release | COMPLETE | Initial inheritance 39910344952 correctly refused the new module before overlay review. Reviewed pin/build/overlay/signer identities aligned without changing keys or validation. Focused actual-core and signing regressions pass. Inheritance 39910627501 checked and promoted exact 4d6b0bf containing TailDNS 398717c. Release 39912774748 passed backend, Windows production, fresh install/upgrade/rollback/uninstall and failed-migration recovery gates, isolated signing/publication. Normal windows-v1.105.0+31 independently verified against pinned Ed25519 release/package/core keys and all 444 members, exact core/source/runtime/notices and unchanged native-tested UI. | None. |
+| Final reconciliation and cleanup | COMPLETE | Exact remote ancestry/releases/required workflows verified. SleepManager remains 17 ahead/0 behind; normal v0.7.3.1 four asset digests and TailD Android .39 nine asset digests are unchanged. Cleanup applied to all 11,719 reviewed members; exact scratch root absent. | None for this maintenance cycle. Existing unrelated dependency-bot compatibility advisory remains separately recorded below. |
 
 B12 remains separately BLOCKED; no real rollback acceptance is claimed. No
 tracked deferrals. Durable evidence: D:/Tools/taildns-upstream-verification-20261023.
+
+Signer closure 9adb977 differs from prior trusted signer tooling only in the
+reviewed core identity constants; signing-key pins, canonical inventory and
+source checks remain unchanged. No design-debt repair or refactoring is needed.
+Executables remain without Authenticode signatures. No local device, provider
+policy, production history, existing dirty Android/SleepManager work or separate
+Android release channel was changed. The failed guard was repaired and the
+ordinary GitHub promotion path completed without bypassing checks.
+
+Cleanup 0c55a11311b99fd83ca3a6820c1b8554 removed 652,992,235 logical file bytes.
+After file deletion, Go's empty DOS-read-only directories remained; their exact
+reviewed identities and absence of regular files were verified, only that
+attribute cleared, and the original helper ticket completed deletion. No ACLs
+were changed and no active consumer was interrupted.
 
 ## Current execution — October 22 Windows app DNS and UI
 

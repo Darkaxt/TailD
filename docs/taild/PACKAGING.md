@@ -1,5 +1,30 @@
 # Stage 9 local packaging contract
 
+## October 23 verified upstream maintenance delivery
+
+Normal windows-v1.105.0+31 is published from exact checked main
+4d6b0bfb1c0500d4c4c7761bfd1ee4f3d9400b59, containing TailDNS
+398717c48e9c5320fc9fdf4b9da13881f667ab6b and reviewed shared core
+2836228acf7f6b37554d913c8241d294aaf93d24. Inheritance 39910627501 and
+full release 39912774748 pass, including fresh isolated installer, upgrade,
+rollback, uninstall and failed-migration recovery gates. Immutable signer tooling
+9adb977 changes only reviewed core identity constants in the signer closure;
+key pins, isolated authority and canonical verification remain unchanged.
+
+Independent public download and extraction verify all 444 payload members,
+release/package/core Ed25519 signatures, exact source/core/architecture/schema 4,
+bundled runtime identities/notices, frozen app-DNS modules and identical native
+R38 JS/CSS assets. Installer: 117,401,165 bytes; SHA-256
+7eec581e31e4323f782d6df54ef46e726bddaac7ae71f453dd2ddd0c7c14f2a9.
+Executables and installer are not Authenticode-signed. No device deployment or
+real B12 rollback/final reconciliation is claimed by this automated cycle.
+
+Preceding independently verified releases are TailDNS Windows
+windows-v1.105.0+38 and Android v1.103.312+36 (existing package/certificate,
+code 298789240, all four native libraries with exact core and all seven assets).
+SleepManager v0.7.3.1 and TailD Android v1.103.312.39 remain unchanged.
+Compact evidence: D:/Tools/taildns-upstream-verification-20261023.
+
 ## October 22 Windows app-domain delivery
 
 Normal windows-v1.105.0+30 delivers R38 from exact source
