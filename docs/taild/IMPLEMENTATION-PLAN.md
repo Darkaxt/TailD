@@ -1,5 +1,20 @@
 # TailD staged execution
 
+## Current execution - October 23 upstream maintenance
+
+The scheduled heartbeat authorizes this dependency-ordered cycle under R02-R04,
+R17-R18 and the inherited local-DNS specification. No device/provider changes.
+
+| Stage | Status | Acceptance satisfied | Acceptance remaining |
+| --- | --- | --- | --- |
+| Core promotion and Windows release | COMPLETE | Trusted exact candidate d6e7c4c, unchanged-tree merge 2836228 and signed windows-v1.105.0+38 independently verified: pinned key, checksums, source/version/architecture and all five payloads. Diff only normalizes Go formatting. | None. |
+| TailDNS Android promotion and release | COMPLETE | Trusted exact candidate 9ed9a467, unchanged-tree merge 398717c; normal v1.103.312+36 independently verified: existing package/signer, code 298789240, branding, four libraries/exact core and all seven assets/companion payloads. | None. |
+| TailD inheritance and Windows release | ACTIVE | Inheritance 39910344952 correctly refused the new module before overlay review. Reviewed core diff leaves all overlay inputs and product contracts unchanged. | Align reviewed module/overlay/build/signer identities; pass focused regressions and ordinary checked GitHub promotion, then full signed Windows release and independent verification. |
+| Final reconciliation and cleanup | NOT STARTED | SleepManager initially remains 17 ahead/0 behind. | Confirm exact final source/releases/workflows and clean only current task scratch. |
+
+B12 remains separately BLOCKED; no real rollback acceptance is claimed. No
+tracked deferrals. Durable evidence: D:/Tools/taildns-upstream-verification-20261023.
+
 ## Current execution — October 22 Windows app DNS and UI
 
 Already authorized by the user's explicit switch to Windows implementation.
