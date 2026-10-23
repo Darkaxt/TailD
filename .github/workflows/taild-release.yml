@@ -149,7 +149,7 @@ jobs:
         with:
           # Reviewed signer tooling is independently immutable. Never import or
           # execute application/candidate files downloaded from build artifacts.
-          ref: 21cde9b1c8fae30c1aa119daad778be7364f5eb9
+          ref: 9adb977da646cb3b63aa3cc46964aac634e24670
           path: trusted
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
@@ -252,7 +252,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          ref: 21cde9b1c8fae30c1aa119daad778be7364f5eb9
+          ref: 9adb977da646cb3b63aa3cc46964aac634e24670
           path: trusted
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
@@ -297,4 +297,4 @@ jobs:
           test "$(jq -r .source_commit release/taild-release.json)" = "$GITHUB_SHA"
           tag="windows-v$version"
           gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" -f "ref=refs/tags/$tag" -f "sha=$GITHUB_SHA" >/dev/null
-          gh release create "$tag" release/* --repo "$GITHUB_REPOSITORY" --verify-tag --title "TailD $version for Windows" --notes "Adds per-application Windows DNS observations and app diagnosis with correlated Control D decisions, GlassWire IN/OUT totals, hourly traffic and separately labeled equal-weight domain byte estimates. Includes DNS-only apps, searchable domain outcomes and revision-bound exports. Refines connection/account status, Preferences, resolver status, Recent DNS density and TailDrop actions. Native DNS observation starts only with Collect analytics enabled; app-owned encrypted DNS and unknown ownership remain outside coverage. Preserves reviewed shared core 3fe3e22e43e6, local DNS ownership, private history and the separate TailD update channel. Complete Windows x64 installer with inherited TailDNS connectivity and Portmaster-derived analytics. Analytics remains opt-in; DNS and GlassWire reads are independent of management actions, and provider writes require the separate Write credential. Ed25519-signed package, core and release manifests; executables and installer are not Authenticode-signed. Evergreen WebView2 required. Source: $GITHUB_SHA. No device installation or rollout is performed by this publication."
+          gh release create "$tag" release/* --repo "$GITHUB_REPOSITORY" --verify-tag --title "TailD $version for Windows" --notes "Refreshes inherited TailDNS source and reviewed shared core 2836228acf7f. Preserves per-application Windows DNS observations, correlated Control D decisions, GlassWire IN/OUT totals, hourly traffic and separately labeled equal-weight domain byte estimates. Includes the existing compact connection, Preferences, Recent DNS and TailDrop interfaces. Native DNS observation starts only with Collect analytics enabled; app-owned encrypted DNS and unknown ownership remain outside coverage. Preserves local DNS ownership, private history, rollback contracts and the separate TailD update channel. Complete Windows x64 installer with inherited TailDNS connectivity and Portmaster-derived analytics. Analytics remains opt-in; provider writes require the separate Write credential. Ed25519-signed package, core and release manifests; executables and installer are not Authenticode-signed. Evergreen WebView2 required. Source: $GITHUB_SHA. No device installation or rollout is performed by this publication."
