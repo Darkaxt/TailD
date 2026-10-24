@@ -46,7 +46,9 @@ object ShareFileHelper : libtailscale.ShareFileHelper {
       app: libtailscale.Application,
       uri: String,
       appScope: CoroutineScope,
-      scopeProvider: () -> String? = { null },
+      scopeProvider: () -> String? = {
+        com.tailscale.ipn.taild.activityScope(Notifier.netmap.value, Notifier.prefs.value)
+      },
   ) {
     appContext = context.applicationContext
     this.app = app

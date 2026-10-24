@@ -299,9 +299,7 @@ class App : UninitializedApp(), libtailscale.AppContext, ViewModelStoreOwner {
    */
   fun startLibtailscale(directFileRoot: String, hardwareAttestation: Boolean) {
     app = Libtailscale.start(this.filesDir.absolutePath, directFileRoot, hardwareAttestation, this)
-    ShareFileHelper.init(this, app, directFileRoot, applicationScope) {
-      com.tailscale.ipn.taild.activityScope(Notifier.netmap.value, Notifier.prefs.value)
-    }
+    ShareFileHelper.init(this, app, directFileRoot, applicationScope)
     Notifier.setApp(app)
     val history = tailDHistory
     history.attachTraffic(app)

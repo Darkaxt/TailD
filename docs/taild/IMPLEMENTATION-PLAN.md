@@ -18,9 +18,13 @@ The known pin-review guard is preserved and aligned before inheritance. First
 inheritance 40069171351 instead exposed an App.kt content conflict: upstream
 removes Request.setApp beside TailD's scoped TailDrop initialization lambda.
 The repair carries the exact reviewed upstream Client and regressions into the
-fork, removes that obsolete import/call, and preserves TailDrop activity scope,
-traffic attachment and history callbacks. GitHub still owns the ancestry merge,
-full inherited Android/core/Windows checks and ordinary promotion.
+fork and removes that obsolete import/call. A merge-tree reproduction showed the
+adjacent scope lambda still conflicts, so its identical lazy expression becomes
+ShareFileHelper's existing default scopeProvider. The only production caller now
+matches upstream; activity scope, traffic attachment and history callbacks retain
+their behavior. No setter, retry or compatibility branch is added. GitHub still
+owns the ancestry merge, full inherited Android/core/Windows checks and ordinary
+promotion.
 
 ## Current execution - October 23 upstream maintenance
 
