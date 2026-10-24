@@ -75,17 +75,26 @@ class TailDDeliveryTest {
   }
 
   private fun content(selector: BySelector): UiObject2 {
-    val target = By.copy(selector).pkg(pkg)
-    val ready =
-        device.wait(
-            object : Condition<UiDevice, UiObject2?> {
-              override fun apply(value: UiDevice): UiObject2? =
-                  find(selector) ?: find(By.scrollable(true))
-            },
-            30_000,
-        ) ?: error("Content did not render")
-    if (!device.hasObject(target)) ready.scrollUntil(Direction.DOWN, Until.findObject(target))
-    return node(selector)
+    var exhausted = false
+    return device.wait(
+        object : Condition<UiDevice, UiObject2?> {
+          override fun apply(value: UiDevice): UiObject2? {
+            find(selector)?.let {
+              return it
+            }
+            if (exhausted) return null
+            val scrollable = find(By.scrollable(true)) ?: return null
+            try {
+              exhausted = !scrollable.scroll(Direction.DOWN, 0.7f)
+            } catch (_: StaleObjectException) {
+              // Compose may replace the container during a scroll. The next
+              // observation reacquires it; no mutation action is replayed.
+            }
+            return find(selector)
+          }
+        },
+        30_000,
+    ) ?: error("Required delivery content missing: $selector")
   }
 
   private fun enterText(selector: BySelector, text: String, packageName: String = pkg) {
@@ -182,7 +191,14 @@ class TailDDeliveryTest {
     open("settings")
     content(By.text("DNS settings"))
     click(By.text("DNS settings"))
-    val corpDNS = By.desc("Use Tailscale DNS").checkable(true)
+    // TailDNS origins expose the switch beside its text label. TailD supplies
+    // the accessible name; continue requiring that name after the upgrade.
+    val corpDNS =
+        if (signedPackage() < checkNotNull(arguments.getString("candidate_code")).toLong()) {
+          By.checkable(true).hasParent(By.hasChild(By.text("Use Tailscale DNS")))
+        } else {
+          By.desc("Use Tailscale DNS").checkable(true)
+        }
     node(corpDNS)
     if (expected == null) {
       if (node(corpDNS).isChecked) click(corpDNS)
@@ -1148,7 +1164,12 @@ class TailDDeliveryTest {
           30_000,
       )
       check(candidate.performAction(AccessibilityNodeInfo.ACTION_CLICK))
-      node(By.text("TailD \u00b7 $label"))
+      if (label == "Control D") {
+        // The compact Control D page intentionally has no repeated title.
+        node(By.res("taild-control-d-content"))
+      } else {
+        node(By.text("TailD \u00b7 $label"))
+      }
     }
     phase("capture-talkback")
     phase("disable-talkback")

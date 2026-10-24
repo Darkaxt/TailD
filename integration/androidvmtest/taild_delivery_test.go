@@ -421,6 +421,9 @@ func TestTailDProductionDelivery(t *testing.T) {
 				phaseErr = fmt.Errorf("actual document save did not preserve the fixture file")
 			}
 		case "enable-talkback":
+			// Fresh Google API images otherwise cover the app with TalkBack's
+			// first-run notification prompt during accessibility acceptance.
+			run("shell", "pm", "grant", "com.google.android.marvin.talkback", "android.permission.POST_NOTIFICATIONS")
 			services := oldServices
 			if services == "null" {
 				services = ""

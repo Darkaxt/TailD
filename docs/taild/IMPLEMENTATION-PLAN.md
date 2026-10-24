@@ -10,11 +10,21 @@ local-DNS specifications govern identity, history, theme and delivery acceptance
 
 | Stage | Status | Acceptance satisfied | Acceptance remaining |
 | --- | --- | --- | --- |
-| Android release and tablet migration | ACTIVE | Exact intended tablet identified; newer installed origin confirmed; current upstream inheritance/checks reviewed. | Exact-source candidate build/signing, independent APK verification and isolated migration/recovery acceptance; normal publication and public-byte verification; tablet in-place upgrade preserving identity/settings/DNS; ObtainX Android channel refresh verified; exact task cleanup. |
+| Android release and tablet migration | COMPLETE | Normal .40 from exact 0f1a78a, candidate 40124150348 and publication 40126745423; all nine public assets/643 members independently verified. Native origin upgrade/recovery and supported accessibility finalization pass; live automatic themes pass. Tablet installed APK matches public bytes, existing signer/node/addresses/DNS/settings remain, public/MagicDNS connectivity passes. ObtainX source/Android filters are saved and real installed/latest .40 shows Up to date without an override. Reviewed cleanup removes both stopped AVDs, APK copies and exact generated metadata; task root absent. | None. |
 
 No tracked deferrals. Desktop B12 remains separately BLOCKED. No provider writes,
 uninstall, reset, production firewall changes or unrelated device changes belong
 to this migration. Compact private evidence: D:/Tools/taild-tablet-evidence-20261024.
+
+Final reconciliation: all tablet migration and Android release criteria above
+are satisfied. External harness corrections preserve the same actual migration,
+recovery and accessibility assertions; PACKAGING.md records failed observations
+and their supported continuation separately from the unchanged production APK.
+No further refactoring or infrastructure is needed. Cleanup transactions
+3ee56c39563bc1a8f4017218bd721696 and 663b9f3fd518e259e8ba05dba834e1fa
+are applied: 9,787,452,234 logical regular-file bytes removed. This is not an
+allocated-space measurement. Both exact scratch and generated metadata paths
+are absent; retained evidence and installed tablet/ObtainX data remain.
 
 ## Current execution - October 24 upstream maintenance
 

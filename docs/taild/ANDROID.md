@@ -4,14 +4,18 @@ TailD expands the inherited TailDNS Android client with native Tailscale device
 views and observations, Control D DNS history and basic management, and a private
 seven-day Dashboard. It follows Android's automatic light/dark theme.
 
-Current release: [1.103.312.37](https://github.com/Darkaxt/TailD/releases/tag/v1.103.312.37)
-([APK](https://github.com/Darkaxt/TailD/releases/download/v1.103.312.37/taild-android.apk)).
+Current release: [1.103.312.40](https://github.com/Darkaxt/TailD/releases/tag/v1.103.312.40)
+([APK](https://github.com/Darkaxt/TailD/releases/download/v1.103.312.40/taild-android.apk)).
 The public package, existing signer, source/core identities and all payload hashes
 were independently verified. In-place upgrade and recovery checks used an isolated
-emulator; installation and continuity on a physical phone remain separate.
+emulator. The authorized Samsung SM-X910 in-place upgrade from TailDNS +37 also
+preserved its identity, DNS settings and connectivity. Other devices require
+their own deployment evidence.
 
-This update adds a compact offline Geography map, optional Shizuku app control
-in the Firewall tab, and Applications traffic in Dashboard. Numeric versions
+This release includes current inherited core updates, a compact offline Geography
+map, optional Shizuku app control and 24-hour IN/OUT app traffic in Firewall.
+Diagnosis opens hourly charts and destination/DNS tables; Dashboard Applications
+also remains available. Numeric versions
 continue to support ObtainX ordering. Phone/tablet layouts follow automatic system
 light/dark mode.
 

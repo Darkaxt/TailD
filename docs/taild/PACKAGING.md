@@ -1,5 +1,47 @@
 # Stage 9 local packaging contract
 
+## October 24 Android .40 and authorized tablet migration
+
+Normal v1.103.312.40 is published from exact checked source
+0f1a78a3dd4ed9363793328e747f860db10d7975 and reviewed core
+0405247e03f74eb16d26ca8c010c004c7e722db7. Candidate 40124150348 passes
+backend/inherited contracts, core checks, Android tests, release lint/build,
+TV build and isolated signing. Publication 40126745423 reuses those same bytes.
+Independent public verification checks all nine assets, package/version/code,
+existing pinned APK certificate, all 643 payload members/four ABIs, exact native
+source/core and map/notices. Code 298811510 advances beyond the current TailDNS
+origin code 298803600. APK: 107,268,655 bytes; SHA-256
+2405d223ee5ae0274d54eb5b8c4c6415abf66c92df544627c7631fed3b73ec48.
+Windows latest remains windows-v1.105.0+32.
+
+The fresh isolated native origin run proves the actual TailDNS +37 -> TailD .40
+upgrade, node/machine identity, DNS/folder/always-on retention, TailDrop save,
+rejected downgrade and exact reinstall recovery. Its final accessibility check
+requires a continuation because the fresh Accessibility Suite presents its own
+notification prompt and the old assertion expects Control D's removed title.
+The supported finalization-only continuation passes actual bound TalkBack focus,
+activation and cleanup on that retained candidate. Live automatic light/dark
+switching is also verified on the identical signed APK.
+
+External harness corrections are absent from the production APK: select the
+TailDNS origin switch beside its exact label while retaining TailD's named-switch
+assertion after upgrade; reacquire a Compose scroll container between observations;
+provision the owned emulator's Accessibility Suite notification permission; and
+verify compact Control D through its existing content resource ID. Preserve the
+failed logs separately from the completed acceptance chain.
+
+The user's separate tablet-deployment request authorizes the Samsung SM-X910
+in-place replacement. Its pulled installed APK matches the public digest and
+certificate; original install time, node/public key/addresses, resolver settings,
+always-on/lockdown and enabled accessibility services are retained. Actual public
+DNS, MagicDNS and public/tailnet connectivity pass. Analytics stays opt-in. No
+uninstall, reset, provider-policy write or production firewall change occurs.
+The existing ObtainX entry now targets Darkaxt/TailD with Android-title and exact
+APK filters; its real installed/latest .40 readback is Up to date. Both stopped
+emulator trees and verification APKs are removed through reviewed exact cleanup.
+Private evidence: D:/Tools/taild-tablet-evidence-20261024. This does not close
+desktop B12 or claim validation on other physical devices.
+
 ## October 24 verified upstream maintenance delivery
 
 Normal windows-v1.105.0+32 is published from exact checked main
