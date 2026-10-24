@@ -1,5 +1,21 @@
 # TailD staged execution
 
+## Current execution - October 24 Samsung tablet migration
+
+The user explicitly authorizes replacing TailDNS and its ObtainX entry on the
+Samsung SM-X910. Installed TailDNS 1.103.312+37 has code 298803600, newer than
+TailD .39, so publish the next normally signed TailD Android .40 from the current
+verified inheritance rather than downgrade or uninstall. Existing Android and
+local-DNS specifications govern identity, history, theme and delivery acceptance.
+
+| Stage | Status | Acceptance satisfied | Acceptance remaining |
+| --- | --- | --- | --- |
+| Android release and tablet migration | ACTIVE | Exact intended tablet identified; newer installed origin confirmed; current upstream inheritance/checks reviewed. | Exact-source candidate build/signing, independent APK verification and isolated migration/recovery acceptance; normal publication and public-byte verification; tablet in-place upgrade preserving identity/settings/DNS; ObtainX Android channel refresh verified; exact task cleanup. |
+
+No tracked deferrals. Desktop B12 remains separately BLOCKED. No provider writes,
+uninstall, reset, production firewall changes or unrelated device changes belong
+to this migration. Compact private evidence: D:/Tools/taild-tablet-evidence-20261024.
+
 ## Current execution - October 24 upstream maintenance
 
 The scheduled heartbeat authorizes this dependency-ordered cycle under R02-R04,

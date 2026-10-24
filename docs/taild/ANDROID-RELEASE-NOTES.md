@@ -1,4 +1,11 @@
-TailD Android 1.103.312.39 brings app traffic into Firewall. Each app/shared-UID
+TailD Android 1.103.312.40 includes the verified October 24 TailDNS/core updates
+and supports an in-place upgrade from current TailDNS Android installations.
+It retains the existing package and signing identity, settings, node identity,
+local DNS configuration and SleepManager compatibility. New upstream LocalAPI
+requests resolve the application backend per request and deliver provider errors
+through the callback. TailD's scoped TailDrop history integration is preserved.
+
+The existing Firewall analysis features remain: each app/shared-UID
 row shows IN and OUT bytes for the last 24 hours and a compact hourly
 graph. Apps sort by combined traffic descending, then alphabetically. Viewing
 traffic and installed-app metadata does not require Shizuku; optional blocking
