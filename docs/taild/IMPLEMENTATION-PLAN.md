@@ -9,8 +9,8 @@ R17-R18 and the inherited local-DNS specification. No devices/provider writes.
 | --- | --- | --- | --- |
 | Core promotion and Windows release | COMPLETE | Trusted exact candidate 3d086578, unchanged-tree merge 0405247 and signed windows-v1.105.0+39 independently verified: pinned key, checksums, source/version/architecture and all five payloads. Core change adds one scale-name dictionary entry. | None. |
 | TailDNS Android promotion and release | COMPLETE | Trusted exact candidate 5b04f876, unchanged-tree merge d2759c12; normal v1.103.312+37 independently verified: existing package/signer, code 298803600, branding, four libraries/exact core and all seven assets/companion payloads. Upstream LocalAPI resolves the backend per request and delivers provider failures through the callback, with new regression tests. | None. |
-| TailD inheritance and Windows release | ACTIVE | Reviewed core diff leaves all overlay inputs and DNS/tray/installer/update contracts unchanged. Existing reviewed-core guard requires coordinated pin/build/manifest identity alignment before promotion. | Verify aligned identities and immutable signer closure; complete ordinary checked GitHub inheritance and signed Windows release with independent public verification. |
-| Final reconciliation and cleanup | NOT STARTED | SleepManager initially remains 17 ahead/0 behind. | Confirm exact final source/releases/workflows, preserve dirty work and clean current scratch. |
+| TailD inheritance and Windows release | COMPLETE | Reviewed core diff leaves overlay inputs and DNS/tray/installer/update contracts unchanged. Pin/build/manifest and immutable signer identities aligned; focused real-core/signing regressions pass. App.kt conflict repaired without losing scoped TailDrop history. Inheritance 40069426036 passed full inherited Android/core/Windows checks and promoted exact 9096895 containing TailDNS d2759c12. Release 40070702921 passed backend, clean Windows production build, fresh isolated install/upgrade/rollback/uninstall and failed-migration recovery gates, isolated signing and publication. Normal windows-v1.105.0+32 independently verified: all 444 members, pinned Ed25519 release/package/core signatures, exact source/core/version/schema/runtime/notices and unchanged native-tested UI. | None. |
+| Final reconciliation and cleanup | COMPLETE | Exact source ancestry, releases and isolated workflows verified. SleepManager remains 17 ahead/0 behind with v0.7.3.1 assets unchanged; TailD Android .39 assets unchanged. Current scratch transaction applied to all 8,246 reviewed members, exact root absent. Dirty sibling work preserved. | None for this cycle. Previously recorded unrelated dependency-bot advisory remains separate. |
 
 B12 remains separately BLOCKED; no real rollback acceptance is claimed. No
 tracked deferrals. Evidence: D:/Tools/taildns-upstream-verification-20261024.
@@ -25,6 +25,18 @@ matches upstream; activity scope, traffic attachment and history callbacks retai
 their behavior. No setter, retry or compatibility branch is added. GitHub still
 owns the ancestry merge, full inherited Android/core/Windows checks and ordinary
 promotion.
+
+Signer closure 0853242 differs from the prior reviewed signer only in the three
+core identity constants; key pins and canonical source/inventory checks remain.
+No further consolidation or refactoring is required for this bounded repair.
+Executables and installer remain without Authenticode signatures. No device
+deployment, provider mutation or physical B12 acceptance occurred in this cycle.
+
+Cleanup bdf63fd38f3f766630929fa2d5d3f1a5 removed 638,377,828 logical file bytes.
+The helper initially retained empty DOS-read-only Go directories. Fresh inspection
+confirmed no regular files, matching reviewed identities and the installed
+helper's file-only attribute normalization. Only the directory DOS attribute was
+cleared, then the original ticket completed; no ACL change or consumer stop.
 
 ## Current execution - October 23 upstream maintenance
 

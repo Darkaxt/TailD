@@ -1,5 +1,35 @@
 # Stage 9 local packaging contract
 
+## October 24 verified upstream maintenance delivery
+
+Normal windows-v1.105.0+32 is published from exact checked main
+9096895162818933ca198b7a795b70ed850ec1e4, containing TailDNS
+d2759c12ec5a4fce62aa1705c60730210ba7d185 and reviewed shared core
+0405247e03f74eb16d26ca8c010c004c7e722db7. Inheritance 40069426036 passes
+after resolving the upstream LocalAPI initialization change beside TailD's scoped
+TailDrop callback. The same lazy scope expression now supplies the existing
+ShareFileHelper default; transfer/history behavior and injected providers remain.
+Inherited Android/core/Windows checks pass on the exact promoted candidate.
+
+Release 40070702921 passes full backend, Windows production, fresh isolated
+install/upgrade/rollback/uninstall and failed-migration recovery gates, isolated
+signing and publication. Signer tooling 0853242 retains pinned keys and canonical
+verification, changing only the reviewed core identity constants.
+
+Independent public download/extraction verifies every one of 444 package members,
+release/package/core Ed25519 signatures, exact source/core/version/architecture,
+schema 4, runtime identities/notices, frozen app-DNS modules and identical native
+R38 JS/CSS assets. Installer: 117,401,367 bytes; SHA-256
+bf39d535c9067902f7a234b01ff1d9b9a68977c1aa2b5a32e48a3a39c998a0be.
+Executables and installer remain not Authenticode-signed. No local deployment or
+physical B12 rollback/final reconciliation is claimed by this maintenance cycle.
+
+Preceding independently verified releases are TailDNS Windows
+windows-v1.105.0+39 and Android v1.103.312+37 (existing package/certificate,
+code 298803600, all four libraries/exact core and all seven assets). SleepManager
+v0.7.3.1 and TailD Android v1.103.312.39 remain unchanged. Evidence:
+D:/Tools/taildns-upstream-verification-20261024.
+
 ## October 23 verified upstream maintenance delivery
 
 Normal windows-v1.105.0+31 is published from exact checked main
