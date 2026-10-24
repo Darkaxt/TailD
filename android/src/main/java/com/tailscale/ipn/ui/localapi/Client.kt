@@ -71,11 +71,11 @@ typealias PingResultHandler = (Result<IpnState.PingResult>) -> Unit
  * Client provides a mechanism for calling Go's LocalAPIClient. Every LocalAPI endpoint has a
  * corresponding method on this Client.
  */
-class Client(private val scope: CoroutineScope) {
+class Client(
+    private val scope: CoroutineScope,
+    private val appProvider: () -> libtailscale.Application = { App.get().getLibtailscaleApp() },
+) {
   private val TAG = Client::class.simpleName
-
-  // Access libtailscale.Application lazily
-  private val app: libtailscale.Application by lazy { App.get().getLibtailscaleApp() }
 
   fun start(options: Ipn.Options, responseHandler: (Result<Unit>) -> Unit) {
     val body = Json.encodeToString(options).toByteArray()
@@ -224,6 +224,7 @@ class Client(private val scope: CoroutineScope) {
   ) {
     Request(
             scope = scope,
+            appProvider = appProvider,
             method = "GET",
             path = path,
             body = body,
@@ -240,6 +241,7 @@ class Client(private val scope: CoroutineScope) {
   ) {
     Request(
             scope = scope,
+            appProvider = appProvider,
             method = "PUT",
             path = path,
             body = body,
@@ -257,6 +259,7 @@ class Client(private val scope: CoroutineScope) {
   ) {
     Request(
             scope = scope,
+            appProvider = appProvider,
             method = "POST",
             path = path,
             body = body,
@@ -274,6 +277,7 @@ class Client(private val scope: CoroutineScope) {
   ) {
     Request(
             scope = scope,
+            appProvider = appProvider,
             method = "POST",
             path = path,
             parts = parts,
@@ -291,6 +295,7 @@ class Client(private val scope: CoroutineScope) {
   ) {
     Request(
             scope = scope,
+            appProvider = appProvider,
             method = "PATCH",
             path = path,
             body = body,
@@ -306,6 +311,7 @@ class Client(private val scope: CoroutineScope) {
   ) {
     Request(
             scope = scope,
+            appProvider = appProvider,
             method = "DELETE",
             path = path,
             responseType = typeOf<T>(),
@@ -315,8 +321,9 @@ class Client(private val scope: CoroutineScope) {
   }
 }
 
-class Request<T>(
+private class Request<T>(
     private val scope: CoroutineScope,
+    private val appProvider: () -> libtailscale.Application,
     private val method: String,
     path: String,
     private val body: ByteArray? = null,
@@ -331,20 +338,14 @@ class Request<T>(
     private const val TAG = "LocalAPIRequest"
 
     private val jsonDecoder = Json { ignoreUnknownKeys = true }
-
-    private lateinit var app: libtailscale.Application
-
-    @JvmStatic
-    fun setApp(newApp: libtailscale.Application) {
-      app = newApp
-    }
   }
 
   @OptIn(ExperimentalSerializationApi::class)
   fun execute() {
     scope.launch(Dispatchers.IO) {
-      TSLog.d(TAG, "Executing request:${method}:${fullPath} on app $app")
       try {
+        val app = appProvider()
+        TSLog.d(TAG, "Executing request:${method}:${fullPath} on app $app")
         val resp =
             if (parts != null)
                 app.callLocalAPIMultipart(

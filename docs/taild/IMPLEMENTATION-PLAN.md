@@ -14,10 +14,13 @@ R17-R18 and the inherited local-DNS specification. No devices/provider writes.
 
 B12 remains separately BLOCKED; no real rollback acceptance is claimed. No
 tracked deferrals. Evidence: D:/Tools/taildns-upstream-verification-20261024.
-The known pin-review guard is preserved. Its identity mismatch is resolved
-before dispatching inheritance rather than knowingly repeating the prior failed
-run. The actual new core and unchanged overlay inputs receive focused checks;
-GitHub retains ownership of merge capture, inherited builds and promotion.
+The known pin-review guard is preserved and aligned before inheritance. First
+inheritance 40069171351 instead exposed an App.kt content conflict: upstream
+removes Request.setApp beside TailD's scoped TailDrop initialization lambda.
+The repair carries the exact reviewed upstream Client and regressions into the
+fork, removes that obsolete import/call, and preserves TailDrop activity scope,
+traffic attachment and history callbacks. GitHub still owns the ancestry merge,
+full inherited Android/core/Windows checks and ordinary promotion.
 
 ## Current execution - October 23 upstream maintenance
 

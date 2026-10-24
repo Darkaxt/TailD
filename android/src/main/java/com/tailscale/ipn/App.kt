@@ -28,7 +28,6 @@ import androidx.security.crypto.MasterKey
 import com.tailscale.ipn.mdm.MDMSettings
 import com.tailscale.ipn.mdm.MDMSettingsChangedReceiver
 import com.tailscale.ipn.ui.localapi.Client
-import com.tailscale.ipn.ui.localapi.Request
 import com.tailscale.ipn.ui.model.Ipn
 import com.tailscale.ipn.ui.model.Netmap
 import com.tailscale.ipn.ui.notifier.FavoritesManager
@@ -303,7 +302,6 @@ class App : UninitializedApp(), libtailscale.AppContext, ViewModelStoreOwner {
     ShareFileHelper.init(this, app, directFileRoot, applicationScope) {
       com.tailscale.ipn.taild.activityScope(Notifier.netmap.value, Notifier.prefs.value)
     }
-    Request.setApp(app)
     Notifier.setApp(app)
     val history = tailDHistory
     history.attachTraffic(app)
