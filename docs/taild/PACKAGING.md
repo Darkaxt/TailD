@@ -1,5 +1,22 @@
 # Stage 9 local packaging contract
 
+## October 25 R39 Windows startup correction — release pending
+
+Pre-release acceptance verifies native served Connection, Preferences and Analytics
+before a held retention operation completes, then its actual completion. Backend
+contracts cover committed cutoffs/revisions, all retained read/export surfaces,
+bounded cleanup/replay, disabled-source maintenance, quiet retained opt-in startup
+and shared Windows startup serialization/failure. Exact pinned-core tray native
+tests compile and pass with the changed background-resume hook. Existing tray
+sign-in starts the packaged no-console entrypoint; no new scheduled task or opt-in
+is introduced. The single writer handles 256 changed rows per maintenance batch
+and yields to queued work between batches; idle maintenance opportunities are
+60 seconds apart and never cancel operations.
+
+Normal signed +33 production/installer gates, public verification and corrective
+installation remain required; source/native acceptance is not delivery. B12 is
+separate and remains open. Private evidence: D:/Temp/taild-retention39-20261025.
+
 ## October 24 Android .40 and authorized tablet migration
 
 Normal v1.103.312.40 is published from exact checked source

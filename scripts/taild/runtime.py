@@ -276,6 +276,8 @@ class Collector:
         self.closing = False
         self.paused = False
         self.write_error = False
+        self.maintenance_due = 0
+        self.maintenance = {'state':'pending','rows_processed':0}
         self.diagnostics = {'state':'not-published'}
         self.config = dict(DEFAULTS)
         self.app_dns_thread=None
@@ -530,6 +532,7 @@ class Collector:
                 'queue_depth':len(self.queue),'settings':self.config,
                 'lifecycle':self.lifecycle.status() if self.lifecycle is not None else {'state':'starting'},
                 'credentials':'current-user-vault-optional','network_changes':False,
+                'maintenance':dict(self.maintenance),
                 'diagnostics':dict(self.diagnostics)}
 
     def _execute(self, store, op, body):
@@ -951,7 +954,7 @@ class Collector:
                          for kind,data in self.sources.items()}
         data = {'version':'taild-runtime-v1','owner_pid':os.getpid(),
                 'observed_at_utc':self.now(),'state':self._state()['state'],
-                'sources':source_status,'queue_depth':len(self.queue)}
+                'sources':source_status,'queue_depth':len(self.queue),'maintenance':dict(self.maintenance)}
         pending = self.directory/'runtime-status.pending.json'
         target = self.directory/'runtime-status.json'
         if pending.is_symlink() or target.is_symlink():
@@ -1130,7 +1133,7 @@ class Collector:
         store = None
         self.due = {'traffic':0, 'dns':0}
         try:
-            store = history.History(self.directory, now=self.now())
+            store = history.History(self.directory, now=self.now(),defer_cleanup=True)
             self.store = store
             self.activity_tracker = tailscale_activity.Tracker(store)
             saved = self.directory/'runtime.json'
@@ -1162,10 +1165,14 @@ class Collector:
                     eligible = [] if self.closing or self.paused or self.write_error else [
                         k for k in ('dns','traffic') if self.config[k] and k not in self.acquisitions]
                     due = [k for k in eligible if max(self.due[k],self.not_before[k]) <= time.monotonic()]
-                    if command is None and not due:
+                    maintain = not self.closing and not self.write_error and self.maintenance_due <= time.monotonic()
+                    if command is None and not due and not maintain:
                         # This wait schedules acquisition opportunities; expiry
                         # neither cancels nor classifies any running operation.
                         interval = min((max(self.due[k],self.not_before[k])-time.monotonic() for k in eligible),default=None)
+                        if not self.closing and not self.write_error:
+                            opportunity=max(0,self.maintenance_due-time.monotonic())
+                            interval=opportunity if interval is None else min(interval,opportunity)
                         if not (self.closing or self.paused or self.write_error) and self.config['activity'] and self.activity_thread is None:
                             opportunity=max(0,self.activity_due-time.monotonic())
                             interval=opportunity if interval is None else min(interval,opportunity)
@@ -1176,6 +1183,20 @@ class Collector:
                     self._deliver(store,command)
                 else:
                     for kind in due:self._start_acquisition(store,kind)
+                if maintain:
+                    try:
+                        store.now=history.instant(self.now())
+                        result=store.cleanup_batch()
+                        self.maintenance={'state':'cleaning' if result['more'] else 'idle',
+                            'rows_processed':self.maintenance['rows_processed']+result['changed'],
+                            'cutoff':result['cutoff'],'last_success_utc':self.now()}
+                        # This is only the next maintenance opportunity; no work
+                        # is cancelled or classified by elapsed time. Pending
+                        # batches run immediately, after yielding to controls.
+                        self.maintenance_due=0 if result['more'] else time.monotonic()+60
+                    except (sqlite3.Error,history.HistoryError):
+                        self.write_error=True
+                        self.maintenance={**self.maintenance,'state':'write-error'}
                 self._publish_status()
         except BaseException as error:
             self.start_error = type(error).__name__

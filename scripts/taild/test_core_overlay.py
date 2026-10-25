@@ -61,6 +61,8 @@ class CoreOverlayTest(unittest.TestCase):
         self.assertIn('configureDesktopAction()',main)
         desktop=Path(replacements[str(Path(core)/'cmd/taildns-ipn/taild_desktop_windows.go')]).read_text()
         self.assertIn('systray.SetOnTapped(',desktop)
+        self.assertIn('launchBackground()',desktop)
+        self.assertIn('"TailD.Background.exe"',desktop)
         self.assertNotIn('systray.SetOnSecondaryTapped(',desktop)
         core_installer=Path(replacements[str(Path(core)/'cmd/taildns-installer/install_windows.go')]).read_text()
         self.assertIn('func platformUnmigrate()',core_installer)

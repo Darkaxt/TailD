@@ -1,6 +1,38 @@
 # TailD remaining-product specification
 
-Version 1.18, 2026-10-22. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.19, 2026-10-25. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+
+### R39 — Responsive Windows startup and automatic background retention
+
+The October 25 request authorizes correcting the observed 192-second startup:
+history expiry ran before collector readiness and native window creation. The
+existing tray must quietly resume the existing owning-user collector at sign-in
+only when analytics is already opted in. Reuse its existing lifecycle, identity,
+private settings and packaged background entrypoint; add no scheduled task,
+elevation, opt-in, provider change or competing SQLite writer. Serialize desktop
+and background startup, including simultaneous launch and failed initialization.
+
+Advance the monotonic retention watermark before admitting history reads or
+ingestion, without physically pruning the entire database on the startup path.
+Every history, analytics, catalogue, per-app diagnosis and export read must exclude
+expired facts even while their physical deletion is pending. Preserve replay
+suppression, original requested intervals, truthful coverage and revision guards.
+The existing writer performs bounded deletion batches automatically, prioritizing
+admitted controls between batches, including when sources are paused or idle.
+Schedule maintenance opportunities without cancelling work by elapsed time.
+Observe shutdown and actual startup completion; preserve WAL, secure deletion,
+single-writer ownership and fail-closed storage errors. Report maintenance state
+in existing runtime diagnostics. Explicit user deletions retain their contracts.
+
+Acceptance: deterministic regression with maintenance held verifies collector
+readiness, real native Connection rendering and independent controls before
+maintenance completes; expired facts cannot leak through any read/export surface;
+bounded batches converge and reject expired replay after reopen; automatic opted-in
+tray resume and simultaneous launch admit exactly one collector; opted-out startup
+does not collect or display UI. Required backend/native/build/installer gates,
+normal signed Windows release, independent public verification and the authorized
+local corrective installation/readback complete delivery. Preserve node, DNS,
+credentials, settings and history. B12 remains separately parked and unclaimed.
 
 October 22 Windows continuation is explicitly authorized: [R38](WINDOWS-APP-DNS.md)
 adds process-aware per-app DNS/blocked-decision evidence and Android-led refinement

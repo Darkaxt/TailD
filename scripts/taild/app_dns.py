@@ -67,6 +67,9 @@ def read(store,body,*,host,provider=None,status=None):
         raise analytics.QueryError('Invalid application identity')
     store.db.execute('BEGIN')
     revision=store.db.execute('SELECT revision FROM settings').fetchone()[0]
+    requested_start=a
+    floor=store.retention_floor()
+    a=max(a,floor)
     if body.get('revision') is not None and body['revision']!=revision:
         raise analytics.QueryError('History changed; refresh the app view',code='stale-revision')
     apps={};events=[];key=path_key(selected)
@@ -96,13 +99,13 @@ def read(store,body,*,host,provider=None,status=None):
     if provider and provider.get('endpoint') and provider.get('account_scope'):
         rows=store.db.execute('SELECT d.time,d.data FROM dns d JOIN sources s ON s.id=d.source '
             "WHERE d.time>=? AND d.time<? AND d.endpoint=? AND json_extract(s.metadata,'$.scope')=? ORDER BY d.time",
-            (a-5000000,b+5000000,provider['endpoint'],provider['account_scope']))
+            (max(a-5000000,floor),b+5000000,provider['endpoint'],provider['account_scope']))
         for index,row in enumerate(rows):
             if index>=200000:raise analytics.QueryError('Narrow the DNS interval',code='resource-limit')
             raw=json.loads(row[1])['raw'];provider_rows[name_key(raw.get('question'))].append((row[0],raw))
     provider_times={name:[at for at,_ in rows] for name,rows in provider_rows.items()}
     answers=defaultdict(list)
-    for index,row in enumerate(store.db.execute("SELECT data FROM snapshots WHERE kind='app-dns' AND scope=? AND time>=? AND time<? ORDER BY time,id",(host,a-300000000,b))):
+    for index,row in enumerate(store.db.execute("SELECT data FROM snapshots WHERE kind='app-dns' AND scope=? AND time>=? AND time<? ORDER BY time,id",(host,max(a-300000000,floor),b))):
         if index>=100000:raise analytics.QueryError('Narrow the DNS interval',code='resource-limit')
         fact=json.loads(row[0])
         if key is not None and path_key(fact['process']['path'])==key and fact['status']==0:
@@ -150,7 +153,7 @@ def read(store,body,*,host,provider=None,status=None):
             inferred[name]['inbound']+=Fraction(inc,len(candidates));inferred[name]['outbound']+=Fraction(out,len(candidates))
     estimates=[{'domain':name,**{direction:{'numerator':str(value.numerator),'denominator':str(value.denominator)} for direction,value in amounts.items()}}
                for name,amounts in sorted(inferred.items())]
-    return {'schema':'taild-app-dns-v1','revision':revision,'start':history.utc(a),'end':history.utc(b),
+    return {'schema':'taild-app-dns-v1','revision':revision,'start':history.utc(requested_start),'end':history.utc(b),
         'host':host,'apps':[{k:v for k,v in app.items() if k!='domains'} for app in values],'selected':selection,'observations':events,
         'destinations':[{'ip':ip,**v} for ip,v in sorted(destinations.items(),key=lambda kv:-(kv[1]['inbound']+kv[1]['outbound']))],
         'source_status':status or {'state':'unavailable'},'provider_bound':bool(provider),

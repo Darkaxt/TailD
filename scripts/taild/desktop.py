@@ -82,6 +82,57 @@ def server_pid(instance):
         win32api.CloseHandle(handle)
 
 
+def ensure_collector(home, reader_instance, instance, cli=None, *, background=False):
+    """Serialize the two real launch paths until the exact collector is ready."""
+    import pywintypes, win32api, win32event, win32security
+    owner=reader.current_sid()
+    sa=pywintypes.SECURITY_ATTRIBUTES()
+    sa.SECURITY_DESCRIPTOR=win32security.ConvertStringSecurityDescriptorToSecurityDescriptor(
+        'D:P(A;;GA;;;SY)(A;;GA;;;'+owner+')',win32security.SDDL_REVISION_1)
+    gate=win32event.CreateMutex(sa,False,'Local\\Darkaxt.TailD.Startup.'+instance)
+    outcome=win32event.WaitForSingleObject(gate,win32event.INFINITE)
+    if outcome not in (win32event.WAIT_OBJECT_0,win32event.WAIT_ABANDONED):
+        win32api.CloseHandle(gate)
+        raise reader.ReaderError('startup-failed')
+    try:
+        return _ensure_collector(home,reader_instance,instance,cli,background,sa)
+    finally:
+        win32event.ReleaseMutex(gate)
+        win32api.CloseHandle(gate)
+
+
+def _ensure_collector(home, reader_instance, instance, cli, background, security):
+    import pywintypes, win32api, win32event
+    frozen=getattr(sys,'frozen',False)
+    pythonw=Path(sys.executable).resolve(strict=True) if frozen else Path(sys.executable).with_name('pythonw.exe').resolve(strict=True)
+    worker=None
+    try:
+        pid=server_pid(instance)
+    except pywintypes.error as error:
+        if background and error.winerror==231:
+            # An attached native window holds this exact owner's control pipe.
+            # Do not interrupt it, wait for it to close or spawn another writer.
+            return None,None
+        if error.winerror!=2:
+            raise reader.ReaderError('unavailable') from None
+        ready_name='Local\\Darkaxt.TailD.Ready.'+instance
+        ready=win32event.CreateEvent(security,True,False,ready_name)
+        win32event.ResetEvent(ready)
+        try:
+            command=[str(pythonw),*(['collector'] if frozen else ['-B',str(Path(__file__).with_name('runtime.py'))]),'run',
+                '--history',str(home),'--reader-instance',reader_instance,'--instance',instance,'--ready-event',ready_name]
+            if cli:command+=['--cli',cli]
+            worker=subprocess.Popen(command,creationflags=subprocess.CREATE_NO_WINDOW)
+            result=win32event.WaitForMultipleObjects([ready,int(worker._handle)],False,win32event.INFINITE)
+            if result!=win32event.WAIT_OBJECT_0:
+                worker.wait()
+                raise reader.ReaderError('startup-failed')
+            pid=worker.pid
+        finally:
+            win32api.CloseHandle(ready)
+    return pid,worker
+
+
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--shell',required=True)
@@ -91,34 +142,12 @@ def main(argv=None):
     parser.add_argument('--debug-port',type=int)
     parser.add_argument('--validation-ready-event',help='Debug host readiness event; ignored by release host')
     args=parser.parse_args(argv)
-    import pywintypes, win32api, win32event
     home=history.private_directory(args.history)
     instance='owner-'+history.digest([reader.current_sid(),str(home).casefold()])[:32]
     shell=Path(args.shell).resolve(strict=True)
     if activate_existing(shell, instance):
         return 0
-    frozen=getattr(sys,'frozen',False)
-    pythonw=Path(sys.executable).resolve(strict=True) if frozen else Path(sys.executable).with_name('pythonw.exe').resolve(strict=True)
-    worker=None
-    try:
-        pid=server_pid(instance)
-    except pywintypes.error as error:
-        if error.winerror!=2:
-            raise reader.ReaderError('unavailable') from None
-        ready_name='Local\\Darkaxt.TailD.Ready.'+instance
-        ready=win32event.CreateEvent(None,True,False,ready_name)
-        try:
-            command=[str(pythonw),*(['collector'] if frozen else ['-B',str(Path(__file__).with_name('runtime.py'))]),'run',
-                '--history',str(home),'--reader-instance',args.reader_instance,'--instance',instance,'--ready-event',ready_name]
-            if args.cli:command+=['--cli',args.cli]
-            worker=subprocess.Popen(command,creationflags=subprocess.CREATE_NO_WINDOW)
-            result=win32event.WaitForMultipleObjects([ready,int(worker._handle)],False,win32event.INFINITE)
-            if result!=win32event.WAIT_OBJECT_0:
-                worker.wait()
-                raise reader.ReaderError('startup-failed')
-            pid=worker.pid
-        finally:
-            win32api.CloseHandle(ready)
+    pid,worker=ensure_collector(home,args.reader_instance,instance,args.cli)
     command=[str(shell),'--instance',instance,'--collector-pid',str(pid),'--user-data',str(home/'ui-cache')]
     if args.debug_port:command+=['--debug-port',str(args.debug_port)]
     if args.validation_ready_event:

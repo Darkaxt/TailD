@@ -1,5 +1,29 @@
 # TailD staged execution
 
+## Current execution — October 25 Windows startup and background maintenance
+
+R39 in PRODUCT-SPECIFICATION.md is authoritative; implementation, normal final
+release and corrective local delivery are already authorized by the current fix
+request and standing instructions. B12 remains separately BLOCKED/open.
+
+| Stage | Status | Acceptance satisfied | Acceptance remaining |
+| --- | --- | --- | --- |
+| Integrated Windows startup and retention correction | COMPLETE | Native served Connection, Preferences and Analytics remain usable while maintenance is held, then original maintenance completes. Committed cutoff/revision and all fact/catalogue/diagnosis/export boundaries exclude expired data; bounded batches converge and reject replay. Real Windows startup mutex serializes desktop/background paths and releases on failure. Opt-out and retained opt-in launcher contracts pass. Full backend, affected final regressions and actual pinned-core native tray checks pass. | None. |
+| Final signed release and corrective delivery | ACTIVE | Source integration and native acceptance verified; normal sequence +33 selected after checking existing releases and active workflows. | Required production/installer gates; exact checked source, normal signed release; independent assets/signatures/provenance/payload verification; installed continuity and startup/collection readback; cleanup and reconciliation. |
+
+No tracked deferrals. Current advancement blockers are the remaining R39 delivery
+criteria above; resolve them in the ACTIVE stage. Existing signing/channel,
+local-DNS and privacy contracts apply unchanged. Production history is not a
+destructive test fixture.
+
+Stage closure review finds no required consolidation: one existing collector
+writer still owns all mutations; logical retention and physical batches have
+explicit separate responsibilities, and both actual launch paths share one
+readiness gate. No worker, timeout cancellation or parallel history writer was
+introduced. Initial native fixture failed only because its daemon had no TailDrop
+capability; readiness now checks its actual device inventory/connection switch.
+The original failure and final acceptance remain in private task evidence.
+
 ## Current execution - October 24 Samsung tablet migration
 
 The user explicitly authorizes replacing TailDNS and its ObtainX entry on the

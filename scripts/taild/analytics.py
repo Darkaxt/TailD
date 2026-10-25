@@ -209,6 +209,7 @@ class Analytics:
             self.store.db.execute('DELETE FROM snapshots WHERE kind=? AND scope=? AND end>? AND time<?',(kind,scope,a,b))
 
     def _load(self,kind,a,b,scope,*,allow_stream=False,include_protocol=True):
+        a=max(a,self.store.retention_floor())
         if kind in ('context','policy'):
             field='host' if kind=='context' else 'account'
             clause,params='kind=? AND end>? AND time<?',[kind,a,b]
@@ -523,6 +524,7 @@ class Analytics:
             if any(f not in columns and f not in derived for f in q.get('group_by',[])):return None
             fields.update(f for f in q.get('group_by',[]) if f in columns)
         a,b=history.bounds(request['start'],request['end']);scope=request.get('scope',{})
+        a=max(a,self.store.retention_floor())
         clause='time>=? AND time<?';params=[a,b]
         if scope.get('host'):clause+=" AND source IN (SELECT id FROM sources WHERE json_extract(metadata,'$.scope')=?)";params.append(scope['host'])
         steps=[q.get('bin_seconds',60) for q in siblings if q['view']=='series']
@@ -834,18 +836,19 @@ class Analytics:
         health=health_cache.get(health_key,[])
         # The measured bottleneck was three repeated Python decodes of the
         # entire traffic horizon per summary. Count each source in one SQL pass.
+        retained_a=max(a,self.store.retention_floor())
         unsupported={} if cached_health else dict(self.store.db.execute(
             "SELECT source,count(*) FROM traffic WHERE time>=? AND time<? "
-            "AND json_extract(data,'$.destination_status')='unsupported-address-family' GROUP BY source",(a,b)))
+            "AND json_extract(data,'$.destination_status')='unsupported-address-family' GROUP BY source",(retained_a,b)))
         for item in ([] if cached_health else self.store.health()['sources']):
             meta=self.store.db.execute('SELECT metadata FROM sources WHERE id=?',(item['id'],)).fetchone()
             metadata=json.loads(meta[0])
             field='host' if item['kind']=='traffic' else 'account'
             if scope.get(field) and metadata['scope']!=scope[field]: continue
             if item['kind']=='dns' and scope.get('endpoint') and metadata.get('endpoint')!=scope['endpoint']: continue
-            runs=self.store.db.execute('SELECT * FROM runs WHERE source=? AND end>? AND start<? ORDER BY revision',(item['id'],a,b)).fetchall()
-            last=self.store.db.execute("SELECT max(collected) FROM runs WHERE source=? AND state='complete'",(item['id'],)).fetchone()[0]
-            requested=self.store.db.execute('SELECT max(end) FROM runs WHERE source=?',(item['id'],)).fetchone()[0]
+            runs=self.store.db.execute('SELECT * FROM runs WHERE source=? AND end>? AND start<? ORDER BY revision',(item['id'],retained_a,b)).fetchall()
+            last=self.store.db.execute("SELECT max(collected) FROM runs WHERE source=? AND state='complete' AND end>?",(item['id'],self.store.retention_floor())).fetchone()[0]
+            requested=self.store.db.execute('SELECT max(end) FROM runs WHERE source=? AND end>?',(item['id'],self.store.retention_floor())).fetchone()[0]
             health.append({**item,'last_successful_read':history.utc(last) if last else None,
                 'requested_through':history.utc(requested) if requested else None,
                 'lag_microseconds':max(0,self.store.now-history.instant(item['complete_through'])) if item['complete_through'] else None,
@@ -857,7 +860,7 @@ class Analytics:
                 'as_of_utc':history.utc(self.store.now),
                 'unsupported_rows':unsupported.get(item['id'],0) if item['kind']=='traffic' else
                                    sum(unsupported_answer(json.loads(r['data'])['raw'])
-                                       for r in self.store.db.execute('SELECT data FROM dns INDEXED BY dns_time WHERE source=? AND time>=? AND time<?',(item['id'],a,b))),
+                                       for r in self.store.db.execute('SELECT data FROM dns INDEXED BY dns_time WHERE source=? AND time>=? AND time<?',(item['id'],retained_a,b))),
                 'unsupported_rows_definition':'unsupported-address-family' if item['kind']=='traffic' else 'unsupported-answer-encoding'})
         health_cache[health_key]=health
         geography={field:defaultdict(int) for field in ('provider_country','provider_asn')}

@@ -1,5 +1,8 @@
 """Existing-window activation must not probe an occupied analytics pipe."""
 import unittest
+import os
+import threading
+import uuid
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -9,6 +12,42 @@ import desktop
 
 
 class DesktopActivationTest(unittest.TestCase):
+    @unittest.skipUnless(os.name=='nt','Windows launch serialization')
+    def test_background_and_desktop_share_startup_gate_and_release_on_failure(self):
+        import win32event
+        entered,release,second_waiting=(threading.Event() for _ in range(3))
+        original_wait=win32event.WaitForSingleObject
+        calls=[];errors=[];results=[]
+        def wait(handle,interval):
+            if threading.current_thread().name=='second-launch':second_waiting.set()
+            return original_wait(handle,interval)
+        def ensure(*args):
+            calls.append(args[4])
+            if len(calls)==1:entered.set();release.wait()
+            else:self.assertTrue(release.is_set(),'Concurrent launch bypassed the startup gate')
+            return 42,None
+        instance='startup-unit-'+uuid.uuid4().hex
+        def launch(background):
+            try:results.append(desktop.ensure_collector(Path('D:/Temp'), 'reader',instance,background=background))
+            except BaseException as error:errors.append(error)
+        first=threading.Thread(target=launch,args=(True,))
+        second=threading.Thread(target=launch,args=(False,),name='second-launch')
+        try:
+            with patch.object(desktop,'_ensure_collector',ensure),patch.object(win32event,'WaitForSingleObject',wait):
+                first.start();entered.wait();second.start();second_waiting.wait()
+                self.assertEqual(calls,[True])
+                release.set();first.join();second.join()
+            self.assertEqual(errors,[]);self.assertEqual(results,[(42,None),(42,None)])
+            with patch.object(desktop,'_ensure_collector',side_effect=desktop.reader.ReaderError('startup-failed')):
+                with self.assertRaises(desktop.reader.ReaderError):
+                    desktop.ensure_collector(Path('D:/Temp'),'reader',instance)
+            with patch.object(desktop,'_ensure_collector',return_value=(43,None)):
+                self.assertEqual(desktop.ensure_collector(Path('D:/Temp'),'reader',instance),(43,None))
+        finally:
+            release.set()
+            for thread in (first,second):
+                if thread.ident is not None:thread.join()
+
     def test_activation_binds_instance_owner_path_and_process_identity(self):
         shell = Path(__file__).resolve()
         for scenario in ('valid', 'other-instance', 'other-path', 'other-owner', 'pid-changed'):

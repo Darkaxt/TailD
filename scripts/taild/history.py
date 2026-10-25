@@ -131,13 +131,14 @@ def private_directory(path):
 
 
 class History:
-    def __init__(self, directory, *, now=None, retention_days=None):
+    def __init__(self, directory, *, now=None, retention_days=None, defer_cleanup=False):
         package_sqlite.require_runtime()
         self.directory = private_directory(directory)
         self.path = self.directory / 'history.sqlite3'
         if self.path.exists() and (self.path.is_symlink() or self.path.stat().st_nlink != 1):
             raise HistoryError('History database must be an owned regular file')
         self.now = instant(now or controld.utc_now().isoformat())
+        self.defer_cleanup = defer_cleanup
         self.db = sqlite3.connect(self.path, isolation_level=None)
         self.db.row_factory = sqlite3.Row
         try:
@@ -171,6 +172,7 @@ class History:
         view=object.__new__(History)
         view.directory=self.directory;view.path=self.path
         view.now=instant(now) if now is not None else self.now
+        view.defer_cleanup=True
         view.db=sqlite3.connect(self.path.as_uri()+'?mode=ro',uri=True,isolation_level=None)
         view.db.row_factory=sqlite3.Row
         try:
@@ -232,17 +234,39 @@ class History:
             self.db.execute('CREATE INDEX IF NOT EXISTS traffic_dashboard ON traffic(time,application,destination,inbound,outbound,source,identity,port)')
             self.db.execute('CREATE INDEX IF NOT EXISTS traffic_application_time ON traffic(application,time,destination,inbound,outbound,source,identity,port)')
             self.db.execute("CREATE INDEX IF NOT EXISTS traffic_unsupported_time_source ON traffic(time,source) WHERE json_extract(data,'$.destination_status')='unsupported-address-family'")
+            self.db.execute('CREATE INDEX IF NOT EXISTS runs_end ON runs(end)')
+            self.db.execute('CREATE INDEX IF NOT EXISTS snapshots_end ON snapshots(end)')
+            self.db.execute('CREATE INDEX IF NOT EXISTS suppressions_end ON suppressions(end)')
 
     def _bump(self):
         self.db.execute('UPDATE settings SET revision=revision+1')
         return self.db.execute('SELECT revision FROM settings').fetchone()[0]
 
     def _expire(self):
-        days, floor = self.db.execute('SELECT retention_days,expiry_floor FROM settings').fetchone()
-        floor = max(floor, self.now - days * 86400 * 1000000)
-        if floor != self.db.execute('SELECT expiry_floor FROM settings').fetchone()[0]:
+        floor = self._advance_retention()
+        if not self.defer_cleanup:
+            self._purge_expired(floor)
+        return floor
+
+    def retention_floor(self):
+        # Readers use the committed watermark in their pinned SQLite snapshot.
+        # Advancing it on the wall clock without a writer revision would change
+        # a displayed/exported result while its revision remained identical.
+        return self.db.execute('SELECT expiry_floor FROM settings').fetchone()[0]
+
+    def _advance_retention(self):
+        days, previous = self.db.execute('SELECT retention_days,expiry_floor FROM settings').fetchone()
+        floor=max(previous,self.now-days*86400*1000000)
+        if floor != previous:
             self._bump()
-        self.db.execute('UPDATE settings SET expiry_floor=?', (floor,))
+            self.db.execute('UPDATE settings SET expiry_floor=?', (floor,))
+        return floor
+
+    def advance_retention(self):
+        with self.transaction():
+            return self._advance_retention()
+
+    def _purge_expired(self, floor):
         for table in ('traffic', 'dns'):
             self.db.execute(f'DELETE FROM {table} WHERE time<?', (floor,))
         self.db.execute('DELETE FROM runs WHERE end<=?', (floor,))
@@ -250,10 +274,34 @@ class History:
         self.db.execute('DELETE FROM suppressions WHERE end<=?', (floor,))
         self.db.execute('DELETE FROM snapshots WHERE end<=?', (floor,))
         self._orphan_apps()
-        return floor
 
     def _orphan_apps(self):
-        self.db.execute('DELETE FROM applications WHERE id NOT IN (SELECT application FROM traffic WHERE application IS NOT NULL)')
+        self.db.execute('DELETE FROM applications WHERE NOT EXISTS (SELECT 1 FROM traffic WHERE application=applications.id)')
+
+    def cleanup_batch(self, *, limit=256):
+        """One writer transaction, one total row budget; no second writer or timer."""
+        if type(limit) is not int or not 1 <= limit <= 4096:
+            raise HistoryError('Expected a bounded maintenance row budget')
+        remaining=limit
+        with self.transaction():
+            floor=self._advance_retention()
+            for table,clause in (('traffic','time<?'),('dns','time<?'),('runs','end<=?'),
+                    ('suppressions','end<=?'),('snapshots','end<=?')):
+                count=self.db.execute(f'DELETE FROM {table} WHERE rowid IN '
+                    f'(SELECT rowid FROM {table} WHERE {clause} LIMIT ?)',(floor,remaining)).rowcount
+                remaining-=count
+                if not remaining:break
+            if remaining:
+                trimmed=self.db.execute('UPDATE runs SET start=? WHERE rowid IN '
+                    '(SELECT rowid FROM runs WHERE start<? AND end>? LIMIT ?)',
+                    (floor,floor,floor,remaining)).rowcount
+                remaining-=trimmed
+                if trimmed:self._bump()
+            if remaining:
+                remaining-=self.db.execute('DELETE FROM applications WHERE rowid IN '
+                    '(SELECT rowid FROM applications WHERE NOT EXISTS '
+                    '(SELECT 1 FROM traffic WHERE application=applications.id) LIMIT ?)',(remaining,)).rowcount
+        return {'changed':limit-remaining,'more':remaining==0,'cutoff':utc(floor)}
 
     def cleanup(self):
         with self.transaction():
@@ -420,7 +468,7 @@ class History:
                     if kind == 'traffic' else {'endpoint': 'f.endpoint', 'question': 'f.question'})
         if set(filters) - mapping.keys():
             raise HistoryError('Unsupported local fact filter')
-        clause, params = ['f.time>=?', 'f.time<?'], [a, b]
+        clause, params = ['f.time>=?', 'f.time<?'], [max(a,self.retention_floor()), b]
         for key, value in filters.items():
             if value is not None:
                 clause.append(mapping[key] + '=?')
@@ -482,11 +530,11 @@ class History:
         if prepared is None or a<prepared['start'] or b>prepared['end']:
             low=min(a,prepared['start']) if prepared else a
             high=max(b,prepared['end']) if prepared else b
-            floor=self.db.execute('SELECT expiry_floor FROM settings').fetchone()[0]
+            floor=self.retention_floor()
             inputs=[]
             for source,metadata in self.db.execute('SELECT id,metadata FROM sources WHERE kind=?',(kind,)):
                 if selected and source!=selected or endpoint is not None and json.loads(metadata).get('endpoint')!=endpoint:continue
-                runs=list(self.db.execute('SELECT start,end,state,revision FROM runs WHERE source=? AND end>? AND start<? ORDER BY revision',(source,low,high)))
+                runs=list(self.db.execute('SELECT start,end,state,revision FROM runs WHERE source=? AND end>? AND start<? ORDER BY revision',(source,max(low,floor),high)))
                 complete=[r for r in reversed(runs) if r[2]=='complete']
                 covered=[];position=0;attempts=[]
                 for x,y,state,revision in reversed(runs):
@@ -499,7 +547,7 @@ class History:
                 all_complete=[]
                 for x,y,_,_ in complete:all_complete=self._coverage_union(all_complete,x,y)
                 inputs.append((source,runs,all_complete,list(reversed(attempts))))
-            deleted=list(self.db.execute('SELECT source,start,end FROM suppressions WHERE kind=? AND end>? AND start<?',(kind,low,high)))
+            deleted=list(self.db.execute('SELECT source,start,end FROM suppressions WHERE kind=? AND end>? AND start<?',(kind,max(low,floor),high)))
             prepared={'start':low,'end':high,'floor':floor,'inputs':inputs,'deleted':deleted}
             cache[key]=prepared
         floor=prepared['floor']

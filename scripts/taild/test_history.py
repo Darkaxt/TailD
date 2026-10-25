@@ -41,6 +41,80 @@ class HistoryTest(unittest.TestCase):
         data = self.read()
         return self.store.import_traffic(data, 'synthetic-host')
 
+    def test_deferred_retention_excludes_expired_facts_before_physical_cleanup(self):
+        import analytics, app_dns, desktop_api
+        self.ingest()
+        self.store.import_dns(self.dns(), 'account', 'synthetic')
+        for kind in ('context','policy'):
+            self.store.db.execute('INSERT INTO snapshots VALUES(?,?,?,?,?,?,?)',
+                (kind,kind,'synthetic-host',history.instant(START),history.instant(END),
+                 json.dumps({'node_id':'expired-node'}),0))
+        self.store.close()
+        self.store=history.History(self.home,now='2026-10-16T00:00:00Z',defer_cleanup=True)
+        self.addCleanup(self.store.close)
+        self.assertGreater(self.store.db.execute('SELECT count(*) FROM traffic').fetchone()[0],0)
+        self.assertGreater(self.store.db.execute('SELECT count(*) FROM dns').fetchone()[0],0)
+        self.assertEqual(self.query()['row_count'],0)
+        engine=analytics.Analytics(self.store)
+        for kind in ('traffic','dns'):
+            query={'kind':kind,'view':'facts','start':START,'end':END}
+            self.assertEqual(engine.batch([query])['results'][0]['data']['rows'],[])
+            revision=self.store.db.execute('SELECT revision FROM settings').fetchone()[0]
+            export=desktop_api.DesktopAPI(self.store).dispatch('export-query',{'query':query,'revision':revision,'format':'json'})
+            self.assertNotIn('example.invalid',export['content'])
+        for kind in ('context','policy'):
+            self.assertEqual(engine._load(kind,history.instant(START),history.instant(END),{}),[])
+        catalog=desktop_api.DesktopAPI(self.store).dispatch('view-catalog',{})
+        self.assertIsNone(catalog['intervals']['traffic']['start'])
+        self.assertIsNone(catalog['intervals']['dns']['start'])
+        self.assertEqual(catalog['nodes'],[])
+        view=self.store.read_view()
+        try:
+            result=app_dns.read(view,{'start':START,'end':END},host='synthetic-host')
+            self.assertEqual(result['apps'],[])
+        finally:view.close()
+        while self.store.cleanup_batch(limit=1)['more']:pass
+        self.assertEqual(self.store.db.execute('SELECT count(*) FROM traffic').fetchone()[0],0)
+        self.assertEqual(self.store.db.execute('SELECT count(*) FROM dns').fetchone()[0],0)
+        self.ingest()
+        self.assertEqual(self.query()['row_count'],0,'Expired replay must remain suppressed')
+
+    def test_recent_dns_totals_exclude_expired_rows_before_background_purge(self):
+        import recent_dns
+        from datetime import datetime,timezone
+        for stamp in ('2026-10-06T23:59:59Z','2026-10-07T23:59:59Z'):
+            raw={'timestamp':stamp,'endpointId':'synthetic','question':'example.invalid','rrType':'A','action':'0'}
+            self.store.import_live_dns(raw,'account','synthetic',collected=NOW)
+        self.store.db.execute('UPDATE settings SET retention_days=1')
+        self.store.defer_cleanup=True
+        self.store.advance_retention()
+        self.assertEqual(self.store.db.execute('SELECT count(*) FROM dns').fetchone()[0],2)
+        with patch.object(recent_dns.controld,'utc_now',return_value=datetime(2026,10,8,tzinfo=timezone.utc)):
+            result=recent_dns.read(self.store,{}, {'account_scope':'account','endpoint':'synthetic'},'disabled')
+        self.assertEqual(len(result['rows']),1)
+        self.assertEqual(result['rows'][0]['total'],1)
+
+    def test_cleanup_batches_have_one_total_row_budget_and_converge(self):
+        self.ingest();self.store.import_dns(self.dns(),'account','synthetic')
+        self.store.defer_cleanup=True
+        self.store.now=history.instant('2026-10-16T00:00:00Z')
+        self.store.advance_retention()
+        while True:
+            result=self.store.cleanup_batch(limit=1)
+            self.assertLessEqual(result['changed'],1)
+            if not result['more']:break
+        self.assertEqual(self.store.db.execute('SELECT count(*) FROM applications').fetchone()[0],0)
+
+    def test_retention_read_cutoff_only_moves_with_committed_revision(self):
+        before=self.store.retention_floor()
+        revision=self.store.db.execute('SELECT revision FROM settings').fetchone()[0]
+        self.store.now+=3600000000
+        self.assertEqual(self.store.retention_floor(),before)
+        self.assertEqual(self.store.db.execute('SELECT revision FROM settings').fetchone()[0],revision)
+        self.store.advance_retention()
+        self.assertEqual(self.store.retention_floor(),before+3600000000)
+        self.assertGreater(self.store.db.execute('SELECT revision FROM settings').fetchone()[0],revision)
+
     def test_live_dns_preserves_duplicates_and_csv_authoritatively_reconciles(self):
         raw=self.dns()['rows'][0]['raw']
         for _ in range(2):self.store.import_live_dns(raw,'local','synthetic',collected=NOW)

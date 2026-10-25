@@ -41,6 +41,24 @@ type desktopSearch struct {
 func configureDesktopAction() {
 	// Secondary tap remains unset: the inherited library keeps its standard menu.
 	systray.SetOnTapped(func() { go desktopAction(focusDesktopWindow, launchDesktop) })
+	// This existing per-user tray already starts at sign-in. The background
+	// entrypoint validates retained opt-in and joins an existing owner collector;
+	// it never opens a window or changes startup/analytics preferences.
+	go func() {
+		if err := launchBackground(); err != nil {
+			log.Printf("TailD background resume: %v", err)
+		}
+	}()
+}
+
+func launchBackground() error {
+	executable, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	command := exec.Command(filepath.Join(filepath.Dir(executable), "TailD", "TailD.Background.exe"))
+	command.SysProcAttr = &syscall.SysProcAttr{CreationFlags: windows.CREATE_NO_WINDOW}
+	return command.Run()
 }
 
 func desktopAction(focus func() (bool, error), launch func() error) {

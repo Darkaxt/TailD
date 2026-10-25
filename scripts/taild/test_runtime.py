@@ -45,6 +45,44 @@ class IsolatedActivityStream:
 class RuntimeTest(unittest.TestCase):
     add_row = test_glasswire.GlassWireTest.add_row
 
+    def test_ready_and_device_controls_do_not_wait_for_retention_cleanup(self):
+        self.collector.close()
+        entered,release=threading.Event(),threading.Event()
+        original=history.History.cleanup_batch
+        def held(store,**kwargs):
+            entered.set();release.wait()
+            return original(store,**kwargs)
+        name='retention-'+uuid.uuid4().hex
+        self.collector=runtime.Collector(self.home,self.client,now=lambda:'2026-10-16T00:00:00Z',instance=name)
+        self.addCleanup(self.collector.close)
+        try:
+            with patch.object(history.History,'cleanup_batch',held):
+                self.collector.start()
+                entered.wait()
+                self.assertTrue(self.collector.ready.is_set())
+                self.collector.connectivity.call=DaemonFixture()
+                client=reader.PipeClient(connectivity.instance_name(name))
+                try:
+                    self.assertEqual(client.request({'op':'connectivity-read','body':{}})['profile'],'profile-a')
+                    self.assertEqual(self.collector.dispatch({'op':'analytics-state'})['state'],'disabled')
+                    self.assertFalse(release.is_set())
+                finally:client.close()
+        finally:release.set()
+
+    def test_retention_runs_automatically_when_collection_is_disabled(self):
+        self.assertEqual(self.collector.command('state')['state'],'disabled')
+        completed=threading.Event();original=history.History.cleanup_batch
+        def observe(store,**kwargs):
+            result=original(store,**kwargs)
+            if not result['more']:completed.set()
+            return result
+        with patch.object(history.History,'cleanup_batch',observe):
+            with self.collector.condition:
+                self.collector.maintenance_due=0
+                self.collector.condition.notify()
+            completed.wait()
+            self.assertEqual(self.collector.command('state')['maintenance']['state'],'idle')
+
     def test_history_read_errors_remain_distinct_from_transport_and_collection(self):
         for code,state in [(sqlite3.SQLITE_CORRUPT,'history-corrupt'),(sqlite3.SQLITE_NOTADB,'history-corrupt'),
                            (sqlite3.SQLITE_BUSY,'history-busy'),(sqlite3.SQLITE_IOERR,'history-read-failed')]:

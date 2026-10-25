@@ -58,15 +58,17 @@ class DesktopAPI:
             emit=(lambda result:on_result(ingestion.exact_json(result))) if on_result else None
             return ingestion.exact_json(self.engine.batch(queries,expected_revision=body.get('revision'),on_result=emit))
         if op=='view-catalog' and not body:
+            floor=self.store.retention_floor()
             sources=[{'id':r['id'],'kind':r['kind'],**{k:v for k,v in json.loads(r['metadata']).items()
                      if k in ('scope','endpoint')}} for r in self.store.db.execute('SELECT * FROM sources ORDER BY kind,id')]
             intervals={kind:{'start':history.utc(row[0]) if row[0] is not None else None,
                              'latest_observation':history.utc(row[1]) if row[1] is not None else None,
                              'end':history.utc(row[1]+(1000000 if kind=='traffic' else 1)) if row[1] is not None else None}
                        for kind,table in (('traffic','traffic'),('dns','dns'),('snapshots','snapshots'))
-                       for row in [self.store.db.execute('SELECT min(time),max(time) FROM '+table).fetchone()]}
+                       for row in [self.store.db.execute('SELECT min(time),max(time) FROM '+table+
+                           (' WHERE end>?' if table=='snapshots' else ' WHERE time>=?'),(floor,)).fetchone()]}
             nodes=[{'host_scope':r[0],'node_id':r[1]} for r in self.store.db.execute(
-                "SELECT DISTINCT scope,json_extract(data,'$.node_id') FROM snapshots WHERE kind='context' AND json_extract(data,'$.node_id') IS NOT NULL LIMIT 513")]
+                "SELECT DISTINCT scope,json_extract(data,'$.node_id') FROM snapshots WHERE kind='context' AND end>? AND json_extract(data,'$.node_id') IS NOT NULL LIMIT 513",(floor,))]
             return ingestion.exact_json({'sources':sources,'intervals':intervals,'health':self.store.health(),
                                          'nodes':nodes[:512],'nodes_truncated':len(nodes)>512})
         if op=='saved-query': return self.saved(body)

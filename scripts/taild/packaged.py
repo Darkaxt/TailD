@@ -56,8 +56,8 @@ def main(argv=None):
         cli=directory.parent/'tailscale.exe'
         # Runtime's owning-user mutex refuses a duplicate collector. Retained
         # opt-in settings are read unchanged; no UI or new startup task appears.
-        return runtime.main(['run','--history',str(home),'--reader-instance',reader_instance(sid),
-            '--instance',instance,'--cli',str(cli)])
+        _,worker=desktop.ensure_collector(home,reader_instance(sid),instance,str(cli),background=True)
+        return worker.wait() if worker is not None else 0
     if arguments and arguments[0]=='desktop':
         # Explicit arguments support isolated package verification; the normal
         # shortcut below uses only installed deterministic paths.

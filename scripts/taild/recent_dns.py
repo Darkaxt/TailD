@@ -33,7 +33,7 @@ def read(store,body,provider,live_state):
                 "FROM dns d JOIN sources s ON s.id=d.source WHERE d.time>=? AND d.time<? "
                 "AND d.endpoint=? AND json_extract(s.metadata,'$.scope')=? AND d.question IN ("+
                 ','.join('?' for _ in questions)+") GROUP BY d.question,json_extract(d.data,'$.raw.rrType')",
-                [history.instant(metrics_start.isoformat()),history.instant(end.isoformat()),endpoint,provider['account_scope'],*questions])
+                [max(history.instant(metrics_start.isoformat()),store.retention_floor()),history.instant(end.isoformat()),endpoint,provider['account_scope'],*questions])
             totals={(q,t):(first,total) for q,t,first,total in values}
         for row in rows:
             row['first_seen'],row['total']=totals[(row['question'],row['type'])]
