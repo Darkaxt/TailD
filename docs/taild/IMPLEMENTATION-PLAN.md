@@ -18,6 +18,17 @@ No tracked deferrals. The ACTIVE stage's remaining criteria block its acceptance
 they remain actionable in this cycle. Private evidence:
 D:/Tools/taildns-upstream-verification-20261025.
 
+First +34 run 40172692531 passes production/backend and fresh isolated
+install/upgrade/rollback/uninstall/failed-migration acceptance, then fails closed
+at signing: both independently immutable signer checkouts still select 08532426,
+whose core manifest expects the prior module. The actual four-file signer closure
+diff contains only the already-reviewed core identity update. Both checkouts now
+pin the verified immutable ff909a13 closure, preserving the key, isolated job and
+source/core rejection rules. A real-ref regression reproduces the two stale
+manifest mismatches before the correction and must pass afterwards. The same
+unpublished +34 will resume using the supported exact-unchanged-product-tree
+installer-evidence mechanism; no tag/release exists from the rejected attempt.
+
 ## Current execution — October 25 Windows startup and background maintenance
 
 R39 in PRODUCT-SPECIFICATION.md is authoritative; implementation, normal final
