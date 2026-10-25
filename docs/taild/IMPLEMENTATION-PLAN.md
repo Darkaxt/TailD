@@ -11,8 +11,8 @@ BLOCKED/open; R39 below is complete and is preserved.
 | --- | --- | --- | --- |
 | Core promotion and Windows release | COMPLETE | PR 38 exact trusted head 65297f7 passes 40073719236. Reviewed GUI visibility metadata preserves peer/status data; notification-invalidated Windows interface caching and WebDAV cleanup race fix preserve fork contracts. Merge 56fd7df9 has identical checked tree. Normal windows-v1.105.0+40 passes 40169512000 and independent pinned Ed25519/key/checksum/source/version/amd64/five-payload verification. | None. |
 | TailDNS Android promotion and release | COMPLETE | PR 28 changes only exact matching core require/replace/checksums. Trusted 40169946160 checks exact 3ad2188; identical-tree merge aecb0f8e. Normal v1.103.312+38 passes 40170819855; independent package/name/code 298818540/signer/checksums/four-ABI/core and Windows companion/source verification succeeds. | None. |
-| TailD inheritance and Windows release | ACTIVE | Reviewed core advances to 56fd7df9 with unchanged overlay source inputs, key and channel. Shared-module pin/checksums and immutable build/signing guards are aligned together. | Focused pin/overlay/signing regressions; GitHub exact capture/inherited checks/promotion; normal signed Windows release and independent public verification. |
-| Final reconciliation | NOT STARTED | Initial SleepManager comparison remains 17 ahead/0 behind upstream, latest v0.7.3.1 healthy. | Exact ancestry, release/workflow readback; preservation of dirty siblings and B12; compact evidence and reviewed scratch cleanup. |
+| TailD inheritance and Windows release | COMPLETE | Reviewed 56fd7df9 overlay/pin and immutable signer closure pass. Inheritance 40171456683 promotes exact 171210eb. First release passes fresh isolated installer/recovery acceptance; the corrected immutable signer checkout then passes resumed 40173576281 using supported exact-unchanged-tree evidence. Normal windows-v1.105.0+34 from 2b895a8 independently verifies all 444 members, three signatures, exact source/core/runtime/native assets and R39 preservation. | None. |
+| Additional daily candidate and final reconciliation | ACTIVE | During the first complete cycle, the daily detector produces core PR 39. Exact 6e59d164 passes trusted 40173450677; reviewed Serve request-capability isolation and Unix SSH hardening preserve Windows/Android fork contracts. Identical-tree merge is 35f748d7. SleepManager remains 17 ahead/0 behind upstream, latest v0.7.3.1 healthy. | Finish this newly available candidate through the same dependency-ordered core/Windows, Android and TailD verified release path; exact ancestry/workflow readback, dirty-sibling/B12 preservation, compact evidence and reviewed scratch cleanup. |
 
 No tracked deferrals. The ACTIVE stage's remaining criteria block its acceptance;
 they remain actionable in this cycle. Private evidence:
@@ -26,8 +26,17 @@ diff contains only the already-reviewed core identity update. Both checkouts now
 pin the verified immutable ff909a13 closure, preserving the key, isolated job and
 source/core rejection rules. A real-ref regression reproduces the two stale
 manifest mismatches before the correction and must pass afterwards. The same
-unpublished +34 will resume using the supported exact-unchanged-product-tree
+unpublished +34 resumed successfully using the supported exact-unchanged-product-tree
 installer-evidence mechanism; no tag/release exists from the rejected attempt.
+
+The additional daily candidate now independently delivers core
+windows-v1.105.0+41 from 35f748d736af (40174722578) and Android
+v1.103.312+39 from 6c8f5860 (40176258897), code 298819400 with the
+unchanged pinned APK signer and all four native ABIs verified. The TailD matching
+require/replace/module hashes, overlay/build guards and immutable signer closure
+must advance together. Focused exact-core regressions pass; actual-ref comparison
+reproduces only the two expected stale core-manifest identities before alignment.
+This core change requires fresh isolated installer acceptance for Windows +35.
 
 ## Current execution — October 25 Windows startup and background maintenance
 
