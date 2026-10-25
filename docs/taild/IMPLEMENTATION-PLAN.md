@@ -1,5 +1,23 @@
 # TailD staged execution
 
+## Current execution — October 25 scheduled upstream promotion
+
+The maintenance heartbeat and inherited local-DNS/TailD specifications authorize
+source promotion, normal signed publication and independent verification. No
+device deployment or provider writes are authorized. B12 remains separately
+BLOCKED/open; R39 below is complete and is preserved.
+
+| Stage | Status | Acceptance satisfied | Acceptance remaining |
+| --- | --- | --- | --- |
+| Core promotion and Windows release | COMPLETE | PR 38 exact trusted head 65297f7 passes 40073719236. Reviewed GUI visibility metadata preserves peer/status data; notification-invalidated Windows interface caching and WebDAV cleanup race fix preserve fork contracts. Merge 56fd7df9 has identical checked tree. Normal windows-v1.105.0+40 passes 40169512000 and independent pinned Ed25519/key/checksum/source/version/amd64/five-payload verification. | None. |
+| TailDNS Android promotion and release | COMPLETE | PR 28 changes only exact matching core require/replace/checksums. Trusted 40169946160 checks exact 3ad2188; identical-tree merge aecb0f8e. Normal v1.103.312+38 passes 40170819855; independent package/name/code 298818540/signer/checksums/four-ABI/core and Windows companion/source verification succeeds. | None. |
+| TailD inheritance and Windows release | ACTIVE | Reviewed core advances to 56fd7df9 with unchanged overlay source inputs, key and channel. Shared-module pin/checksums and immutable build/signing guards are aligned together. | Focused pin/overlay/signing regressions; GitHub exact capture/inherited checks/promotion; normal signed Windows release and independent public verification. |
+| Final reconciliation | NOT STARTED | Initial SleepManager comparison remains 17 ahead/0 behind upstream, latest v0.7.3.1 healthy. | Exact ancestry, release/workflow readback; preservation of dirty siblings and B12; compact evidence and reviewed scratch cleanup. |
+
+No tracked deferrals. The ACTIVE stage's remaining criteria block its acceptance;
+they remain actionable in this cycle. Private evidence:
+D:/Tools/taildns-upstream-verification-20261025.
+
 ## Current execution — October 25 Windows startup and background maintenance
 
 R39 in PRODUCT-SPECIFICATION.md is authoritative; implementation, normal final
