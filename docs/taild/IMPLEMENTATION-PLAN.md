@@ -12,10 +12,10 @@ BLOCKED/open; R39 below is complete and is preserved.
 | Core promotion and Windows release | COMPLETE | PR 38 exact trusted head 65297f7 passes 40073719236. Reviewed GUI visibility metadata preserves peer/status data; notification-invalidated Windows interface caching and WebDAV cleanup race fix preserve fork contracts. Merge 56fd7df9 has identical checked tree. Normal windows-v1.105.0+40 passes 40169512000 and independent pinned Ed25519/key/checksum/source/version/amd64/five-payload verification. | None. |
 | TailDNS Android promotion and release | COMPLETE | PR 28 changes only exact matching core require/replace/checksums. Trusted 40169946160 checks exact 3ad2188; identical-tree merge aecb0f8e. Normal v1.103.312+38 passes 40170819855; independent package/name/code 298818540/signer/checksums/four-ABI/core and Windows companion/source verification succeeds. | None. |
 | TailD inheritance and Windows release | COMPLETE | Reviewed 56fd7df9 overlay/pin and immutable signer closure pass. Inheritance 40171456683 promotes exact 171210eb. First release passes fresh isolated installer/recovery acceptance; the corrected immutable signer checkout then passes resumed 40173576281 using supported exact-unchanged-tree evidence. Normal windows-v1.105.0+34 from 2b895a8 independently verifies all 444 members, three signatures, exact source/core/runtime/native assets and R39 preservation. | None. |
-| Additional daily candidate and final reconciliation | ACTIVE | During the first complete cycle, the daily detector produces core PR 39. Exact 6e59d164 passes trusted 40173450677; reviewed Serve request-capability isolation and Unix SSH hardening preserve Windows/Android fork contracts. Identical-tree merge is 35f748d7. SleepManager remains 17 ahead/0 behind upstream, latest v0.7.3.1 healthy. | Finish this newly available candidate through the same dependency-ordered core/Windows, Android and TailD verified release path; exact ancestry/workflow readback, dirty-sibling/B12 preservation, compact evidence and reviewed scratch cleanup. |
+| Additional daily candidate and final reconciliation | COMPLETE | PR 39 exact 6e59d164 passes trusted 40173450677; reviewed Serve request-capability isolation and Unix SSH hardening preserve fork contracts. Identical-tree core merge 35f748d7 independently delivers windows-v1.105.0+41; exact Android merge 6c8f5860 independently delivers v1.103.312+39. Aligned immutable signer closure and GitHub inheritance 40177179178 promote exact 019f613a. Normal Windows +35 passes 40178064355 including fresh isolated installer/recovery and independently verifies every payload/signature/source/core/runtime/UI/R39 contract. All six normal releases, exact ancestry, disabled inherited workflows and unchanged SleepManager v0.7.3.1/TailD Android .40 assets reconcile; no updater candidate remains. Dirty siblings and B12 are preserved. Compact signed metadata remains outside the fully removed reviewed scratch root. | None. |
 
-No tracked deferrals. The ACTIVE stage's remaining criteria block its acceptance;
-they remain actionable in this cycle. Private evidence:
+No maintenance blockers, tracked deferrals or ACTIVE stage remain. B12 remains
+separately BLOCKED/open. Private evidence:
 D:/Tools/taildns-upstream-verification-20261025.
 
 First +34 run 40172692531 passes production/backend and fresh isolated
@@ -29,14 +29,32 @@ manifest mismatches before the correction and must pass afterwards. The same
 unpublished +34 resumed successfully using the supported exact-unchanged-product-tree
 installer-evidence mechanism; no tag/release exists from the rejected attempt.
 
-The additional daily candidate now independently delivers core
+The additional daily candidate independently delivers core
 windows-v1.105.0+41 from 35f748d736af (40174722578) and Android
 v1.103.312+39 from 6c8f5860 (40176258897), code 298819400 with the
-unchanged pinned APK signer and all four native ABIs verified. The TailD matching
+unchanged pinned APK signer and all four native ABIs verified. TailD matching
 require/replace/module hashes, overlay/build guards and immutable signer closure
-must advance together. Focused exact-core regressions pass; actual-ref comparison
-reproduces only the two expected stale core-manifest identities before alignment.
-This core change requires fresh isolated installer acceptance for Windows +35.
+advance together in 572f1043/b7a4c2c0. Focused exact-core regressions pass;
+actual-ref comparison reproduces only two stale core-manifest identities before
+alignment and verifies all eight selected files afterwards. Inheritance
+40177179178 checks and promotes exact 019f613a with parents b7a4c2c0 and the
+verified TailDNS 6c8f5860. Its tree matches the reviewed aligned source.
+Normal windows-v1.105.0+35 passes 40178064355 with fresh isolated installer
+acceptance and actual failed-migration recovery; no +34 installer evidence is reused.
+Independent public retrieval verifies all 444 members, three pinned signatures,
+exact source/core/base/sequence/architecture/schema, runtimes/notices and native UI;
+the frozen R39 correction is present in both entrypoints and the tray hook.
+Authenticode remains unsigned. No device or provider action occurs.
+
+Final reconciliation preserves all six releases from both dependency-ordered
+cycles. SleepManager remains 17 ahead/0 behind upstream 851a1bdd and its latest
+normal v0.7.3.1 assets match prior independent verification. TailD Android .40
+remains unchanged. Reviewed cleanup removes all 13,307 exact generated members
+(1,268,677,214 bytes); the scratch root is absent. The initial partial apply is
+traced to Go's DOS-read-only directory attributes, normalized only on matching
+reviewed directory identities, then completed through the same helper ticket.
+Compact signed metadata and failure/recovery evidence remain under the private
+evidence folder. This final documentation update requires no further release.
 
 ## Current execution — October 25 Windows startup and background maintenance
 

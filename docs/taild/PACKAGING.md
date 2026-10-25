@@ -1,5 +1,46 @@
 # Stage 9 local packaging contract
 
+## October 25 upstream maintenance — normal Windows +35 published
+
+Two successive GitHub-detected core candidates complete dependency-ordered
+promotion. Reviewed core PR 38 and PR 39 pass their exact trusted no-secret checks;
+normal core Windows +40 and +41 independently verify. TailDNS exact-core candidates
+pass trusted checks and independently deliver Android +38 and +39, preserving the
+1.103.312 upstream base, package identity and pinned signer. Latest core is
+35f748d736afef777b95496742f0e9c1df9fbdb1; latest TailDNS is
+6c8f5860f04d6ce0f1439dffeaa13cf38aee4000 (code 298819400, all four ABIs).
+
+TailD's exact matching require/replace/checksums and overlay/build/manifest guards
+advance together. Both isolated signer checkouts select reviewed immutable
+572f10434eb418df2bb2891d94784ab777b2a9db; key and signer validation logic stay
+unchanged. Actual-ref negative/positive comparisons cover the complete four-file
+closure in both signing jobs. GitHub inheritance 40177179178 checks the merged
+Android/core/Windows contracts and promotes exact
+019f613acd7dbbc5bdc882c9bb8e8d700af61ad0 with the verified TailDNS parent.
+
+Normal windows-v1.105.0+35 passes release 40178064355: full backend contracts,
+production Windows build, fresh isolated install/upgrade/rollback/uninstall,
+actual complete-product failed-migration recovery, protected canonical signing
+and publication. Independent public retrieval verifies pinned release/package/core
+Ed25519 signatures and key, all 444 payload members, exact source/core provenance,
+base 1.105.0/sequence 35/amd64/history schema 4, bundled runtimes/notices and exact
+native-tested UI assets. Packaged R39 startup/background maintenance is preserved
+in both frozen entrypoints and the tray resume hook. Installer: 117,433,088 bytes;
+SHA-256 8a2ceb491868a6f7cc0f57952ce4ee0736967318662287d0c9ee768a0e65f41e.
+Installer and executables remain Authenticode unsigned.
+
+The preceding normal +34 is also independently verified and preserved. Its first
+run's old signer core guard correctly fails closed after fresh installer acceptance;
+the reviewed immutable-ref correction resumes only through the supported exact
+unchanged-product-tree evidence mechanism. The changed core in +35 receives fresh
+installer acceptance instead. All six releases from both promotion cycles remain
+normal and available; no updater candidate remains. SleepManager is synchronized
+with upstream (17 ahead/0 behind), with unchanged verified v0.7.3.1 release assets.
+Existing TailD Android .40 stays unchanged. No device installation, provider-policy
+write or B12 acceptance is claimed. Dirty sibling work is preserved. Exact helper
+cleanup removes the task scratch root after compact signed metadata is retained at
+D:/Tools/taildns-upstream-verification-20261025. B12 remains separately BLOCKED/open.
+
 ## October 25 R39 Windows startup correction — normal +33 published
 
 Pre-release acceptance verifies native served Connection, Preferences and Analytics
