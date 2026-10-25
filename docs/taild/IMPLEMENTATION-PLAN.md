@@ -1,5 +1,14 @@
 # TailD staged execution
 
+## October 25 official MSI overwrite recovery
+
+The user-authorized [recovery contract](RECOVERY-20261025.md) is COMPLETE.
+UniGetUI permanently excludes official Tailscale; the exact signed +35 backend
+and recorded preserved GUI are restored, one TailD tray startup remains, and
+independent live DNS/node/Tailnet Lock/background checks pass. Protected replay
+and rollback records remain unchanged. Exact scratch cleanup passes. No blocker,
+deferral or ACTIVE recovery stage remains; this unchanged payload needs no release.
+
 ## Current execution — October 25 scheduled upstream promotion
 
 The maintenance heartbeat and inherited local-DNS/TailD specifications authorize
