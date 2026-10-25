@@ -9,12 +9,11 @@ request and standing instructions. B12 remains separately BLOCKED/open.
 | Stage | Status | Acceptance satisfied | Acceptance remaining |
 | --- | --- | --- | --- |
 | Integrated Windows startup and retention correction | COMPLETE | Native served Connection, Preferences and Analytics remain usable while maintenance is held, then original maintenance completes. Committed cutoff/revision and all fact/catalogue/diagnosis/export boundaries exclude expired data; bounded batches converge and reject replay. Real Windows startup mutex serializes desktop/background paths and releases on failure. Opt-out and retained opt-in launcher contracts pass. Full backend, affected final regressions and actual pinned-core native tray checks pass. | None. |
-| Final signed release and corrective delivery | ACTIVE | Source integration and native acceptance verified; normal sequence +33 selected after checking existing releases and active workflows. | Required production/installer gates; exact checked source, normal signed release; independent assets/signatures/provenance/payload verification; installed continuity and startup/collection readback; cleanup and reconciliation. |
+| Final signed release and corrective delivery | COMPLETE | Exact source d443e246 passes focused checks 40149387866 and normal release 40149393740, including fresh isolated installer/recovery gates and isolated signing/publication. Normal windows-v1.105.0+33 independently verifies pinned release/package/core signatures, source/core provenance, all 444 members, packaged startup correction, runtime/native assets and truthful unsigned Authenticode status. Approved in-place installation exits zero; actual tray resumes collector with no native window, then installed window becomes usable in 2.867 seconds while maintenance progresses. Traffic/DNS source reads and live DNS resume, original collection config hash matches, full installed package/node/Tailnet Lock/DNS/auto-update/service continuity and real public/MagicDNS verify. Exact expendable scratch cleanup passes; compact private evidence is retained and complete R39 reconciliation finds no missing acceptance. | None. |
 
-No tracked deferrals. Current advancement blockers are the remaining R39 delivery
-criteria above; resolve them in the ACTIVE stage. Existing signing/channel,
-local-DNS and privacy contracts apply unchanged. Production history is not a
-destructive test fixture.
+No R39 blockers, tracked deferrals or ACTIVE stage remain. B12 remains separately
+BLOCKED/open. Existing signing/channel, local-DNS and privacy contracts apply
+unchanged. Production history was not a destructive test fixture.
 
 Stage closure review finds no required consolidation: one existing collector
 writer still owns all mutations; logical retention and physical batches have
@@ -23,6 +22,12 @@ readiness gate. No worker, timeout cancellation or parallel history writer was
 introduced. Initial native fixture failed only because its daemon had no TailDrop
 capability; readiness now checks its actual device inventory/connection switch.
 The original failure and final acceptance remain in private task evidence.
+Both task scratch roots are absent after reviewed-ticket cleanup. Two empty Inno
+directories are deliberately preserved because the live production tray/background
+processes retain that working directory; their cleanup ticket is revoked rather
+than interrupt those consumers. They contain no expendable files. Durable evidence:
+D:/Tools/taild-retention39-evidence-20261025. This final evidence-only update does
+not change the verified +33 payload or require another product release.
 
 ## Current execution - October 24 Samsung tablet migration
 

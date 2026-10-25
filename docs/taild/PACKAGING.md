@@ -1,6 +1,6 @@
 # Stage 9 local packaging contract
 
-## October 25 R39 Windows startup correction — release pending
+## October 25 R39 Windows startup correction — normal +33 published
 
 Pre-release acceptance verifies native served Connection, Preferences and Analytics
 before a held retention operation completes, then its actual completion. Backend
@@ -13,9 +13,29 @@ is introduced. The single writer handles 256 changed rows per maintenance batch
 and yields to queued work between batches; idle maintenance opportunities are
 60 seconds apart and never cancel operations.
 
-Normal signed +33 production/installer gates, public verification and corrective
-installation remain required; source/native acceptance is not delivery. B12 is
-separate and remains open. Private evidence: D:/Temp/taild-retention39-20261025.
+Normal windows-v1.105.0+33 is published from checked source
+d443e24659a258d5328850188cdd00422ac4af01 and core
+0405247e03f74eb16d26ca8c010c004c7e722db7. Focused source checks 40149387866 and
+release 40149393740 pass, including fresh isolated installation/upgrade/rollback,
+uninstall and failed-migration recovery, protected isolated signing and publication.
+Independent public retrieval verifies pinned Ed25519 release/package/core signatures,
+key identity, exact source/core/base/sequence/architecture/schema, all 444 payload
+members, bundled runtime/notices, native assets and frozen startup correction in
+both entrypoints. Installer is 117,409,495 bytes, SHA-256
+c0d3b61c14fd940e603bb72bf80f915f848c3f927d4ec25910156cd075e2a603.
+Executables remain Authenticode unsigned; manifest signing does not change that.
+The protected-broker-approved in-place installation exits zero. Actual tray
+startup resumes TailD.Background.exe with no native window; subsequent normal
+installed launch reaches UI Automation-verified Running, enabled refresh and loaded
+device inventory in 2.867 seconds while physical retention is still progressing.
+Traffic/DNS source reads and live DNS resume successfully; the saved collection
+configuration hash is unchanged. Complete installed signed package, node addresses,
+Tailnet Lock signer, DNS/context/auto-update/service continuity and real public DNS
+and MagicDNS verify. No credentials/settings/history reset or provider policy change
+occurred. The window is left open. This verifies the startup correction on the
+existing production history without claiming separate B12 rollback acceptance.
+Compact private evidence is retained at
+D:/Tools/taild-retention39-evidence-20261025.
 
 ## October 24 Android .40 and authorized tablet migration
 
