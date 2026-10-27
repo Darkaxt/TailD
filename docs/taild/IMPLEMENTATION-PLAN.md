@@ -11,11 +11,14 @@ separately BLOCKED/open; completed R39 and recovery contracts remain preserved.
 | --- | --- | --- | --- |
 | Reviewed core promotion and Windows release | COMPLETE | PR 40 exact head 11ea46e7 passes trusted no-secret 40288217094. Reviewed SSH authentication/Unix process isolation and dependency changes preserve the fork contracts; Unix paths exclude Windows/Android. Identical-tree merge 09f44d46 independently delivers normal windows-v1.105.0+42 through 40461920682; pinned Ed25519/key, checksums, source/base/sequence/architecture, five payloads and notices verify. | None. |
 | Exact-core TailDNS Android promotion and release | COMPLETE | Reviewed dependency-only PR 30 fcbb1811 passes trusted Android/core/Windows 40462779906. Identical-tree merge a6014591 independently delivers normal v1.103.312+40 through 40464599257. All seven assets, APK package/name/code 298847410/pinned signer, four native ABIs/exact core, Windows companion payloads and notices verify. | None. |
-| TailD inheritance, Windows release and final reconciliation | ACTIVE | Verified upstream dependency patch is applied together with matching core guards. | Focused overlay/contracts and immutable signer closure; GitHub exact checked inheritance; fresh isolated installer/recovery gates; normal Windows release and independent payload/signature/runtime/UI verification; final family health and exact scratch cleanup. |
+| TailD inheritance, Windows release and final reconciliation | COMPLETE | Reviewed dependencies and three core guards advance together; real-source overlay/package/channel/signer checks pass. Both isolated signing jobs select immutable 8b02b92f with matching four-file closures. GitHub inheritance 40465790627 checks inherited Android/core/Windows and promotes exact ca48d187 with verified TailDNS parent; exact-main checks 40467614956 pass. Normal windows-v1.105.0+36 passes 40467704373 including fresh isolated installer/upgrade/rollback/uninstall and complete-product failed-migration recovery. Public retrieval independently verifies installer, every payload, three signatures/key, source/core/base/sequence/architecture/schema, bundled runtimes/notices, native UI and R39 frozen entrypoints. All families and unchanged releases reconcile; no updater candidate remains. Exact reviewed scratch cleanup is applied; compact signed metadata remains durable. | None. |
 
-No tracked deferrals. Remaining acceptance work belongs to the single ACTIVE
-maintenance stage; B12 remains a separate parked acceptance boundary. Private
-evidence: D:/Tools/taildns-upstream-verification-20261027.
+No maintenance blockers, tracked deferrals or ACTIVE stage remain. B12 remains
+separately BLOCKED/open. SleepManager remains 17 ahead/0 behind upstream with
+unchanged verified v0.7.3.1 assets; TailD Android .40 remains unchanged. No device
+control, installation or provider write occurred. Dirty sibling work and earlier
+verified releases are preserved. Private evidence and compact signed metadata:
+D:/Tools/taildns-upstream-verification-20261027.
 
 ## October 25 official MSI overwrite recovery
 

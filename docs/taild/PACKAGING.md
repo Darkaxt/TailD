@@ -1,5 +1,42 @@
 # Stage 9 local packaging contract
 
+## October 27 upstream maintenance — normal Windows +36 published
+
+Reviewed core PR 40 passes its exact trusted no-secret checks and merges as
+09f44d462b874ba75e175f619a54ae754dfd53b9. Normal core windows-v1.105.0+42
+independently verifies through 40461920682. Dependency-only TailDNS PR 30 passes
+trusted Android/core/Windows checks; merge a6014591e2e3837f10f2418f058c7ed88c51cc7b
+delivers normal v1.103.312+40 through 40464599257. Its package identity, pinned
+signer, code 298847410, four native ABIs/exact core and all seven assets verify.
+
+TailD advances matching require/replace/checksums and overlay/build/manifest guards
+together. Both independent isolated signer checkouts select reviewed immutable
+8b02b92f754b881a5931274a1fc172fd9180f093; all four closure files match in each
+job. No signing key or validation logic changes. GitHub inheritance 40465790627
+checks Android, DNS, core and Windows contracts and promotes exact
+ca48d1874d783c3b66cf0d579441bad830600bb6 with the verified TailDNS parent.
+Exact-main focused checks 40467614956 pass.
+
+Normal windows-v1.105.0+36 passes 40467704373, including fresh isolated
+install/upgrade/rollback/uninstall and actual complete-product failed-migration
+recovery. No earlier installer acceptance is reused for the changed core.
+Independent public retrieval verifies pinned release/package/core Ed25519
+signatures and key, all 444 payload members, exact source/core provenance,
+base 1.105.0/sequence 36/amd64/schema 4, bundled runtimes/notices, native-tested
+UI assets and packaged R39 background maintenance in both frozen entrypoints.
+Installer: 117,431,212 bytes; SHA-256
+ef335e4d0a24775196c4370d2c5c656cfc9118b6c769e3c29f7277b0784c2dd6.
+Installer and executables remain Authenticode unsigned.
+
+The three normal releases, exact inherited ancestry and matching shared-core
+pins reconcile; inherited release/detection workflows remain disabled. Existing
+TailD Android .40 and SleepManager v0.7.3.1 assets remain unchanged and verified;
+SleepManager is 17 ahead/0 behind upstream. Earlier verified releases and dirty
+sibling work are preserved. No device installation/control, provider-policy write
+or B12 acceptance is claimed. Reviewed cleanup removes the exact task scratch
+root after compact signed metadata is retained at
+D:/Tools/taildns-upstream-verification-20261027. B12 remains separately BLOCKED/open.
+
 ## October 25 upstream maintenance — normal Windows +35 published
 
 Two successive GitHub-detected core candidates complete dependency-ordered
