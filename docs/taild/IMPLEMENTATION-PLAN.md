@@ -1,5 +1,22 @@
 # TailD staged execution
 
+## Current execution — October 27 scheduled upstream promotion
+
+The maintenance heartbeat and inherited local-DNS/TailD specifications authorize
+source promotion, normal signed releases and independent public verification.
+No device installation/control or provider writes are authorized. B12 remains
+separately BLOCKED/open; completed R39 and recovery contracts remain preserved.
+
+| Stage | Status | Acceptance satisfied | Acceptance remaining |
+| --- | --- | --- | --- |
+| Reviewed core promotion and Windows release | COMPLETE | PR 40 exact head 11ea46e7 passes trusted no-secret 40288217094. Reviewed SSH authentication/Unix process isolation and dependency changes preserve the fork contracts; Unix paths exclude Windows/Android. Identical-tree merge 09f44d46 independently delivers normal windows-v1.105.0+42 through 40461920682; pinned Ed25519/key, checksums, source/base/sequence/architecture, five payloads and notices verify. | None. |
+| Exact-core TailDNS Android promotion and release | COMPLETE | Reviewed dependency-only PR 30 fcbb1811 passes trusted Android/core/Windows 40462779906. Identical-tree merge a6014591 independently delivers normal v1.103.312+40 through 40464599257. All seven assets, APK package/name/code 298847410/pinned signer, four native ABIs/exact core, Windows companion payloads and notices verify. | None. |
+| TailD inheritance, Windows release and final reconciliation | ACTIVE | Verified upstream dependency patch is applied together with matching core guards. | Focused overlay/contracts and immutable signer closure; GitHub exact checked inheritance; fresh isolated installer/recovery gates; normal Windows release and independent payload/signature/runtime/UI verification; final family health and exact scratch cleanup. |
+
+No tracked deferrals. Remaining acceptance work belongs to the single ACTIVE
+maintenance stage; B12 remains a separate parked acceptance boundary. Private
+evidence: D:/Tools/taildns-upstream-verification-20261027.
+
 ## October 25 official MSI overwrite recovery
 
 The user-authorized [recovery contract](RECOVERY-20261025.md) is COMPLETE.
@@ -9,7 +26,7 @@ independent live DNS/node/Tailnet Lock/background checks pass. Protected replay
 and rollback records remain unchanged. Exact scratch cleanup passes. No blocker,
 deferral or ACTIVE recovery stage remains; this unchanged payload needs no release.
 
-## Current execution — October 25 scheduled upstream promotion
+## October 25 scheduled upstream promotion — complete
 
 The maintenance heartbeat and inherited local-DNS/TailD specifications authorize
 source promotion, normal signed publication and independent verification. No
