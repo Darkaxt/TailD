@@ -10,11 +10,15 @@ installation or provider writes are authorized. B12 remains separately BLOCKED.
 | --- | --- | --- | --- |
 | Reviewed core promotion and Windows release | COMPLETE | Exact PR41 e560eb9f passes trusted no-secret 40470028983. Reviewed DERP errors, Serve socket protection, disco-key matching and platform-excluded Unix SSH changes preserve fork contracts. Identical-tree merge 0249e1aa delivers normal windows-v1.105.0+43 through 40644603740; independent pinned Ed25519/key/checksum/source/version/architecture/five-payload/notices checks pass. | None. |
 | Exact-core TailDNS Android promotion and release | COMPLETE | Detector40645281117 fails on canonical dependency conflict. Isolated reproduction resolves only go.mod/go.sum, retaining canonical f1bb6045 ancestry and exact verified fork core. PR31 e2df2584 passes trusted40645971306 and automaticPR/Android/tidy/license checks. Identical-tree merge4a6f03e4 delivers normal v1.103.312+41 through40647875739; all seven public assets, package/name/code298861850/pinned signer/fourABI/core/Windows companion verify. Original detector attempt2 succeeds; clone and APK scratch are removed immediately after last use. | None. |
-| TailD inheritance, Windows release and final reconciliation | ACTIVE | Exact verified dependency patch and matching core guards applied together. | Real-source overlay/contracts, immutable signer closure, GitHub checked inheritance, fresh isolated installer/recovery and normal Windows release, independent public verification, final family reconciliation and exact remaining scratch cleanup. |
+| TailD inheritance, Windows release and final reconciliation | COMPLETE | Exact dependencies and three core guards pass real-source overlay/package/channel/signer checks. Both immutable signer checkouts select168154e1 with matching closure. GitHub inheritance40649085785 promotes exact8e013530 with verified TailDNS parent; exact-main40650753721 passes. Normal windows-v1.105.0+37 passes40650876817 including fresh isolated installer/upgrade/rollback/uninstall and actual failed-migration recovery. Independent public retrieval verifies installer, every payload, three signatures/key, source/core/base/sequence/architecture/schema, runtimes/notices, exact native UI and frozen R39 behavior. All families, previous releases and unchanged Android.40/SleepManager assets reconcile. Reviewed D/E scratch cleanup is applied; compact signed metadata survives. | None. |
 
-No tracked deferrals. All remaining maintenance acceptance belongs to the single
-ACTIVE stage. Existing analytics/UI/R39, signing identity, channel and parked B12
-contracts remain unchanged. Private compact verification/recovery evidence:
+No maintenance blockers, tracked deferrals or ACTIVE stage remain. Scope-closure
+assessment finds no acceptance-relevant consolidation requirement: existing core
+guards, signing ownership and product lifecycle remain coherent. Existing
+analytics/UI/R39, signing identity, channel and parked B12 contracts are unchanged.
+SleepManager remains17 ahead/0 behind upstream with verified v0.7.3.1 assets;
+TailD Android.40 remains unchanged. No device control/install or provider writes.
+Private compact verification/recovery evidence:
 D:/Tools/taildns-upstream-verification-20261028.
 
 ## October 27 scheduled upstream promotion — complete

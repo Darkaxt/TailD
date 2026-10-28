@@ -1,5 +1,47 @@
 # Stage 9 local packaging contract
 
+## October 28 upstream maintenance — normal Windows +37 published
+
+Reviewed core PR41 passes exact trusted no-secret40470028983 and merges as
+0249e1aab6fe1f42bcbe3d4859135f6c68c03fd9. Normal windows-v1.105.0+43 passes
+40644603740 and independent pinned Ed25519/key/checksum/source/base/sequence/
+architecture/five-payload/notices verification. The canonical Android OSS update
+causes a go.mod/go.sum conflict in detector40645281117. Isolated reproduction
+reconciles only those dependencies, preserving canonical f1bb6045 ancestry,
+verified fork core replacement, toolchain, package identity and frozen base.
+PR31 exact e2df2584 passes trusted40645971306 and automaticPR/Android/tidy/license
+checks; identical-tree merge4a6f03e4bffaca2b3ad5d97a5d30480ca755637d delivers normal
+v1.103.312+41 through40647875739. All seven public assets, package/version/code
+298861850/pinned signer, four native ABIs/core stamps and Windows companion verify.
+The original detector's second attempt passes after the ancestry repair.
+
+TailD aligns require/replace/checksums and overlay/build/manifest guards together.
+Both isolated signers select immutable168154e1a7eeb01901b6a52ba38f7ffb0301b84c;
+all four closure files match in each job, with no key or signer-logic change.
+GitHub inheritance40649085785 verifies inherited Android/core/Windows and promotes
+exact8e0135309f2d97fdb9f212daf3ec955830638063 with the verified TailDNS parent.
+Exact-main40650753721 and normal signed release40650876817 pass, including fresh
+isolated install/upgrade/rollback/uninstall and complete-product failed-migration
+recovery. Installer acceptance is not reused for the changed core.
+
+Independent public retrieval of windows-v1.105.0+37 verifies pinned release/package/
+core Ed25519 signatures and key, all444 payload members, exact source/core provenance,
+base1.105.0/sequence37/amd64/schema4, bundled runtimes/notices, native-tested UI
+assets and frozen R39 maintenance in both entrypoints. Installer:117,434,041 bytes;
+SHA-256 bd13f57b8b43f19f5ab92d88bcee4b14821e9ecfee4a4f0d66276724c890381f.
+Installer and executables remain Authenticode unsigned.
+
+Final remote reconciliation verifies exact ancestry/core pins, disabled inherited
+release/detection workflows, unchanged TailD Android.40 and SleepManager v0.7.3.1
+assets (17 ahead/0 behind upstream), and preserved previous normal releases.
+Temporary clone/APK downloads are removed at last use; remaining D/E scratch is
+removed through reviewed exact-file tickets after compact signed metadata is
+retained. A required cleanup-helper fix distinguishes nested Go `boot` modules
+from protected volume Boot/EFI/Recovery and Windows trees; provenance, identity,
+Git and signed-ticket protections remain enforced. No device control/install,
+provider writes or B12 acceptance is claimed. Dirty sibling work is preserved.
+Private evidence: D:/Tools/taildns-upstream-verification-20261028.
+
 ## October 27 upstream maintenance — normal Windows +36 published
 
 Reviewed core PR 40 passes its exact trusted no-secret checks and merges as
