@@ -1,5 +1,28 @@
 # Stage 9 local packaging contract
 
+## October 28 TailDrop notification activation — Windows +38 published
+
+R40 from exact d4e5c53da5bebacdacd94a5cdf661ae6add6fd24 passes focused
+40680697125, code analysis40680696443 and normal release40680848387. Clicking
+a received-file notification opens Explorer with the actual published file
+selected, including collision renames and redirected Downloads. Native completion
+events serialize targets; dismissal/error notices never reveal an earlier file.
+The existing tray icon, menu, quarantine and acknowledgement contracts remain.
+Native Win32 callback/forwarding/shutdown/restart tests pass, and independent
+Shell selected-item readback verifies the synthetic Unicode/comma filename.
+
+Normal windows-v1.105.0+38 includes fresh isolated install/upgrade/rollback/
+uninstall and actual complete-product failed-migration recovery. Independent
+public retrieval verifies all444 payload members, three pinned Ed25519 signatures
+and key, exact source/core provenance, 1.105.0/38/amd64/schema4, runtime notices,
+unchanged native UI, reproducible overlay hashes and packaged notification/
+Explorer symbols. Installer117,444,893 bytes; SHA-256
+a3d1429382a245aceee1fd1202f6328b99a812a8dcdbbfa911e8d8ace30dd06e.
+Authenticode remains unsigned. No local installation, production transfer or
+physical-notification click is claimed. Android and B12 are unchanged. Reviewed
+cleanup removes task scratch after preserving compact signed metadata and the
+verification recipe at D:/Tools/taild-taildrop40-verification.
+
 ## October 28 upstream maintenance — normal Windows +37 published
 
 Reviewed core PR41 passes exact trusted no-secret40470028983 and merges as

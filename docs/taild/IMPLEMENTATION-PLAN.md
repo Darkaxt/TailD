@@ -8,12 +8,13 @@ Windows scope follows the current desktop conversation; Android is unchanged.
 | Stage | Status | Acceptance satisfied | Acceptance remaining |
 | --- | --- | --- | --- |
 | Complete notification-to-file workflow | COMPLETE | Exact pinned Windows source passes receiver/localAPI, collision/ack-error targeting, native Win32 click dispatch, tray forwarding/shutdown/Explorer restart and dismissal/queue regressions. Actual Explorer selects the synthetic Unicode/comma/collision-style filename; independent Shell selected-item readback matches. Overlay/source guards pass without mutating inherited source. | None. |
-| Normal Windows release and reconciliation | ACTIVE | Pre-release integrated behavior verified; no consolidation required beyond the existing receiver/notification owner. | Exact remote checks, normal signed release and independent public package verification; cleanup. |
+| Normal Windows release and reconciliation | COMPLETE | Exact d4e5c53 passes focused40680697125 and code analysis40680696443. Normal windows-v1.105.0+38 passes40680848387, including production Go tests/build, isolated install/upgrade/rollback/uninstall and actual complete-product failed-migration recovery. Independent public retrieval verifies all444 members, three pinned Ed25519 manifests/key, exact source/core/base/sequence/architecture/schema, runtime/notices and the new native activation/Explorer symbols plus reproducible overlay hashes. Exact scratch cleanup is applied and both task roots are absent. | None. |
 
-Current advancement blocker: normal release and independent public delivery are
-not yet verified; internal, resolved by the established release workflow and
-public-package checks. No installation or physical-notification click is claimed.
-No tracked deferrals. B12 remains separately BLOCKED and unclaimed. Disposable
+No R40 blockers, tracked deferrals or ACTIVE stage remain. Final reconciliation
+covers the complete R40 contract; no acceptance-relevant consolidation is needed.
+No installation or physical-notification click is claimed. B12 remains separately
+BLOCKED and unclaimed. Compact private verification/recovery evidence:
+D:/Tools/taild-taildrop40-verification. Disposable
 scripts use E:/Temp/taild-taildrop40; Go source/build/package scratch uses
 D:/Temp/taild-taildrop40 for small-file/native I/O, with reviewed cleanup at last use.
 
