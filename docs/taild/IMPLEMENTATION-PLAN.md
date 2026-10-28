@@ -1,6 +1,23 @@
 # TailD staged execution
 
-## Current execution — October 27 scheduled upstream promotion
+## Current execution — October 28 scheduled upstream promotion
+
+The maintenance heartbeat and existing TailD/local-DNS specifications authorize
+dependency-ordered promotion and normal signed publication. No device control,
+installation or provider writes are authorized. B12 remains separately BLOCKED.
+
+| Stage | Status | Acceptance satisfied | Acceptance remaining |
+| --- | --- | --- | --- |
+| Reviewed core promotion and Windows release | COMPLETE | Exact PR41 e560eb9f passes trusted no-secret 40470028983. Reviewed DERP errors, Serve socket protection, disco-key matching and platform-excluded Unix SSH changes preserve fork contracts. Identical-tree merge 0249e1aa delivers normal windows-v1.105.0+43 through 40644603740; independent pinned Ed25519/key/checksum/source/version/architecture/five-payload/notices checks pass. | None. |
+| Exact-core TailDNS Android promotion and release | COMPLETE | Detector40645281117 fails on canonical dependency conflict. Isolated reproduction resolves only go.mod/go.sum, retaining canonical f1bb6045 ancestry and exact verified fork core. PR31 e2df2584 passes trusted40645971306 and automaticPR/Android/tidy/license checks. Identical-tree merge4a6f03e4 delivers normal v1.103.312+41 through40647875739; all seven public assets, package/name/code298861850/pinned signer/fourABI/core/Windows companion verify. Original detector attempt2 succeeds; clone and APK scratch are removed immediately after last use. | None. |
+| TailD inheritance, Windows release and final reconciliation | ACTIVE | Exact verified dependency patch and matching core guards applied together. | Real-source overlay/contracts, immutable signer closure, GitHub checked inheritance, fresh isolated installer/recovery and normal Windows release, independent public verification, final family reconciliation and exact remaining scratch cleanup. |
+
+No tracked deferrals. All remaining maintenance acceptance belongs to the single
+ACTIVE stage. Existing analytics/UI/R39, signing identity, channel and parked B12
+contracts remain unchanged. Private compact verification/recovery evidence:
+D:/Tools/taildns-upstream-verification-20261028.
+
+## October 27 scheduled upstream promotion — complete
 
 The maintenance heartbeat and inherited local-DNS/TailD specifications authorize
 source promotion, normal signed releases and independent public verification.
