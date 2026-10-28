@@ -1,6 +1,7 @@
 """Reviewed TailD build overlay against the inherited exact core, never a fork copy.
 
-Only distribution identity/update dispatch/recovery and desktop activation change.
+Only distribution identity/update dispatch/recovery, desktop activation and
+TailDrop notification activation change.
 DNS, protocol identifiers, operational right-click controls/icons and service
 identity come from the pinned source. Production TailD hides its diagnostic
 Rebuild command.
@@ -15,6 +16,8 @@ SOURCE_FILES=(
     'feature/clientupdate/clientupdate.go',
     'client/systray/systray.go','client/systray/preferences.go',
     'client/systray/preferences_test.go',
+    'client/systray/notification_windows.go','client/systray/taildrop_windows.go',
+    'client/systray/taildrop_windows_test.go',
     'cmd/taildns-ipn/main_windows.go',
     'cmd/taildns-installer/main.go','cmd/taildns-installer/main_test.go',
     'cmd/taildns-installer/install_windows.go','cmd/taildns-installer/install_windows_test.go',
@@ -103,6 +106,31 @@ def create(core,output):
                 sources[name]=sources[name].replace(anchor,
                     '\tif err := terminateProcessesByPath(paths.Tray); err != nil { return result, err }\n'+anchor,1)
                 sources[name]=recovery_overlay(sources[name])
+        elif name=='client/systray/notification_windows.go':
+            source=replace_once(source,'func showWindowsNotification(title, content string) error {',
+                'func notificationWindow() (uintptr, error) {')
+            source=replace_once(source,'return fmt.Errorf("TailDNS notification window not found")',
+                'return 0, fmt.Errorf("TailD notification window not found")')
+            source=replace_once(source,'\tn := windowsNotification{',
+                '\treturn window, nil\n}\n\nfunc showWindowsNotificationAt(window uintptr, title, content string) error {\n\tn := windowsNotification{')
+            sources[name]=replace_once(source,'showWindowsNotification(title, content)',
+                'queueWindowsNotification(title, content, "")')
+        elif name=='client/systray/taildrop_windows.go':
+            source=replace_once(source,'notify    func(string, string)','notify    func(string, string, string)')
+            for before,after in (
+                ('r.notify("Taildrop file received", saved)','r.notify("Taildrop file received", saved, saved)'),
+                ('r.notify("Taildrop receive failed", "Cannot read the inbox. Use Taildrop > Receive pending files to retry.")',
+                 'r.notify("Taildrop receive failed", "Cannot read the inbox. Use Taildrop > Receive pending files to retry.", "")'),
+                ('r.notify("Taildrop receive failed", "Cannot locate Downloads. Files remain in the inbox.")',
+                 'r.notify("Taildrop receive failed", "Cannot locate Downloads. Files remain in the inbox.", "")'),
+                ('r.notify("Taildrop receive needs attention", wf.Name+": "+err.Error()+". Use Taildrop > Receive pending files to retry.")',
+                 'r.notify("Taildrop receive needs attention", wf.Name+": "+err.Error()+". Use Taildrop > Receive pending files to retry.", "")'),
+                ('notify: menu.sendNotification','notify: menu.sendTaildropNotification')):
+                source=replace_once(source,before,after)
+            sources[name]=source
+        elif name=='client/systray/taildrop_windows_test.go':
+            if source.count('func(title, body string)')!=2:raise ValueError('Taildrop callback test drift')
+            sources[name]=source.replace('func(title, body string)','func(title, body, saved string)')
         elif name=='feature/clientupdate/clientupdate.go':
             if '"-taildns."' not in source:raise ValueError('Updater dispatch drift')
             sources[name]=source.replace('"-taildns."','"-taild."').replace('TailDNS','TailD').replace('doTailDSelfUpdate','doTailDNSSelfUpdate')
@@ -113,6 +141,8 @@ def create(core,output):
     sources['cmd/taildns-installer/taild_resume_windows.go']=(Path(__file__).parent/'core-overlay/resume_windows.go').read_text(encoding='utf-8')
     for name in ('desktop_windows.go','desktop_windows_test.go'):
         sources['cmd/taildns-ipn/taild_'+name]=(Path(__file__).parent/'core-overlay'/name).read_text(encoding='utf-8')
+    for name in ('notification_click_windows.go','notification_click_windows_test.go'):
+        sources['client/systray/taild_'+name]=(Path(__file__).parent/'core-overlay'/name).read_text(encoding='utf-8')
     for name,source in sources.items():
         target=output/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_text(source,encoding='utf-8')
         replacements[str(core/name)]=str(target.resolve())

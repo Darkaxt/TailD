@@ -1,6 +1,27 @@
 # TailD remaining-product specification
 
-Version 1.19, 2026-10-25. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.20, 2026-10-28. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+
+### R40 — Reveal a received file from its Windows notification
+
+Clicking a successful TailDrop receive notification opens the actual destination
+folder in Windows Explorer with that saved file selected. Bind the action to the
+published path, including collision renaming and redirected Downloads; never
+execute the received file or interpret its name as command-line arguments.
+Serialize notifications using native completion events so later arrivals and
+failure notices cannot replace the active notification's target. Dismissal,
+quiet-time suppression and non-file notices must not reveal a file. Preserve
+the existing single tray icon, left/right click behavior, inbox acknowledgement,
+quarantine, cancellation and no-overwrite contracts. A saved file whose inbox
+acknowledgement failed remains revealable from its successful-save notification.
+Missing/moved files report failure without opening a different file.
+
+Acceptance: real Windows LocalAPI-to-save tests plus native notification callback
+dispatch demonstrate the exact collision-renamed target; queue/dismissal/error/
+shutdown and filename/Unicode cases pass. Exercise the Explorer selection API
+on a synthetic received file and independently read back its selection. Normal
+signed Windows publication and independent package/source/signature verification
+complete release delivery. Installation is separate; Android and B12 are unchanged.
 
 ### R39 — Responsive Windows startup and automatic background retention
 

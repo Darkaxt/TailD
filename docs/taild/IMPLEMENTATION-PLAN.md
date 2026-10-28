@@ -1,5 +1,22 @@
 # TailD staged execution
 
+## Current execution — October 28 TailDrop notification reveal (R40)
+
+Already authorized by the user's request and standing final-release instructions.
+Windows scope follows the current desktop conversation; Android is unchanged.
+
+| Stage | Status | Acceptance satisfied | Acceptance remaining |
+| --- | --- | --- | --- |
+| Complete notification-to-file workflow | COMPLETE | Exact pinned Windows source passes receiver/localAPI, collision/ack-error targeting, native Win32 click dispatch, tray forwarding/shutdown/Explorer restart and dismissal/queue regressions. Actual Explorer selects the synthetic Unicode/comma/collision-style filename; independent Shell selected-item readback matches. Overlay/source guards pass without mutating inherited source. | None. |
+| Normal Windows release and reconciliation | ACTIVE | Pre-release integrated behavior verified; no consolidation required beyond the existing receiver/notification owner. | Exact remote checks, normal signed release and independent public package verification; cleanup. |
+
+Current advancement blocker: normal release and independent public delivery are
+not yet verified; internal, resolved by the established release workflow and
+public-package checks. No installation or physical-notification click is claimed.
+No tracked deferrals. B12 remains separately BLOCKED and unclaimed. Disposable
+scripts use E:/Temp/taild-taildrop40; Go source/build/package scratch uses
+D:/Temp/taild-taildrop40 for small-file/native I/O, with reviewed cleanup at last use.
+
 ## Current execution — October 28 scheduled upstream promotion
 
 The maintenance heartbeat and existing TailD/local-DNS specifications authorize

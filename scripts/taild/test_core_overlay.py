@@ -45,7 +45,7 @@ class CoreOverlayTest(unittest.TestCase):
         before={name:(Path(core)/name).read_bytes() for name in core_overlay.SOURCE_FILES}
         overlay=core_overlay.create(Path(core),root)
         replacements=json.loads(overlay.read_text())['Replace']
-        self.assertEqual(len(replacements),len(core_overlay.SOURCE_FILES)+3)
+        self.assertEqual(len(replacements),len(core_overlay.SOURCE_FILES)+5)
         updater=Path(replacements[str(Path(core)/'clientupdate/taildnsupdate/start_windows.go')]).read_text()
         self.assertIn('TailD.Setup.exe',updater)
         self.assertNotIn('Darkaxt/tailscale/releases',updater)
