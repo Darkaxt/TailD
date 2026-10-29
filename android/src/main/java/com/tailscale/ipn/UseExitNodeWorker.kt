@@ -14,9 +14,34 @@ import com.tailscale.ipn.UninitializedApp.Companion.STATUS_CHANNEL_ID
 import com.tailscale.ipn.ui.localapi.Client
 import com.tailscale.ipn.ui.model.Ipn
 import com.tailscale.ipn.ui.notifier.Notifier
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.resume
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.suspendCancellableCoroutine
+
+internal suspend fun <T> awaitSingleCallback(
+    register: ((kotlin.Result<T>) -> Unit) -> Unit
+): kotlin.Result<T> = suspendCancellableCoroutine { continuation ->
+  val completed = AtomicBoolean(false)
+  continuation.invokeOnCancellation { completed.set(true) }
+  register { result ->
+    if (completed.compareAndSet(false, true)) {
+      continuation.resume(result)
+    }
+  }
+}
+
+internal fun buildExitNodePrefs(exitNodeId: String?, allowLanAccess: Boolean): Ipn.MaskedPrefs =
+    Ipn.MaskedPrefs().apply {
+      ExitNodeID = exitNodeId
+      ExitNodeAllowLANAccess = allowLanAccess
+    }
+
+internal fun exitNodePrefsMatch(
+    prefs: Ipn.Prefs,
+    exitNodeId: String?,
+    allowLanAccess: Boolean,
+): Boolean = prefs.activeExitNodeID == exitNodeId && prefs.ExitNodeAllowLANAccess == allowLanAccess
 
 class UseExitNodeWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
@@ -59,24 +84,18 @@ class UseExitNodeWorker(appContext: Context, workerParams: WorkerParameters) :
           }
 
       val allowLanAccess = inputData.getBoolean(ALLOW_LAN_ACCESS, false)
-      val prefsOut = Ipn.MaskedPrefs()
-      prefsOut.ExitNodeID = exitNodeId
-      prefsOut.ExitNodeAllowLANAccess = allowLanAccess
-
-      val scope = CoroutineScope(Dispatchers.Default + Job())
-      var result: String? = null
-      Client(scope).editPrefs(prefsOut) {
-        result =
-            if (it.isFailure) {
-              it.exceptionOrNull()?.message
-            } else {
-              null
-            }
+      val prefsOut = buildExitNodePrefs(exitNodeId, allowLanAccess)
+      val editResult = coroutineScope {
+        awaitSingleCallback<Ipn.Prefs> { done -> Client(this).editPrefs(prefsOut, done) }
       }
 
-      scope.coroutineContext[Job]?.join()
-
-      return result
+      val appliedPrefs = editResult.getOrElse {
+        return it.message ?: app.getString(R.string.use_exit_node_intent_unknown_error)
+      }
+      if (!exitNodePrefsMatch(appliedPrefs, exitNodeId, allowLanAccess)) {
+        return app.getString(R.string.use_exit_node_intent_not_applied)
+      }
+      return null
     }
 
     val result = runAndGetResult()
