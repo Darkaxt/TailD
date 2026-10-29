@@ -9,14 +9,16 @@ with no device control/install or provider writes. B12 remains separately BLOCKE
 | --- | --- | --- | --- |
 | Core conflict repair, exact review and Windows release | COMPLETE | PR42 c5c532c3 preserves local DoH/outage semantics and upstream Response metadata; trusted no-secret40830195855 passes. Reviewed canonical f7c1b8e5 and fork contracts; identical-tree merge4ebbbabd. Detector40830696456 succeeds. Normal Windows+44 release40830696024 passes; independent four-asset/pinned Ed25519/source/base/sequence/architecture/five-payload/notices verification passes. | None. |
 | Exact-core TailDNS Android promotion/release | COMPLETE | PR32 e7ddfba preserves canonical eada0d88 and exact verified core4ebbbabd; callback/mask/readback and delayed-callback regressions, actual ktfmt, trusted40833050245 plus automatic40833049995/Android40833057180/tidy/license pass. Identical-tree merge0f8ffa65 delivers normal v1.103.312+42 through40835224203. All seven public assets, APK identity/version/code298876440/pinned signer/fourABI/embedded core/Windows companion verify independently. Disposable repair clone removed after last use. | None. |
-| TailD inheritance/release and family reconciliation | ACTIVE | Core Windows+44 and TailDNS Android+42 independently verified. Windows+38 represents existing R40; SleepManager is17 ahead/0 behind upstream. | GitHub-owned exact inheritance, guards/signing closure, required Windows release/independent verification, unchanged-family checks and exact cleanup. |
+| TailD inheritance/release and family reconciliation | COMPLETE | Matching core/module/sums and all three guards pass real-source overlay/package/channel/signer contracts. Both immutable signers select beac096c with matching closure. GitHub inheritance40836610956 promotes exact65f9e22b with verified TailDNS parent; exact-main40838839355 and code analysis40838839067 pass. Normal Windows+39 release40838953435 passes fresh isolated install/upgrade/rollback/uninstall, complete-product failed-migration recovery and protected signing/publication. Independent public retrieval verifies installer, all444 members, three pinned signatures/key, exact source/core/base/sequence/architecture/schema4, runtimes/notices, exact UI and preserved R39/R40. All families reconcile; SleepManager remains17 ahead/0 behind and TailD Android.40 unchanged. Reviewed scratch cleanup is applied; both task roots are absent. | None. |
 
 The DNS merge conflict is resolved; primary/recovery metadata and retained fork
 health regressions pass. Stage1 acceptance reconciles with the authoritative DNS,
 tray, installer/update/rollback and branding contracts; no consolidation required.
-Stage2 reconciles with local DNS, branding, signing, package and lifecycle contracts;
-stage3 now owns exact inheritance, Windows delivery and final reconciliation.
-No tracked deferrals.
+Stage2 reconciles with local DNS, branding, signing, package and lifecycle contracts.
+Final reconciliation covers every maintenance requirement; no required blocker,
+tracked deferral or ACTIVE maintenance stage remains. No acceptance-relevant
+consolidation is needed. Separate B12 stays BLOCKED/open; CI does not establish
+device rollout/rollback acceptance. No device actions or provider changes occurred.
 E:/Temp/taildns-maintenance-20261029 holds disposable scripts; D:/Temp/
 taildns-maintenance-20261029 holds the isolated validation clone and native/package
 I/O scratch, removed through reviewed tickets after last use. Compact receipts:

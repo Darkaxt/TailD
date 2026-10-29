@@ -1,5 +1,46 @@
 # Stage 9 local packaging contract
 
+## October 29 upstream maintenance — normal Windows +39 published
+
+Core PR42 reconciles upstream DNS Response metadata with the fork's local DoH
+and encrypted recovery path. Exact c5c532c3 passes trusted40830195855 and merges
+as4ebbbabd7b66e944072aeef6eecdba50b026691b. Normal core Windows+44 passes
+40830696024 and independent pinned signature/key/checksum/source/five-payload
+verification. The recovered detector40830696456 succeeds.
+
+TailDNS PR32 preserves canonical eada0d88 history and callback completion while
+removing an arbitrary35s deadline around the preference write. A delayed-callback
+regression and repository ktfmt accompany the repair. Exact e7ddfba passes trusted
+40833050245, automatic candidate/Android/tidy/license gates and identical-tree
+merge0f8ffa65. Normal Android v1.103.312+42 passes40835224203; all seven assets,
+package/version/code298876440, pinned signer, four native ABIs, exact core and
+Windows companion verify independently. Existing dirty Android work is preserved.
+
+TailD's require/replace/sums, manifest, overlay and build guards select the verified
+core together. Both isolated signers select immutable beac096c with the same
+reviewed source closure; keys and signing logic are unchanged. GitHub inheritance
+40836610956 verifies Android/DNS/Windows and promotes exact65f9e22b, retaining
+0f8ffa65 ancestry. Focused40838839355 and code analysis40838839067 pass.
+
+Normal windows-v1.105.0+39 passes40838953435, including fresh isolated installer,
+upgrade/rollback/uninstall and complete-product failed-migration recovery gates.
+Independent public retrieval verifies all444 members, pinned release/package/core
+Ed25519 signatures and key, exact source/core/base/sequence/architecture/schema4,
+runtime identities/notices, exact UI assets and R39 background retention/R40
+notification activation. Installer117,453,544 bytes; SHA-256
+406cbdb2651d37042d3a39b00396b26e6b23addecd9def737613848d4b7d4a3f.
+Authenticode remains unsigned. SleepManager remains17 ahead/0 behind upstream
+with unchanged verified v0.7.3.1 assets; TailD Android.40 remains unchanged.
+
+All temporary clones, modules, verifier environments and downloads are removed
+through exact reviewed tickets after their consumers exit. Residual Go-cache
+directories required clearing only their identity-bound DOS read-only attribute
+before resuming the same cleanup ticket; no alternate deletion was used. Both
+scratch roots are absent. Compact public signed metadata, exact verification
+recipes and receipts remain at D:/Tools/taildns-upstream-verification-20261029 for
+release audit/recovery. No device installation/control or provider writes occurred;
+the separate B12 real-device acceptance boundary stays BLOCKED/open.
+
 ## October 28 TailDrop notification activation — Windows +38 published
 
 R40 from exact d4e5c53da5bebacdacd94a5cdf661ae6add6fd24 passes focused
