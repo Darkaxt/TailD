@@ -18,9 +18,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.resume
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withTimeoutOrNull
-
-private const val EDIT_PREFS_TIMEOUT_MILLIS = 35_000L
 
 internal suspend fun <T> awaitSingleCallback(
     register: ((kotlin.Result<T>) -> Unit) -> Unit
@@ -89,11 +86,9 @@ class UseExitNodeWorker(appContext: Context, workerParams: WorkerParameters) :
       val allowLanAccess = inputData.getBoolean(ALLOW_LAN_ACCESS, false)
       val prefsOut = buildExitNodePrefs(exitNodeId, allowLanAccess)
       val editResult =
-          withTimeoutOrNull(EDIT_PREFS_TIMEOUT_MILLIS) {
-            coroutineScope {
-              awaitSingleCallback<Ipn.Prefs> { done -> Client(this).editPrefs(prefsOut, done) }
-            }
-          } ?: return app.getString(R.string.use_exit_node_intent_timed_out)
+          coroutineScope {
+            awaitSingleCallback<Ipn.Prefs> { done -> Client(this).editPrefs(prefsOut, done) }
+          }
 
       val appliedPrefs =
           editResult.getOrElse {

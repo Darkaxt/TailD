@@ -7,6 +7,7 @@ import com.tailscale.ipn.ui.model.Ipn
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeoutOrNull
@@ -24,6 +25,11 @@ class UseExitNodeWorkerTest {
     lateinit var callback: (Result<String>) -> Unit
     val result = async { awaitSingleCallback<String> { callback = it } }
 
+    runCurrent()
+    assertFalse(result.isCompleted)
+
+    // Elapsed wall time cannot classify an in-flight preference write as failed.
+    advanceTimeBy(36_000)
     runCurrent()
     assertFalse(result.isCompleted)
 
