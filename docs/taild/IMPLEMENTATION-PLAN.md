@@ -1,5 +1,27 @@
 # TailD staged execution
 
+## Current execution — October 29 scheduled maintenance
+
+The heartbeat authorizes source repair/promotion and verified normal releases,
+with no device control/install or provider writes. B12 remains separately BLOCKED.
+
+| Stage | Status | Acceptance satisfied | Acceptance remaining |
+| --- | --- | --- | --- |
+| Core conflict repair, exact review and Windows release | COMPLETE | PR42 c5c532c3 preserves local DoH/outage semantics and upstream Response metadata; trusted no-secret40830195855 passes. Reviewed canonical f7c1b8e5 and fork contracts; identical-tree merge4ebbbabd. Detector40830696456 succeeds. Normal Windows+44 release40830696024 passes; independent four-asset/pinned Ed25519/source/base/sequence/architecture/five-payload/notices verification passes. | None. |
+| Exact-core TailDNS Android promotion/release | COMPLETE | PR32 e7ddfba preserves canonical eada0d88 and exact verified core4ebbbabd; callback/mask/readback and delayed-callback regressions, actual ktfmt, trusted40833050245 plus automatic40833049995/Android40833057180/tidy/license pass. Identical-tree merge0f8ffa65 delivers normal v1.103.312+42 through40835224203. All seven public assets, APK identity/version/code298876440/pinned signer/fourABI/embedded core/Windows companion verify independently. Disposable repair clone removed after last use. | None. |
+| TailD inheritance/release and family reconciliation | ACTIVE | Core Windows+44 and TailDNS Android+42 independently verified. Windows+38 represents existing R40; SleepManager is17 ahead/0 behind upstream. | GitHub-owned exact inheritance, guards/signing closure, required Windows release/independent verification, unchanged-family checks and exact cleanup. |
+
+The DNS merge conflict is resolved; primary/recovery metadata and retained fork
+health regressions pass. Stage1 acceptance reconciles with the authoritative DNS,
+tray, installer/update/rollback and branding contracts; no consolidation required.
+Stage2 reconciles with local DNS, branding, signing, package and lifecycle contracts;
+stage3 now owns exact inheritance, Windows delivery and final reconciliation.
+No tracked deferrals.
+E:/Temp/taildns-maintenance-20261029 holds disposable scripts; D:/Temp/
+taildns-maintenance-20261029 holds the isolated validation clone and native/package
+I/O scratch, removed through reviewed tickets after last use. Compact receipts:
+D:/Tools/taildns-upstream-verification-20261029.
+
 ## Current execution — October 28 TailDrop notification reveal (R40)
 
 Already authorized by the user's request and standing final-release instructions.
