@@ -9,21 +9,18 @@ exact task-owned Temp folders and remove them after last use. Do not create new
 project evidence folders under `D:/Tools`.
 
 The historical `D:/Tools/taild-*` and `D:/Tools/taildns-*` evidence paths cited below
-map to `G:/Archives/TailD/evidence-through-20261031.zip`. The verified per-file
-mapping and archive digest are recorded at
-`D:/Projects/TailD-support/storage-migration-20261031/archive-verified.json`.
-The archive retains private recovery histories, previous deliveries and release
-audit evidence while the separate B12 boundary remains open. Verify the archive
-digest, then extract only required members to an exact recovery task folder and
-check their recorded SHA-256 before use; never overwrite installed history or
-automatically replay historical scripts.
+were removed during cleanup. Their 6.7 GB relocation archive was subsequently
+permanently deleted at the user's explicit request on October31; it is not a
+recovery source. Use GitHub commit history and published releases for reproducible
+source and deliveries. Do not create replacement historical archives. Keep only
+small active baselines and receipts serving a concrete current requirement.
 
 The active Windows UI baseline is `validation/windows-ui`; the unchanged
 SleepManager and Android release receipts are `validation/SleepManager/public-release.json`
 and `validation/android40/public-release.json`, relative to the support root.
 The October31 maintenance recipes and receipts are under `maintenance/20261031`;
-their active path references select these new locations. Historical archived
-recipes retain their original text and can be recovered through the mapping.
+their active path references select these new locations. Historical citations below
+record past verification locations and do not establish current file availability.
 
 ## October 31 upstream maintenance — normal Windows +40 published
 
