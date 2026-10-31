@@ -46,7 +46,9 @@ class CorrelationWindowTest(unittest.TestCase):
 class AnalyticsTest(unittest.TestCase):
     def setUp(self):
         self.assertIsNotNone(analytics, 'Stage 5 analytics module is missing')
-        self.temp=tempfile.TemporaryDirectory(prefix='taild-metrics-',dir=os.environ.get('TAILD_PACKAGE_TEST_OUTPUT') or ('D:/Temp' if Path('D:/Temp').is_dir() else None))
+        output=os.environ.get('TAILD_PACKAGE_TEST_OUTPUT')
+        if output:Path(output).mkdir(parents=True,exist_ok=True)
+        self.temp=tempfile.TemporaryDirectory(prefix='taild-metrics-',dir=output or ('D:/Temp' if Path('D:/Temp').is_dir() else None))
         self.addCleanup(self.temp.cleanup)
         self.store=history.History(Path(self.temp.name)/'history',now=END)
         self.addCleanup(self.store.close)
