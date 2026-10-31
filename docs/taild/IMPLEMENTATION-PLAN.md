@@ -1,5 +1,31 @@
 # TailD staged execution
 
+## Current execution — November1 Windows dashboard and policy repair (R41)
+
+Already authorized by the bug report and standing final-release instructions.
+No production provider writes or device installation are required. B12 stays
+separately BLOCKED/open; no historical archive will be recreated.
+
+| Stage | Status | Acceptance satisfied | Acceptance remaining |
+| --- | --- | --- | --- |
+| Seven-day dashboard read repair | COMPLETE | Real SQLite reproduction fails at100002 decisions before the fix. Streaming DNS aggregates plus one-pass counters preserve exact summaries/series, account/endpoint scopes, bound correlations, retention floors and revisions without changing fact-page safety. Focused analytics/unified contracts pass. Closure review finds no acceptance-relevant consolidation. | None for source aggregate repair; integrated native verification belongs to Stage2. |
+| Complete Windows policy and refresh refinement | COMPLETE | Production Angular type checks, frontend contracts and build pass. Actual native WebView at https://taild.local/index.html reads100126 DNS decisions in the default week. At1658x1320 and1280x900, status dots, single opposite-state buttons, staged multi-level selection with no write until Apply, guarded fixture readback, unsupported-state disabling, normal-flow scroll anchoring and vector refresh controls pass. Existing dark palette is preserved under both system schemes; screenshots inspected. Closure review finds no acceptance-relevant consolidation. | None. No production policy or installed client was changed. |
+| Final signed Windows delivery | ACTIVE | Standing publication authorization applies; source/backend/native reconciliation passes. | Required remote checks, normal release, independent package verification, live integrity disposition and exact scratch cleanup. |
+
+No tracked deferrals. Disposable scripts use E:/Temp/taild-desktop-r41-20261101;
+native/build/database scratch uses D:/Temp/taild-desktop-r41-20261101 for sustained
+and small-file I/O. Keep only compact current release receipts and required
+acceptance assets under D:/Projects/TailD-support; no bulk historical archive.
+
+Separate live-state finding: read-only SQLite3.54.0 quick_check reports malformed
+freelist/DNS tree pages in the existing4.5GB history. The reported week contains
+1563580 traffic and170704 DNS records when the indexes read successfully. This
+internal data-integrity issue blocks claiming the installed dashboard healthy;
+its cause is not established by the October25 official MSI overwrite. Stage3
+owns final integrity diagnosis/reconciliation. No repair, reset, data deletion,
+database copy or production policy write has occurred. Do not hide this condition
+with retries or substitute fixture acceptance for live integrity.
+
 ## Current execution — October 31 scheduled maintenance
 
 The maintenance heartbeat authorizes exact checked promotion and normal signed

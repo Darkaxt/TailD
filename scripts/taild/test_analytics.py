@@ -8,6 +8,7 @@ import unittest
 import json
 import contextlib
 import io
+import os
 from unittest.mock import patch
 
 import history
@@ -45,7 +46,7 @@ class CorrelationWindowTest(unittest.TestCase):
 class AnalyticsTest(unittest.TestCase):
     def setUp(self):
         self.assertIsNotNone(analytics, 'Stage 5 analytics module is missing')
-        self.temp=tempfile.TemporaryDirectory(prefix='taild-metrics-',dir='D:/Temp' if Path('D:/Temp').is_dir() else None)
+        self.temp=tempfile.TemporaryDirectory(prefix='taild-metrics-',dir=os.environ.get('TAILD_PACKAGE_TEST_OUTPUT') or ('D:/Temp' if Path('D:/Temp').is_dir() else None))
         self.addCleanup(self.temp.cleanup)
         self.store=history.History(Path(self.temp.name)/'history',now=END)
         self.addCleanup(self.store.close)
@@ -219,6 +220,36 @@ class AnalyticsTest(unittest.TestCase):
         self.assertEqual(filtered['data']['data']['total_bytes'],row['inbound']+row['outbound'])
         with self.assertRaisesRegex(analytics.QueryError,'Fact budget exceeded'):
             self.engine.batch([self.request(start=start,view='facts')])
+
+    def test_seven_day_dns_aggregates_do_not_inherit_the_fact_page_limit(self):
+        row=self.store.db.execute('SELECT * FROM dns LIMIT 1').fetchone()
+        columns=list(row.keys());identity=columns.index('identity')
+        with self.store.transaction():
+            self.store.db.executemany('INSERT INTO dns VALUES('+','.join('?' for _ in columns)+')',
+                (tuple('dns-large-'+str(i) if j==identity else row[j] for j in range(len(columns)))
+                 for i in range(100001)))
+        queries=[self.request(kind='dns'),self.request(kind='dns',view='series',bin_seconds=60),
+                 self.request(),self.request(view='series',bin_seconds=60),
+                 self.request(view='groups',group_by=['application','application_path'])]
+        events=[];result=self.engine.batch(queries,on_result=events.append)
+        self.assertEqual(result['results'][0]['data']['dns_activity']['events'],100002)
+        self.assertEqual(sum(b['events'] for b in result['results'][1]['data']['bins']),100002)
+        self.assertEqual(result['results'][2]['data']['dns_activity']['events'],100002)
+        self.assertEqual(len(events),len(queries))
+        self.assertEqual(len({r['revision'] for r in result['results']}),1)
+        with self.assertRaisesRegex(analytics.QueryError,'Fact budget exceeded'):
+            self.engine.batch([self.request(kind='dns',view='facts')])
+        empty=self.engine.batch([self.request(kind='dns',scope={'account':'account','endpoint':'other'})])['results'][0]
+        self.assertEqual(empty['data']['dns_activity']['events'],0)
+        self.context()
+        bound=self.engine.batch([self.request()])['results'][0]
+        self.assertEqual(bound['data']['dns_activity']['events'],100002)
+        self.assertEqual(bound['data']['correlation_coverage']['ambiguous']['bucket_count'],1)
+        with self.store.transaction():
+            self.store.db.execute('UPDATE settings SET expiry_floor=?',(history.instant('2026-10-08T10:00:30Z'),))
+        retained=self.engine.batch([self.request(kind='dns'),self.request()])
+        self.assertEqual(retained['results'][0]['data']['dns_activity']['events'],0)
+        self.assertEqual(retained['results'][1]['data']['dns_activity']['events'],0)
 
     def test_streamed_aggregates_preserve_candidates_filters_and_conflicting_context(self):
         self.context()

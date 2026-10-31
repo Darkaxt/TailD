@@ -8,6 +8,7 @@ import {SfngToggleSwitchComponent} from './portmaster/toggle';
 import {BrandMark} from './brand-mark';
 import {AnalyticsPreference} from './collection';
 import {relativeSeen,osSymbol} from './device-presentation';
+import {RefreshIcon} from './refresh-icon';
 
 interface Preference {id:string;label:string;value:boolean;visible:boolean;editable:boolean}
 interface Peer {self?:boolean;id:string;name:string;addresses:string[];online:boolean|null;exit:boolean;exit_selected:boolean;
@@ -19,12 +20,12 @@ interface ConnectivityState {revision:string;profile:string;account:string;state
   self:Peer;show_admin:boolean;peers:Peer[];show_peers:boolean;show_exit:boolean;show_run_exit:boolean;show_reset:boolean;
   can_disconnect:boolean;can_exit:boolean;can_exit_lan:boolean;can_run_exit:boolean;can_reset:boolean;can_resolver:boolean}
 
-@Component({selector:'taild-connectivity',standalone:true,imports:[CommonModule,FormsModule,DashboardWidgetComponent,SfngToggleSwitchComponent,AnalyticsPreference],template:`
+@Component({selector:'taild-connectivity',standalone:true,imports:[CommonModule,FormsModule,DashboardWidgetComponent,SfngToggleSwitchComponent,AnalyticsPreference,RefreshIcon],template:`
   <section id="connectivity-window" class="connectivity-workspace" [attr.aria-busy]="busy()">
     <div class="connectivity-toolbar"><span class="badge" [class.good]="state()?.state==='Running'">{{state()?.state||(busy()?'Reading device…':'Unavailable')}}</span>
       <button *ngIf="state() as s" id="connectivity-toggle" class="connection-switch" role="switch" aria-label="Connect this device" [attr.aria-checked]="s.prefs.WantRunning" [class.on]="s.prefs.WantRunning" [disabled]="busy()||!s.profile||!s.can_disconnect" (click)="s.prefs.WantRunning?ask('disconnect'):edit('connected',true)"><span aria-hidden="true"></span></button>
       <div class="connection-account" *ngIf="state() as s"><strong>{{s.account || s.self.owner || 'This device'}}</strong><span class="hint">{{s.state==='Running'?'Connected':s.state==='Stopped'?'Disconnected':s.state}} · {{s.self.name}}</span></div>
-      <button id="connectivity-reload" class="icon-button" (click)="load()" [disabled]="busy()" aria-label="Reload device" title="Reload device"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M20 12a8 8 0 1 0-2 6M20 7l-3-3" /></svg></button>
+      <button id="connectivity-reload" class="icon-button refresh-button" (click)="load()" [disabled]="busy()" [attr.aria-busy]="busy()" aria-label="Reload device" title="Reload device"><taild-refresh-icon /></button>
       <span class="hint" role="status">{{busy()?'Reading / applying device settings…':notice()}}</span></div>
     <div *ngIf="error()" id="connectivity-error" class="error" role="alert">{{error()}}</div>
     <ng-container *ngIf="state() as s">

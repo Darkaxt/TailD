@@ -4,19 +4,20 @@ import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {command} from './bridge';
 import {bytes,exact} from './portmaster/charts';
+import {RefreshIcon} from './refresh-icon';
 
 type Row=Record<string,any>;
 interface AppRead {revision:number;start:string;end:string;apps:Row[];selected:Row|null;destinations:Row[];estimated_domains:Row[];unmatched_bytes:string;estimate_method:string;
   source_status:Row;coverage:string;provider_bound:boolean}
 
-@Component({selector:'taild-app-dns',standalone:true,imports:[CommonModule,FormsModule],template:`
+@Component({selector:'taild-app-dns',standalone:true,imports:[CommonModule,FormsModule,RefreshIcon],template:`
  <section id="app-dns-workspace" [attr.aria-busy]="busy()">
   <div class="app-dns-toolbar">
    <button *ngIf="selectedPath()" class="icon-button" (click)="select(null)" aria-label="Back to applications" title="Back to applications"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5-7 7 7 7M7 12h14" /></svg></button>
    <h2>{{selectedPath()?(data()?.selected?.name || 'App diagnosis'):'Applications'}}</h2>
    <span class="hint" *ngIf="data() as d" role="status">DNS · {{sourceLabel(d.source_status.state)}}</span>
    <label class="compact-choice">Period<select [(ngModel)]="days" (change)="load(true)" [disabled]="busy()"><option [ngValue]="1">Last 24 hours</option><option [ngValue]="7">Last 7 days</option></select></label>
-   <button class="icon-button" (click)="load(true)" [disabled]="busy()" aria-label="Refresh app observations" title="Refresh"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M20 12a8 8 0 1 0-2 6M20 7l-3-3" /></svg></button>
+   <button class="icon-button refresh-button" (click)="load(true)" [disabled]="busy()" [attr.aria-busy]="busy()" aria-label="Refresh app observations" title="Refresh app observations"><taild-refresh-icon /></button>
    <button *ngIf="selectedPath()" class="icon-button" (click)="export()" [disabled]="busy()||!data()" aria-label="Export this app snapshot" title="Export app snapshot"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 15v6h16v-6" /></svg></button>
    <button class="icon-button" (click)="showCoverage=!showCoverage" [attr.aria-expanded]="showCoverage" aria-label="Coverage and source details" title="Coverage and source details"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v6m0-10v1" /></svg></button>
   </div>

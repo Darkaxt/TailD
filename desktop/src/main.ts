@@ -21,6 +21,7 @@ import {BrandMark} from './brand-mark';
 import {Connectivity,About} from './connectivity';
 import {TailscaleActivity} from './tailscale-activity';
 import {AppDns} from './app-dns';
+import {RefreshIcon} from './refresh-icon';
 import {Category,Page,categoryPages,categoryForPage} from './navigation';
 
 type Kind='traffic'|'dns'|'correlations';
@@ -41,7 +42,7 @@ const fields:Record<Kind,string[]>={
   dns:['question','type','endpoint','profile','client','action','outcome','reason','reason_value','protocol','provider_country','provider_asn','source','id','timestamp']};
 
 @Component({selector:'taild-app',standalone:true,
-  imports:[CommonModule,FormsModule,Collection,DashboardWidgetComponent,CircularBarChartComponent,SfngNetqueryLineChartComponent,Evidence,IngestionNotice,WorldMapComponent,ControlDManagement,BrandMark,Connectivity,About,TailscaleActivity,AppDns],
+  imports:[CommonModule,FormsModule,Collection,DashboardWidgetComponent,CircularBarChartComponent,SfngNetqueryLineChartComponent,Evidence,IngestionNotice,WorldMapComponent,ControlDManagement,BrandMark,Connectivity,About,TailscaleActivity,AppDns,RefreshIcon],
   template:`
   <button class="skip-link" (click)="skipContent()">Skip to analytics content</button>
   <div *ngIf="analyticsPage()" class="screen-reader-progress" role="status" aria-live="polite" aria-atomic="true">{{busy()?(visiblePending()?'Some analytics panels are ready. Reading the remaining panels.':'Loading analytics…'):ready()?'Analytics view ready.':''}}</div>
@@ -71,7 +72,7 @@ const fields:Record<Kind,string[]>={
         <option value="week">Last 7 days</option>
         <option value="recent">Recent · 15 minutes</option><option value="hour">Last hour</option><option value="today">Today</option>
         <option value="custom">Explicit UTC range</option></select></label>
-      <button id="view-refresh" [disabled]="busy()" (click)="refresh(true)">Refresh view</button>
+      <button id="view-refresh" class="icon-button refresh-button" [disabled]="busy()" [attr.aria-busy]="busy()" (click)="refresh(true)" aria-label="Refresh view" title="Refresh view"><taild-refresh-icon /></button>
       <div class="utc-range"><label>From · UTC<input id="utc-start" [(ngModel)]="start" (change)="customTime()" aria-label="Start UTC timestamp"></label>
         <label>Until · UTC, exclusive<input id="utc-end" [(ngModel)]="end" (change)="customTime()" aria-label="End UTC timestamp"></label>
         <span class="hint">{{localTime(start)}} → {{localTime(end)}} · {{timezone}}</span>

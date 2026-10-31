@@ -1,6 +1,43 @@
 # TailD remaining-product specification
 
-Version 1.20, 2026-10-28. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.21, 2026-11-01. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+
+### R41 — Usable Windows dashboards and explicit profile controls
+
+The November1 bug report authorizes fixing the default seven-day dashboard's
+resource-limit failure and the reported Control D layout and state controls.
+Seven-day summaries and charts must read all retained facts in the selected scope
+without inheriting the materialized fact-page limit, shortening the interval,
+silently truncating counts or raising the limit instead of fixing the read path.
+Preserve exact revisions, retention floors, unknown coverage, canonical decisions,
+correlation uncertainty and read-only history access. Recent DNS and policy loading
+must remain independently usable, with truthful loading and error states.
+
+Use one consistent vector refresh icon with accessible name, tooltip, focus and
+disabled/busy feedback throughout the Windows UI. Keep the endpoint/profile/status
+controls in their real layout container; scrolling Profile policy must not leave
+them floating over filter rows. Put a green/gray current-state dot beside each setting
+name. Single-value settings have no checkbox: one right-aligned Enable or Disable
+button changes the state. Reserve checkboxes for selecting a multi-value level;
+selection alone never changes policy. A separate Apply level button commits a
+different selected level; otherwise the right button offers the applicable Enable
+or Disable action. Keep the actual current level explicit while selection differs.
+Show only the applicable opposite-state action, including rules/services/options;
+never offer an enabled item an Enable action or a disabled item a Disable action.
+Unknown/unsupported provider state stays explicit and cannot be toggled by guess.
+Preserve shared-profile verification, separate Read/Write credentials, transaction
+review/readback and original provider policy semantics. Tests use isolated policy
+fixtures; no production policy changes are authorized by this UI request.
+
+Acceptance: a real SQLite regression beyond100000 DNS decisions plus traffic
+demonstrates exact scoped seven-day summary/chart totals, consistent revisions,
+retention and unchanged fact-page safety. Native rendered Windows evidence at
+the supplied1658x1320 size and a narrower viewport verifies dashboard content,
+scroll anchoring, coherent refresh controls and single/multiple filter states in
+the existing Windows dark palette under both system color-scheme settings.
+Required backend/frontend/native/package gates, final normal
+signed Windows release and independent delivered-package verification complete
+delivery. Device installation and separate B12 acceptance remain outside scope.
 
 ### R40 — Reveal a received file from its Windows notification
 

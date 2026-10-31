@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-import {Component,OnDestroy,Input,ViewChild,ElementRef,signal} from '@angular/core';
+import {Component,OnInit,OnDestroy,Input,ViewChild,ElementRef,signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {command} from './bridge';
@@ -7,10 +7,12 @@ import {DashboardWidgetComponent} from './portmaster/panel';
 import {Evidence} from './evidence';
 import {resolutionReason,resolutionCategories} from './resolution-reason';
 import {relativeSeen} from './device-presentation';
+import {RefreshIcon} from './refresh-icon';
+import {filterChoices,FilterChoice,filterAction,optionEnabled} from './policy-controls';
 
 type RecordValue=Record<string,any>;
 @Component({selector:'taild-control-d',standalone:true,
-  imports:[CommonModule,FormsModule,DashboardWidgetComponent,Evidence],template:`
+  imports:[CommonModule,FormsModule,DashboardWidgetComponent,Evidence,RefreshIcon],template:`
   <section class="incident-workspace" aria-label="Control D incident management" [attr.aria-busy]="busy()">
     <div class="error" role="alert" *ngIf="error()">{{error()}}</div>
     <div class="incident-progress" role="status" *ngIf="busy()"><div class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>{{activity()}}</div>
@@ -19,7 +21,7 @@ type RecordValue=Record<string,any>;
       <span class="badge" [class.good]="collectionState==='collecting'" title="Collection status, independent of history read status">{{collectionState}}</span>
       <label>Endpoint<select id="management-endpoint" [(ngModel)]="endpoint" (change)="load()" [disabled]="busy()"><option *ngFor="let d of devices()" [value]="d.PK">{{d.name || 'Collection endpoint'}}</option></select></label>
       <span class="enforced-profile" *ngIf="snapshot()">{{profileName()}}</span>
-      <button id="management-reload" class="icon-button" (click)="load(true)" [disabled]="busy()" aria-label="Reload policy" title="Reload policy"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-2l2 3M4 16l2 3a7 7 0 0 0 12-2" fill="none" stroke="currentColor" stroke-width="1.7" /></svg></button>
+      <button id="management-reload" class="icon-button refresh-button" (click)="load(true)" [disabled]="busy()" [attr.aria-busy]="busy()" aria-label="Reload policy" title="Reload policy"><taild-refresh-icon /></button>
     </div>
     <div class="incident-policy-context">
       <p *ngIf="!snapshot()&&!busy()">Configure a READ credential and endpoint binding in Settings, then reload this page.</p>
@@ -31,7 +33,7 @@ type RecordValue=Record<string,any>;
     <app-dashboard-widget label="Recent DNS · incident resolutions" brand="controld" id="management-recent" *ngIf="section==='recent'">
       <div class="incident-recent-controls"><label class="rounded-search"><span class="sr-only">Search resolutions</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="m15 15 6 6" /></svg><input id="incident-dns-search" [ngModel]="dnsSearch" placeholder="Domain / decision" (ngModelChange)="searchChanged($event)"></label>
         <label class="incident-confirm"><input type="checkbox" [(ngModel)]="observe"> Follow recent activity</label>
-        <button id="incident-dns-refresh" class="icon-button" [disabled]="reading()" (click)="recent()" aria-label="Refresh DNS" [title]="reading()?'Reading recent DNS':'Refresh DNS'" [attr.aria-busy]="reading()"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 7v5h-5M4 17v-5h5M6.1 7a7 7 0 0 1 11.8-2L20 8M4 16l2.1 3A7 7 0 0 0 17.9 17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
+        <button id="incident-dns-refresh" class="icon-button refresh-button" [disabled]="reading()" (click)="recent()" aria-label="Refresh DNS" [title]="reading()?'Reading recent DNS':'Refresh DNS'" [attr.aria-busy]="reading()"><taild-refresh-icon /></button>
         <span class="badge" [class.good]="liveState()==='connected'">Live stream: {{liveState()}}</span></div>
       <details class="recent-coverage"><summary>Recent 15 minutes · totals over 7 days</summary><p class="hint">Latest 100 stored observations for the selected endpoint. First seen and Total cover each question/type in retained history over the last 7 days, independent of search. Streaming follows the collection binding, not this selection. Gaps do not mean zero activity.</p></details>
       <div class="recent-content" [attr.aria-busy]="reading()">
@@ -84,36 +86,42 @@ type RecordValue=Record<string,any>;
           <button id="incident-new-rule" (click)="editRule({PK:'',action:{do:0}})">New rule</button>
           <label>Find rules<input id="management-rule-search" [(ngModel)]="ruleSearch" placeholder="Search hostnames"></label>
           <p class="hint" *ngIf="resourceState('rules')!=='available'">{{resourceState('rules')}} · rules cannot be edited.</p>
-          <div class="table-scroll incident-table"><table><thead><tr><th>Hostname</th><th>Action</th><th>Enabled</th><th>Incident actions</th></tr></thead><tbody>
-            <tr *ngFor="let r of rules()"><td>{{r.PK}}</td><td><span class="decision-badge" [ngClass]="decisionClass(actionName(r.action?.do))">{{actionName(r.action?.do)}}</span></td><td>{{r.action?.status===1?'Yes':'No'}}</td><td class="actions">
+          <div class="table-scroll incident-table"><table><thead><tr><th>Hostname</th><th>Action</th><th>Incident actions</th></tr></thead><tbody>
+            <tr *ngFor="let r of rules()"><td><span class="policy-name"><span class="policy-state-dot" [class.enabled]="r.action?.status===1" [class.unknown]="r.action?.status!==0&&r.action?.status!==1" role="img" [attr.aria-label]="statusLabel(r.action?.status)" [title]="statusLabel(r.action?.status)"></span>{{r.PK}}</span></td><td><span class="decision-badge" [ngClass]="decisionClass(actionName(r.action?.do))">{{actionName(r.action?.do)}}</span></td><td class="actions">
               <button (click)="editRule(r)">{{r.action?.do>1?'Replace action…':'Edit'}}</button><button [disabled]="r.action?.do!==0&&r.action?.do!==1" (click)="prepare({kind:'rule',hostname:r.PK,do:r.action?.do,status:r.action?.status===1?0:1,comment:r.comment||''})">{{r.action?.status===1?'Disable':'Enable'}}</button>
               <button (click)="prepare({kind:'rule',hostname:r.PK,delete:true})">Delete</button></td></tr>
           </tbody></table></div>
           <p class="hint" *ngIf="!rules().length">No matching rules in the returned policy.</p>
         </ng-container>
         <ng-container *ngIf="tab()==='Filters'">
-          <p class="hint">Select a native filter level. Unsupported or external catalogs remain visible in policy evidence below.</p>
-          <div class="incident-setting" *ngFor="let f of resource('filters')"><div><strong>{{f.name||f.PK}}</strong><p class="hint">{{f.description}}</p></div>
-            <select [attr.aria-label]="'Level for '+(f.name||f.PK)" [(ngModel)]="f.selected"><option [value]="f.PK">{{f.PK}}</option><option *ngFor="let l of f.levels||[]" [value]="l.name">{{l.title||l.name}}</option></select>
-            <span class="badge">{{f.status===1?'Enabled':'Disabled'}}</span>
-            <button (click)="prepare({kind:'filter',id:f.selected||f.action?.lvl||f.PK,status:1})">Enable selected</button>
-            <button (click)="prepare({kind:'filter',id:f.action?.lvl||f.PK,status:0})">Disable</button></div>
+          <p class="hint">Dots show current status. Select a level, then use the button to apply it. Only one level can be active.</p>
+          <div class="incident-setting filter-setting" *ngFor="let f of resource('filters')"><div><strong class="policy-name"><span class="policy-state-dot" [class.enabled]="f.status===1" [class.unknown]="f.status!==0&&f.status!==1" role="img" [attr.aria-label]="statusLabel(f.status)" [title]="statusLabel(f.status)"></span>{{f.name||f.PK}}</strong><p class="hint">{{f.description}}</p><small class="hint" *ngIf="filterChoices(f).length>1">Current: {{activeLevel(f)}}</small></div>
+            <div class="filter-levels" role="group" [attr.aria-label]="'Select level for '+(f.name||f.PK)" *ngIf="filterChoices(f).length>1">
+              <label class="policy-checkbox" *ngFor="let choice of filterChoices(f)">
+                <input type="checkbox" [checked]="f.selected===choice.id" [disabled]="choice.enabled===null"
+                  [attr.aria-label]="(f.name||f.PK)+' · '+choice.label" (change)="selectFilterLevel(f,choice,$event)"><span>{{choice.label}}</span>
+              </label>
+            </div><button class="policy-state-action" *ngIf="filterAction(f) as change" [disabled]="change.disabled" (click)="prepare({kind:'filter',id:change.id,status:change.status})">{{change.label}}</button></div>
           <p class="hint" *ngIf="resourceState('filters')!=='available'">{{resourceState('filters')}} · filter changes unavailable.</p>
         </ng-container>
         <ng-container *ngIf="tab()==='Services'">
           <label>Find services<input [(ngModel)]="serviceSearch" placeholder="Search services"></label>
-          <div class="incident-setting" *ngFor="let s of services()"><div><strong>{{s.name||s.PK}}</strong><p class="hint">{{s.category}} · {{actionName(s.action?.do)}} · {{s.action?.status===1?'Enabled':'Disabled'}}</p></div>
-            <button (click)="prepare({kind:'service',id:s.PK,status:1,do:0})">Block</button>
-            <button (click)="prepare({kind:'service',id:s.PK,status:1,do:1})">Allow · Bypass</button>
-            <button (click)="prepare({kind:'service',id:s.PK,status:0,do:s.action?.do===1?1:0})" [disabled]="s.action?.do>1">Disable</button></div>
+          <div class="incident-setting" *ngFor="let s of services()"><div><strong class="policy-name"><span class="policy-state-dot" [class.enabled]="s.action?.status===1" [class.unknown]="s.action?.status!==0&&s.action?.status!==1" role="img" [attr.aria-label]="statusLabel(s.action?.status)" [title]="statusLabel(s.action?.status)"></span>{{s.name||s.PK}}</strong><p class="hint">{{s.category}} · {{actionName(s.action?.do)}}</p></div>
+            <button *ngIf="s.action?.status!==1||s.action?.do!==0" (click)="prepare({kind:'service',id:s.PK,status:1,do:0})">Block</button>
+            <button *ngIf="s.action?.status!==1||s.action?.do!==1" (click)="prepare({kind:'service',id:s.PK,status:1,do:1})">Allow · Bypass</button>
+            <button *ngIf="s.action?.status===1" (click)="prepare({kind:'service',id:s.PK,status:0,do:s.action?.do===1?1:0})" [disabled]="s.action?.do!==0&&s.action?.do!==1">Disable</button></div>
           <p class="hint" *ngIf="resourceState('services')!=='available'">{{resourceState('services')}} · service changes unavailable.</p>
         </ng-container>
         <ng-container *ngIf="tab()==='Profile Options'">
           <p class="hint">Provider option identifiers and current values. Preview changes before applying; optional values are sent exactly as entered.</p>
-          <div class="incident-setting" *ngFor="let o of resource('options')"><div><strong>{{o.title||o.name||o.PK}}</strong><p class="hint">{{o.description}}</p><p class="hint">Current value: {{o.value??'Provider default / not explicitly configured'}}</p></div>
+          <div class="incident-setting" *ngFor="let o of resource('options')"><div><strong class="policy-name"><span class="policy-state-dot" *ngIf="o.type==='toggle'" [class.enabled]="optionEnabled(o)===true" [class.unknown]="optionEnabled(o)===null" role="img" [attr.aria-label]="optionEnabled(o)===null?'Provider default / state unavailable':optionEnabled(o)?'Enabled':'Disabled'" [title]="optionEnabled(o)===null?'Provider default / state unavailable':optionEnabled(o)?'Enabled':'Disabled'"></span>{{o.title||o.name||o.PK}}</strong><p class="hint">{{o.description}}</p><p class="hint" *ngIf="o.type!=='toggle'">Current value: {{o.value??'Provider default / not explicitly configured'}}</p></div>
             <label *ngIf="o.type!=='toggle'">New value<input [(ngModel)]="o.editValue" [attr.aria-label]="'Value for '+o.PK" maxlength="1024"></label>
-            <button (click)="prepare(o.type==='toggle'?{kind:'option',id:o.PK,status:1}:{kind:'option',id:o.PK,status:1,value:o.editValue})">Enable / set</button>
-            <button (click)="prepare({kind:'option',id:o.PK,status:0})">Disable</button></div>
+            <ng-container *ngIf="o.type==='toggle'">
+              <button class="policy-state-action" *ngIf="optionEnabled(o)!==null" (click)="prepare({kind:'option',id:o.PK,status:optionEnabled(o)?0:1})">{{optionEnabled(o)?'Disable':'Enable'}}</button>
+              <ng-container *ngIf="optionEnabled(o)===null"><span class="hint">Provider default / state unavailable</span><button (click)="prepare({kind:'option',id:o.PK,status:1})">Enable</button></ng-container>
+            </ng-container>
+            <ng-container *ngIf="o.type!=='toggle'"><button (click)="prepare({kind:'option',id:o.PK,status:1,value:o.editValue})">Set value</button>
+              <button *ngIf="o.configured===true" (click)="prepare({kind:'option',id:o.PK,status:0})">Reset to default</button></ng-container></div>
           <p class="hint" *ngIf="resourceState('options')!=='available'">{{resourceState('options')}} · option changes unavailable.</p>
         </ng-container>
       </fieldset>
@@ -122,7 +130,11 @@ type RecordValue=Record<string,any>;
     <details *ngIf="snapshot()&&section==='policy'"><summary>Captured policy history</summary><button [disabled]="busy()" (click)="history()">Read retained snapshots</button>
       <taild-evidence [data]="policyHistory()" /></details>
   </section>`})
-export class ControlDManagement implements OnDestroy {
+export class ControlDManagement implements OnInit,OnDestroy {
+  filterChoices=filterChoices;filterAction=filterAction;optionEnabled=optionEnabled;
+  statusLabel(value:unknown){return value===1?'Enabled':value===0?'Disabled':'State unavailable'}
+  activeLevel(filter:RecordValue){return filterChoices(filter).find(c=>c.enabled===true)?.label||this.statusLabel(filter.status)}
+  selectFilterLevel(filter:RecordValue,choice:FilterChoice,event:Event){if(choice.enabled===null)return;filter.selected=(event.target as HTMLInputElement).checked?choice.id:''}
   @Input() collectionState='Connecting';
   firstSeen(value:number){return relativeSeen(new Date(value/1000).toISOString(),false)}
   exactTime(value:number){return new Date(value/1000).toISOString()}
@@ -133,7 +145,7 @@ export class ControlDManagement implements OnDestroy {
   recentRows=signal<RecordValue[]>([]);recentError=signal('');liveState=signal('not observed');policyHistory=signal<RecordValue|null>(null);
   endpoint='';hostname='';ruleAction=0;comment='';ruleSearch='';serviceSearch='';dnsSearch='';confirmed=false;observe=true;
   private disposed=false;private timer?:number;private generation=0;private pendingRecent=false;private knownDevices:RecordValue[]=[];
-  constructor(){void this.load();this.schedule()}
+  ngOnInit(){void this.load();this.schedule()}
   devices(){return this.knownDevices.length?this.knownDevices:this.endpoint?[{PK:this.endpoint,name:'Collection endpoint'}]:[]}
   affected(){return this.snapshot()?.affected_endpoints||[]}
   profileName(){return (this.snapshot()?.resources?.profiles?.data?.profiles||[]).find((p:RecordValue)=>p.PK===this.snapshot()?.profile)?.name||'Unnamed profile'}
@@ -155,7 +167,7 @@ export class ControlDManagement implements OnDestroy {
   }
   async load(refresh=false){if(this.busy())return;this.busy.set(true);this.activity.set(refresh?'Reloading current Control D policy…':'Opening Control D policy snapshot…');this.error.set('');this.preview.set(null);this.confirmed=false;this.generation++;
     this.snapshot.set(null);this.recentRows.set([]);
-    await this.recent();
+    if(this.section==='recent')void this.recent();
     if(this.disposed){this.busy.set(false);return}
     try{const s=await command<RecordValue>('management-read',{...(this.endpoint?{endpoint:this.endpoint}:{}),...(refresh?{refresh:true}:{})});if(!this.disposed)this.accept(s)}
     catch(e){if(!this.disposed)this.error.set((e as Error).message)}finally{this.busy.set(false)}
@@ -196,6 +208,6 @@ export class ControlDManagement implements OnDestroy {
     catch(e){if(!this.disposed&&generation===this.generation&&search===this.dnsSearch)this.recentError.set((e as Error).message)}finally{this.reading.set(false);if(this.pendingRecent&&!this.disposed)void this.recent()}
   }
   async history(){try{const end=new Date();const result=await command<RecordValue>('view-query',{queries:[{kind:'policy',view:'facts',start:new Date(end.getTime()-7*86400000).toISOString(),end:end.toISOString(),scope:{endpoint:this.endpoint},limit:100}]});this.policyHistory.set(result.results[0])}catch(e){this.error.set((e as Error).message)}}
-  private schedule(){if(this.disposed)return;this.timer=window.setTimeout(async()=>{if(this.observe&&!document.hidden)await this.recent();this.schedule()},5000)}
+  private schedule(){if(this.disposed)return;this.timer=window.setTimeout(async()=>{if(this.section==='recent'&&this.observe&&!document.hidden)await this.recent();this.schedule()},5000)}
   ngOnDestroy(){this.disposed=true;window.clearTimeout(this.timer)}
 }

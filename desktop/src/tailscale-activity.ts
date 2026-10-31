@@ -6,6 +6,7 @@ import {command} from './bridge';
 import {DashboardWidgetComponent} from './portmaster/panel';
 import {bytes} from './portmaster/charts';
 import {relativeSeen} from './device-presentation';
+import {RefreshIcon} from './refresh-icon';
 
 interface Observation {profile:string;id?:string;name?:string;os?:string;presence?:string;observed_at?:string;last_seen?:string|null;
   type?:string;value?:any;direction?:string;peer_id?:string;started_at?:string;first_observed_at?:string;
@@ -14,14 +15,14 @@ interface ActivityView {rows:Observation[];profiles:string[];truncated:boolean;e
   source:{state:string;last_success_utc?:string;profile?:string};start:string;end:string}
 
 @Component({selector:'taild-tailscale-activity',standalone:true,
-  imports:[CommonModule,FormsModule,DashboardWidgetComponent],template:`
+  imports:[CommonModule,FormsModule,DashboardWidgetComponent,RefreshIcon],template:`
   <section id="tailscale-activity" [attr.aria-busy]="busy()">
     <div class="taildrop-primary-actions" *ngIf="view==='TailDrop'"><button id="taildrop-open-downloads" (click)="openDownloads()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h7l2 3h9v12H3z" /></svg>Open received files</button><span class="hint">Downloads · same destination as the tray receiver</span></div>
     <div class="activity-toolbar">
       <div class="activity-opt-in"><span class="badge" [class.good]="tracking()">{{tracking()?'Analytics recording enabled':'Recording disabled · retained history'}}</span>
         <button id="activity-preferences" (click)="preferences.emit()">Preferences →</button></div>
       <span id="activity-source" class="badge" [class.good]="data()?.source?.state==='connected'" role="status">{{data()?.source?.state||'Not loaded'}}</span>
-      <button id="activity-reload" class="icon-button" aria-label="Refresh Tailscale history" title="Refresh Tailscale history" (click)="load()" [attr.aria-disabled]="busy()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M20 12a8 8 0 1 0-2 6M20 7l-3-3" /></svg></button>
+      <button id="activity-reload" class="icon-button refresh-button" aria-label="Refresh Tailscale history" title="Refresh Tailscale history" (click)="load()" [disabled]="busy()" [attr.aria-busy]="busy()"><taild-refresh-icon /></button>
       <span *ngIf="busy()" class="activity-loading" role="status"><span class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></span>Reading local history</span>
     </div>
     <p class="error" role="alert" *ngIf="error()||mutationError()">{{mutationError()||error()}}</p>

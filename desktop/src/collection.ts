@@ -6,6 +6,7 @@ import {DashboardWidgetComponent} from './portmaster/panel';
 import {SfngToggleSwitchComponent} from './portmaster/toggle';
 import {command} from './bridge';
 import {BrandMark} from './brand-mark';
+import {RefreshIcon} from './refresh-icon';
 
 interface Source {[key:string]:unknown;state:string;last_success_utc?:string;status?:number}
 interface Settings {traffic:boolean;dns:boolean;activity:boolean;traffic_seconds:number;dns_seconds:number;
@@ -15,7 +16,7 @@ export interface State {state:string;sources:Record<string,Source>;settings:Sett
   analytics_enabled?:boolean;integration_ready?:{traffic:boolean;dns:boolean}}
 
 @Component({selector:'taild-collection',standalone:true,
-  imports:[CommonModule,FormsModule,DashboardWidgetComponent,BrandMark],
+  imports:[CommonModule,FormsModule,DashboardWidgetComponent,BrandMark,RefreshIcon],
   template:`
     <section id="collection-window" [attr.aria-busy]="busy()">
       <header><div><div class="eyebrow product-brand"><taild-brand-mark brand="tailscale" /><span>TailD / Settings</span></div><h2 class="collection-title">Collection</h2>
@@ -31,7 +32,7 @@ export interface State {state:string;sources:Record<string,Source>;settings:Sett
           <div class="actions">
             <button id="pause-resume" class="primary" [disabled]="busy() || !enabled()" (click)="run(current.state==='paused'?'resume':'pause')">
               {{current.state==='paused'?'Resume collection':'Pause collection'}}</button>
-            <button id="refresh" [disabled]="busy() || !enabled() || current.state==='paused'" (click)="run('refresh')">Refresh now</button>
+            <button id="refresh" class="icon-button refresh-button" [disabled]="busy() || !enabled() || current.state==='paused'" [attr.aria-busy]="busy()" (click)="run('refresh')" aria-label="Refresh collection" title="Refresh collection"><taild-refresh-icon /></button>
           </div><p class="hint">Changes save automatically. Pause stops new reads; an active transaction finishes safely.</p>
         </app-dashboard-widget>
         <app-dashboard-widget label="Sources & health">

@@ -233,6 +233,11 @@ class Analytics:
              f' FROM {kind} f JOIN sources s ON s.id=f.source'+
              (' LEFT JOIN applications app ON app.id=f.application' if kind=='traffic' else '')+
              ' WHERE '+clause+' ORDER BY f.time,f.source,f.identity'+(',f.ordinal' if kind=='dns' else ''))
+        if allow_stream and kind=='dns':
+            # Aggregates and correlation inputs are read inside the caller's
+            # pinned transaction. The fact-page materialization limit is not a
+            # limit on the number of retained DNS decisions in a dashboard.
+            return lambda:self._decode(kind,self.store.db.execute(sql,params),scope)
         if allow_stream and kind=='traffic':
             count=self.store.db.execute('SELECT count(*) FROM ('+sql+' LIMIT 100001)',params).fetchone()[0]
             if count>100000:
@@ -289,7 +294,7 @@ class Analytics:
 
     def _iter_correlations(self,traffic,dns,contexts,age,scope):
         by_ip=defaultdict(list)
-        for decision in dns:
+        for decision in dns() if callable(dns) else dns:
             try:
                 answers,unsupported=join._answers(decision['fact']['raw'])
             except join.JoinError:
@@ -599,14 +604,17 @@ class Analytics:
         key=('traffic' if kind=='correlations' else kind,view=='health',a,b,age,history.packed(scope))
         if kind in ('traffic','correlations'):
             key+= (view=='facts',history.packed(request.get('where')),request.get('search',''))
+        elif kind=='dns':
+            key+=(view=='facts',)
         if key not in cache:
-            dns_key=('dns-input',a-age*1000000,b,history.packed({k:v for k,v in scope.items() if k in ('account','endpoint')}))
+            stream_dns=kind!='dns' or view!='facts'
+            dns_key=('dns-input',a-age*1000000,b,history.packed({k:v for k,v in scope.items() if k in ('account','endpoint')}),stream_dns)
             # Unbound application/series reductions cannot produce DNS
             # candidates. Only summaries need independent provider metrics.
             summary_needed=any(q['view']=='summary' and self._aggregate_family(q)==self._aggregate_family(request)
                                for q in cache.get('requests',[request]))
             if view!='health' and (kind=='dns' or kind in ('traffic','correlations') and (not reduced or summary_needed)):
-                if dns_key not in cache:cache[dns_key]=self._load('dns',a-age*1000000,b,scope)
+                if dns_key not in cache:cache[dns_key]=self._load('dns',a-age*1000000,b,scope,allow_stream=stream_dns)
                 dns=cache[dns_key]
             else:dns=[]
             needs_protocol=any(q.get('search') or 'protocol_raw' in history.packed(q.get('where')) or
@@ -618,7 +626,8 @@ class Analytics:
             elif callable(traffic):
                 rows=lambda:self._iter_correlations(traffic(with_identity=cache.get('identity',True)),dns,contexts,age,scope)
             elif kind in ('traffic','correlations'):rows=self._correlations(traffic,dns,contexts,age,scope)
-            elif kind=='dns':rows=[d for d in dns if d['timestamp']>=a]
+            elif kind=='dns':
+                rows=(lambda:(d for d in dns() if d['timestamp']>=a)) if callable(dns) else [d for d in dns if d['timestamp']>=a]
             else:rows=self._load(kind,a,b,scope)
             cache[key]=(dns,rows)
         dns,rows=cache[key]
@@ -648,14 +657,15 @@ class Analytics:
                   'incomplete':traffic_coverage['incomplete'] if kind in ('traffic','correlations') else dns_coverage['incomplete'] if kind=='dns' else not rows}
         if view=='summary':
             projections=[]
-            if streamed:
+            if streamed and kind in ('traffic','correlations'):
                 for q in cache.get('requests',[]):
                     if q['kind'] in ('traffic','correlations') and q['view'] in ('groups','series') and self._aggregate_family(q)==self._aggregate_family(request):
                         item={'query':q,'values':{}}
                         cache[('aggregate',history.packed(q))]=item;projections.append(item)
             def observe(row):
                 for item in projections:self._aggregate_row(item['query'],item['values'],row)
-            data=self._summary([] if kind=='dns' else rows,list(rows) if kind=='dns' else [d for d in dns if d['timestamp']>=a],a,b,scope,
+            data=self._summary([] if kind=='dns' else rows,rows if kind=='dns' else
+                (d for d in (dns() if callable(dns) else dns) if d['timestamp']>=a),a,b,scope,
                 observe=observe if projections else None,health_cache=cache.setdefault('health',{}),coverage_cache=coverage_cache)
             for item in projections:item.update(count=selected_count,unknown_device_buckets=unknown_device_buckets)
         elif view=='series':
@@ -825,11 +835,19 @@ class Analytics:
         def ranking(field):
             return sorted([{'value':key,**value} for key,value in rankings[field].items()],
                           key=lambda r:(-r['total_bytes'],str(r['value'])))
-        dns_groups={}
-        for field in ('endpoint','profile','question','type','action','reason','protocol','client'):
-            groups=defaultdict(int)
-            for row in dns: groups[row.get(field)]+=1
-            dns_groups[field]=[{'value':key,'events':count} for key,count in sorted(groups.items(),key=lambda x:(-x[1],str(x[0])))]
+        # One streaming pass retains only aggregate keys, not every wide raw
+        # decision. This also preserves selected_rows' predicate/count semantics.
+        dns_counts={field:defaultdict(int) for field in ('endpoint','profile','question','type','action','reason','protocol','client')}
+        geography={field:defaultdict(int) for field in ('provider_country','provider_asn')}
+        counts={name:0 for name in ('allow','block','redirect','failed','other','unknown')}
+        dns_events=0
+        for decision in dns:
+            dns_events+=1
+            for field,groups in dns_counts.items():groups[decision.get(field)]+=1
+            for field,groups in geography.items():groups[decision[field]]+=1
+            counts[decision['outcome']]+=1
+        dns_groups={field:[{'value':key,'events':count} for key,count in sorted(groups.items(),key=lambda x:(-x[1],str(x[0])))]
+                    for field,groups in dns_counts.items()}
         health_cache={} if health_cache is None else health_cache
         health_key=(a,b,history.packed(scope))
         cached_health=health_key in health_cache
@@ -863,21 +881,16 @@ class Analytics:
                                        for r in self.store.db.execute('SELECT data FROM dns INDEXED BY dns_time WHERE source=? AND time>=? AND time<?',(item['id'],retained_a,b))),
                 'unsupported_rows_definition':'unsupported-address-family' if item['kind']=='traffic' else 'unsupported-answer-encoding'})
         health_cache[health_key]=health
-        geography={field:defaultdict(int) for field in ('provider_country','provider_asn')}
-        for decision in dns:
-            for field,counts in geography.items():counts[decision[field]]+=1
-        counts={name:0 for name in ('allow','block','redirect','failed','other','unknown')}
-        for decision in dns:counts[decision['outcome']]+=1
         denominator=sum(counts[name] for name in ('allow','block','redirect','other'))
         return {'data':{**{k:v for k,v in total.items() if k!='bucket_count'},'unit':'bytes','denominator':'canonical-traffic-buckets'},
             'application_activity':{'known_distinct':len(applications),
                                     'unknown_buckets':unknown_applications,'bucket_count':total['bucket_count']},
             'top_applications':ranking('application'),'top_destinations':ranking('destination_ip'),
-            'dns_activity':{'events':len(dns),'groups':dns_groups,'denominator':'canonical-provider-decisions'},
+            'dns_activity':{'events':dns_events,'groups':dns_groups,'denominator':'canonical-provider-decisions'},
             'dns_outcomes':{'counts':counts,'classified_denominator':denominator,'excluded_unknown':counts['unknown'],
                             'excluded_failed':counts['failed'],'block_rate':counts['block']/denominator if denominator else None,
                             'capability':OUTCOME_VERSION,'mapping_source':'https://docs.controld.com/docs/log-field-reference'},
-            'dns_questions':{'distinct':len({d['question'] for d in dns}),'ranking':dns_groups['question'],'normalization_version':'raw-spelling-v1'},
+            'dns_questions':{'distinct':len(dns_counts['question']),'ranking':dns_groups['question'],'normalization_version':'raw-spelling-v1'},
             'correlation_coverage':classes,
             'candidate_domains':{'label':'inferred-not-exact-domain-usage',
                 'inferred':[{'question':q,**{k:v for k,v in value.items() if k!='bucket_count'}} for q,value in sorted(inferred.items())],
