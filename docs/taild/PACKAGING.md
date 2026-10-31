@@ -15,12 +15,46 @@ recovery source. Use GitHub commit history and published releases for reproducib
 source and deliveries. Do not create replacement historical archives. Keep only
 small active baselines and receipts serving a concrete current requirement.
 
-The active Windows UI baseline is `validation/windows-ui`; the unchanged
-SleepManager and Android release receipts are `validation/SleepManager/public-release.json`
+The active Windows UI baseline is `validation/windows-r41/ui`; its current native
+acceptance screenshots and renderer receipt are in `validation/windows-r41`.
+The unchanged SleepManager and Android release receipts are `validation/SleepManager/public-release.json`
 and `validation/android40/public-release.json`, relative to the support root.
 The October31 maintenance recipes and receipts are under `maintenance/20261031`;
 their active path references select these new locations. Historical citations below
 record past verification locations and do not establish current file availability.
+
+## November1 Windows dashboard and policy controls — normal +41 verified
+
+Source 18e61f5d8ae7c09678cbda23043f2ec4901581f8 passes focused 41249797322
+and analysis 41249797337. Native https://taild.local/index.html verification at
+1658x1320 and 1280x900 demonstrates 100126 DNS observations in the default week, saved-state
+dots, single opposite-state buttons and staged exclusive level selection with no
+write until Apply. Guarded fixture readback, normal-flow endpoint anchoring,
+vector refresh icons and the existing dark palette pass. No production policy
+write or installed-client change was used for this acceptance.
+
+Normal windows-v1.105.0+41 passes 41249975620, including fresh isolated
+install/upgrade/rollback/uninstall, complete-product failed-migration refusal,
+protected package/core/release signing and publication. Independent retrieval
+verifies eight assets, all 444 payload members, pinned Ed25519 signatures/key,
+exact source/core 2558f1c7/base/sequence/AMD64/schema 4, bundled runtimes/notices,
+exact native-tested UI assets and packaged streaming DNS summaries. Installer
+117473061 bytes; SHA-256
+8dcd940e6003714a026c305c3342b548aad6a7eb1e17a55b64fcfa7076fd06e6.
+Authenticode remains unsigned. Compact receipts and reproduction recipes live
+under D:/Projects/TailD-support/maintenance/20261101. No device installation
+occurred; B12 remains separately BLOCKED/open.
+
+Reviewed installed-helper cleanup removes the spent native fixtures, builds,
+downloaded installer, extracted payload and verifier environment. Both exact R41
+D:/Temp and E:/Temp task roots are absent. Only current compact metadata, recipes
+and the active native UI acceptance baseline are retained; no archive was made.
+
+The separately diagnosed corruption in the existing local history is not repaired
+by this release. Read-only SQLite 3.54.0 checks identify malformed freelist and DNS
+table pages. This does not establish that the official MSI overwrite caused the
+corruption. No history was copied, reset, deleted or repaired; installed-dashboard
+recovery remains open and must not be inferred from isolated release acceptance.
 
 ## October 31 upstream maintenance — normal Windows +40 published
 
