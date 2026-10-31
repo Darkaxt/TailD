@@ -1,5 +1,47 @@
 # Stage 9 local packaging contract
 
+## October 31 upstream maintenance — normal Windows +40 published
+
+Core PR43 exact c444d665 passes trusted default-main41028123795 and merges as
+2558f1c716fae88799c228e93331c2c49c60d004 with the identical checked tree.
+Reviewed DNS cancellation, tailnet-aware lookup, route validation and WireGuard
+changes preserve local DNS ownership/recovery, tray, installer, update and branding
+contracts. Canonical Unix SSH changes exclude both delivered platforms. Normal
+core Windows+45 passes41177243132; public checksums, pinned Ed25519 signature/key,
+exact source/base/sequence/architecture and all five PE payloads verify independently.
+
+GitHub detector41177606213 refreshes TailDNS PR33 against that verified core.
+Exact953de203 passes trusted41177713705 and automatic Android/tidy/license gates;
+reviewed netmap-notification filtering preserves meaningful changes and retained
+callback/lifecycle contracts. Identical-tree mergeb163917f delivers normal Android
+v1.103.312+43 through41178816361. All seven public assets, package/version/code
+298904990, pinned signer, four native ABIs, exact embedded core and Windows
+companion verify independently. Existing dirty Android/SleepManager work survives.
+
+TailD aligns require/replace/sums and all three guards with the exact verified
+module. Both isolated signers select immutable4521590 with identical reviewed
+signer closure; keys and signing logic are unchanged. GitHub inheritance41179564237
+passes inherited Android/DNS/Windows gates and promotes89d7891267fde3b009dd5cfb8362767e94c89f48,
+retaining verified TailDNS ancestry. Focused41180563537 and analysis41180563344 pass.
+
+Normal windows-v1.105.0+40 passes41180702186, including fresh isolated install,
+upgrade/rollback/uninstall, complete-product failed-migration refusal, protected
+canonical manifest signing and publication. Independent retrieval verifies all444
+payload members, pinned release/package/core Ed25519 signatures and key, exact
+source/core/base/sequence/architecture/schema4, runtimes/notices, unchanged UI
+assets and packaged R39 retention/R40 notification behavior. Installer117,471,466
+bytes; SHA-256 c4d1141359c244ea955ddbc5be22ea2567078c2ca48bebb00b7a21c303cd9cc6.
+Authenticode remains unsigned. SleepManager remains17 ahead/0 behind with unchanged
+verified0.7.3.1 assets; TailD Android.40 remains unchanged.
+
+All task scratch is removed after last use through reviewed installed-helper
+tickets. The same D: ticket completes after identity-bound read-only attributes on
+empty Go-cache directories are cleared; no alternate deletion is used. Both task
+roots are absent. Compact signed metadata, exact verification recipes and receipts
+remain at D:/Tools/taildns-upstream-verification-20261031 for release audit/recovery.
+No device installation/control or provider writes occurred; B12 remains separately
+BLOCKED/open and unclaimed.
+
 ## October 29 upstream maintenance — normal Windows +39 published
 
 Core PR42 reconciles upstream DNS Response metadata with the fork's local DoH
