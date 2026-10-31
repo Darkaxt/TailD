@@ -149,7 +149,7 @@ jobs:
         with:
           # Reviewed signer tooling is independently immutable. Never import or
           # execute application/candidate files downloaded from build artifacts.
-          ref: beac096c5e22a10b5b16c8ee0a15a9040ed17aeb
+          ref: 4521590b41ca2ec3623c6f6d49f9e420021efe19
           path: trusted
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
@@ -252,7 +252,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          ref: beac096c5e22a10b5b16c8ee0a15a9040ed17aeb
+          ref: 4521590b41ca2ec3623c6f6d49f9e420021efe19
           path: trusted
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
