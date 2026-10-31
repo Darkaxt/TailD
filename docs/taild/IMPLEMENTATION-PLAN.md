@@ -1,5 +1,27 @@
 # TailD staged execution
 
+## Current execution — October 31 scheduled maintenance
+
+The maintenance heartbeat authorizes exact checked promotion and normal signed
+release publication. Device actions, provider writes and real B12 acceptance are
+outside this scope; the existing B12 boundary stays BLOCKED/open.
+
+| Stage | Status | Acceptance satisfied | Acceptance remaining |
+| --- | --- | --- | --- |
+| Reviewed core promotion and Windows delivery | COMPLETE | PR43 c444d665 passes exact trusted default-main41028123795; reviewed DNS/context/routing/transport changes preserve fork contracts and Unix SSH excludes both delivered platforms. Identical-tree merge2558f1c7 delivers normal Windows+45 through41177243132. Four public assets, pinned Ed25519/key, exact source/base/sequence/architecture, all five payloads and notices verify independently. | None. |
+| Exact-core TailDNS Android promotion and delivery | COMPLETE | GitHub detector41177606213 refreshed PR33 to reviewed953de203 with exact core2558f1c7. Trusted default-main41177713705 checks that exact candidate; automatic Android/tidy/license pass. Identical-tree mergeb163917f delivers normal v1.103.312+43 through41178816361. Seven public assets, APK package/version/code298904990/pinned signer/fourABI/embedded core/Windows companion and source notices verify independently; spent download scratch is removed. | None. |
+| TailD inheritance, Windows delivery and reconciliation | ACTIVE | Both prerequisite releases independently verified. Existing Windows+39 and SleepManager0.7.3.1 remain healthy. | Matching guards and immutable signer closure, GitHub-owned inheritance, required normal Windows release and independent package verification, unchanged-family reconciliation and exact scratch cleanup. |
+
+No tracked deferrals. Stage1 reconciliation preserves DNS ownership/recovery,
+tray/update/installer/branding/version contracts; no consolidation is required.
+Stage2 reconciliation preserves package/signer, branding, automatic theme, local
+DNS and lifecycle contracts. Stage3 owns the current acceptance gaps. Disposable scripts
+use E:/Temp/taildns-maintenance-20261031; native/module/package work uses
+D:/Temp/taildns-maintenance-20261031 for small-file/native I/O. Reviewed cleanup
+runs after last use. Compact signed metadata, checked diffs and reproducible
+verification receipts are retained at D:/Tools/taildns-upstream-verification-20261031
+for release audit/recovery.
+
 ## Current execution — October 29 scheduled maintenance
 
 The heartbeat authorizes source repair/promotion and verified normal releases,
