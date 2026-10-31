@@ -25,6 +25,24 @@ record past verification locations and do not establish current file availabilit
 
 ## November1 Windows dashboard and policy controls — normal +41 verified
 
+Subsequent explicit deployment request: the protected broker's approved request
+b796093a5592477c968433b9950c9a98 installs +41 successfully on the user's Windows
+computer. Installed package/core signatures, all 444 payload members, the four
+active core binary hashes, version 1.105.0-taild.41, registration and +40 rollback
+verify independently. Node identity/addresses, VPN preferences, owning account,
+analytics settings and the original history file are preserved. The native TailD
+window opens and responds; collection resumes with DNS/app-DNS observation and a
+connected live stream. Native UI inspection transports were unavailable, so this
+deployment does not claim a fresh visual inspection beyond the earlier exact-asset
+native acceptance. Existing history corruption remains unresolved.
+
+Automatic update checks and application are enabled. The inherited TailD-specific
+path checks its signed complete-product channel hourly; publication does not
+push an immediate installation. This deployment changes no update preference.
+Compact private deployment receipts are under maintenance/20261101/deployment41
+in the support root. The release-only statements below describe publication
+acceptance before this separately authorized deployment.
+
 Source 18e61f5d8ae7c09678cbda23043f2ec4901581f8 passes focused 41249797322
 and analysis 41249797337. Native https://taild.local/index.html verification at
 1658x1320 and 1280x900 demonstrates 100126 DNS observations in the default week, saved-state
