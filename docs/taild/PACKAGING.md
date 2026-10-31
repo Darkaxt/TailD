@@ -1,5 +1,30 @@
 # Stage 9 local packaging contract
 
+## Local evidence storage
+
+Use `D:/Projects/TailD-support/maintenance/YYYYMMDD` for compact current release
+verification receipts and recipes, and `D:/Projects/TailD-support/validation` for
+active baselines. Keep disposable builds, downloads and verifier environments in
+exact task-owned Temp folders and remove them after last use. Do not create new
+project evidence folders under `D:/Tools`.
+
+The historical `D:/Tools/taild-*` and `D:/Tools/taildns-*` evidence paths cited below
+map to `G:/Archives/TailD/evidence-through-20261031.zip`. The verified per-file
+mapping and archive digest are recorded at
+`D:/Projects/TailD-support/storage-migration-20261031/archive-verified.json`.
+The archive retains private recovery histories, previous deliveries and release
+audit evidence while the separate B12 boundary remains open. Verify the archive
+digest, then extract only required members to an exact recovery task folder and
+check their recorded SHA-256 before use; never overwrite installed history or
+automatically replay historical scripts.
+
+The active Windows UI baseline is `validation/windows-ui`; the unchanged
+SleepManager and Android release receipts are `validation/SleepManager/public-release.json`
+and `validation/android40/public-release.json`, relative to the support root.
+The October31 maintenance recipes and receipts are under `maintenance/20261031`;
+their active path references select these new locations. Historical archived
+recipes retain their original text and can be recovered through the mapping.
+
 ## October 31 upstream maintenance — normal Windows +40 published
 
 Core PR43 exact c444d665 passes trusted default-main41028123795 and merges as
