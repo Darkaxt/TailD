@@ -15,13 +15,58 @@ recovery source. Use GitHub commit history and published releases for reproducib
 source and deliveries. Do not create replacement historical archives. Keep only
 small active baselines and receipts serving a concrete current requirement.
 
-The active Windows UI baseline is `validation/windows-r41/ui`; its current native
-acceptance screenshots and renderer receipt are in `validation/windows-r41`.
+The active Windows UI baseline is `validation/windows-r42/ui`; its current native
+acceptance screenshots and renderer receipt are in `validation/windows-r42`.
+Normal Windows+43 contains those exact patched JavaScript/CSS assets and notices.
 The unchanged SleepManager and Android release receipts are `validation/SleepManager/public-release.json`
 and `validation/android40/public-release.json`, relative to the support root.
 The October31 maintenance recipes and receipts are under `maintenance/20261031`;
 their active path references select these new locations. Historical citations below
 record past verification locations and do not establish current file availability.
+
+## November1 upstream maintenance — normal Windows +43 verified
+
+Core PR44 exact7f46cf12 passes trusted41184714247 and promotes the identical tree
+as c72cd93352d3558e28d2b21ed3b78212d43eec6a. The reviewed UDP reachability,
+RACK default, connector and logging changes preserve fork DNS, tray, installer,
+update, rollback and identity contracts; Unix SSH changes exclude both delivered
+platforms. Normal TailDNS Windows1.105.0+46 passes41281169268 and independent
+four-asset, pinned signature/key, source/version and five-payload verification.
+
+TailDNS PR34 exacte9e58c21 changes only the matching shared-core require/replace
+and sums. Trusted41281555448 and ordinary Android/tidy/license checks pass before
+identical-tree merge39688ce0. Normal Androidv1.103.312+44 passes41282790920;
+independent retrieval verifies all seven assets, package/version/code298919360,
+pinned signer/branding, four native ABIs, exact core and Windows companion.
+Original post-merge checks pass; dirty local Android/SleepManager work is untouched.
+
+TailD aligns all guards with the same verified core/module. Immutable signer
+79d5e1cd9283f3605d5db8554bccbe9b0b4edcc0 changes only the core identity
+constants in the reviewed signer closure; key pins and signing logic are unchanged.
+GitHub inheritance41283634100 verifies Android/DNS/Windows and promotes
+67ba6a744c2256876ac9d6199b495261bb460639 with TailDNS39688ce0 ancestry.
+Exact focused41284670370 and analysis41284670499 pass. Normal
+windows-v1.105.0+43 passes41284878958, including fresh isolated installer lifecycle,
+complete-product migration refusal and protected signing/publication.
+
+Independent public download verifies all eight assets and444 package members,
+release/package/core Ed25519 signatures and pinned key, exact provenance,
+base1.105.0/sequence43/AMD64/schema4, runtime identities/notices and the exact
+native-tested+42 frontend. R39 background retention, R40 notification activation,
+R41 policy/streaming controls and R42 patched dependencies are preserved.
+Installer117473797 bytes; SHA-256
+6c219057628998e6e5acf6352b41aeb97db53c265b34f713e1c18aa66b89fe4d.
+Installer and primary product PE certificate tables confirm no Authenticode
+signature; Ed25519 manifest signing does not imply executable signing.
+
+SleepManager remains17 ahead/0 behind with unchanged verifiedv0.7.3.1 assets;
+its post-release main difference is documentation only. TailD Android.40 remains
+unchanged. All20 captured R42 dependency alerts now read fixed without dismissal,
+with zero open GitHub alerts. Final family reconciliation and reviewed scratch
+cleanup pass; both exact maintenance Temp roots are absent. Compact receipts and
+verification recipes are under maintenance/20261101/upstream in the support root.
+No device installation/control, provider write, archive or live-history repair
+occurs. R42 device delivery and real B12 acceptance remain separately open.
 
 ## November1 Windows dashboard and policy controls — normal +41 verified
 

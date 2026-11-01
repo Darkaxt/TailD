@@ -12,13 +12,19 @@ remains separately parked at the protected fullscreen-consent boundary.
 | --- | --- | --- | --- |
 | Reviewed core promotion and Windows delivery | COMPLETE | PR44 exact7f46cf12 passes trusted default-main41184714247. Reviewed fork contracts survive identical-tree mergec72cd933. Normal core Windows1.105.0+46 passes41281169268; independent public verification checks four assets, pinned Ed25519 key/signature, exact source/base/sequence/architecture, all five PE payloads, embedded version/key and source notices. No acceptance-relevant consolidation is required. | None. |
 | Exact-core TailDNS Android promotion and delivery | COMPLETE | PR34 e9e58c21 passes trusted41281555448 and ordinary Android/tidy/license checks. Identical-tree merge39688ce0 delivers normal v1.103.312+44 through41282790920. Independent retrieval verifies all seven assets, APK package/version/code298919360/pinned signer/branding/four native ABIs, exact embedded core and Windows companion/source notices. Original post-merge Android/tidy/license checks pass. The UTF-8 diagnostic log-save failure occurred before mutation and was corrected explicitly; no acceptance-relevant consolidation is required. | None. |
-| TailD inheritance, Windows delivery and reconciliation | ACTIVE | Current+42 and its patched dependency/UI baseline are independently verified; SleepManager upstream is fully contained (fork17 ahead/0 behind). New verified TailDNS39688ce0 and shared corec72cd933 are available. | Checked GitHub inheritance with consistent shared-core pins and immutable signer closure, next normal Windows release, independent full-package verification, final family reconciliation and transactional cleanup. |
+| TailD inheritance, Windows delivery and reconciliation | COMPLETE | Exact module/sums and all three guards pass real-source overlay/package/channel/signer checks. Both immutable signers select reviewed79d5e1c; the signer closure changes only core identity constants. GitHub inheritance41283634100 passes inherited Android/DNS/Windows gates and promotes67ba6a74 with verified TailDNS39688ce0 ancestry. Exact focused41284670370 and analysis41284670499 pass. Normal Windows1.105.0+43 through41284878958 passes fresh installer lifecycle, complete-product migration refusal and protected signing/publication. Independent public retrieval verifies all444 payloads, three pinned signatures/key, exact source/core/base/sequence/architecture/schema4, runtimes/notices and the unchanged patched+42 native UI. A stale sequence assertion in the verifier was corrected; existing downloads then pass complete verification without another release. Final family reconciliation passes; SleepManager17 ahead/0 behind and TailD Android.40 remain unchanged. Reviewed cleanup is applied and both exact task roots are absent. | None within scheduled maintenance. Device delivery and B12 remain separately parked/open and unclaimed. |
 
 No tracked deferrals. Disposable scripts use E:/Temp/taildns-maintenance-20261101;
 native/module/download scratch uses D:/Temp/taildns-maintenance-20261101 for
 sustained small-file/native I/O. Retain compact current receipts and reproducible
 verification recipes under D:/Projects/TailD-support/maintenance/20261101/upstream.
 No historical archive or production-history copy is created.
+
+Final reconciliation satisfies every scheduled promotion/release criterion with
+no tracked deferral, unresolved maintenance blocker or ACTIVE maintenance stage.
+No acceptance-relevant consolidation is needed. All20 captured R42 dependency
+alerts now read fixed without dismissal; GitHub reports zero open alerts. No
+device installation/control, provider write or live-history repair occurred.
 
 ## Current execution — November1 dependency security maintenance (R42)
 
