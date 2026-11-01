@@ -1,5 +1,23 @@
 # TailD staged execution
 
+## Current execution — November1 dependency security maintenance (R42)
+
+Already authorized: "Patch, release and deploy". No further publication or
+deployment authorization is required; protected broker consent remains intact.
+
+| Stage | Status | Acceptance satisfied | Acceptance remaining |
+| --- | --- | --- | --- |
+| Complete dependency remediation and native compatibility | COMPLETE | Matching Angular20.3.34 peers, CLI/build20.3.41, patched MCP/Vite, exact Glob/minimatch/undici/qs/fast-uri overrides and setuptools84.1.0 resolve coherently. Real locked npm install/audit reports zero vulnerabilities; full dependency/peer listing, type checks, frontend contracts (including actual cacache and package-json Glob consumers), production Angular and native builds pass. Clean Python environment installs exact requirements and passes pip check. Actual native workflow at https://taild.local/index.html verifies100126 default-week DNS facts, policy state/selection/readback, scroll, refresh and existing theme at both sizes; screenshots inspected. Independent direct final diff/caller/override review finds no surviving affected pin or acceptance-relevant consolidation. | None. Old-lock peer-resolution and host-global pip conflicts were diagnosed and resolved without bypass flags or host-package changes. |
+| Signed Windows security release | ACTIVE | Existing signed release path and immutable core/signing identity apply; local compatibility acceptance passes. | Exact main checks, fresh installer/recovery gates, normal release, independent delivered-package verification, captured alerts fixed on GitHub. |
+| Local deployment and reconciliation | NOT STARTED | User explicitly authorizes installation. | Protected installer, installed/active payload and identity preservation, resumed window/collection, final reconciliation and exact scratch cleanup. |
+
+No tracked deferrals. Scripts use E:/Temp/taild-security42-20261101. Dependency,
+native/database/build/download scratch uses D:/Temp/taild-security42-20261101
+for sustained/small-file I/O. Keep compact current release/deployment receipts
+under D:/Projects/TailD-support/maintenance/20261101 and the current native UI
+acceptance baseline; no archive or production-history copy is created. Existing
+history corruption and B12 remain separate open boundaries.
+
 ## Current execution — November1 Windows dashboard and policy repair (R41)
 
 Already authorized by the bug report and standing final-release instructions.

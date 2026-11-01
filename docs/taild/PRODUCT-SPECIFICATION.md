@@ -1,6 +1,47 @@
 # TailD remaining-product specification
 
-Version 1.21, 2026-11-01. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.22, 2026-11-01. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+
+### R42 — Dependabot dependency remediation and Windows deployment
+
+The user's explicit "Patch, release and deploy" authorizes remediation of the
+20 open Dependabot alerts captured from main d3c8826 on November1: alerts
+25,23,22,21,20,19,18,16,15,14,13,10,9,8,6,5,4,3,2,1. They cover minimatch,
+undici, qs, setuptools, fast-uri, Vite, Angular common and the MCP SDK.
+The same dependency audit additionally identifies Glob cancellation advisory
+GHSA-3g3m-2fjr-6pw4; its patched upstream version and actual cacache/package-json
+consumer compatibility are part of this remediation, not an audit exception.
+Upgrade affected dependencies to upstream patched versions using the smallest
+compatible framework/toolchain changes. Align Angular framework peers. Regenerate
+the exact lockfile; do not hand-edit integrity values, use force/legacy-peer-deps,
+dismiss alerts, disable audits or weaken CI, CSP, signing or installation guards.
+Any necessary transitive override must be bounded to the affected package and
+its compatibility demonstrated by the real build and native product workflow.
+
+Static triage confirms affected version pins, not an exploitable TailD path for
+every advisory. Angular's HTTP-client issue is unreachable in the current UI:
+the application uses its native message bridge and connect-src none. Other
+alerts involve development/packaging dependencies whose advisory-specific
+execution preconditions were not established. Patch the affected pins without
+claiming an exploit was demonstrated or removing existing product controls.
+
+Acceptance requires an installed locked dependency tree with no npm audit
+vulnerabilities, no affected versions for the captured advisory set, patched
+setuptools installation, peer/type/frontend/build checks and an actual isolated
+native workflow preserving R41 policy controls, seven-day analytics and theme.
+Preserve node/profile/DNS ownership, credentials, history/retention, opt-in
+analytics, TailDrop, rollback, monotonic versions and separate update channels.
+Publish one normal signed Windows release from the completed checked main source;
+independently download and verify signatures, all payloads, source/core/runtime
+provenance, notices and the native-tested UI. Read back the captured GitHub alerts
+as fixed by the source update, rather than dismissing them.
+
+Deploy that verified release through the existing protected broker and installer.
+Verify actual installed and active identities, preserved node/preferences/history,
+rollback and resumed collection. A native window/open/response check does not
+claim new pixel inspection if UI transports remain unavailable. Existing history
+corruption and separate B12 acceptance remain open; no data reset, provider write,
+Android installation or unrelated upstream promotion belongs to this change.
 
 ### R41 — Usable Windows dashboards and explicit profile controls
 
