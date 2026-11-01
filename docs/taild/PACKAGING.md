@@ -1,5 +1,31 @@
 # Stage 9 local packaging contract
 
+## November1 responsive Recent DNS — normal +44 installed and verified
+
+Source ff5ea277f446130e775fd406085f4516c1af8496 delivers Windows1.105.0+44
+through41309873805 after exact focused41309591857/CodeQL41309591572. One fixed
+cutoff per cleanup sweep prevents continuous rewriting of overlapping history;
+Recent DNS facts skip unrelated GlassWire coverage, retaining exact seven-day
+metrics and scope/revision contracts. Current-source native rendering over170705
+synthetic retained decisions completes in1.398s while policy remains pending.
+
+Independent public retrieval verifies all eight assets, all444 members, pinned
+release/package/core Ed25519 signatures/key, exact source/core/base/sequence/schema,
+runtime/notices, unchanged tested UI and the packaged fixes. Installer117473781
+bytes, SHA-256 b7769e54de42cd127d5f7fab6f88959ec51968b3f6da1d2a007f59f08eb322e8.
+PEs and installer remain not Authenticode-signed.
+
+Protected approved request40b9e91d installs+44. Actual installed signatures/payload,
+active core/daemon+44, registration and+43 rollback verify. Node/preferences,
+settings and both API credentials are preserved. At the user's explicit direction,
+damaged observation history and recovery copies are discarded with no bulk archive.
+Fresh live history passes read-only SQLite integrity/foreign keys; collection resumes
+and the actual Recent DNS request returns91 observations in27ms with maintenance
+idle. The native owner window is open/input-idle; no production pixel inspection
+or full B12 rollout acceptance is claimed. Compact receipts are under
+maintenance/20261101/recent44 in the support root. Documentation-only completion
+evidence does not require another payload release.
+
 ## Local evidence storage
 
 Use `D:/Projects/TailD-support/maintenance/YYYYMMDD` for compact current release

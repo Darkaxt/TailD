@@ -14,14 +14,13 @@ the complete scoped fix with focused regressions; verify the native workflow;
 commit, publish/independently verify the normal release; deliver through the
 protected installer and reconcile actual history/query health; clean spent scratch.
 
-R44 acceptance currently remaining: maintenance convergence and unrelated-coverage
-regressions/fix, healthy retained-history/native verification, normal release,
-installed verification and a quantified non-destructive recovery disposition.
-Internal advancement blockers: live history corruption and the measured DNS read
-dependency on traffic coverage; the exact multi-minute phase is still being
-traced. Collector107692 was cooperatively stopped and its actual exit observed;
-VPN/reader services and provider policy were unchanged. Production DB/WAL remain
-in place. No reset, salvage activation or complete recovery is claimed.
+R44's moving-cutoff maintenance defect and unrelated traffic-coverage dependency
+are reproduced and corrected. Native retained-history, exact-source CI, normal
+signed release, independent public retrieval and actual installed/live checks
+pass. The user explicitly chose discard/fresh collection rather than forensic
+recovery. Earlier diagnostic checkpoints below record the investigation; the
+final reconciliation supersedes their pending-state descriptions. Stage10 remains
+ACTIVE only for its pre-existing B12 scope, not an unfinished R44 fix.
 
 Disposable scripts use E:/Temp/taild-dns44-20261101. Native/database/build scratch
 uses D:/Temp/taild-dns44-20261101 for sustained small-file/database I/O, with private
@@ -42,12 +41,60 @@ evidence and process exit were inspected. Frontend assets/theme are unchanged.
 An initial diagnostic shell staged content incorrectly; the fixture build input
 was corrected and the complete real workflow rerun successfully.
 
-Private DB/WAL source hashes match the frozen copy. Salvage finishes but has
-unassigned/misplaced records, invalid types and broken references despite a clean
-SQLite structural check. It is rejected for activation. Essential user recovery
-choice is pending; the original stays in place and collection remains gracefully
-stopped, with VPN/provider state unchanged. Release and installed/live recovery
-verification remain advancement blockers; fixture acceptance is not live recovery.
+Private DB/WAL hashes matched the frozen logical view. Windows MSIX AppData
+redirection was later found to combine a stale shadow main file with physical
+journals. Earlier salvage counts describe that merged view, not quantified loss
+from the physical active database. After removing the shadow, a separate read-only
+SQLite3.54.0 quick_check of the real10.36GB database independently reports malformed
+freelist/traffic-tree references. The original cause of that damage is unproven.
+No salvage is activated. Reset and verification use exact resolved file identities;
+neither structural salvage success nor fixture acceptance is called live recovery.
+
+Recovery decision: the user subsequently explicitly directs "Delete damaged
+history and start fresh". Further forensic salvage is cancelled. Remove only
+the damaged observation DB/journals, continuation progress and recovery copies
+through reviewed exact-target cleanup; preserve settings/saved queries/credentials
+and VPN/provider configuration. Resume collection from fresh history using the
+verified fixed product, without keeping a bulk archive.
+
+R44 final reconciliation: exact main ff5ea277 passes focused41309591857 and
+CodeQL41309591572. Normal Windows1.105.0+44 through41309873805 passes backend,
+production build, isolated installer lifecycle, complete-product migration refusal
+and protected signing/publication. Independent public retrieval verifies all eight
+assets, all444 payloads, three pinned Ed25519 manifests/key, exact source/core/base/
+sequence/architecture/schema4, runtime/notices, unchanged native-tested UI and the
+packaged fixed-cutoff/DNS-only behavior. Installer SHA-256:
+b7769e54de42cd127d5f7fab6f88959ec51968b3f6da1d2a007f59f08eb322e8.
+Executables/installer remain truthfully not Authenticode-signed.
+
+The user's approved protected broker request40b9e91d installs+44 successfully.
+Installed signatures/all444 payloads, active core/daemon+44, registration and+43
+rollback verify. Node/addresses/preferences, settings and both credential hashes
+match the saved baseline. Exact reviewed discard transactions remove the shadow,
+damaged physical observations, stale continuations and recovery output; no archive
+is kept. Fresh actual history passes physically read-only quick_check and foreign
+keys. Normal collection resumes; the live current-endpoint Recent DNS request
+returns91 observations with First seen/Total in0.0274s and maintenance idle. The
+installed owner window is opened and reaches native input-idle; no new production
+pixel inspection is claimed. No provider policy is written.
+
+The initial native build fixture staging and dated loopback test were corrected
+and their affected full workflows verified. The initial installer submission's
+missing persistent CWD failed before queueing and was corrected before the one
+approved request. An administrator-only WMI event observer was unavailable; ordinary
+owner-window events verify native availability without elevation or access changes.
+Closure review finds no acceptance-relevant consolidation. No R44 blocker or
+tracked deferral remains; B12 full rollout/rollback acceptance stays open and
+unclaimed. Compact receipts and recipes: D:/Projects/TailD-support/maintenance/
+20261101/recent44. Final reviewed scratch transaction7dc90afa is APPLIED with
+no errors/exclusions and both exact E:/Temp/taild-dns44-20261101 and D:/Temp/
+taild-dns44-20261101 roots absent. The earlier native-output ticket and both
+user-authorized history-discard tickets are APPLIED. No bulk archive remains.
+The continuing installed user tray/background have an empty working-directory
+binding under D:/Projects/TailD-support/runtime/installer/is-Q6FHGS8J9R.tmp/{app};
+preserve that directory until their normal exit, then remove it through exact
+cleanup. It contains no retained files. The native window uses installed files
+and explicit D:/Projects/TailD-support/runtime/desktop scratch, outside task Temp.
 
 ## Current execution — November1 scheduled upstream maintenance
 
@@ -83,15 +130,16 @@ deployment authorization is required; protected broker consent remains intact.
 | Stage | Status | Acceptance satisfied | Acceptance remaining |
 | --- | --- | --- | --- |
 | Complete dependency remediation and native compatibility | COMPLETE | Matching Angular20.3.34 peers, CLI/build20.3.41, patched MCP/Vite, exact Glob/minimatch/undici/qs/fast-uri overrides and setuptools84.1.0 resolve coherently. Real locked npm install/audit reports zero vulnerabilities; full dependency/peer listing, type checks, frontend contracts (including actual cacache and package-json Glob consumers), production Angular and native builds pass. Clean Python environment installs exact requirements and passes pip check. Actual native workflow at https://taild.local/index.html verifies100126 default-week DNS facts, policy state/selection/readback, scroll, refresh and existing theme at both sizes; screenshots inspected. Independent direct final diff/caller/override review finds no surviving affected pin or acceptance-relevant consolidation. | None. Old-lock peer-resolution and host-global pip conflicts were diagnosed and resolved without bypass flags or host-package changes. |
-| Signed Windows security release | COMPLETE | Exact main d2b7780 passes focused41264884002 and analysis41264883423. Normal Windows1.105.0+42 through41265356423 passes fresh isolated installer lifecycle, complete-product migration refusal and protected signing/publication. Independent public retrieval verifies eight assets, all444 payloads, pinned release/package/core signatures, exact provenance, runtimes/notices and native-tested UI. GitHub's November1 readback now marks the captured alerts fixed without dismissal, matching the patched SBOM. | None. Local installation remains the separate parked stage below. |
-| Local deployment and reconciliation | BLOCKED | User explicitly authorizes installation; independently verified public+42 satisfies the actual deployment prerequisite. The protected request549087bcfd5a488d91a347db5efd28d0 was rejected before launch with fullscreen_active. | External native-consent boundary: user must leave fullscreen mode and direct a fresh prompt. Never automatically resubmit. Then protected installer, installed/active payload and identity preservation, resumed window/collection, final reconciliation and exact scratch cleanup. Independent preparation/cleanup can continue; no install or live recovery is claimed. |
+| Signed Windows security release | COMPLETE | Exact main d2b7780 passes focused41264884002 and analysis41264883423. Normal Windows1.105.0+42 through41265356423 passes fresh isolated installer lifecycle, complete-product migration refusal and protected signing/publication. Independent public retrieval verifies eight assets, all444 payloads, pinned release/package/core signatures, exact provenance, runtimes/notices and native-tested UI. GitHub's November1 readback now marks the captured alerts fixed without dismissal, matching the patched SBOM. | None. Local delivery is reconciled through verified+44 below. |
+| Local deployment and reconciliation | COMPLETE | The earlier+42 request was declined before launch by fullscreen quiet mode. The later user-approved protected request40b9e91d installs independently verified+44, including all patched+42 dependencies and identical tested frontend assets. Installed signatures/all444 payloads, active core/daemon, node/preferences/settings/credentials, rollback, collection and native window pass actual checks. Original history is explicitly discarded under the user's later R44 instruction; fresh history passes integrity/foreign keys and live DNS reads. Obsolete+42 pending installer/scripts are removed through the original reviewed cleanup transactionc28f44f2. | None within R42. Separate B12 full rollout acceptance remains open. |
 
 No tracked deferrals. Scripts use E:/Temp/taild-security42-20261101. Dependency,
-native/database/build/download scratch uses D:/Temp/taild-security42-20261101
-for sustained/small-file I/O. Keep compact current release/deployment receipts
-under D:/Projects/TailD-support/maintenance/20261101 and the current native UI
-acceptance baseline; no archive or production-history copy is created. Existing
-history corruption and B12 remain separate open boundaries.
+native/database/build/download scratch used D:/Temp/taild-security42-20261101
+for sustained/small-file I/O. Both exact task roots are now absent after the
+superseding+44 delivery. Keep compact current release/deployment receipts under
+D:/Projects/TailD-support/maintenance/20261101 and the current native UI baseline.
+R44 records the separate user-authorized damaged-history discard and healthy
+fresh collection. B12 remains independently open; no bulk archive is created.
 
 ## Current execution — November1 Windows dashboard and policy repair (R41)
 

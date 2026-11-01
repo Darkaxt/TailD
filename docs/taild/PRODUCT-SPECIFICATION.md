@@ -21,6 +21,13 @@ Quantify recovered integrity, scope and losses before any live replacement;
 record material loss/ambiguity and resolve an essential user decision if needed.
 The corruption's original cause remains unknown unless independently established.
 
+November1 recovery decision: the user explicitly chose "Delete damaged history
+and start fresh" after reviewing salvage ambiguity. Permanently delete the exact
+damaged observation database/journals, invalid continuation progress and private
+recovery copies; create fresh history through the normal collector. Preserve
+settings, saved queries, credentials, node and provider configuration. This
+authorized discard replaces further forensic salvage; do not retain a bulk archive.
+
 Acceptance requires reproducible maintenance-convergence and scoped DNS-read
 regressions, integrated current-source verification and a measured native read
 on a healthy representative retained history. Preserve the existing UI/theme,
