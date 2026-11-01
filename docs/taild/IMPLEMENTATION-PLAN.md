@@ -1,5 +1,25 @@
 # TailD staged execution
 
+## Current execution — November1 scheduled upstream maintenance
+
+The scheduled instruction authorizes checked source promotion and normal signed
+releases only. The authoritative inherited local-DNS and TailD specifications,
+packaging contract and heartbeat define acceptance. No device action, provider
+write or real B12 acceptance is authorized by this cycle. R42 device delivery
+remains separately parked at the protected fullscreen-consent boundary.
+
+| Stage | Status | Acceptance satisfied | Acceptance remaining |
+| --- | --- | --- | --- |
+| Reviewed core promotion and Windows delivery | COMPLETE | PR44 exact7f46cf12 passes trusted default-main41184714247. Reviewed fork contracts survive identical-tree mergec72cd933. Normal core Windows1.105.0+46 passes41281169268; independent public verification checks four assets, pinned Ed25519 key/signature, exact source/base/sequence/architecture, all five PE payloads, embedded version/key and source notices. No acceptance-relevant consolidation is required. | None. |
+| Exact-core TailDNS Android promotion and delivery | COMPLETE | PR34 e9e58c21 passes trusted41281555448 and ordinary Android/tidy/license checks. Identical-tree merge39688ce0 delivers normal v1.103.312+44 through41282790920. Independent retrieval verifies all seven assets, APK package/version/code298919360/pinned signer/branding/four native ABIs, exact embedded core and Windows companion/source notices. Original post-merge Android/tidy/license checks pass. The UTF-8 diagnostic log-save failure occurred before mutation and was corrected explicitly; no acceptance-relevant consolidation is required. | None. |
+| TailD inheritance, Windows delivery and reconciliation | ACTIVE | Current+42 and its patched dependency/UI baseline are independently verified; SleepManager upstream is fully contained (fork17 ahead/0 behind). New verified TailDNS39688ce0 and shared corec72cd933 are available. | Checked GitHub inheritance with consistent shared-core pins and immutable signer closure, next normal Windows release, independent full-package verification, final family reconciliation and transactional cleanup. |
+
+No tracked deferrals. Disposable scripts use E:/Temp/taildns-maintenance-20261101;
+native/module/download scratch uses D:/Temp/taildns-maintenance-20261101 for
+sustained small-file/native I/O. Retain compact current receipts and reproducible
+verification recipes under D:/Projects/TailD-support/maintenance/20261101/upstream.
+No historical archive or production-history copy is created.
+
 ## Current execution — November1 dependency security maintenance (R42)
 
 Already authorized: "Patch, release and deploy". No further publication or
@@ -8,7 +28,7 @@ deployment authorization is required; protected broker consent remains intact.
 | Stage | Status | Acceptance satisfied | Acceptance remaining |
 | --- | --- | --- | --- |
 | Complete dependency remediation and native compatibility | COMPLETE | Matching Angular20.3.34 peers, CLI/build20.3.41, patched MCP/Vite, exact Glob/minimatch/undici/qs/fast-uri overrides and setuptools84.1.0 resolve coherently. Real locked npm install/audit reports zero vulnerabilities; full dependency/peer listing, type checks, frontend contracts (including actual cacache and package-json Glob consumers), production Angular and native builds pass. Clean Python environment installs exact requirements and passes pip check. Actual native workflow at https://taild.local/index.html verifies100126 default-week DNS facts, policy state/selection/readback, scroll, refresh and existing theme at both sizes; screenshots inspected. Independent direct final diff/caller/override review finds no surviving affected pin or acceptance-relevant consolidation. | None. Old-lock peer-resolution and host-global pip conflicts were diagnosed and resolved without bypass flags or host-package changes. |
-| Signed Windows security release | BLOCKED | Exact main d2b7780 passes focused41264884002 and analysis41264883423. Normal Windows1.105.0+42 through41265356423 passes fresh isolated installer lifecycle, complete-product migration refusal and protected signing/publication. Independent public retrieval verifies eight assets, all444 payloads, pinned release/package/core signatures, exact provenance, runtimes/notices and native-tested UI. | External GitHub alert-state reconciliation: all20 captured alerts still report open despite successful exact-head graph/update jobs and the SBOM showing every patched version. No alert is dismissed. GitHub must recompute those alerts as fixed; this alone prevents closing this stage and overall reconciliation, not deploying the independently verified release. |
+| Signed Windows security release | COMPLETE | Exact main d2b7780 passes focused41264884002 and analysis41264883423. Normal Windows1.105.0+42 through41265356423 passes fresh isolated installer lifecycle, complete-product migration refusal and protected signing/publication. Independent public retrieval verifies eight assets, all444 payloads, pinned release/package/core signatures, exact provenance, runtimes/notices and native-tested UI. GitHub's November1 readback now marks the captured alerts fixed without dismissal, matching the patched SBOM. | None. Local installation remains the separate parked stage below. |
 | Local deployment and reconciliation | BLOCKED | User explicitly authorizes installation; independently verified public+42 satisfies the actual deployment prerequisite. The protected request549087bcfd5a488d91a347db5efd28d0 was rejected before launch with fullscreen_active. | External native-consent boundary: user must leave fullscreen mode and direct a fresh prompt. Never automatically resubmit. Then protected installer, installed/active payload and identity preservation, resumed window/collection, final reconciliation and exact scratch cleanup. Independent preparation/cleanup can continue; no install or live recovery is claimed. |
 
 No tracked deferrals. Scripts use E:/Temp/taild-security42-20261101. Dependency,
