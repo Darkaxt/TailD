@@ -139,6 +139,7 @@ class History:
             raise HistoryError('History database must be an owned regular file')
         self.now = instant(now or controld.utc_now().isoformat())
         self.defer_cleanup = defer_cleanup
+        self._cleanup_floor = None
         self.db = sqlite3.connect(self.path, isolation_level=None)
         self.db.row_factory = sqlite3.Row
         try:
@@ -284,7 +285,11 @@ class History:
             raise HistoryError('Expected a bounded maintenance row budget')
         remaining=limit
         with self.transaction():
-            floor=self._advance_retention()
+            # One sweep uses one committed cutoff. Moving it on every batch
+            # keeps trimming the same crossing runs forever under an advancing
+            # clock, starving later rows and continuously growing the WAL.
+            floor=self._cleanup_floor
+            if floor is None:floor=self._advance_retention()
             for table,clause in (('traffic','time<?'),('dns','time<?'),('runs','end<=?'),
                     ('suppressions','end<=?'),('snapshots','end<=?')):
                 count=self.db.execute(f'DELETE FROM {table} WHERE rowid IN '
@@ -301,7 +306,9 @@ class History:
                 remaining-=self.db.execute('DELETE FROM applications WHERE rowid IN '
                     '(SELECT rowid FROM applications WHERE NOT EXISTS '
                     '(SELECT 1 FROM traffic WHERE application=applications.id) LIMIT ?)',(remaining,)).rowcount
-        return {'changed':limit-remaining,'more':remaining==0,'cutoff':utc(floor)}
+        more=remaining==0
+        self._cleanup_floor=floor if more else None
+        return {'changed':limit-remaining,'more':more,'cutoff':utc(floor)}
 
     def cleanup(self):
         with self.transaction():

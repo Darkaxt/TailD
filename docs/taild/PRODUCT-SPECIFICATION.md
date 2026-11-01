@@ -1,6 +1,34 @@
 # TailD remaining-product specification
 
-Version 1.22, 2026-11-01. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.23, 2026-11-01. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+
+### R44 — Responsive Recent DNS and non-destructive history recovery
+
+The reported multi-minute Recent DNS load must be traced and corrected without
+shortening its 15-minute observation window or its exact seven-day First seen /
+Total scope. Preserve account/endpoint isolation, canonical decisions, unknown
+coverage, retention/deletion watermarks and a single committed read revision.
+Recent DNS fact reads must not depend on unrelated GlassWire coverage. Retention work
+must converge on a fixed cutoff for each sweep rather than repeatedly rewriting
+the same overlapping records as the wall clock advances. Background maintenance
+must yield to acquisition/controls and publish truthful current status.
+
+Existing installed history reports SQLite corruption. Preserve the original
+database and its committed WAL before investigating a private recovery working
+copy. Do not reset history, invent missing observations, resurrect deleted or
+expired records, relax private ACLs or automatically activate unverified salvage.
+Quantify recovered integrity, scope and losses before any live replacement;
+record material loss/ambiguity and resolve an essential user decision if needed.
+The corruption's original cause remains unknown unless independently established.
+
+Acceptance requires reproducible maintenance-convergence and scoped DNS-read
+regressions, integrated current-source verification and a measured native read
+on a healthy representative retained history. Preserve the existing UI/theme,
+provider policy, credentials, node ownership, signing/update/rollback contracts.
+Publish and independently verify one normal Windows release after the complete
+fix passes its gates, then verify its installed behavior through the protected
+delivery path. History recovery and actual installed query health are separate
+claims from fixture tests; existing B12 real rollout acceptance remains open.
 
 ### R42 — Dependabot dependency remediation and Windows deployment
 

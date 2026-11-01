@@ -74,6 +74,18 @@ class RecentDNSTest(unittest.TestCase):
                          {'search':42},{'search':'x'*257},{'search':'x\x00y'}):
                 with self.subTest(body=body),self.assertRaises(ValueError):recent_dns.read(view,body,self.provider,'connected')
 
+    def test_dns_reads_do_not_consult_unrelated_traffic_coverage(self):
+        self.seed('independent.invalid')
+        self.store._source('traffic','unrelated-host')
+        coverage=history.History._coverage
+        def dns_only(store,kind,*args,**kwargs):
+            if kind=='traffic':raise AssertionError('Recent DNS must not depend on GlassWire history')
+            return coverage(store,kind,*args,**kwargs)
+        with patch.object(history.History,'_coverage',dns_only):result=self.read()
+        self.assertEqual(result['rows'][0]['question'],'independent.invalid')
+        self.assertEqual(result['rows'][0]['total'],1)
+        self.assertTrue(result['coverage']['traffic']['incomplete'])
+
     def test_question_totals_and_first_seen_include_all_scoped_observations(self):
         self.seed('repeat.invalid',seconds=899)
         for seconds in range(1,106):self.seed('repeat.invalid',seconds=seconds,action='1')

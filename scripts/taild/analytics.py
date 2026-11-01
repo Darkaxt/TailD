@@ -651,7 +651,9 @@ class Analytics:
         for order in reversed(request.get('order_by',[]) if view=='facts' else []):
             rows.sort(key=lambda r:(r.get(order['field']) is None,r.get(order['field'])),reverse=order['direction']=='desc')
         coverage_cache=cache.setdefault('coverage',{})
-        traffic_coverage=self._coverage('traffic',a,b,scope,request.get('where') if kind!='dns' else None,cache=coverage_cache)
+        traffic_coverage=(self._coverage('traffic',a,b,scope,request.get('where') if kind!='dns' else None,cache=coverage_cache)
+            if kind!='dns' or view!='facts' else {'incomplete':True,'sources':[],
+                'snapshot_limit':'not requested for DNS-only query'})
         dns_coverage=self._coverage('dns',a,b,scope,request.get('where') if kind=='dns' else None,cache=coverage_cache)
         coverage={'traffic':traffic_coverage,'dns':dns_coverage,'context_event_coverage':'unavailable',
                   'incomplete':traffic_coverage['incomplete'] if kind in ('traffic','correlations') else dns_coverage['incomplete'] if kind=='dns' else not rows}

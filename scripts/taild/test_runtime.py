@@ -748,6 +748,10 @@ class RuntimeTest(unittest.TestCase):
     def test_http_provider_denial_and_recovery_preserve_committed_dns_history(self):
         from http.server import BaseHTTPRequestHandler,HTTPServer
         from urllib.parse import urlsplit,parse_qs
+        # The loopback provider and collector use this fixed historical window;
+        # validation must not expire when the host advances into another month.
+        clock=patch.object(controld,'utc_now',return_value=controld._utc('2026-10-08T00:00:00Z'))
+        clock.start();self.addCleanup(clock.stop)
         class Provider(BaseHTTPRequestHandler):
             allowed=False
             def do_GET(self):

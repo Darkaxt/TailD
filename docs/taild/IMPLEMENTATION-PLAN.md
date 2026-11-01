@@ -1,5 +1,54 @@
 # TailD staged execution
 
+## Current execution — November1 Recent DNS and history incident (R44)
+
+Existing Stage 10 remains the single ACTIVE implementation stage. The user's bug
+report and standing instructions already authorize the complete fix, release and
+delivery. B12 remains separately open. Helium's extension failure was a user-found
+Control D block; its service now resolves and returns HTTP200, without our policy
+changes, and is independent of this incident.
+
+Compact execution within Stage 10: preserve a consistent private DB/WAL recovery
+input; reproduce the slow read/maintenance behavior and assess damage; implement
+the complete scoped fix with focused regressions; verify the native workflow;
+commit, publish/independently verify the normal release; deliver through the
+protected installer and reconcile actual history/query health; clean spent scratch.
+
+R44 acceptance currently remaining: maintenance convergence and unrelated-coverage
+regressions/fix, healthy retained-history/native verification, normal release,
+installed verification and a quantified non-destructive recovery disposition.
+Internal advancement blockers: live history corruption and the measured DNS read
+dependency on traffic coverage; the exact multi-minute phase is still being
+traced. Collector107692 was cooperatively stopped and its actual exit observed;
+VPN/reader services and provider policy were unchanged. Production DB/WAL remain
+in place. No reset, salvage activation or complete recovery is claimed.
+
+Disposable scripts use E:/Temp/taild-dns44-20261101. Native/database/build scratch
+uses D:/Temp/taild-dns44-20261101 for sustained small-file/database I/O, with private
+ACLs for any recovery input. Preserve needed recovery material until its recovery
+purpose is discharged; clean expendable members immediately after last use.
+No tracked deferrals or additional ACTIVE stage are introduced.
+
+R44 verification checkpoint: the moving-clock reproduction fails before the fix
+and passes with a fixed cutoff per sweep. Recent DNS facts skip unrelated traffic
+coverage while dashboard summaries retain their existing source-health contract.
+Focused history, recent, analytics and Windows runtime contracts pass on the
+installed pinned SQLite3.54.0. A dated loopback-provider test was separately
+corrected to use its fixture clock rather than the host's rolling month.
+The actual Debug native/Angular/pipe/SQLite workflow at https://taild.local/index.html
+renders100 rows from170705 retained decisions in1.398s, with exact seven-day
+First seen/Total and policy still pending; search-to-rows takes1.064s. Rendered
+evidence and process exit were inspected. Frontend assets/theme are unchanged.
+An initial diagnostic shell staged content incorrectly; the fixture build input
+was corrected and the complete real workflow rerun successfully.
+
+Private DB/WAL source hashes match the frozen copy. Salvage finishes but has
+unassigned/misplaced records, invalid types and broken references despite a clean
+SQLite structural check. It is rejected for activation. Essential user recovery
+choice is pending; the original stays in place and collection remains gracefully
+stopped, with VPN/provider state unchanged. Release and installed/live recovery
+verification remain advancement blockers; fixture acceptance is not live recovery.
+
 ## Current execution — November1 scheduled upstream maintenance
 
 The scheduled instruction authorizes checked source promotion and normal signed

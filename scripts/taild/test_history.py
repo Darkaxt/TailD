@@ -115,6 +115,28 @@ class HistoryTest(unittest.TestCase):
         self.assertEqual(self.store.retention_floor(),before+3600000000)
         self.assertGreater(self.store.db.execute('SELECT revision FROM settings').fetchone()[0],revision)
 
+    def test_cleanup_sweep_converges_while_wall_clock_advances(self):
+        self.store.defer_cleanup=True
+        source=self.store._source('traffic','synthetic-host')
+        floor=self.store.retention_floor()
+        # Overlapping runs remain useful after expiry. Trimming the first run
+        # again on every moving cutoff must not starve all subsequent batches.
+        for revision in range(1,5):
+            self.store.db.execute('INSERT INTO runs VALUES(?,?,?,?,?,?,?)',
+                (revision,source,floor-1000000,self.store.now,'complete',self.store.now,'{}'))
+        cutoffs=[]
+        for _ in range(6):
+            self.store.now+=1000000
+            result=self.store.cleanup_batch(limit=1)
+            cutoffs.append(result['cutoff'])
+            if not result['more']:break
+        self.assertFalse(result['more'],'A moving clock must not keep one sweep permanently busy')
+        self.assertEqual(len(set(cutoffs)),1)
+        starts=[r[0] for r in self.store.db.execute('SELECT start FROM runs')]
+        self.assertEqual(set(starts),{history.instant(cutoffs[0])})
+        next_sweep=self.store.cleanup_batch(limit=10)
+        self.assertGreater(history.instant(next_sweep['cutoff']),history.instant(cutoffs[0]))
+
     def test_live_dns_preserves_duplicates_and_csv_authoritatively_reconciles(self):
         raw=self.dns()['rows'][0]['raw']
         for _ in range(2):self.store.import_live_dns(raw,'local','synthetic',collected=NOW)
