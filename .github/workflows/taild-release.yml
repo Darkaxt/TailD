@@ -149,7 +149,7 @@ jobs:
         with:
           # Reviewed signer tooling is independently immutable. Never import or
           # execute application/candidate files downloaded from build artifacts.
-          ref: 4521590b41ca2ec3623c6f6d49f9e420021efe19
+          ref: 79d5e1cd9283f3605d5db8554bccbe9b0b4edcc0
           path: trusted
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
@@ -252,7 +252,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          ref: 4521590b41ca2ec3623c6f6d49f9e420021efe19
+          ref: 79d5e1cd9283f3605d5db8554bccbe9b0b4edcc0
           path: trusted
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
@@ -297,4 +297,4 @@ jobs:
           test "$(jq -r .source_commit release/taild-release.json)" = "$GITHUB_SHA"
           tag="windows-v$version"
           gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" -f "ref=refs/tags/$tag" -f "sha=$GITHUB_SHA" >/dev/null
-          gh release create "$tag" release/* --repo "$GITHUB_REPOSITORY" --verify-tag --title "TailD $version for Windows" --notes "Updates the verified shared core to 2558f1c716fa, preserving local DNS ownership and encrypted outage recovery. Inherits reviewed DNS cancellation, tailnet-aware name resolution, route validation and WireGuard transport corrections. Preserves TailDrop notification clicks that select the saved file in Explorer, the single tray icon, quarantine and inbox acknowledgement, per-app DNS observations, Control D decisions, GlassWire IN/OUT totals and hourly traffic. Analytics remains opt-in; provider writes require the separate Write credential. Preserves private history, rollback and the separate TailD update channel. Complete Windows x64 installer with inherited TailDNS connectivity and Portmaster-derived analytics. Ed25519-signed package, core and release manifests; executables and installer are not Authenticode-signed. Evergreen WebView2 required. Source: $GITHUB_SHA. No device installation or rollout is performed by this publication."
+          gh release create "$tag" release/* --repo "$GITHUB_REPOSITORY" --verify-tag --title "TailD $version for Windows" --notes "Updates the verified shared core to c72cd93352d3, preserving local DNS ownership and encrypted outage recovery. Inherits reviewed UDP reachability feedback handling, the upstream RACK default correction, connector destination restrictions and reduced routine logging. Preserves the patched +42 dependencies, +41 seven-day DNS aggregation, saved-state dots, explicit policy actions, staged multi-value selection and vector refresh controls. Preserves TailDrop notification clicks that select the saved file in Explorer, the single tray icon, quarantine and inbox acknowledgement, per-app DNS observations, Control D decisions, GlassWire IN/OUT totals and hourly traffic. Analytics remains opt-in; provider writes require the separate Write credential. Preserves private history, rollback and the separate TailD update channel. Complete Windows x64 installer with inherited TailDNS connectivity and Portmaster-derived analytics. Ed25519-signed package, core and release manifests; executables and installer are not Authenticode-signed. Evergreen WebView2 required. Source: $GITHUB_SHA. No device installation or rollout is performed by this publication."
