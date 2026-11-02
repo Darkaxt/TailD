@@ -43,16 +43,31 @@ to the production Windows build, not claimed from its local fixture skip.
 Immutable signer a445a53552b267ba76f1fb95aabf3c5eac1571a6 changes only the reviewed
 core identity constants in the signing import closure. Signing code and public
 key pins are unchanged; both protected workflow checkouts now select that revision.
-GitHub checked inheritance and normal TailD release verification remain acceptance
-blockers, keeping Stage10 ACTIVE. R44 maintenance/scoped DNS behavior and UI remain
-untouched. No material design debt or acceptance-relevant consolidation is found.
+GitHub inheritance41404620630 passes the merged backend, Android, DNS and Windows
+checks and promotes0ecd2cf034b3fdfa575a8d2590527055bb50525e with exact TailDNS42d74f47
+ancestry and the checked prepared tree. Exact focused41406218979 and CodeQL41406218307
+pass. Normal windows-v1.105.0+45 passes41406477605, including fresh isolated installer
+lifecycle, complete-product failed-migration recovery, production Windows build,
+protected package/core/release signing and publication.
+Independent public retrieval verifies all eight assets and444 payload members,
+three pinned signatures/key identity, source/core/base/sequence/AMD64/schema4,
+the exact18-member reviewed overlay, runtime identities/notices and unchanged
+native-tested UI. Installer117490183 bytes, SHA-256
+00aef3d179fd1941f7ba9d51e72101191a70ca2e8eabb45bc6adf50ccf90e4a2.
+Installer/product PE Authenticode remains absent. R44's fixed-cutoff convergence
+and scoped DNS reads remain packaged. Current family/release/workflow readback
+passes. This maintenance cycle has no remaining blocker or tracked deferral;
+Stage10 stays ACTIVE for its separately open B12 boundary. No material design
+debt or acceptance-relevant consolidation is found.
 SleepManager contains upstream851a1bdd with17 ahead/0 behind; its normalv0.7.3.1
 assets match the independently verified receipt and latest signed workflow39377624848
 passes. Its sole post-release main difference is documentation; no release needed.
 
-Disposable scripts/logs use E:/Temp/taildns-maintenance-20261102. Native/module/
-download scratch uses D:/Temp/taildns-maintenance-20261102 for sustained small-file
-and native I/O, cleaned through reviewed exact-target tickets at last use. Retain
+Disposable scripts/logs used E:/Temp/taildns-maintenance-20261102. Native/module/
+download scratch used D:/Temp/taildns-maintenance-20261102 for sustained small-file
+and native I/O. Reviewed exact-target cleanup after each consumer's exit removes
+the downloads, extractions, fixtures and reader environment; both roots are absent.
+The original transaction fe7e7d34d05d9b05c303a332d67c7d52 is applied. Retain
 compact current receipts/recipes under D:/Projects/TailD-support/maintenance/
 20261102/upstream. No historical archive, device acceptance or B12 closure is claimed.
 

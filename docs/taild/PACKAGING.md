@@ -1,5 +1,37 @@
 # Stage 9 local packaging contract
 
+## November 2 upstream maintenance — normal Windows +45 verified
+
+Normal [windows-v1.105.0+45](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B45)
+ships exact checked source `0ecd2cf034b3fdfa575a8d2590527055bb50525e` through
+release41406477605. GitHub inheritance41404620630 verifies and promotes the exact
+TailDNS42d74f47 revision; focused41406218979 and CodeQL41406218307 pass. The shared
+core is1007f130c033871f0539d107b48d63a5f34dfbc0, already independently verified in
+TailDNS Windows1.105.0+47 and Android1.103.312+45. The core/module/overlay guards
+agree, and immutable signer a445a535 changes only reviewed core identity constants
+within its import closure. Production keys and signing logic are unchanged.
+
+Fresh isolated install/upgrade/rollback/uninstall, complete-product failed-migration
+recovery, production build and protected signing/publication gates pass. Independent
+download verifies all eight assets and444 payload members, pinned release/package/
+core Ed25519 signatures and key identities, exact source/core/base/sequence/AMD64/
+history-schema4 provenance, all18 expected overlay members, bundled runtimes/notices
+and exact native-tested UI. R44 background-maintenance convergence and scoped DNS
+reads, patched dependencies, dark theme, policy controls and TailDrop remain packaged.
+Installer117490183 bytes, SHA-256
+`00aef3d179fd1941f7ba9d51e72101191a70ca2e8eabb45bc6adf50ccf90e4a2`.
+Installer and product executables remain **not Authenticode-signed**.
+
+SleepManager remains17 ahead/0 behind its upstreamv0.7.3, with unchanged verified
+normalv0.7.3.1 assets and healthy signing workflow. TailD Android.40 remains unchanged.
+All current release/source/workflow readbacks pass. Spent release downloads,
+extractions, test fixtures and the verifier environment are transactionally removed;
+both exact November2 Temp roots are absent. Compact signed metadata, current
+receipts and verification recipes are under `maintenance/20261102/upstream` in the
+support root. No historical archive, device action, provider write or live-history
+operation occurs. Existing Stage10/B12 real rollout acceptance remains open.
+This documentation-only receipt does not require another payload release.
+
 ## November1 responsive Recent DNS — normal +44 installed and verified
 
 Source ff5ea277f446130e775fd406085f4516c1af8496 delivers Windows1.105.0+44
