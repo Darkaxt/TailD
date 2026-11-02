@@ -38,9 +38,14 @@ seven assets, APK package/branding/version1.103.312+45/code298933800/pinned sign
 four native ABIs, embedded1007f130 core and companion Windows source/notices.
 The five TailD core pin/guard files now match that same exact module and checksums;
 the reviewed upstream diff touches none of the overlay's inherited inputs.
-Focused pin/signer contracts, immutable signer closure alignment, GitHub checked
-inheritance and normal TailD release verification remain acceptance blockers,
-keeping Stage10 ACTIVE. R44 maintenance/scoped DNS behavior and UI remain untouched.
+Focused pin/signer contracts pass; the real inherited-input overlay test is left
+to the production Windows build, not claimed from its local fixture skip.
+Immutable signer a445a53552b267ba76f1fb95aabf3c5eac1571a6 changes only the reviewed
+core identity constants in the signing import closure. Signing code and public
+key pins are unchanged; both protected workflow checkouts now select that revision.
+GitHub checked inheritance and normal TailD release verification remain acceptance
+blockers, keeping Stage10 ACTIVE. R44 maintenance/scoped DNS behavior and UI remain
+untouched. No material design debt or acceptance-relevant consolidation is found.
 SleepManager contains upstream851a1bdd with17 ahead/0 behind; its normalv0.7.3.1
 assets match the independently verified receipt and latest signed workflow39377624848
 passes. Its sole post-release main difference is documentation; no release needed.
