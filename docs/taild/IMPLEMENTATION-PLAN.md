@@ -1,5 +1,56 @@
 # TailD staged execution
 
+## Current execution — November2 scheduled upstream maintenance
+
+The current heartbeat already authorizes checked upstream integration and normal
+signed release publication. Work stays within existing Stage10, the sole ACTIVE
+implementation stage; its separate B12 real rollout/rollback boundary stays open.
+No device action, provider write or live-history operation belongs to this cycle.
+
+Compact dependency order: review exact core PR45 and its trusted no-secret run;
+merge and independently verify the next monotonic Windows release; let GitHub
+refresh/check the exact-core Android candidate and publish/verify its normal
+signed release; align TailD's exact shared-core require/replace and guards, then
+use GitHub's checked inheritance/promotion path and normal signed Windows release.
+Reconcile SleepManager against exact upstream history and its last normal paired
+APK/update manifest release. Do not release unchanged payloads or evidence-only
+changes; retain R44's converging maintenance/scoped DNS behavior and existing UI.
+
+Initial acceptance: PR45 c03deb85 is mergeable and trusted default-main
+41292524041 explicitly checks that exact head; workflow source is c72cd933 and
+uses read-only/no-secret authority. Reviewed upstream changes bind conn25 tokens
+to their responding connector and conservatively omit ACME replacement identity
+for unstamped shared-account certificates. Normal/custom DoH without attributable
+PeerAPI metadata passes through unchanged; DNS ownership/routes, tray, installer,
+updater/rollback, signing, branding and versions are untouched. PR45 promotes the
+identical checked tree as1007f130c033871f0539d107b48d63a5f34dfbc0. Normal core
+Windows1.105.0+47 passes41400725140; independent download verifies all four
+assets, pinned Ed25519 key/signature, exact source/base/sequence, all five AMD64
+payload hashes/version stamps, notices and truthful absent Authenticode.
+GitHub refresh41401364349 creates AndroidPR35 e9371fb8; its entire diff is the
+matching core require/replace and sums. Trusted41401523780 explicitly checks
+e9371fb8 and passes all inherited/Android/DNS/core/Windows gates; ordinary
+Android41401526061, tidy41401525997 and license41401526299 also pass on that head.
+PR35 promotes the identical tree as42d74f47944a953d9c92607b33aced1a6cf80ab5.
+Tagv1.103.312+45 is on that exact main, using the unchanged actual Android base;
+isolated release41403504443 passes. Independent public retrieval verifies all
+seven assets, APK package/branding/version1.103.312+45/code298933800/pinned signer,
+four native ABIs, embedded1007f130 core and companion Windows source/notices.
+The five TailD core pin/guard files now match that same exact module and checksums;
+the reviewed upstream diff touches none of the overlay's inherited inputs.
+Focused pin/signer contracts, immutable signer closure alignment, GitHub checked
+inheritance and normal TailD release verification remain acceptance blockers,
+keeping Stage10 ACTIVE. R44 maintenance/scoped DNS behavior and UI remain untouched.
+SleepManager contains upstream851a1bdd with17 ahead/0 behind; its normalv0.7.3.1
+assets match the independently verified receipt and latest signed workflow39377624848
+passes. Its sole post-release main difference is documentation; no release needed.
+
+Disposable scripts/logs use E:/Temp/taildns-maintenance-20261102. Native/module/
+download scratch uses D:/Temp/taildns-maintenance-20261102 for sustained small-file
+and native I/O, cleaned through reviewed exact-target tickets at last use. Retain
+compact current receipts/recipes under D:/Projects/TailD-support/maintenance/
+20261102/upstream. No historical archive, device acceptance or B12 closure is claimed.
+
 ## Current execution — November1 Recent DNS and history incident (R44)
 
 Existing Stage 10 remains the single ACTIVE implementation stage. The user's bug
