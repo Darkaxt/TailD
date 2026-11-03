@@ -97,4 +97,17 @@ class AcquisitionTest(unittest.TestCase):
         self.assertTrue(result['interrupted'])
         self.assertEqual(self.collector._poll_state('traffic','host'),state)
 
+    def test_completed_empty_catalog_reconciliation_advances_hourly_clock(self):
+        owner=self.collector;owner.write_error=False;clock=['2026-10-08T01:00:00Z'];owner.now=lambda:clock[0]
+        owner._save_traffic_progress({'scope':'host','start':START,'end':END,'pending_windows':[]})
+        owner._save_poll_state('traffic',{'scope':'host','through':END,'reconciled_at':END,'recent':None})
+        calls=[]
+        def empty(left,right,budget,pending=None):
+            calls.append((left,right));return {'slice_attempts':0,'pending_windows':[]}
+        def poll():return owner._collect_poll('traffic','host',START,clock[0],empty,lambda:True,
+            lambda:owner._traffic_progress('host',START,clock[0]),owner._save_traffic_progress)
+        poll();self.assertEqual(len(calls),2)
+        calls.clear();clock[0]='2026-10-08T01:01:00Z';poll()
+        self.assertEqual(len(calls),1,'An empty completed source must not restart its sweep at every poll')
+
 if __name__=='__main__':unittest.main()

@@ -837,7 +837,7 @@ class Collector:
             progress['pending_windows']=backfill['pending_windows']
             if not self.write_error and progress['pending_windows'] is not None:
                 save_progress(progress)
-                if not progress['pending_windows'] and (backfill.get('slice_attempts',backfill.get('slices_read',0)) or state['reconciled_at'] is None):
+                if not progress['pending_windows'] and not interrupted:
                     state['reconciled_at']=self.now()
                     self._save_poll_state(kind,state)
         return {('slice_attempts' if kind=='traffic' else 'slices_read'):attempts,'request_budget':16,

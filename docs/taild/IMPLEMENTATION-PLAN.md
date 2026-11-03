@@ -31,6 +31,11 @@ and does not claim installed CPU behavior. Recipes/receipts are in
 Remaining advancement blockers: exact-source release gates, independent public
 package/signature/provenance verification, protected installed update and live
 CPU/I/O/state-preservation comparison. Stage10 stays ACTIVE; no tracked deferrals.
+Final review reproduced an empty-catalog completion-clock defect. Release41706350699
+was explicitly cancelled before signing/publication for that correctness failure,
+not elapsed time. A completed zero-read sweep now advances the same hourly clock;
+its regression fails before the correction and passes after it. Fresh exact-head
+checks and a fresh +46 release operation are required after the cancelled run exits.
 Preserve R44, exact core1007f130, UI/theme, signing isolation and channel identity.
 
 ## Current execution — November2 scheduled upstream maintenance
