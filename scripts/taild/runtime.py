@@ -652,7 +652,7 @@ class Collector:
             self.condition.notify()
         return future.result()
 
-    def _start_acquisition(self, store, kind, *, policy=False):
+    def _start_acquisition(self, store, kind, *, policy=False, reconcile=False):
         if (kind in self.acquisitions or self.closing or self.paused or self.write_error or
                 not self.config[kind] or time.monotonic()<self.not_before[kind]):
             return False
@@ -661,7 +661,7 @@ class Collector:
         start=store.health()['expiry_floor'];end=history.utc(store.now//1000000*1000000)
         self.sources[kind]={'state':'collecting','progress':{'phase':'discovering','committed_reads':0}}
         worker=threading.Thread(target=self._acquire,name='TailD '+kind+' acquisition',
-            args=(store,kind,config,revision,token,start,end),kwargs={'policy':policy})
+            args=(store,kind,config,revision,token,start,end),kwargs={'policy':policy,'reconcile':reconcile})
         self.acquisitions[kind]=worker
         try:worker.start()
         except BaseException:
@@ -677,7 +677,7 @@ class Collector:
         for kind in ('dns','traffic'):
             if (self.config[kind] and not self.paused and not self.closing and not self.write_error and
                     time.monotonic()>=self.not_before[kind]):
-                self._start_acquisition(store,kind,policy=kind=='dns')
+                self._start_acquisition(store,kind,policy=kind=='dns',reconcile=True)
                 kinds.add(kind)
         if kinds and wait:self.refresh_waiters.append((future,self.config_revision,kinds))
         else:future.set_result(self._state())
@@ -692,7 +692,7 @@ class Collector:
                 self._request_refresh(store,future)
             else:future.set_result(self._state())
 
-    def _acquire(self, store, kind, config, revision, transient_token, start, end, *, policy=False):
+    def _acquire(self, store, kind, config, revision, transient_token, start, end, *, policy=False, reconcile=False):
         committed_reads=0
         def report_progress(phase,left,right):
             nonlocal committed_reads
@@ -717,25 +717,14 @@ class Collector:
                     self.sources['context'] = {'state':'point-observation','last_success_utc':self.now()}
                 except analytics.QueryError:
                     self.sources['context'] = {'state':'unavailable','historical_binding':'unproven'}
-            recent_start = history.utc(max(history.instant(start),history.instant(end)-120*1000000))
             if kind == 'traffic':
-                recent=ingestion.traffic_window(store,config['host_scope'],recent_start,end,
-                    reader=self.reader,checkpoint=checkpoint,progress=report_progress,commit=self._commit,
-                    max_slices=8,defer_budget=True)
+                def collect(left,right,budget,pending=None):
+                    return ingestion.traffic_window(store,config['host_scope'],left,right,
+                        reader=self.reader,checkpoint=checkpoint,progress=report_progress,commit=self._commit,
+                        max_slices=budget,defer_budget=True,resume_pending=pending)
+                result=self._collect_poll(kind,config['host_scope'],start,end,collect,checkpoint,
+                    lambda:self._traffic_progress(config['host_scope'],start,end,reconcile=reconcile),self._save_traffic_progress)
                 self.traffic_available=True
-                progress=self._traffic_progress(config['host_scope'],start,end)
-                backfill=({'slice_attempts':0,'pending_windows':progress['pending_windows'],'interrupted':True}
-                    if recent.get('interrupted') else ingestion.traffic_window(store,config['host_scope'],
-                        progress['start'],progress['end'],reader=self.reader,checkpoint=checkpoint,
-                        progress=report_progress,commit=self._commit,max_slices=8,defer_budget=True,
-                        resume_pending=progress['pending_windows']))
-                progress['pending_windows']=backfill['pending_windows']
-                if not self.write_error and progress['pending_windows'] is not None:
-                    self._save_traffic_progress(progress)
-                result={'slice_attempts':recent['slice_attempts']+backfill['slice_attempts'],
-                    'request_budget':16,'recent_pending_windows':len(recent['pending_windows'] or []),
-                    'backfill_pending_windows':len(backfill['pending_windows'] or []),
-                    'interrupted':recent.get('interrupted',False) or backfill.get('interrupted',False)}
             else:
                 provider = config['provider']
                 token = transient_token or credentials.CredentialStore().read()
@@ -745,26 +734,12 @@ class Collector:
                     def fetch(left,right):
                         return controld.activity_slice(token,provider['account_type'],provider['instance'],left,right,
                             endpoint=provider['endpoint'],organization=provider.get('organization'),limit=1000)
-                    # Eight requests prioritize the recent two-minute analytical
-                    # overlap, then eight continue the captured retained-horizon
-                    # backfill. These are resource budgets, not retries/timeouts.
-                    recent = ingestion.dns_windows(store,provider['account_scope'],provider['endpoint'],
-                        recent_start,end,fetch,max_slices=8,defer_budget=True,checkpoint=checkpoint,
-                        progress=report_progress,commit=self._commit)
-                    progress = self._dns_progress(provider,start,end)
-                    backfill = ({'slices_read':0,'pending_windows':progress['pending_windows'],'interrupted':True}
-                                if recent.get('interrupted') else
-                        ingestion.dns_windows(store,provider['account_scope'],provider['endpoint'],
-                            progress['start'],progress['end'],fetch,max_slices=8,defer_budget=True,
-                            resume_pending=progress['pending_windows'],checkpoint=checkpoint,
-                            progress=report_progress,commit=self._commit))
-                    progress['pending_windows'] = backfill['pending_windows']
-                    if not self.write_error:
-                        self._save_dns_progress(progress)
-                    result = {'slices_read':recent['slices_read']+backfill['slices_read'],
-                              'request_budget':16,'recent_pending_windows':len(recent['pending_windows']),
-                              'backfill_pending_windows':len(backfill['pending_windows']),
-                              'interrupted':recent.get('interrupted',False) or backfill.get('interrupted',False)}
+                    def collect(left,right,budget,pending=None):
+                        return ingestion.dns_windows(store,provider['account_scope'],provider['endpoint'],
+                            left,right,fetch,max_slices=budget,defer_budget=True,resume_pending=pending,
+                            checkpoint=checkpoint,progress=report_progress,commit=self._commit)
+                    result=self._collect_poll(kind,history.digest(provider),start,end,collect,checkpoint,
+                        lambda:self._dns_progress(provider,start,end,reconcile=reconcile),self._save_dns_progress)
                     if policy and not result.get('interrupted') and checkpoint():
                         captured_policy = controld.policy_snapshot(token,provider['endpoint'],
                             account_scope=provider['account_scope'],organization=provider.get('organization'))
@@ -819,7 +794,125 @@ class Collector:
                 self.queue.append(('_finished',kind,None))
                 self.condition.notify()
 
-    def _traffic_progress(self, scope, start, end):
+    def _collect_poll(self, kind, scope, start, end, collect, checkpoint, load_progress, save_progress):
+        # Current activity gets eight requests first. Unfinished recent reads get
+        # at least four, plus unused current-read allowance, leaving at least
+        # four for history. All are budgets, never cancellation deadlines.
+        state=self._poll_state(kind,scope)
+        left=self._recent_start(state,start,end)
+        if state['recent'] is not None:
+            # The existing continuation owns its captured interval. Reopening
+            # its capped parent on every overlap would reintroduce already
+            # completed children forever. Read new time first, then finish the
+            # saved children; normal correction overlap resumes once drained.
+            left=max(left,min(state['recent']['end'],end))
+        recent=(collect(left,end,8) if history.instant(left)<history.instant(end) else
+            {'pending_windows':[],'slices_read':0})
+        if recent['pending_windows'] is None:
+            # Pause admitted before traffic catalog discovery. Nothing was
+            # enumerated, so retain the previous durable high-water verbatim.
+            return {'slice_attempts':0,'request_budget':16,'recent_pending_windows':0,
+                'backfill_pending_windows':0,'interrupted':True}
+        pending=self._recent_pending(kind,state['recent'],left,end,recent['pending_windows'])
+        attempts=recent.get('slice_attempts',recent.get('slices_read',0))
+        interrupted=recent.get('interrupted',False)
+        if pending is not None and not interrupted and checkpoint():
+            resumed=collect(pending['start'],pending['end'],12-attempts,pending['pending_windows'])
+            attempts+=resumed.get('slice_attempts',resumed.get('slices_read',0))
+            interrupted=resumed.get('interrupted',False)
+            pending['pending_windows']=resumed['pending_windows']
+            if not pending['pending_windows']:pending=None
+        state['recent']=pending
+        state['through']=history.utc(max(history.instant(state['through'] or end),history.instant(end)))
+        # Persist the exact continuation before starting historical work. A
+        # failed/paused historical read cannot lose the already captured recent
+        # interval. Failed recent reads leave the previous high-water untouched.
+        if not self.write_error:self._save_poll_state(kind,state)
+        progress=load_progress()
+        if not checkpoint():interrupted=True
+        if progress['pending_windows']!=[] and not interrupted and checkpoint():
+            backfill=collect(progress['start'],progress['end'],min(8,16-attempts),progress['pending_windows'])
+            attempts+=backfill.get('slice_attempts',backfill.get('slices_read',0))
+            interrupted=backfill.get('interrupted',False)
+            progress['pending_windows']=backfill['pending_windows']
+            if not self.write_error and progress['pending_windows'] is not None:
+                save_progress(progress)
+                if not progress['pending_windows'] and (backfill.get('slice_attempts',backfill.get('slices_read',0)) or state['reconciled_at'] is None):
+                    state['reconciled_at']=self.now()
+                    self._save_poll_state(kind,state)
+        return {('slice_attempts' if kind=='traffic' else 'slices_read'):attempts,'request_budget':16,
+            'recent_pending_windows':len(pending['pending_windows']) if pending else 0,
+            'backfill_pending_windows':len(progress['pending_windows'] or []),'interrupted':interrupted}
+
+    def _poll_state(self, kind, scope):
+        path=self.directory/('runtime-'+kind+'-poll.json')
+        if path.exists():
+            if path.is_symlink() or path.stat().st_nlink!=1 or path.stat().st_size>8*1024*1024:
+                raise RuntimeError('invalid-poll-state')
+            value=reader.decode_message(path.read_bytes(),maximum=8*1024*1024)
+            if not isinstance(value,dict) or set(value)!={'scope','through','reconciled_at','recent'}:
+                raise RuntimeError('invalid-poll-state')
+            for field in ('through','reconciled_at'):
+                if value[field] is not None:history.instant(value[field])
+            if value['recent'] is not None:
+                item=value['recent']
+                if not isinstance(item,dict) or set(item)!={'start','end','pending_windows'}:
+                    raise RuntimeError('invalid-poll-state')
+                history.bounds(item['start'],item['end'])
+                if not isinstance(item['pending_windows'],list):raise RuntimeError('invalid-poll-state')
+            if value['scope']==scope:return value
+        return {'scope':scope,'through':None,'reconciled_at':None,'recent':None}
+
+    def _save_poll_state(self, kind, value):
+        target=self.directory/('runtime-'+kind+'-poll.json')
+        pending=self.directory/('runtime-'+kind+'-poll.pending.json')
+        if any(p.is_symlink() or p.exists() and p.stat().st_nlink!=1 for p in (target,pending)):
+            raise RuntimeError('invalid-poll-state')
+        raw=json.dumps(value,separators=(',',':')).encode('utf-8')
+        if len(raw)>8*1024*1024:raise RuntimeError('resource-limit')
+        with pending.open('wb') as output:
+            output.write(raw);output.flush();os.fsync(output.fileno())
+        pending.replace(target)
+
+    @staticmethod
+    def _recent_start(state, start, end):
+        return history.utc(max(history.instant(start),min(history.instant(state['through'] or end),history.instant(end))-120*1000000))
+
+    @staticmethod
+    def _recent_pending(kind, previous, start, end, pending):
+        if pending is None:
+            raise history.HistoryError('Recent catalog discovery was interrupted')
+        groups={}
+        for item in (previous['pending_windows'] if previous else [])+pending:
+            path=item['path'] if kind=='traffic' else None
+            x,y=history.bounds(item['start'],item['end']) if kind=='traffic' else history.bounds(*item)
+            groups.setdefault(path,[]).append((x,y))
+        merged=[]
+        for path,intervals in groups.items():
+            # Keep subdivision boundaries: merging adjacent capped windows back
+            # into their parent would repeat the cap forever. Sweep endpoints
+            # to remove overlaps/duplicates without dropping unfinished work.
+            events={}
+            for x,y in intervals:
+                events[x]=events.get(x,0)+1;events[y]=events.get(y,0)-1
+            active=0;left=None
+            for point,delta in sorted(events.items()):
+                if active and left is not None:
+                    merged.append({'path':path,'start':history.utc(left),'end':history.utc(point)}
+                        if kind=='traffic' else [history.utc(left),history.utc(point)])
+                active+=delta;left=point
+        if not merged:return None
+        if len(merged)>(32768 if kind=='traffic' else 1024):raise history.HistoryError('Recent continuation resource limit')
+        # Stack pop services the oldest unfinished recent interval first.
+        merged.sort(key=lambda item:item['start'] if kind=='traffic' else item[0],reverse=True)
+        return {'start':min(start,previous['start']) if previous else start,
+            'end':max(end,previous['end']) if previous else end,'pending_windows':merged}
+
+    def _reconciliation_due(self, kind, scope, completed_end, end):
+        completed=self._poll_state(kind,scope)['reconciled_at'] or completed_end
+        return history.instant(end)-history.instant(completed)>=3600*1000000
+
+    def _traffic_progress(self, scope, start, end, *, reconcile=False):
         path=self.directory/'runtime-traffic-progress.json'
         if path.exists():
             if path.is_symlink() or path.stat().st_nlink!=1 or path.stat().st_size>8*1024*1024:
@@ -829,7 +922,8 @@ class Collector:
                     not isinstance(value['pending_windows'],list)):
                 raise RuntimeError('invalid-traffic-progress')
             a,b=history.bounds(value['start'],value['end'])
-            if value['scope']==scope and value['pending_windows'] and b<=history.instant(end) and b>history.instant(start):
+            if (value['scope']==scope and b<=history.instant(end) and b>history.instant(start) and
+                    (value['pending_windows'] or not reconcile and not self._reconciliation_due('traffic',scope,value['end'],end))):
                 return value
         return {'scope':scope,'start':start,'end':end,'pending_windows':None}
 
@@ -843,7 +937,7 @@ class Collector:
             output.write(raw);output.flush();os.fsync(output.fileno())
         pending.replace(target)
 
-    def _dns_progress(self, provider, start, end):
+    def _dns_progress(self, provider, start, end, *, reconcile=False):
         path = self.directory/'runtime-dns-progress.json'
         scope = history.digest(provider)
         if path.exists():
@@ -854,7 +948,8 @@ class Collector:
                     not isinstance(value['pending_windows'],list)):
                 raise RuntimeError('invalid-dns-progress')
             a,b = history.bounds(value['start'],value['end'])
-            if value['scope']==scope and value['pending_windows'] and b<=history.instant(end) and b>history.instant(start):
+            if (value['scope']==scope and b<=history.instant(end) and b>history.instant(start) and
+                    (value['pending_windows'] or not reconcile and not self._reconciliation_due('dns',scope,value['end'],end))):
                 return value
         return {'scope':scope,'start':start,'end':end,'pending_windows':[[start,end]]}
 

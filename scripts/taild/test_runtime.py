@@ -846,7 +846,7 @@ class RuntimeTest(unittest.TestCase):
         self.addCleanup(self.collector.close)
         try:
             self.collector.command('refresh')
-            self.assertEqual(calls[0],('2026-10-07T23:59:00Z','2026-10-08T00:01:00Z'),
+            self.assertEqual(calls[0],('2026-10-07T23:58:00Z','2026-10-08T00:01:00Z'),
                 'Restart resumed old backfill ahead of current traffic')
             resumed=json.loads((self.home/'runtime-traffic-progress.json').read_bytes())
             self.assertEqual((resumed['start'],resumed['end']),(progress['start'],progress['end']))
@@ -859,6 +859,67 @@ class RuntimeTest(unittest.TestCase):
             facts=self.query()[1]['results'][0]['data']['rows']
             self.assertEqual(sum(int(row['inbound_bytes']) for row in facts),104)
         finally:self.collector.command('pause')
+
+    def test_incremental_sources_restart_catch_up_and_reconcile_late_corrections(self):
+        import copy
+        clock=['2026-10-08T00:00:00Z'];floor='2026-10-01T00:00:00Z'
+        owner=object.__new__(runtime.Collector)
+        owner.directory=self.root/'incremental';owner.directory.mkdir()
+        owner.write_error=False;owner.now=lambda:clock[0]
+        store=history.History(self.root/'incremental-history',now=clock[0])
+        self.addCleanup(store.close)
+        provider={'account_scope':'fixture','endpoint':'fixture','account_type':'personal','instance':'europe'}
+        raw={'timestamp':'2026-10-07T16:36:41Z','endpointId':'fixture','question':'fixture.invalid','action':'allowed'}
+        dns_rows=[raw,copy.deepcopy(raw)];calls={'dns':[],'traffic':[]}
+        def fetch(left,right):
+            a,b=history.bounds(left,right)
+            return {'source':'controld-activity-csv','endpoint_id':'fixture','truncated':False,
+                'collected_at_utc':clock[0],'query_window':{'start_inclusive':left,'end_exclusive':right},
+                'rows':[{'source':'controld-activity-csv','raw':copy.deepcopy(r)} for r in dns_rows if a<=history.instant(r['timestamp'])<b]}
+        def poll(kind):
+            scope=history.digest(provider) if kind=='dns' else 'fixture'
+            def collect(left,right,budget,pending=None):
+                calls[kind].append((left,right,pending))
+                if kind=='dns':return ingestion.dns_windows(store,'fixture','fixture',left,right,fetch,
+                    max_slices=budget,resume_pending=pending,defer_budget=True)
+                return ingestion.traffic_window(store,'fixture',left,right,reader=self.client,
+                    max_slices=budget,resume_pending=pending,defer_budget=True)
+            return owner._collect_poll(kind,scope,floor,clock[0],collect,lambda:True,
+                lambda:owner._dns_progress(provider,floor,clock[0]) if kind=='dns' else owner._traffic_progress(scope,floor,clock[0]),
+                owner._save_dns_progress if kind=='dns' else owner._save_traffic_progress)
+        for kind in calls:
+            result=poll(kind);self.assertEqual(result['backfill_pending_windows'],0)
+        self.assertEqual(store.db.execute('SELECT count(*) FROM dns').fetchone()[0],2)
+        self.assertEqual(store.db.execute('SELECT inbound FROM traffic').fetchone()[0],100)
+        before=[tuple(r) for r in store.db.execute('SELECT identity,ordinal,revision FROM dns')]
+        for index in range(1,7):
+            clock[0]=f'2026-10-08T00:0{index}:00Z'
+            for kind in calls:
+                calls[kind].clear();poll(kind)
+                self.assertEqual(len(calls[kind]),1,'A completed backfill was replayed by an ordinary poll')
+        self.assertEqual([tuple(r) for r in store.db.execute('SELECT identity,ordinal,revision FROM dns')],before)
+        # A real restart reads only durable state. Its first current read spans
+        # the offline interval and correction overlap before historical work.
+        restarted=object.__new__(runtime.Collector);restarted.directory=owner.directory
+        restarted.write_error=False;restarted.now=lambda:clock[0];owner=restarted
+        clock[0]='2026-10-08T04:00:00Z'
+        dns_rows[:]=[{**raw,'action':'blocked'}]
+        with closing(sqlite3.connect(self.stats)) as writer:
+            writer.execute('UPDATE traffic_stats SET inbound_bytes=135');writer.commit()
+        for kind in calls:
+            calls[kind].clear();result=poll(kind)
+            self.assertEqual(calls[kind][0][:2],('2026-10-08T00:04:00Z',clock[0]))
+            self.assertEqual(result['backfill_pending_windows'],0)
+        self.assertEqual(store.db.execute('SELECT inbound FROM traffic').fetchone()[0],135)
+        self.assertEqual(store.db.execute('SELECT count(*) FROM dns').fetchone()[0],1)
+        self.assertEqual(json.loads(store.db.execute('SELECT data FROM dns').fetchone()[0])['raw']['action'],'blocked')
+        clock[0]='2026-10-08T04:59:59Z'
+        for kind in calls:
+            calls[kind].clear();poll(kind);self.assertEqual(len(calls[kind]),1)
+        dns_rows.clear();clock[0]='2026-10-08T05:00:00Z';poll('dns')
+        self.assertEqual(store.db.execute('SELECT count(*) FROM dns').fetchone()[0],0)
+        self.assertEqual(store.db.execute('PRAGMA integrity_check').fetchone()[0],'ok')
+        self.assertEqual(store.db.execute('PRAGMA user_version').fetchone()[0],4)
 
     def test_native_resume_subscription_is_hidden_and_unregisters_on_stop(self):
         import win32con

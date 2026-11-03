@@ -115,6 +115,8 @@ def private_directory(path):
                 'runtime.json','runtime.pending.json','runtime-status.json','runtime-status.pending.json',
                 'runtime-dns-progress.json','runtime-dns-progress.pending.json',
                 'runtime-traffic-progress.json','runtime-traffic-progress.pending.json',
+                'runtime-dns-poll.json','runtime-dns-poll.pending.json',
+                'runtime-traffic-poll.json','runtime-traffic-poll.pending.json',
                 'runtime-provider-limit.json','runtime-provider-limit.pending.json')
             private_names += ('desktop-queries.json','desktop-queries.pending.json')
             _windows_private_object(path,sid)
@@ -236,6 +238,8 @@ class History:
             self.db.execute('CREATE INDEX IF NOT EXISTS traffic_application_time ON traffic(application,time,destination,inbound,outbound,source,identity,port)')
             self.db.execute("CREATE INDEX IF NOT EXISTS traffic_unsupported_time_source ON traffic(time,source) WHERE json_extract(data,'$.destination_status')='unsupported-address-family'")
             self.db.execute('CREATE INDEX IF NOT EXISTS runs_end ON runs(end)')
+            self.db.execute('CREATE INDEX IF NOT EXISTS runs_source_state_start_end ON runs(source,state,start,end)')
+            self.db.execute('CREATE INDEX IF NOT EXISTS dns_source_time ON dns(source,time)')
             self.db.execute('CREATE INDEX IF NOT EXISTS snapshots_end ON snapshots(end)')
             self.db.execute('CREATE INDEX IF NOT EXISTS suppressions_end ON suppressions(end)')
 
@@ -375,7 +379,7 @@ class History:
                     continue
                 app = digest([generation.get('application_database'), row['application_id'], row['provenance']['application_blob_sha256']])
                 self.db.execute('INSERT OR IGNORE INTO applications VALUES(?,?,?)', (app, row['application_path'], row['provenance']['application_blob_sha256']))
-                self.db.execute('INSERT INTO traffic VALUES(?,?,?,?,?,?,?,?,?,?) ON CONFLICT(source,identity) DO UPDATE SET application=excluded.application,inbound=excluded.inbound,outbound=excluded.outbound,revision=excluded.revision,data=excluded.data',
+                self.db.execute('INSERT INTO traffic VALUES(?,?,?,?,?,?,?,?,?,?) ON CONFLICT(source,identity) DO UPDATE SET application=excluded.application,inbound=excluded.inbound,outbound=excluded.outbound,revision=excluded.revision,data=excluded.data WHERE traffic.application!=excluded.application OR traffic.inbound!=excluded.inbound OR traffic.outbound!=excluded.outbound OR traffic.data!=excluded.data',
                                 (source, identity, time, app, row['destination_ip'], row['destination_port'], row['inbound_bytes'], row['outbound_bytes'], revision, packed(row)))
             self._checkpoint(source, revision)
             self._expire()
@@ -434,12 +438,19 @@ class History:
             revision = self._run(source, a, b, data, state)
             # A partial multiset cannot safely retract or replace an earlier complete one.
             if state == 'complete':
-                self.db.execute('DELETE FROM dns WHERE source=? AND time>=? AND time<?', (source, a, b))
+                expected = {}
                 for row, time, key, ordinal in rows:
                     if time < floor or self._suppressed('dns', source, time):
                         continue
-                    self.db.execute('INSERT INTO dns VALUES(?,?,?,?,?,?,?,?)',
-                                    (source, key, ordinal, time, endpoint, row['raw']['question'], revision, packed(row)))
+                    expected[key,ordinal] = (time,endpoint,row['raw']['question'],packed(row))
+                existing = {(r[0],r[1]):tuple(r[2:]) for r in self.db.execute(
+                    'SELECT identity,ordinal,time,endpoint,question,data FROM dns WHERE source=? AND time>=? AND time<? LIMIT ?',
+                    (source,a,b,len(expected)+1))}
+                if expected != existing:
+                    self.db.execute('DELETE FROM dns WHERE source=? AND time>=? AND time<?', (source, a, b))
+                    self.db.executemany('INSERT INTO dns VALUES(?,?,?,?,?,?,?,?)',
+                        ((source,key,ordinal,time,endpoint,question,revision,raw)
+                         for (key,ordinal),(time,endpoint,question,raw) in expected.items()))
             self._checkpoint(source, revision)
             self._expire()
         return {'revision': revision, 'state': state, 'source': source}

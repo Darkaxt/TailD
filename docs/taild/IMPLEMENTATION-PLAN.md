@@ -1,5 +1,38 @@
 # TailD staged execution
 
+## Current execution — R45 collector CPU correction, November 3
+
+Already authorized by the user's "go ahead". Work belongs to the existing sole
+ACTIVE Stage10 and R45; broader B12 stays open. The measured +45 collector uses
+roughly one logical CPU, with684/1122 sampled active stacks at DNS/traffic imports,
+87 at checkpoint recomputation and48 at cleanup. Receipts are under
+`D:/Projects/TailD-support/maintenance/20261103/cpu`.
+
+Compact dependency order: reproduce completed-backfill replay/unchanged writes;
+implement durable scoped incremental/recent continuation and hourly historical
+correction plus idempotent imports; verify the fully integrated collector and
+retention/read contracts with representative synthetic history; commit and run
+the established exact-source normal Windows release; independently verify all
+delivered assets/payloads; perform the protected installed update, read back
+preservation and measure actual collector CPU/I/O; reconcile and clean scratch.
+No intermediate slice is released. Current R45 implementation/integration checks
+pass: scheduled recent reads, durable scoped restart/offline catch-up, bounded
+dense continuation without capped-parent replay, hourly and explicit correction,
+DNS multiplicity/deletion, changed traffic counters and unchanged-fact preservation.
+The full backend run passes (one platform/tool-specific skip); the subsequent
+installer filename allowlist is verified by its complete focused package suite.
+Synthetic170704 DNS/30000 traffic facts compare six scheduled opportunities:
++45 takes60.71875 CPU seconds/65.372 wall seconds/210071 SQLite changes;
+R45 takes0.03125 CPU seconds/0.064 wall seconds/80 changes and rewrites zero
+unchanged facts. Both retain the same exact non-expired counts and pass SQLite
+integrity. This comparison uses host SQLite3.50.4, not the packaged3.54.0 runtime,
+and does not claim installed CPU behavior. Recipes/receipts are in
+`D:/Projects/TailD-support/maintenance/20261103/cpu46`.
+Remaining advancement blockers: exact-source release gates, independent public
+package/signature/provenance verification, protected installed update and live
+CPU/I/O/state-preservation comparison. Stage10 stays ACTIVE; no tracked deferrals.
+Preserve R44, exact core1007f130, UI/theme, signing isolation and channel identity.
+
 ## Current execution — November2 scheduled upstream maintenance
 
 The current heartbeat already authorizes checked upstream integration and normal

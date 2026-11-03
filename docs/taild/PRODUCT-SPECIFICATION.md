@@ -1,6 +1,42 @@
 # TailD remaining-product specification
 
-Version 1.23, 2026-11-01. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.24, 2026-11-03. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+
+### R45 — Incremental collector and bounded retained-history reconciliation
+
+The user authorized correction of the measured sustained collector CPU load.
+Frequent traffic/DNS collection must preserve a durable recent high-water mark,
+the existing two-minute correction overlap, interrupted/capped recent slices,
+source/account/endpoint isolation and restart/wake catch-up. Completed historical
+backfills must stay complete between explicitly scheduled correction sweeps.
+Automatically recheck retained history at most once per hour after a completed sweep; an
+unfinished sweep resumes its exact pending windows across polls/restarts. These
+are acquisition scheduling opportunities, never operation-cancellation deadlines.
+An explicit source refresh may request an earlier correction sweep; it must
+continue an unfinished sweep rather than replace its captured root.
+Recent activity receives priority, while bounded historical work remains able
+to advance. Keep the existing total sixteen-request budget per source/poll.
+
+Avoid replacing unchanged complete DNS multisets and rewriting unchanged traffic
+facts. Preserve authoritative DNS deletion/correction and duplicate multiplicity,
+mutable traffic counters, coverage/gaps, complete checkpoints, committed read
+revisions, suppression/deletion watermarks and seven-day retention. New progress
+metadata must remain private, atomic and scoped; old clients must still read the
+same schema4 history and their existing progress files on rollback. Do not reset,
+vacuum, salvage or replace production history, relax ACLs, change provider policy
+or polling preferences, or disable collection to meet the CPU requirement.
+
+Acceptance: reproduce repeated completed-backfill replay and unchanged-fact
+rewrites; verify the integrated recent/backfill/correction workflow, dense and
+interrupted recent continuation, restart/offline catch-up, scope changes, late
+historical corrections, exact DNS multiplicity/deletion and changed counters.
+Measure current-source work on healthy synthetic retained history, then publish
+and independently verify one normal Windows release through the established
+isolated gates. Verify the approved installed update and representative collector
+CPU/I/O while preserving settings, credentials, node and existing history. The
+user's "go ahead" reuses delivery authority for this correction; the protected
+administrator broker still requires its per-command consent. Stage10 remains
+the sole ACTIVE stage; broader B12 rollout/rollback acceptance stays open.
 
 ### R44 — Responsive Recent DNS and non-destructive history recovery
 

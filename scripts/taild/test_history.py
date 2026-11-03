@@ -149,6 +149,25 @@ class HistoryTest(unittest.TestCase):
         self.store.import_dns(self.dns(rows=[]),'local','synthetic')
         self.assertEqual(self.store.db.execute('SELECT count(*) FROM dns').fetchone()[0],0)
 
+    def test_unchanged_traffic_poll_preserves_fact_revision_and_exact_changed_counters(self):
+        self.ingest()
+        before=tuple(self.store.db.execute('SELECT rowid,revision,data FROM traffic').fetchone())
+        self.ingest()
+        self.assertEqual(tuple(self.store.db.execute('SELECT rowid,revision,data FROM traffic').fetchone()),before)
+        self.writer.execute('UPDATE traffic_stats SET inbound_bytes=12345');self.writer.commit()
+        self.ingest()
+        self.assertEqual(self.store.db.execute('SELECT inbound FROM traffic').fetchone()[0],12345)
+
+    def test_unchanged_complete_dns_multiset_preserves_facts_but_changed_multiset_reconciles(self):
+        data=self.dns();self.store.import_dns(data,'account','synthetic')
+        before=[tuple(r) for r in self.store.db.execute('SELECT rowid,identity,ordinal,revision,data FROM dns ORDER BY ordinal')]
+        self.store.import_dns(copy.deepcopy(data),'account','synthetic')
+        self.assertEqual([tuple(r) for r in self.store.db.execute('SELECT rowid,identity,ordinal,revision,data FROM dns ORDER BY ordinal')],before)
+        self.store.import_dns(self.dns(rows=data['rows'][:1]),'account','synthetic')
+        self.assertEqual(self.store.db.execute('SELECT count(*) FROM dns').fetchone()[0],1)
+        self.store.import_dns(self.dns(rows=[]),'account','synthetic')
+        self.assertEqual(self.store.db.execute('SELECT count(*) FROM dns').fetchone()[0],0)
+
     def test_live_dns_obeys_scope_retention_and_user_deletion(self):
         raw=self.dns()['rows'][0]['raw']
         with self.assertRaises(history.HistoryError):

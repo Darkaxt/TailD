@@ -301,6 +301,8 @@ def remove_history(dry_run=False):
         'runtime.json','runtime.pending.json','runtime-status.json','runtime-status.pending.json',
         'runtime-dns-progress.json','runtime-dns-progress.pending.json',
         'runtime-traffic-progress.json','runtime-traffic-progress.pending.json',
+        'runtime-dns-poll.json','runtime-dns-poll.pending.json',
+        'runtime-traffic-poll.json','runtime-traffic-poll.pending.json',
         'runtime-provider-limit.json','runtime-provider-limit.pending.json'}
     pending=[root];files=[];directories=[]
     while pending:

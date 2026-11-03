@@ -75,7 +75,9 @@ class PackageManifestTest(unittest.TestCase):
     def test_history_removal_recognizes_traffic_continuations_without_deleting_on_check(self):
         local=history.private_directory(self.root/'local')
         taild=history.private_directory(local/'TailD');home=history.private_directory(taild/'history')
-        names=('runtime-traffic-progress.json','runtime-traffic-progress.pending.json')
+        names=('runtime-traffic-progress.json','runtime-traffic-progress.pending.json',
+            'runtime-traffic-poll.json','runtime-traffic-poll.pending.json',
+            'runtime-dns-poll.json','runtime-dns-poll.pending.json')
         for name in names:(home/name).write_text('{}')
         (self.root/'installation.json').write_text(json.dumps({'owner_sid':reader.current_sid()}))
         with patch.object(installer,'app_directory',return_value=self.root),patch.object(installer,'known_folder',return_value=local):
