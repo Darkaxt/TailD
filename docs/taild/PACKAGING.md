@@ -1,5 +1,36 @@
 # Stage 9 local packaging contract
 
+## November3 collector CPU correction — +46 installed and verified
+
+Normal [windows-v1.105.0+46](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B46)
+ships checked source8063d5cdb7a89e4e82f529767d581ed9628fe733 through41707984943.
+All eight release gates pass, with fresh isolated lifecycle and complete-product
+failed-migration recovery evidence. Independent download verifies all eight
+assets,444 payload members, pinned release/package/core signatures and key
+identities, exact source/core/base/sequence/AMD64/schema4, bundled runtimes/notices
+and unchanged native-tested UI/theme. Packaged changed methods match the exact
+source's compiled behavior. Core1007f130 and immutable signer a445a535 are unchanged.
+Installer117498977 bytes, SHA-256
+`fff1fa77df4cde1aea71f9c5e9da3ac12e904ac9e5f7b23b6461e05c87f249d1`.
+Executables and installer remain **not Authenticode-signed**.
+
+Approved request2029786c installs+46 with exit0 and retains verified+45 rollback.
+Actual installed payload/signatures, active core, history file identity, node,
+VPN preferences, analytics settings and both credential hashes verify unchanged.
+Initial traffic/DNS reconciliation completes20:25/20:45 UTC and stays complete
+across ordinary polls, with no recent backlog. Final live verification returns
+100 Recent DNS rows in3.708s. A120.057-second normal-collection sample measures
+0.59949% total CPU versus the fresh +45 baseline1.69954%, a64.73% observed reduction.
+Process read/write I/O counters average15.901/1.623 MB/s versus60.821/11.793 MB/s;
+these are process counters, not physical SSD bandwidth. Recording and maintenance
+remain enabled; periodic correction can still require work. R45 acceptance passes;
+broader Stage10 remains ACTIVE with B12 open. Compact
+receipts are under `maintenance/20261103/cpu46` in the support root. All exact
+task Temp roots are removed. The live tray/collector still use two empty directories
+under the persistent installer runtime root as their current directory; preserve
+that zero-byte binding until their natural exit, as `runtime-retention.json` records.
+No history reset, provider write or B12 full rollout acceptance is claimed.
+
 ## November 2 upstream maintenance — normal Windows +45 verified
 
 Normal [windows-v1.105.0+45](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B45)

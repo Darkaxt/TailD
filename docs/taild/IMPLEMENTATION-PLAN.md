@@ -28,14 +28,37 @@ unchanged facts. Both retain the same exact non-expired counts and pass SQLite
 integrity. This comparison uses host SQLite3.50.4, not the packaged3.54.0 runtime,
 and does not claim installed CPU behavior. Recipes/receipts are in
 `D:/Projects/TailD-support/maintenance/20261103/cpu46`.
-Remaining advancement blockers: exact-source release gates, independent public
-package/signature/provenance verification, protected installed update and live
-CPU/I/O/state-preservation comparison. Stage10 stays ACTIVE; no tracked deferrals.
 Final review reproduced an empty-catalog completion-clock defect. Release41706350699
 was explicitly cancelled before signing/publication for that correctness failure,
 not elapsed time. A completed zero-read sweep now advances the same hourly clock;
-its regression fails before the correction and passes after it. Fresh exact-head
-checks and a fresh +46 release operation are required after the cancelled run exits.
+its regression fails before the correction and passes after it. Corrected source
+8063d5c passes focused41707607292 and CodeQL41707606538. Fresh normal +46 release
+41707984943 passes all eight gates, including complete-product failed-migration
+recovery. Independent public retrieval verifies all eight assets/444 members,
+pinned package/core/release Ed25519 identities and exact compiled R45 behavior.
+Approved broker request2029786c installs+46 with exit0. Installed signatures,
+active core, +45 rollback, unchanged history file identity, node/preferences,
+settings and both credential hashes pass. No history reset/provider write occurs.
+The observer's excessive IPC connection lifetime and transient-state completion
+race were corrected without interrupting the collector or its acquisitions.
+Final session73744 verifies the durable scoped completion markers, then a live
+Recent DNS response (100 rows in3.708s) and120.057 seconds of normal collection.
+Traffic completes20:25 UTC and DNS20:45 UTC; both remain complete across ordinary
+polls with no recent backlog. With DNS catch-up active, an earlier90-second sample
+measures0.2743% total CPU. The final normal sample measures0.59949% total CPU
+versus the fresh +45 baseline1.69954%, a64.73% observed reduction. Process read/write
+I/O counters average15.901/1.623 MB/s versus60.821/11.793 MB/s; these are process
+I/O, not physical SSD bandwidth. Normal acquisition and maintenance remain enabled;
+the measurement is not an assertion of constant idle CPU or a permanent CPU cap.
+R45 acceptance is satisfied and verified: source regressions/integration,
+normal signed release and independent public payload verification, actual approved
+installation, preserved live state and measured normal collector operation.
+No R45 blocker or tracked deferral remains. Stage10 stays ACTIVE with B12 open.
+All exact task D:/Temp and E:/Temp roots are
+transactionally removed. Two empty directories under the persistent installer
+runtime root remain as the live tray/collector's verified current directory;
+the locked cleanup ticket is revoked, with zero retained file bytes and exact
+consumer/cleanup conditions recorded in `runtime-retention.json`.
 Preserve R44, exact core1007f130, UI/theme, signing isolation and channel identity.
 
 ## Current execution — November2 scheduled upstream maintenance
