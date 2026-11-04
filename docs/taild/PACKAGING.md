@@ -1,5 +1,33 @@
 # Stage 9 local packaging contract
 
+## November 4 upstream maintenance — normal Windows +47 verified
+
+Normal [windows-v1.105.0+47](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B47)
+ships exact checked source `677485ebbdd674a8a9240dca70e083a22edc4bbb` through
+release `41792987924`. All eight gates pass with fresh isolated lifecycle and
+complete-product failed-migration recovery evidence. Independent retrieval
+verifies all eight assets and 444 payload members, pinned release/package/core
+Ed25519 signatures and key identities, exact source/core/base/sequence/AMD64/
+schema 4, runtimes/notices, unchanged UI assets and exact compiled R45 behavior.
+
+Core `0f574433b075ee28396779a96ee19e3fe7f02c45` is independently verified in
+TailDNS Windows `1.105.0+48` and Android `1.103.312+46`. GitHub inheritance
+`41790385690` checks and promotes exact TailDNS main `c686142e`; promoted-main
+checks `41792631781` and CodeQL `41792631570` pass. Require/replace, sums,
+overlay/build guards and immutable signer `d299a899` agree. The signer import
+closure changes only reviewed core identity constants; signing logic and key
+identity are unchanged. Previous verified releases and separate channels remain.
+
+Installer 117491180 bytes, SHA-256
+`28dbee4b9ac9ef0d26a0afddfe4f8fadcbc9f2f5e060f00f373ecf9a9004f77e`.
+Executables and installer remain **not Authenticode-signed**. Native verifier,
+download and extraction scratch is removed through reviewed cleanup tickets;
+compact signatures, inventories and receipts remain under
+`D:/Projects/TailD-support/maintenance/20261104/upstream`. This scheduled cycle
+performs no device installation/control, provider write or private-history
+action. Stage 10 remains ACTIVE with B12 separately open; CI does not establish
+real-device rollout acceptance.
+
 ## November3 collector CPU correction — +46 installed and verified
 
 Normal [windows-v1.105.0+46](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B46)

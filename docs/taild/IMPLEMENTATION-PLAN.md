@@ -2,44 +2,57 @@
 
 ## Current execution — verified upstream promotion, November 4
 
-The scheduled monitor authorizes this maintenance within the existing sole
-ACTIVE Stage10. B12 remains open; no device installation/control, provider writes
-or live-history testing is part of this cycle. The authoritative upstream and
-packaging contracts remain unchanged.
+The scheduled monitor authorizes maintenance within the existing sole ACTIVE
+Stage 10. B12 remains open. This cycle performs no device installation/control,
+provider writes or live-history actions. Authoritative upstream and packaging
+contracts remain unchanged.
 
-Core PR46's exact candidate3f722b75 passed trusted no-secret run41612348049
-and merged as0f574433b075. Its normal Windows1.105.0+48
-release41786442657 independently verifies all public assets, pinned Ed25519
-manifest, five payload hashes, source/version and unsigned Authenticode status.
-Android PR36 exact head6cbfa60e passed trusted41787116706 and ordinary Android,
-module-tidy and licence checks; merged mainc686142e produces normal1.103.312+46
-through isolated release41788755055. Independent APK retrieval verifies the
-unchanged pinned signer/package, increasing versionCode298962550, branding,
-all four native-core identities and absent debug-policy assets/parser.
+Core PR46 candidate `3f722b75` passed trusted no-secret run `41612348049` and
+merged as `0f574433b075ee28396779a96ee19e3fe7f02c45`. Normal Windows
+`1.105.0+48`, run `41786442657`, independently verifies all public assets,
+the pinned Ed25519 manifest, five payloads, source/version and unsigned
+Authenticode status. Android PR36 candidate `6cbfa60e` passed trusted run
+`41787116706` and ordinary Android, module-tidy and licence checks. Merged
+main `c686142e75eca84db22604380e6ea3883cf52357` produces normal
+`1.103.312+46` through isolated release `41788755055`. Independent retrieval
+verifies its unchanged pinned signer/package, increasing versionCode
+`298962550`, branding, four native core identities and absence of the debug
+policy assets/parser.
 
-Dependency order: align TailD's matching inherited require/replace, sums, overlay
-guard, connectivity source and immutable signer closure; verify exact public
-overlay inputs and focused pin/signing contracts; commit and push the reviewed
-closure/pin; let GitHub's existing isolated inheritance path capture/check/promote
-exact TailDNS mainc686142e with required Android/core/Windows gates; pass checks
-on the promoted main; publish one normal TailD Windows release and independently
-verify every delivered payload and signature. Preserve R45 polling/idempotence,
-private schema4 history, UI assets, ownership/credentials and the separate TailD
-channel. Release and final reconciliation remain pending. No tracked deferrals.
-SleepManager remains17ahead/0behind unchanged upstream851a1bdd; its normal paired
-release and manifest hashes match the previous independent verification.
-Compact recipes and receipts: D:/Projects/TailD-support/maintenance/20261104/upstream.
-Exact public overlay inputs match their previous verified hashes; the18-member
-TailD overlay regenerates unchanged. Focused overlay/channel/recovery-identity
-and isolated signer contracts pass with the exact immutable input source. The
-reviewed signer import closure changes only its three core identity constants;
-signer, package and release-channel code remain unchanged. This closes local
-pin preparation only; GitHub inheritance, promoted-main checks and final release
-acceptance are still pending.
-Reviewed signer tooling is immutably pinnedd299a8990ec3ff4afc40e63cbabb9a7e3d659026
-in both isolated signing jobs. Relative to the previous trusteda445a535 closure,
-only the reviewed core identity constants differ; no candidate application code
-is executed in either signing or inheritance write jobs.
+Dependency order is satisfied: reviewed core and Android releases; matching
+TailD require/replace, sums, overlay/build guards and signer closure; exact
+public overlay inputs and focused contracts; GitHub-owned checked inheritance;
+checks on promoted main; one normal Windows release and independent complete
+payload verification. All 14 public overlay inputs match their prior verified
+hashes and regenerate the same 18-member TailD overlay. Focused overlay,
+channel/recovery and signer checks pass with the exact immutable input source.
+
+Signer tooling is immutably pinned to
+`d299a8990ec3ff4afc40e63cbabb9a7e3d659026` in both protected signing jobs.
+Only three reviewed core constants differ within its previous trusted import
+closure; signing logic and production key identity are unchanged. GitHub
+inheritance `41790385690` passes required Android/core/Windows checks and
+isolated promotion. Actual capture/parents/tree readback verifies promoted
+main `677485ebbdd674a8a9240dca70e083a22edc4bbb` contains exact TailDNS main
+`c686142e`. Checks `41792631781` and CodeQL `41792631570` pass on that main.
+Inherited release/detection workflows remain disabled.
+
+Normal Windows `1.105.0+47`, run `41792987924`, passes all eight release
+gates with fresh isolated lifecycle and complete-product failed-migration
+recovery evidence. Independent public retrieval verifies all eight assets,
+444 members, pinned release/package/core signatures and key identities,
+exact source/core/base/sequence/AMD64/schema 4, bundled runtimes/notices,
+unchanged UI assets and exact compiled R45 polling/idempotence behavior.
+Installer: 117491180 bytes, SHA-256
+`28dbee4b9ac9ef0d26a0afddfe4f8fadcbc9f2f5e060f00f373ecf9a9004f77e`.
+Executables and installer remain **not Authenticode-signed**. No installation,
+provider policy or private history change occurred. Release acceptance passes;
+Stage 10 stays ACTIVE and B12 remains separately open.
+
+SleepManager remains 17 ahead / 0 behind unchanged upstream `851a1bdd`;
+normal paired release `v0.7.3.1` and manifest hashes match prior independent
+verification. No duplicate release is needed. No maintenance deferrals.
+Compact receipts: `D:/Projects/TailD-support/maintenance/20261104/upstream`.
 
 ## Previous execution — R45 collector CPU correction, November 3
 
