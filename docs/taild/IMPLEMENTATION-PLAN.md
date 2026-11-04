@@ -1,6 +1,43 @@
 # TailD staged execution
 
-## Current execution — R45 collector CPU correction, November 3
+## Current execution — verified upstream promotion, November 4
+
+The scheduled monitor authorizes this maintenance within the existing sole
+ACTIVE Stage10. B12 remains open; no device installation/control, provider writes
+or live-history testing is part of this cycle. The authoritative upstream and
+packaging contracts remain unchanged.
+
+Core PR46's exact candidate3f722b75 passed trusted no-secret run41612348049
+and merged as0f574433b075. Its normal Windows1.105.0+48
+release41786442657 independently verifies all public assets, pinned Ed25519
+manifest, five payload hashes, source/version and unsigned Authenticode status.
+Android PR36 exact head6cbfa60e passed trusted41787116706 and ordinary Android,
+module-tidy and licence checks; merged mainc686142e produces normal1.103.312+46
+through isolated release41788755055. Independent APK retrieval verifies the
+unchanged pinned signer/package, increasing versionCode298962550, branding,
+all four native-core identities and absent debug-policy assets/parser.
+
+Dependency order: align TailD's matching inherited require/replace, sums, overlay
+guard, connectivity source and immutable signer closure; verify exact public
+overlay inputs and focused pin/signing contracts; commit and push the reviewed
+closure/pin; let GitHub's existing isolated inheritance path capture/check/promote
+exact TailDNS mainc686142e with required Android/core/Windows gates; pass checks
+on the promoted main; publish one normal TailD Windows release and independently
+verify every delivered payload and signature. Preserve R45 polling/idempotence,
+private schema4 history, UI assets, ownership/credentials and the separate TailD
+channel. Release and final reconciliation remain pending. No tracked deferrals.
+SleepManager remains17ahead/0behind unchanged upstream851a1bdd; its normal paired
+release and manifest hashes match the previous independent verification.
+Compact recipes and receipts: D:/Projects/TailD-support/maintenance/20261104/upstream.
+Exact public overlay inputs match their previous verified hashes; the18-member
+TailD overlay regenerates unchanged. Focused overlay/channel/recovery-identity
+and isolated signer contracts pass with the exact immutable input source. The
+reviewed signer import closure changes only its three core identity constants;
+signer, package and release-channel code remain unchanged. This closes local
+pin preparation only; GitHub inheritance, promoted-main checks and final release
+acceptance are still pending.
+
+## Previous execution — R45 collector CPU correction, November 3
 
 Already authorized by the user's "go ahead". Work belongs to the existing sole
 ACTIVE Stage10 and R45; broader B12 stays open. The measured +45 collector uses
