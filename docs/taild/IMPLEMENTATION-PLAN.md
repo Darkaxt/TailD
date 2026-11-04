@@ -36,6 +36,10 @@ reviewed signer import closure changes only its three core identity constants;
 signer, package and release-channel code remain unchanged. This closes local
 pin preparation only; GitHub inheritance, promoted-main checks and final release
 acceptance are still pending.
+Reviewed signer tooling is immutably pinnedd299a8990ec3ff4afc40e63cbabb9a7e3d659026
+in both isolated signing jobs. Relative to the previous trusteda445a535 closure,
+only the reviewed core identity constants differ; no candidate application code
+is executed in either signing or inheritance write jobs.
 
 ## Previous execution — R45 collector CPU correction, November 3
 
