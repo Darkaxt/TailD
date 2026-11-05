@@ -10,7 +10,7 @@ import argparse
 import json
 from pathlib import Path
 
-PIN='0f574433b075'
+PIN='fefa70d5128a'
 SOURCE_FILES=(
     'clientupdate/taildnsupdate/start_windows.go',
     'feature/clientupdate/clientupdate.go',

@@ -1,6 +1,44 @@
 # TailD staged execution
 
-## Current execution — verified upstream promotion, November 4
+## Current execution — upstream promotion, November 5
+
+Scheduled maintenance remains within the existing sole ACTIVE Stage 10; B12
+stays open. No device installation/control, provider writes or private-history
+actions are authorized by this cycle. Existing authoritative contracts apply.
+
+Core PR47 exact candidate `89874324` passed trusted no-secret run `41806395155`
+and merged as `fefa70d5128a470f374dabc3dded488afb3bcf50`. Normal Windows
+`1.105.0+49`, run `41981203984`, independently verifies all public assets,
+pinned manifest/key, five payload hashes, source/version/AMD64 and notices;
+executables have no Authenticode signature. Reviewed upstream changes preserve
+fork DNS/default-outage/split-route policy, Windows elevation, ownership,
+tray/installer/updater/rollback and branding/version contracts.
+
+Android PR37 exact candidate `c39f80af` passed trusted `41982295881` plus ordinary
+Android/tidy/licence checks, and merged as `fb9be0fb234703cddb931bfb246b4decc9801e73`.
+Isolated release `41984063701` publishes normal `1.103.312+47`. Independent
+retrieval verifies all assets, unchanged signer/package, versionCode `298976990`,
+branding, four native ABI/core identities, notices and debug-policy exclusion.
+
+Dependency order: align matching TailD core module/sum/build/overlay guards and
+immutable signer closure; verify exact public overlay inputs and focused
+contracts; commit/push the reviewed closure and pin; use GitHub's existing
+checked inheritance/promotion path against exact TailDNS main `fb9be0fb`;
+pass promoted-main checks; publish one normal Windows release with fresh
+installer gates and independently verify all public payloads/signatures.
+No R45/runtime/history/UI or provider policy change is included. Preserve
+private schema 4 history, credentials, ownership and separate update channels.
+Inheritance, final release acceptance and reconciliation remain pending.
+No tracked maintenance deferrals. Receipts:
+`D:/Projects/TailD-support/maintenance/20261105/upstream`.
+Exact public source blobs match all 14 prior input hashes and reproduce the
+same 18-member overlay. Focused overlay/channel/recovery-identity and isolated
+signer contracts pass without skips. Only three reviewed core identity constants
+change within the immutable signer import closure; signing logic/key identity,
+runtime/history/analytics and UI remain unchanged. GitHub inheritance and final
+release acceptance still require their existing gates.
+
+## Previous execution — verified upstream promotion, November 4
 
 The scheduled monitor authorizes maintenance within the existing sole ACTIVE
 Stage 10. B12 remains open. This cycle performs no device installation/control,
