@@ -73,7 +73,7 @@ internal sealed class OwnerBridge : IDisposable
         "connectivity-read" or "connectivity-edit" or "connectivity-reset" or "connectivity-about" or
         "activity-read" or "activity-configure" or "activity-delete" or "analytics-state" or "analytics-configure" or "taildrop-open-downloads"=>OwnerLane.Device,
         "management-read" or "management-prepare" or "management-apply" or "management-cancel"=>OwnerLane.Policy,
-        "recent-dns"=>OwnerLane.Recent,_=>OwnerLane.Analytics};
+        "recent-dns" or "recent-dns-observe"=>OwnerLane.Recent,_=>OwnerLane.Analytics};
     public OwnerBridge(string instance,uint pid,OwnerLane lane=OwnerLane.Analytics)
     {
         expectedPid=pid;this.lane=lane;
@@ -89,7 +89,7 @@ internal sealed class OwnerBridge : IDisposable
         if(op is not ("state" or "configure" or "pause" or "resume" or "refresh" or "credential" or "shutdown" or "window-closed" or
             "credential-remove" or "view-query" or "view-catalog" or "saved-query" or "export-query" or "app-dns-read" or "app-dns-export" or "app-dns-delete" or "retention" or "delete" or "delete-snapshots" or "cleanup" or
             "management-read" or "management-prepare" or "management-apply" or "management-cancel" or
-            "connectivity-read" or "connectivity-edit" or "connectivity-reset" or "connectivity-about" or "recent-dns" or
+            "connectivity-read" or "connectivity-edit" or "connectivity-reset" or "connectivity-about" or "recent-dns" or "recent-dns-observe" or
             "activity-read" or "activity-configure" or "activity-delete" or "analytics-state" or "analytics-configure"))
             throw new InvalidDataException();
         var completion=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

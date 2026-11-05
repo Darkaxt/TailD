@@ -5,7 +5,7 @@ import controld
 import desktop_api
 import history
 
-OPERATIONS=frozenset(('recent-dns',))
+OPERATIONS=frozenset(('recent-dns','recent-dns-observe'))
 
 def instance_name(instance):
     return 'recent-'+hashlib.sha256(instance.encode('ascii')).hexdigest()[:32]

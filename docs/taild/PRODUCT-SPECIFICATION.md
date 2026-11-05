@@ -1,6 +1,53 @@
 # TailD remaining-product specification
 
-Version 1.24, 2026-11-03. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.25, 2026-11-05. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+
+### R46 — Selected-endpoint DNS observations
+
+The Control D endpoint selector must display observations for the selected
+authorized endpoint. The November5 reproduction finds 513 recent provider rows,
+including five matching the reported search, for BeaconEdge, while the installed
+client stores none and incorrectly labels Beacon's stream as connected for it.
+A domain's reachability does not determine whether its DNS requests are recorded.
+
+Selecting an endpoint or refreshing Recent DNS must start a bounded read-only
+acquisition for that selection without changing the configured background
+collection endpoint, resolver, provider policy, credentials or analytics opt-in.
+Keep the existing responsive local read independent of provider/policy latency;
+selection acquisition runs in the owning collector, commits through its writer,
+and exposes actual selected-scope status. Only a stream subscribed to that exact
+account/endpoint may be labeled connected. A selected endpoint updated through
+CSV polling must be labeled as polling, including loading/error/partial states.
+
+Use existing READ authentication and provider-owned routes; validate selection
+against authenticated endpoint inventory. Never broaden to a different account,
+redirect a credential, use the Write credential, invent facts or hide denied,
+rate-limited, interrupted or incomplete reads. Reuse the sixteen-request activity
+budget, recent-first acquisition, resumable bounded history and hourly correction
+contracts. Scope private continuation metadata by account/provider/endpoint;
+rapid selection changes must retain the original operation until it finishes,
+stop obsolete work at its checkpoint, and never render a stale endpoint reply.
+Search edits read the selected local cache without causing another acquisition.
+Background collection for the configured endpoint remains independent.
+
+Preserve the fifteen-minute facts window, latest-100 bound, exact retained
+seven-day First seen/Total, committed read revisions, explicit coverage/gaps,
+schema4, deletion/retention watermarks and rollback compatibility. While a new
+endpoint's history is incomplete, label the displayed totals as partial. No
+history reset, migration, provider-policy write, unrelated UI redesign or
+Authenticode work is included. Browsing updates must respect pause/disable/close
+and source rate limits; no new schedule, daemon, execution deadline or polling
+preference change is authorized.
+
+Acceptance: reproduce the missing selected-endpoint data and false connected
+badge; verify selected-provider read -> scoped ingestion -> native displayed
+rows/search/status, switching between two populated endpoints and an empty one,
+while configured collection continues. Cover stale replies, in-flight selection
+changes, restart continuation, exact metrics/coverage, denied/rate-limited reads
+and shutdown. Verify real authenticated selected-endpoint data without provider
+writes or destructive history tests. Publish and independently verify one normal
+Windows release after the integrated fix passes its established isolated gates.
+Stage10 remains the sole ACTIVE stage and broader B12 stays separately open.
 
 ### R45 — Incremental collector and bounded retained-history reconciliation
 

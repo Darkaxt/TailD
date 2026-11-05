@@ -8,6 +8,7 @@ import ctypes
 from ctypes import wintypes
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import sys
@@ -312,7 +313,9 @@ def remove_history(dry_run=False):
             if path.is_dir():
                 if directory==root and path.name!='ui-cache':raise manifest.PackageError('unrecognized-history-member')
                 pending.append(path)
-            elif directory!=root or path.name in names:files.append(path)
+            elif (directory!=root or path.name in names or
+                    re.fullmatch(r'runtime-dns-browse-[0-9a-f]{64}-(?:poll|progress)(?:\.pending)?\.json',path.name)):
+                files.append(path)
             else:raise manifest.PackageError('unrecognized-history-member')
     if dry_run:return
     for path in files:path.unlink()

@@ -72,12 +72,28 @@ class PackageManifestTest(unittest.TestCase):
         self.assertEqual(notes.read_text(),'Synthetic unrelated user notes')
 
     @unittest.skipUnless(os.name=='nt','Windows owning-account history removal')
+    def test_selected_progress_namespace_does_not_admit_unknown_user_files(self):
+        local=history.private_directory(self.root/'local')
+        home=history.private_directory(history.private_directory(local/'TailD')/'history')
+        notes=home/('runtime-dns-browse-'+64*'a'+'-notes.json')
+        notes.write_text('Synthetic unrelated notes')
+        (self.root/'installation.json').write_text(json.dumps({'owner_sid':reader.current_sid()}))
+        with patch.object(installer,'app_directory',return_value=self.root),patch.object(installer,'known_folder',return_value=local),\
+             self.assertRaisesRegex(manifest.PackageError,'unrecognized-history'):
+            installer.remove_history(dry_run=True)
+        self.assertEqual(notes.read_text(),'Synthetic unrelated notes')
+
+    @unittest.skipUnless(os.name=='nt','Windows owning-account history removal')
     def test_history_removal_recognizes_traffic_continuations_without_deleting_on_check(self):
         local=history.private_directory(self.root/'local')
         taild=history.private_directory(local/'TailD');home=history.private_directory(taild/'history')
         names=('runtime-traffic-progress.json','runtime-traffic-progress.pending.json',
             'runtime-traffic-poll.json','runtime-traffic-poll.pending.json',
-            'runtime-dns-poll.json','runtime-dns-poll.pending.json')
+            'runtime-dns-poll.json','runtime-dns-poll.pending.json',
+            'runtime-dns-browse-'+64*'a'+'-poll.json',
+            'runtime-dns-browse-'+64*'a'+'-poll.pending.json',
+            'runtime-dns-browse-'+64*'a'+'-progress.json',
+            'runtime-dns-browse-'+64*'a'+'-progress.pending.json')
         for name in names:(home/name).write_text('{}')
         (self.root/'installation.json').write_text(json.dumps({'owner_sid':reader.current_sid()}))
         with patch.object(installer,'app_directory',return_value=self.root),patch.object(installer,'known_folder',return_value=local):

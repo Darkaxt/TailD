@@ -71,13 +71,13 @@ def close_owned(process):
 
 
 class NativeSession:
-    def __init__(self,shell,directory,playwright,zoom=None,open_overview=True):
+    def __init__(self,shell,directory,playwright,zoom=None,open_overview=True,now=None):
         import win32api,win32event
         # This fixture needs DEBUG-only readiness/CDP. Refuse a release before
         # starting a collector or held query; production correctly omits hooks.
         if '--validation-ready-event'.encode('utf-16-le') not in shell.with_suffix('.dll').read_bytes():
             raise ValueError('NativeSession requires a Debug validation shell, not a production release')
-        self.directory=directory;self.collector=runtime.Collector(directory,None,now=lambda:END,instance='analytics-'+uuid.uuid4().hex)
+        self.directory=directory;self.collector=runtime.Collector(directory,None,now=now or (lambda:END),instance='analytics-'+uuid.uuid4().hex)
         self.collector.start()
         self.server=reader.PipeServer(self.collector.instance,reader.current_sid(),self.collector)
         self.thread=threading.Thread(target=self.server.serve);self.thread.start();self.server.ready.wait()

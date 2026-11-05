@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-import {Component,OnInit,OnDestroy,Input,ViewChild,ElementRef,signal} from '@angular/core';
+import {Component,OnInit,OnDestroy,OnChanges,SimpleChanges,Input,ViewChild,ElementRef,signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {command} from './bridge';
@@ -26,18 +26,19 @@ type RecordValue=Record<string,any>;
     <div class="incident-policy-context">
       <p *ngIf="!snapshot()&&!busy()">Configure a READ credential and endpoint binding in Settings, then reload this page.</p>
       <p class="hint" *ngIf="snapshot()?.policy_cache?.reused">Session policy snapshot. Reload policy to see provider-side changes; every write is checked against fresh policy.</p>
-      <details *ngIf="snapshot()" class="incident-scope-details"><summary>Shared profile · {{affected().length}} affected endpoint(s)</summary><p class="hint">Profile policy affects every endpoint below, not only this computer. Endpoint selection here does not change DNS collection or your resolver.</p>
+      <details *ngIf="snapshot()" class="incident-scope-details"><summary>Shared profile · {{affected().length}} affected endpoint(s)</summary><p class="hint">Profile policy affects every endpoint below, not only this computer. Selecting an endpoint reads its DNS activity without changing your background collection binding or resolver.</p>
         <div class="incident-endpoints"><span class="filter-pill" *ngFor="let d of affected()">{{d.name}}</span></div>
         <p class="hint">Browsing uses READ access. Explicit changes use the separate Write credential. Allow creates a Bypass rule and can override filter blocks.</p></details>
     </div>
     <app-dashboard-widget label="Recent DNS · incident resolutions" brand="controld" id="management-recent" *ngIf="section==='recent'">
       <div class="incident-recent-controls"><label class="rounded-search"><span class="sr-only">Search resolutions</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="m15 15 6 6" /></svg><input id="incident-dns-search" [ngModel]="dnsSearch" placeholder="Domain / decision" (ngModelChange)="searchChanged($event)"></label>
-        <label class="incident-confirm"><input type="checkbox" [(ngModel)]="observe"> Follow recent activity</label>
-        <button id="incident-dns-refresh" class="icon-button refresh-button" [disabled]="reading()" (click)="recent()" aria-label="Refresh DNS" [title]="reading()?'Reading recent DNS':'Refresh DNS'" [attr.aria-busy]="reading()"><taild-refresh-icon /></button>
-        <span class="badge" [class.good]="liveState()==='connected'">Live stream: {{liveState()}}</span></div>
-      <details class="recent-coverage"><summary>Recent 15 minutes · totals over 7 days</summary><p class="hint">Latest 100 stored observations for the selected endpoint. First seen and Total cover each question/type in retained history over the last 7 days, independent of search. Streaming follows the collection binding, not this selection. Gaps do not mean zero activity.</p></details>
-      <div class="recent-content" [attr.aria-busy]="reading()">
-      <div class="recent-loading" *ngIf="reading()&&!recentRows().length" role="status" id="recent-loading"><div class="loading-dialog"><div class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></div><strong>Reading recent DNS</strong><span>Reading this endpoint's local observations</span></div></div>
+        <label class="incident-confirm"><input type="checkbox" [(ngModel)]="observe" (ngModelChange)="followingChanged()"> Follow recent activity</label>
+        <button id="incident-dns-refresh" class="icon-button refresh-button" [disabled]="reading()" (click)="observeEndpoint(true)" aria-label="Refresh DNS" [title]="reading()?'Reading recent DNS':'Refresh DNS'" [attr.aria-busy]="reading()"><taild-refresh-icon /></button>
+        <span id="incident-dns-source" class="badge" [class.good]="observation()?.mode==='stream'&&liveState()==='connected'">{{sourceLabel()}}</span></div>
+      <details class="recent-coverage"><summary>Recent 15 minutes · totals over 7 days</summary><p class="hint">Latest 100 stored observations for the selected endpoint. First seen and Total cover each question/type in retained history over the last 7 days, independent of search. Selected endpoints use READ access and polling; the configured background endpoint retains its stream. Gaps do not mean zero activity.</p></details>
+      <p id="incident-dns-partial" class="hint" role="status" *ngIf="partial()">Seven-day totals are partial; this endpoint's history coverage is incomplete.</p>
+      <div class="recent-content" [attr.aria-busy]="reading()||loadingSelected()">
+      <div class="recent-loading" *ngIf="(reading()||loadingSelected())&&!recentRows().length" role="status" id="recent-loading"><div class="loading-dialog"><div class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></div><strong>Reading recent DNS</strong><span>{{loadingSelected()?"Fetching this endpoint's observations":"Reading this endpoint's local observations"}}</span></div></div>
       <div *ngIf="recentError()" class="error" role="alert">{{recentError()}}</div>
       <div class="table-scroll incident-table"><table><thead><tr><th>Time</th><th>Question</th><th>Decision / reason</th><th>First seen</th><th>Total</th></tr></thead><tbody>
         <tr *ngFor="let r of recentRows()"><td><time [title]="exactTime(r.timestamp)">{{firstSeen(r.timestamp)}}</time></td><td><strong>{{r.question}}</strong> <small>{{r.type}}</small></td><td>
@@ -48,7 +49,7 @@ type RecordValue=Record<string,any>;
           </span></div>
           <details><summary [title]="reason(r)">{{reason(r)}} · details</summary><p class="hint">Classification: {{categories(r).join(', ')||'Not supplied'}}</p><p class="hint">Category labels describe the domain; the provider trigger above identifies the decision cause. Names from current policy are display labels, not historical policy proof.</p><taild-evidence [data]="r.fact" /></details></td><td><time [title]="exactTime(r.first_seen)">{{firstSeen(r.first_seen)}}</time></td><td>{{r.total}}</td></tr>
       </tbody></table></div>
-      <p class="empty-state" *ngIf="!recentRows().length&&!reading()&&!recentError()">{{dnsSearch?'No resolutions match this search in the selected endpoint’s recent window. Clear the search to see stored activity.':'No stored resolutions in this endpoint’s recent window. Check its last activity and the collection binding; this is not proof of no DNS traffic.'}}</p>
+      <p class="empty-state" *ngIf="!recentRows().length&&!reading()&&!loadingSelected()&&!recentError()">{{dnsSearch?'No resolutions match this search in the selected endpoint’s recent window. Clear the search to see stored activity.':'No stored resolutions in this endpoint’s recent window. Check its update status and coverage; this is not proof of no DNS traffic.'}}</p>
       </div><p class="hint">Actions require current policy verification and a matching event profile. Policy loading does not block reading resolutions.</p>
     </app-dashboard-widget>
     <dialog #policyDialog class="incident-dialog" [attr.aria-label]="editing()?'Edit policy rule':'Review policy change'" (cancel)="dismiss($event)">
@@ -130,7 +131,7 @@ type RecordValue=Record<string,any>;
     <details *ngIf="snapshot()&&section==='policy'"><summary>Captured policy history</summary><button [disabled]="busy()" (click)="history()">Read retained snapshots</button>
       <taild-evidence [data]="policyHistory()" /></details>
   </section>`})
-export class ControlDManagement implements OnInit,OnDestroy {
+export class ControlDManagement implements OnInit,OnDestroy,OnChanges {
   filterChoices=filterChoices;filterAction=filterAction;optionEnabled=optionEnabled;
   statusLabel(value:unknown){return value===1?'Enabled':value===0?'Disabled':'State unavailable'}
   activeLevel(filter:RecordValue){return filterChoices(filter).find(c=>c.enabled===true)?.label||this.statusLabel(filter.status)}
@@ -145,7 +146,14 @@ export class ControlDManagement implements OnInit,OnDestroy {
   recentRows=signal<RecordValue[]>([]);recentError=signal('');liveState=signal('not observed');policyHistory=signal<RecordValue|null>(null);
   endpoint='';hostname='';ruleAction=0;comment='';ruleSearch='';serviceSearch='';dnsSearch='';confirmed=false;observe=true;
   private disposed=false;private timer?:number;private generation=0;private pendingRecent=false;private knownDevices:RecordValue[]=[];
+  private observer=crypto.randomUUID();observation=signal<RecordValue|null>(null);partial=signal(false);
   ngOnInit(){void this.load();this.schedule()}
+  ngOnChanges(changes:SimpleChanges){if(changes['section']&&!changes['section'].firstChange){this.generation++;if(this.section==='recent')void this.observeEndpoint();else void this.stopObservation()}}
+  loadingSelected(){return ['reading','pending'].includes(this.observation()?.state)}
+  sourceLabel(){const s=this.observation();return s?.mode==='stream'?'Live stream: '+this.liveState():
+    'Updates: '+(({reading:'Fetching selected endpoint',pending:'Waiting for selected endpoint',polling:'Polling',
+      'not-requested':'Not following','credential-required':'READ credential required','endpoint-unavailable':'Endpoint unavailable',
+      'rate-limited':'Rate limited','write-error':'History write error'} as Record<string,string>)[s?.state]||(s?.state||'Not following'))}
   devices(){return this.knownDevices.length?this.knownDevices:this.endpoint?[{PK:this.endpoint,name:'Collection endpoint'}]:[]}
   affected(){return this.snapshot()?.affected_endpoints||[]}
   profileName(){return (this.snapshot()?.resources?.profiles?.data?.profiles||[]).find((p:RecordValue)=>p.PK===this.snapshot()?.profile)?.name||'Unnamed profile'}
@@ -167,7 +175,7 @@ export class ControlDManagement implements OnInit,OnDestroy {
   }
   async load(refresh=false){if(this.busy())return;this.busy.set(true);this.activity.set(refresh?'Reloading current Control D policy…':'Opening Control D policy snapshot…');this.error.set('');this.preview.set(null);this.confirmed=false;this.generation++;
     this.snapshot.set(null);this.recentRows.set([]);
-    if(this.section==='recent')void this.recent();
+    if(this.section==='recent')void this.observeEndpoint();
     if(this.disposed){this.busy.set(false);return}
     try{const s=await command<RecordValue>('management-read',{...(this.endpoint?{endpoint:this.endpoint}:{}),...(refresh?{refresh:true}:{})});if(!this.disposed)this.accept(s)}
     catch(e){if(!this.disposed)this.error.set((e as Error).message)}finally{this.busy.set(false)}
@@ -201,13 +209,22 @@ export class ControlDManagement implements OnInit,OnDestroy {
   }
   async cancel(){if(this.busy())return;this.policyDialog?.nativeElement.close();this.preview.set(null);this.confirmed=false;try{await command('management-cancel')}catch(e){this.error.set((e as Error).message)}}
   searchChanged(value:string){this.dnsSearch=value;this.recentRows.set([]);void this.recent()}
+  async observeEndpoint(force=false){
+    if(this.disposed||this.section!=='recent')return;
+    const generation=this.generation,endpoint=this.endpoint;
+    try{const status=await command<RecordValue>('recent-dns-observe',{owner:this.observer,...(endpoint?{endpoint}:{}),...(force?{force:true}:{})});
+      if(!this.disposed&&generation===this.generation&&(!endpoint||endpoint===this.endpoint)){this.observation.set(status);await this.recent()}}
+    catch(e){if(!this.disposed&&generation===this.generation)this.recentError.set((e as Error).message)}
+  }
+  followingChanged(){if(this.observe)void this.observeEndpoint();else void this.stopObservation()}
+  private async stopObservation(){try{await command('recent-dns-observe',{owner:this.observer,stop:true})}catch{/* Window detach also cancels its transient observation. */}}
   async recent(){if(this.disposed)return;if(this.reading()){this.pendingRecent=true;return;}
     this.pendingRecent=false;this.reading.set(true);this.recentError.set('');const generation=this.generation,endpoint=this.endpoint,search=this.dnsSearch;
     try{const result=await command<RecordValue>('recent-dns',{...(endpoint?{endpoint}:{}),...(search?{search}:{})});
-      if(!this.disposed&&generation===this.generation&&search===this.dnsSearch){this.endpoint=result.endpoint;this.recentRows.set(result.rows);this.liveState.set(result.live_state)}}
+      if(!this.disposed&&generation===this.generation&&search===this.dnsSearch&&(!endpoint||endpoint===this.endpoint)){this.endpoint=result.endpoint;this.recentRows.set(result.rows);this.liveState.set(result.live_state);this.observation.set(result.observation);this.partial.set(result.coverage?.dns?.incomplete===true)}}
     catch(e){if(!this.disposed&&generation===this.generation&&search===this.dnsSearch)this.recentError.set((e as Error).message)}finally{this.reading.set(false);if(this.pendingRecent&&!this.disposed)void this.recent()}
   }
   async history(){try{const end=new Date();const result=await command<RecordValue>('view-query',{queries:[{kind:'policy',view:'facts',start:new Date(end.getTime()-7*86400000).toISOString(),end:end.toISOString(),scope:{endpoint:this.endpoint},limit:100}]});this.policyHistory.set(result.results[0])}catch(e){this.error.set((e as Error).message)}}
-  private schedule(){if(this.disposed)return;this.timer=window.setTimeout(async()=>{if(this.section==='recent'&&this.observe&&!document.hidden)await this.recent();this.schedule()},5000)}
-  ngOnDestroy(){this.disposed=true;window.clearTimeout(this.timer)}
+  private schedule(){if(this.disposed)return;this.timer=window.setTimeout(async()=>{if(this.section==='recent'&&this.observe&&!document.hidden)await this.observeEndpoint();this.schedule()},5000)}
+  ngOnDestroy(){this.disposed=true;window.clearTimeout(this.timer);void this.stopObservation()}
 }

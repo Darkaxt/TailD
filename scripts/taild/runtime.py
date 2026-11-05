@@ -301,6 +301,13 @@ class Collector:
         self.live_stream = None
         self.live_thread = None
         self.live_attempt_revision = None
+        self.recent_target = None
+        self.recent_generation = 0
+        self.recent_thread = None
+        self.recent_due = 0
+        self.recent_start_queued = False
+        self.recent_force = False
+        self.recent_observation = {'state':'not-requested','mode':'poll'}
         self.activity_stream = self.activity_thread = self.activity_tracker = None
         self.activity_due = 0
         self.activity_epoch = 0
@@ -419,12 +426,19 @@ class Collector:
                 with self.condition:
                     if self.closing or self.store is None:raise RuntimeError('stopping')
                     provider=dict(self.config['provider']) if self.config['provider'] else None
-                    store=self.store;live=self.sources['dns_live']['state']
+                    store=self.store
+                    endpoint=body.get('endpoint',provider['endpoint']) if provider else None
+                    observation=self._recent_status(provider,endpoint)
+                    live=observation['state'] if observation['mode']=='stream' else 'not-subscribed'
                 view=store.read_view(now=self.now())
                 try:
-                    try:return recent_dns.read(view,body,provider,live)
+                    try:return {**recent_dns.read(view,body,provider,live),'observation':observation}
                     except ValueError as error:raise RuntimeError(str(error)) from None
                 finally:view.close()
+            if op=='recent-dns-observe':
+                with self.condition:
+                    if self.closing or self.store is None:raise RuntimeError('stopping')
+                    return self._request_recent(body)
             if op in connectivity.OPERATIONS:
                 with self.condition:
                     if self.closing:raise RuntimeError('stopping')
@@ -540,6 +554,8 @@ class Collector:
             raise RuntimeError('invalid-command')
         if op == 'state' and not body:
             return self._state()
+        if op=='recent-dns-observe':
+            with self.condition:return self._request_recent(body)
         if op=='analytics-configure':
             if set(body)!={'enabled'} or type(body['enabled']) is not bool:raise RuntimeError('invalid-command')
             enabled=body['enabled']
@@ -579,6 +595,8 @@ class Collector:
             return self._state()
         if op == 'window-closed' and not body:
             self.window_attached = False
+            self.recent_target=None
+            self.recent_generation+=1
             keep = self.config['traffic'] or self.config['dns'] or self.config['activity']
             self.stop_after_window_receipt = not keep
             return {'collector_continues':keep,'state':self._state()['state']}
@@ -651,6 +669,126 @@ class Collector:
             self.queue.append(('_store',action,future))
             self.condition.notify()
         return future.result()
+
+    def _recent_status(self, provider, endpoint):
+        unavailable=('stopping' if self.closing else 'write-error' if self.write_error else
+                     'paused' if self.paused else 'disabled' if not self.config['dns'] else None)
+        if provider and endpoint==provider['endpoint']:
+            if unavailable:return {'mode':'stream','state':unavailable}
+            if getattr(self,'live_revision',None)!=self.config_revision:
+                return {'mode':'stream','state':'connecting'}
+            return {'mode':'stream',**dict(self.sources.get('dns_live',{'state':'disabled'}))}
+        target=self.recent_target
+        matches=provider and target and target['provider']=={**provider,'endpoint':endpoint} and target['revision']==self.config_revision
+        value=dict(self.recent_observation) if matches else {'mode':'poll','state':'not-requested'}
+        if unavailable:value['state']=unavailable
+        elif time.monotonic()<self.not_before['dns']:value['state']='rate-limited'
+        return value
+
+    def _request_recent(self, body):
+        # Selection is a transient read subscription, never a provider/resolver or
+        # background collection binding edit. The desktop owns its teardown ID.
+        if set(body)-{'endpoint','owner','force','stop'}:raise RuntimeError('invalid-command')
+        try:owner=controld._identifier(body.get('owner'))
+        except controld.ControlDError:raise RuntimeError('invalid-command') from None
+        if 'stop' in body:
+            if set(body)!={'owner','stop'} or body['stop'] is not True:raise RuntimeError('invalid-command')
+            if self.recent_target and self.recent_target['owner']==owner:
+                self.recent_target=None;self.recent_generation+=1
+            return {'stopped':True}
+        if 'force' in body and type(body['force']) is not bool:raise RuntimeError('invalid-command')
+        provider=self.config['provider']
+        if provider is None:raise RuntimeError('explicit-provider-required')
+        try:endpoint=controld._identifier(body.get('endpoint',provider['endpoint']))
+        except controld.ControlDError:raise RuntimeError('invalid-command') from None
+        force=body.get('force',False)
+        if endpoint==provider['endpoint']:
+            self.recent_target=None;self.recent_generation+=1
+            if force:
+                self.queue.append(('_recent_default_refresh',self.config_revision,None));self.condition.notify()
+            return {'endpoint':endpoint,**self._recent_status(provider,endpoint)}
+        desired={'provider':{**provider,'endpoint':endpoint},'owner':owner,'revision':self.config_revision}
+        if self.recent_target!=desired:
+            self.recent_target=desired;self.recent_generation+=1;self.recent_due=0
+            self.recent_force=False
+            self.recent_observation={'mode':'poll','state':'pending'}
+        elif force:self.recent_due=0
+        self.recent_force=self.recent_force or force
+        blocked=self.recent_observation['state'] in ('denied','endpoint-unavailable','credential-required')
+        if (force or not blocked) and time.monotonic()>=self.recent_due and self.recent_thread is None and not self.recent_start_queued:
+            # Admit selection without waiting for the writer or provider. The
+            # owner starts the worker; the recent read lane remains responsive.
+            self.recent_start_queued=True
+            self.queue.append(('_recent_start',None,None));self.condition.notify()
+        return {'endpoint':endpoint,**self._recent_status(provider,endpoint)}
+
+    def _start_recent(self, store, *, reconcile=False):
+        if (self.recent_thread is not None or self.recent_target is None or self.closing or
+                self.paused or self.write_error or not self.config['dns'] or time.monotonic()<self.not_before['dns']):return
+        target=dict(self.recent_target);generation=self.recent_generation
+        start=store.health()['expiry_floor'];end=history.utc(history.instant(self.now())//1000000*1000000)
+        self.recent_observation={**self.recent_observation,'mode':'poll','state':'reading'}
+        self.recent_thread=threading.Thread(target=self._collect_recent,
+            args=(store,target,generation,start,end,reconcile),name='TailD selected endpoint DNS')
+        self.recent_thread.start()
+        return True
+
+    def _collect_recent(self, store, target, generation, start, end, reconcile):
+        token=None;delay=self.config['dns_seconds']
+        status={'mode':'poll','state':'interrupted'}
+        provider=target['provider'];kind='dns-browse-'+history.digest(provider)
+        def checkpoint():
+            with self.condition:
+                return not (self.closing or self.paused or self.write_error or not self.config['dns'] or
+                    target['revision']!=self.config_revision or generation!=self.recent_generation)
+        try:
+            if not checkpoint():return
+            token=self._transient_token or credentials.CredentialStore().read()
+            if not token:raise credentials.CredentialError('missing-read-credential')
+            inventory=controld.inventory(token,provider.get('organization'))
+            if not any(d.get('PK')==provider['endpoint'] for d in inventory['devices']):
+                raise controld.ControlDError('Selected endpoint unavailable',state='endpoint-unavailable')
+            def fetch(left,right):
+                return controld.activity_slice(token,provider['account_type'],provider['instance'],left,right,
+                    endpoint=provider['endpoint'],organization=provider.get('organization'),limit=1000)
+            def collect(left,right,budget,pending=None):
+                return ingestion.dns_windows(store,provider['account_scope'],provider['endpoint'],left,right,fetch,
+                    max_slices=budget,defer_budget=True,resume_pending=pending,checkpoint=checkpoint,commit=self._commit)
+            # On first selection show the full recent window immediately; ordinary
+            # follow reads then use the same durable overlap/catch-up as collection.
+            state=self._poll_state(kind,history.digest(provider))
+            if state['through'] is None:
+                state['through']=history.utc(max(history.instant(start),history.instant(end)-15*60*1000000))
+                self._save_poll_state(kind,state)
+            result=self._collect_poll(kind,history.digest(provider),start,end,collect,checkpoint,
+                lambda:self._dns_progress(provider,start,end,reconcile=reconcile,kind=kind),
+                lambda value:self._save_dns_progress(value,kind=kind))
+            status={'mode':'poll','state':'interrupted' if result.get('interrupted') else 'polling',
+                'result':result,'last_success_utc':self.now()}
+        except controld.ControlDError as error:
+            status={'mode':'poll','state':error.state or 'unavailable','status':error.status}
+            if error.retry_after is not None:
+                until=(history.utc(history.instant(self.now())+error.retry_after*1000000)
+                    if isinstance(error.retry_after,int) else error.retry_after)
+                remaining=max(0,(history.instant(until)-history.instant(self.now()))/1000000)
+                delay=max(delay,remaining)
+                with self.condition:self.not_before['dns']=max(self.not_before['dns'],time.monotonic()+remaining)
+                try:self._save_provider_limit(until)
+                except OSError:self.write_error=True
+                status['retry_after_until']=until
+        except credentials.CredentialError:status={'mode':'poll','state':'credential-required'}
+        except (sqlite3.Error,OSError):
+            self.write_error=True;status={'mode':'poll','state':'write-error'}
+        except history.HistoryError:status={'mode':'poll','state':'incompatible-or-unavailable'}
+        except reader.ReaderError:status={'mode':'poll','state':'stopping' if self.closing else 'unavailable'}
+        except BaseException as error:
+            self.start_error=type(error).__name__;self.closing=True;status={'mode':'poll','state':'worker-failed'}
+        finally:
+            token=None
+            with self.condition:
+                if generation==self.recent_generation:
+                    self.recent_observation=status;self.recent_due=time.monotonic()+delay
+                self.queue.append(('_recent_finished',generation,None));self.condition.notify()
 
     def _start_acquisition(self, store, kind, *, policy=False, reconcile=False):
         if (kind in self.acquisitions or self.closing or self.paused or self.write_error or
@@ -937,8 +1075,8 @@ class Collector:
             output.write(raw);output.flush();os.fsync(output.fileno())
         pending.replace(target)
 
-    def _dns_progress(self, provider, start, end, *, reconcile=False):
-        path = self.directory/'runtime-dns-progress.json'
+    def _dns_progress(self, provider, start, end, *, reconcile=False,kind='dns'):
+        path = self.directory/('runtime-'+kind+'-progress.json')
         scope = history.digest(provider)
         if path.exists():
             if path.is_symlink() or path.stat().st_nlink != 1 or path.stat().st_size > reader.REQUEST_BYTES:
@@ -949,13 +1087,13 @@ class Collector:
                 raise RuntimeError('invalid-dns-progress')
             a,b = history.bounds(value['start'],value['end'])
             if (value['scope']==scope and b<=history.instant(end) and b>history.instant(start) and
-                    (value['pending_windows'] or not reconcile and not self._reconciliation_due('dns',scope,value['end'],end))):
+                    (value['pending_windows'] or not reconcile and not self._reconciliation_due(kind,scope,value['end'],end))):
                 return value
         return {'scope':scope,'start':start,'end':end,'pending_windows':[[start,end]]}
 
-    def _save_dns_progress(self, value):
-        pending = self.directory/'runtime-dns-progress.pending.json'
-        target = self.directory/'runtime-dns-progress.json'
+    def _save_dns_progress(self, value, *, kind='dns'):
+        pending = self.directory/('runtime-'+kind+'-progress.pending.json')
+        target = self.directory/('runtime-'+kind+'-progress.json')
         if pending.is_symlink() or target.is_symlink():
             raise RuntimeError('invalid-dns-progress')
         raw = json.dumps(value,separators=(',',':'))
@@ -994,6 +1132,20 @@ class Collector:
 
     def _deliver(self, store, command):
         op,body,future = command
+        if op=='_recent_default_refresh':
+            if body==self.config_revision:self._start_acquisition(store,'dns',reconcile=True)
+            return
+        if op=='_recent_start':
+            with self.condition:
+                self.recent_start_queued=False
+                if self._start_recent(store,reconcile=self.recent_force):self.recent_force=False
+            return
+        if op=='_recent_finished':
+            self.recent_thread.join()
+            with self.condition:
+                self.recent_thread=None
+                if body!=self.recent_generation and self._start_recent(store,reconcile=self.recent_force):self.recent_force=False
+            return
         if op=='_app_dns_finished':
             self.app_dns_thread.join();self.app_dns_thread=None
             return
@@ -1247,7 +1399,7 @@ class Collector:
                 self._synchronize_activity()
                 self._synchronize_app_dns()
                 with self.condition:
-                    if self.closing and not self.acquisitions and self.live_thread is None and self.activity_thread is None and self.app_dns_thread is None and not self.queue:
+                    if self.closing and not self.acquisitions and self.recent_thread is None and self.live_thread is None and self.activity_thread is None and self.app_dns_thread is None and not self.queue:
                         break
                     if self.wake_pending and not self.closing:
                         self.config_revision += 1
@@ -1305,7 +1457,7 @@ class Collector:
             # An in-flight source may still return facts after explicit shutdown
             # or a writer defect. Drain its commits/completion before closing the
             # store; never strand a future, orphan a thread or discard its result.
-            while self.acquisitions or self.live_thread is not None or self.activity_thread is not None or self.app_dns_thread is not None or self.queue:
+            while self.acquisitions or self.recent_thread is not None or self.live_thread is not None or self.activity_thread is not None or self.app_dns_thread is not None or self.queue:
                 with self.condition:
                     if not self.queue:
                         self.condition.wait()

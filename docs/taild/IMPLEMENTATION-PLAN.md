@@ -1,6 +1,40 @@
 # TailD staged execution
 
-## Current execution — upstream promotion, November 5
+## Current execution — selected-endpoint DNS, R46
+
+Stage10 remains the sole ACTIVE stage; B12 remains separately open. The user's
+reported selector defect authorizes this correction and its normal final release.
+Authoritative scope: PRODUCT-SPECIFICATION.md R46. No tracked deferrals.
+
+Acceptance work within this stage:
+1. Reproduce provider/local mismatch and incorrect cross-endpoint stream status:
+   verified on installed1.105.0+48. BeaconEdge has513 recent provider rows/five
+   matching the supplied search; local Recent DNS returns zero for all15 other
+   endpoints while labeling each connected to Beacon's stream.
+2. Implement and integrate selected-endpoint read acquisition, scoped resumable
+   progress, truthful status/partial metrics and native selection lifecycle.
+3. Verify the complete selected-provider/native workflow, race/lifecycle and
+   existing collection/history/privacy contracts. Preserve Beacon collection.
+4. Reconcile R46; commit and pass exact-source checks; publish one normal signed
+   Windows release and independently verify all public artifacts and packaged
+   behavior. Report actual delivery; no intermediate release.
+
+Selected acquisition, scoped status and native routing are integrated and
+verified. Current-source native acceptance displays all five real BeaconEdge
+matches with READ CSV in an isolated history while the configured Beacon binding
+is unchanged. The native fixture switches populated/empty endpoints and rejects
+stale replies. Focused collector, retained-history, replay, rate-limit/denial,
+shutdown, strict removal and held-writer admission/cache-read checks pass. The
+production frontend and Debug native host compile; served assets/source hashes
+are reconciled. Shared schema4, fixed signing closure22a73d90 and core pins are
+unchanged. No material consolidation finding or implementation deferral remains.
+
+Remaining advancement blockers: exact-source remote checks, normal final release
+and independent public package verification. Stage10 stays ACTIVE; no release or
+installation is yet claimed. Compact private diagnosis and acceptance:
+`D:/Projects/TailD-support/maintenance/20261105/endpoint-mismatch`.
+
+## Verified maintenance — upstream promotion, November 5
 
 Scheduled maintenance remains within the existing sole ACTIVE Stage 10; B12
 stays open. No device installation/control, provider writes or private-history
