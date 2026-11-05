@@ -37,6 +37,10 @@ signer contracts pass without skips. Only three reviewed core identity constants
 change within the immutable signer import closure; signing logic/key identity,
 runtime/history/analytics and UI remain unchanged. GitHub inheritance and final
 release acceptance still require their existing gates.
+Both protected signing jobs pin reviewed immutable closure
+`22a73d9028c3b5d67365c0821ae112614f28a1f9`. Compared with the previous trusted
+`d299a899` closure only the three core identity constants change; candidate
+application code never executes in protected signing or inheritance write jobs.
 
 ## Previous execution — verified upstream promotion, November 4
 
