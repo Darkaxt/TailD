@@ -1,5 +1,36 @@
 # Stage 9 local packaging contract
 
+## Selected-endpoint DNS correction — normal Windows +49 verified
+
+Normal [windows-v1.105.0+49](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B49)
+ships exact checked source `d2a3a6f40549c9ee4d75fb279173b662efb8b49b` through
+release42118345846. Exact-source contracts42117961155 and CodeQL42117960967
+pass; all eight release gates pass with fresh isolated lifecycle and
+complete-product failed-migration recovery. Independently downloaded assets
+verify all eight hashes and444 payload members, pinned release/package/core
+Ed25519 signatures/key identities, exact source/core/base/sequence/AMD64/schema4,
+all five core version stamps, bundled runtimes/notices and native-tested UI assets.
+Packaged R46 admission/acquisition/status/native routing and strict scoped
+progress-file removal match the reviewed source; existing R45 behavior remains.
+
+Installer117507948bytes, SHA-256
+`d38bfc8601bb00ba871610a556160c78b28ecd53ff87b95a7af0ad65f6517593`.
+Shared core `fefa70d5128a470f374dabc3dded488afb3bcf50` and protected signing
+closure `22a73d9028c3b5d67365c0821ae112614f28a1f9` are unchanged. Previous+48
+and separate update channels remain intact. Compact signatures, package/source
+inventories, real READ/native acceptance and delivery receipts:
+`D:/Projects/TailD-support/maintenance/20261105/endpoint-mismatch`.
+The approved owning-user installation verifies all members/signatures, active
+core hashes/version, registration, unchanged node/VPN preferences, both stored
+credentials, runtime settings and history file identity, with+48 rollback intact.
+The initially resumed collector exits; one normal product launch resumes actual
+collection. No automatic-restart fix is claimed. Live installed acquisition
+retrieves retained BeaconEdge facts and40 recent ZFold7 rows without changing
+the configured Beacon binding or provider policy. Temporary observation is stopped;
+backend probes are distinguished from the prior real native renderer acceptance.
+Stage10 remains the sole ACTIVE stage and broader B12 remains open. This
+documentation-only receipt requires no additional payload release.
+
 ## November 5 upstream maintenance — normal Windows +48 verified
 
 Normal [windows-v1.105.0+48](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B48)

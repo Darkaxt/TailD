@@ -29,9 +29,30 @@ production frontend and Debug native host compile; served assets/source hashes
 are reconciled. Shared schema4, fixed signing closure22a73d90 and core pins are
 unchanged. No material consolidation finding or implementation deferral remains.
 
-Remaining advancement blockers: exact-source remote checks, normal final release
-and independent public package verification. Stage10 stays ACTIVE; no release or
-installation is yet claimed. Compact private diagnosis and acceptance:
+Exact-source contracts42117961155 and CodeQL42117960967 pass on
+`d2a3a6f40549c9ee4d75fb279173b662efb8b49b`. Normal Windows1.105.0+49 publishes
+through42118345846 with all eight gates successful, including fresh isolated
+lifecycle and complete-product failed-migration recovery. Independent retrieval
+verifies all eight public assets,444 payload members, pinned release/package/core
+signatures, source/core/base/sequence/AMD64/schema4, bundled runtimes/notices and
+the exact native-tested UI. Packaged R46 methods match exact-source compiled
+behavior; the native protocol and strict scoped history-removal contract are
+present. No release blocker or tracked deferral remains for R46.
+
+The separately authorized installed update completes through protected broker
+request9178e0deb080482e8f05cdd3a89a4c1e with installer exit0. All installed payload
+members/signatures, active core hashes/version, registration, preserved node/VPN
+preferences, both credentials, runtime settings and history file identity verify;
+previous+48 is retained for rollback. The installer-dispatched collector exits
+after startup; its cause is not established. A single normal installed-product
+launch resumes collection, and real installed probes retrieve retained BeaconEdge
+facts (no current15-minute requests) and40 recent ZFold7 rows with truthful polling
+status and unchanged Beacon binding. The temporary probe owner is stopped. This
+does not claim that automatic post-install restart behavior was repaired or that
+backend probes were installed-UI clicks. The separately verified native renderer
+and packaged identical assets establish the UI boundary. R46 has no remaining
+implementation/release deferral. Stage10 stays ACTIVE and broader B12 remains
+open. Compact private diagnosis and acceptance:
 `D:/Projects/TailD-support/maintenance/20261105/endpoint-mismatch`.
 
 ## Verified maintenance — upstream promotion, November 5
