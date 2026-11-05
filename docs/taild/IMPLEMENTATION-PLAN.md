@@ -20,27 +20,41 @@ Isolated release `41984063701` publishes normal `1.103.312+47`. Independent
 retrieval verifies all assets, unchanged signer/package, versionCode `298976990`,
 branding, four native ABI/core identities, notices and debug-policy exclusion.
 
-Dependency order: align matching TailD core module/sum/build/overlay guards and
-immutable signer closure; verify exact public overlay inputs and focused
-contracts; commit/push the reviewed closure and pin; use GitHub's existing
-checked inheritance/promotion path against exact TailDNS main `fb9be0fb`;
-pass promoted-main checks; publish one normal Windows release with fresh
-installer gates and independently verify all public payloads/signatures.
-No R45/runtime/history/UI or provider policy change is included. Preserve
-private schema 4 history, credentials, ownership and separate update channels.
-Inheritance, final release acceptance and reconciliation remain pending.
-No tracked maintenance deferrals. Receipts:
+Dependency order is verified: matching TailD require/replace, sums and
+overlay/build guards; immutable signer closure; exact public overlay inputs
+and focused contracts; GitHub-owned inheritance `41985531204` with full
+Android/DNS/shared Windows checks and isolated promotion; promoted-main
+contracts `41987922215` and CodeQL `41987922216`; one normal Windows release
+with fresh isolated installer gates and independent public verification.
+Exact source `202f0d1cb4e31ad45b775064c9d8b9116d388a0a` contains TailDNS
+`fb9be0fb` as an actual parent and has the same tree as the checked preparation.
+No R45/runtime/history/UI or provider policy change is included. Private
+schema 4 history, credentials, ownership and separate update channels remain.
+No tracked maintenance deferrals. Receipts and final readback:
 `D:/Projects/TailD-support/maintenance/20261105/upstream`.
 Exact public source blobs match all 14 prior input hashes and reproduce the
 same 18-member overlay. Focused overlay/channel/recovery-identity and isolated
 signer contracts pass without skips. Only three reviewed core identity constants
 change within the immutable signer import closure; signing logic/key identity,
-runtime/history/analytics and UI remain unchanged. GitHub inheritance and final
-release acceptance still require their existing gates.
+runtime/history/analytics and UI remain unchanged.
 Both protected signing jobs pin reviewed immutable closure
 `22a73d9028c3b5d67365c0821ae112614f28a1f9`. Compared with the previous trusted
 `d299a899` closure only the three core identity constants change; candidate
 application code never executes in protected signing or inheritance write jobs.
+
+Normal Windows `1.105.0+48`, release `41988258844`, passes all eight gates,
+including fresh isolated install/upgrade/rollback/uninstall and complete-product
+failed-migration recovery. Independent retrieval verifies all eight assets and
+444 payload members, pinned release/package/core signatures and key identities,
+exact source/core/base/sequence/AMD64/schema 4, all five core PE version stamps,
+unchanged native-tested UI/notices/runtimes and exact compiled R45 behavior.
+Installer 117495099 bytes, SHA-256
+`5c3be75f0b75065ef1a4e81b2b442f416f7a5d4542150a30f49db721697df780`.
+Installer and executables remain **not Authenticode-signed**. SleepManager
+remains 17 ahead/0 behind upstream with unchanged verified normal `v0.7.3.1`
+assets and a healthy signing run; TailD Android `.40` is unchanged.
+Previous verified releases remain available. This receipt does not claim
+installation, live CPU validation or real-device Stage 10/B12 acceptance.
 
 ## Previous execution — verified upstream promotion, November 4
 

@@ -1,5 +1,36 @@
 # Stage 9 local packaging contract
 
+## November 5 upstream maintenance — normal Windows +48 verified
+
+Normal [windows-v1.105.0+48](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B48)
+ships exact checked source `202f0d1cb4e31ad45b775064c9d8b9116d388a0a` through
+release `41988258844`. All eight gates pass with fresh isolated lifecycle and
+complete-product failed-migration recovery evidence. Independent retrieval
+verifies all eight assets and 444 payload members, pinned release/package/core
+Ed25519 signatures and key identities, exact source/core/base/sequence/AMD64/
+schema 4, all five core PE version stamps, runtimes/notices, unchanged UI assets
+and exact compiled R45 behavior.
+
+Core `fefa70d5128a470f374dabc3dded488afb3bcf50` is independently verified in
+TailDNS Windows `1.105.0+49` and Android `1.103.312+47`. GitHub inheritance
+`41985531204` checks and promotes exact TailDNS main `fb9be0fb`; promoted-main
+contracts `41987922215` and CodeQL `41987922216` pass. Require/replace, sums,
+overlay/build guards and immutable signer `22a73d90` agree. The signer import
+closure changes only reviewed core identity constants; signing logic and key
+identity are unchanged. The inherited merge is tree-identical to the prepared
+source and preserves actual upstream ancestry. Previous releases and separate
+channels remain intact.
+
+Installer 117495099 bytes, SHA-256
+`5c3be75f0b75065ef1a4e81b2b442f416f7a5d4542150a30f49db721697df780`.
+Executables and installer remain **not Authenticode-signed**. Compact signatures,
+inventories, verification and cleanup receipts are retained under
+`D:/Projects/TailD-support/maintenance/20261105/upstream`. No device installation/
+control, provider write or private-history action occurs in this cycle.
+Stage 10 remains ACTIVE and B12 remains separately open; CI does not establish
+real-device rollout acceptance. This documentation-only receipt requires no
+additional payload release.
+
 ## November 4 upstream maintenance — normal Windows +47 verified
 
 Normal [windows-v1.105.0+47](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B47)
