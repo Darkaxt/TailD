@@ -1,5 +1,38 @@
 # TailD staged execution
 
+## Current maintenance — upstream promotion, November 6
+
+The existing Stage 10 remains the sole ACTIVE stage; B12 remains separately
+open. Scheduled authority covers source integration and verified normal releases,
+with no device installation/control, provider writes or live-history actions.
+No tracked deferrals. Preserve the delivered R46 Windows runtime and UI.
+
+Core PR48 exact `91f5c2ec` passes trusted no-secret run42003059045 and merges as
+`c9777dc3970f12dcb6ec55066928d8b1909535e9`. Windows1.105.0+50 through42175073634
+is independently verified: pinned signature/key, all assets and five PE members,
+exact source/base/sequence/AMD64 and notices. The upstream changes preserve fork
+DNS precedence/outage, Windows ownership/tray/installer/updater/rollback and
+branding/version contracts.
+
+Android PR38 exact `9040376b` passes trusted42175955297 attempt2 and all ordinary
+checks; attempt1 has a diagnosed runner dependency-retrieval failure, resolved
+without source/dependency/check changes. Merge `fb92cde78c48c1c2536a03706431d1d23a107791`
+publishes normal1.103.312+48 through42179296676. Public APK/signature, unchanged
+package/signer, versionCode298991510, branding, all four native ABI/core identities,
+Windows companions and source notices verify. Typed navigation and SDK37 compile
+configuration preserve target36, Private DNS/profile/MDM behavior and identities.
+
+Current TailD preparation aligns exact require/replace/checksums and build guards;
+all14 public overlay inputs and the18-member output equal the previously reviewed
+contracts. Focused pin/isolated-signer checks pass without skips. Immutable signer
+`c17b1fb353c2cfd29f2bdebfeda8fbe862f02380` changes only three reviewed core identity
+constants in its four-file import closure. Key identities and signing logic stay
+unchanged. Remaining acceptance: GitHub-owned checked inheritance (including fork
+navigation preservation), exact-main checks, one normal fresh Windows release and
+independent public payload/signature/provenance verification. No release or device
+rollout is yet claimed for this TailD cycle. Private compact receipts:
+`D:/Projects/TailD-support/maintenance/20261106/upstream`.
+
 ## Current execution — selected-endpoint DNS, R46
 
 Stage10 remains the sole ACTIVE stage; B12 remains separately open. The user's
