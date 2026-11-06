@@ -33,6 +33,17 @@ independent public payload/signature/provenance verification. No release or devi
 rollout is yet claimed for this TailD cycle. Private compact receipts:
 `D:/Projects/TailD-support/maintenance/20261106/upstream`.
 
+Inheritance42180641784 fails at the real Git merge, before any promotion. Exact
+merge-tree diagnosis identifies MainActivity, DeepLinkNavigator and SearchView:
+upstream typed routes overlap TailD's shell, actual originating preference-return
+callbacks, deep-link device activation and presence labels. A narrow preparation
+reconciles those hooks with typed destinations and required upstream SDK/navigation
+declarations. Source wiring regression guards reproduce the missing hooks before
+repair and pass afterward; Windows R46 runtime/UI and signer logic are unchanged.
+This remains an internal advancement blocker until the repaired complete Android/
+DNS/core and Windows contracts pass through the normal GitHub-owned inheritance
+path. No local unchecked merge is promoted and no CI-to-device acceptance is claimed.
+
 ## Current execution — selected-endpoint DNS, R46
 
 Stage10 remains the sole ACTIVE stage; B12 remains separately open. The user's
