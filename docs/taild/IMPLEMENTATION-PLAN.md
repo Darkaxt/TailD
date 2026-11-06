@@ -2,57 +2,39 @@
 
 ## Current maintenance — upstream promotion, November 6
 
-The existing Stage 10 remains the sole ACTIVE stage; B12 remains separately
-open. Scheduled authority covers source integration and verified normal releases,
-with no device installation/control, provider writes or live-history actions.
-No tracked deferrals. Preserve the delivered R46 Windows runtime and UI.
+The maintenance cycle is COMPLETE and independently verified through the normal
+Windows +50 release; the existing Stage 10 remains the sole ACTIVE stage and B12
+remains separately open. No tracked deferrals or remaining maintenance blockers.
+Core PR48 merges as c9777dc3970f after exact trusted checks and publishes verified
+TailDNS Windows 1.105.0+50. Android PR38 merges as fb92cde78c48 after exact trusted
+and ordinary checks and publishes verified 1.103.312+48, versionCode 298991510. Its initial
+runner dependency-retrieval failure is resolved by rerunning only the failed job
+on unchanged source. Package/signer/base-version/branding/core identities verify.
 
-Core PR48 exact `91f5c2ec` passes trusted no-secret run42003059045 and merges as
-`c9777dc3970f12dcb6ec55066928d8b1909535e9`. Windows1.105.0+50 through42175073634
-is independently verified: pinned signature/key, all assets and five PE members,
-exact source/base/sequence/AMD64 and notices. The upstream changes preserve fork
-DNS precedence/outage, Windows ownership/tray/installer/updater/rollback and
-branding/version contracts.
+TailD's actual inheritance conflict is diagnosed in three typed-navigation files;
+reviewed preparation preserves its shell, actual-origin preference return, device
+deep links and presence labels. Capture accepts only the exact upstream revision
+and complete common/prepared/upstream blob set before resolution. Unknown inputs
+fail closed. Synthetic Git rejection/ancestry and source guards pass; full merged
+contracts, inherited Android/DNS/shared Windows core and protected promotion pass
+through run 42182148476. Exact c6322e4ba7483d6ea27bd64e3f2c33b9be71a4d0 retains both
+parents and the prepared tree; promoted-main contracts42184386447 and
+CodeQL42184386328 pass. The isolated signer closure changes only reviewed core
+constants; production signing keys and signing logic remain unchanged.
 
-Android PR38 exact `9040376b` passes trusted42175955297 attempt2 and all ordinary
-checks; attempt1 has a diagnosed runner dependency-retrieval failure, resolved
-without source/dependency/check changes. Merge `fb92cde78c48c1c2536a03706431d1d23a107791`
-publishes normal1.103.312+48 through42179296676. Public APK/signature, unchanged
-package/signer, versionCode298991510, branding, all four native ABI/core identities,
-Windows companions and source notices verify. Typed navigation and SDK37 compile
-configuration preserve target36, Private DNS/profile/MDM behavior and identities.
+Normal release 42184714213 publishes Windows 1.105.0+50 with all eight fresh isolated
+release gates. Independent retrieval verifies signatures/key identities, every
+asset/payload member, source/core/base/sequence/AMD64/schema4, five core version
+stamps, bundled runtimes/notices, native-tested assets and compiled R45/R46 behavior.
+PACKAGING.md contains the exact installer hash/size and source record. SleepManager
+remains synchronized (17 ahead/0 behind); its unchanged v0.7.3.1 assets and current
+workflow match independently verified evidence, so no duplicate release is made.
 
-Current TailD preparation aligns exact require/replace/checksums and build guards;
-all14 public overlay inputs and the18-member output equal the previously reviewed
-contracts. Focused pin/isolated-signer checks pass without skips. Immutable signer
-`c17b1fb353c2cfd29f2bdebfeda8fbe862f02380` changes only three reviewed core identity
-constants in its four-file import closure. Key identities and signing logic stay
-unchanged. Remaining acceptance: GitHub-owned checked inheritance (including fork
-navigation preservation), exact-main checks, one normal fresh Windows release and
-independent public payload/signature/provenance verification. No release or device
-rollout is yet claimed for this TailD cycle. Private compact receipts:
+Scheduled scope remains source integration and normal release publication only:
+no host/device installation or control, provider writes or live-history operations.
+Broader B12 device rollout/rollback/final reconciliation is not closed by CI.
+Private compact verification/cleanup receipts:
 `D:/Projects/TailD-support/maintenance/20261106/upstream`.
-
-Inheritance42180641784 fails at the real Git merge, before any promotion. Exact
-merge-tree diagnosis identifies MainActivity, DeepLinkNavigator and SearchView:
-upstream typed routes overlap TailD's shell, actual originating preference-return
-callbacks, deep-link device activation and presence labels. A narrow preparation
-reconciles those hooks with typed destinations and required upstream SDK/navigation
-declarations. Source wiring regression guards reproduce the missing hooks before
-repair and pass afterward; Windows R46 runtime/UI and signer logic are unchanged.
-This remains an internal advancement blocker until the repaired complete Android/
-DNS/core and Windows contracts pass through the normal GitHub-owned inheritance
-path. No local unchecked merge is promoted and no CI-to-device acceptance is claimed.
-
-Preparation692e7d1 preserves the reviewed typed-navigation fork hooks, but Git's
-old common ancestor still conflicts in those same three files. Capture now accepts
-only the exact reviewed upstream revision and all nine common/prepared/upstream
-blob identities, with regular-file modes and the complete conflict set validated
-before any resolution. It restores the already-reviewed prepared blobs and creates
-the ordinary two-parent candidate inside the no-secret verification job. Every
-unknown revision, changed blob or additional conflict fails closed. Synthetic Git
-regressions verify preserved parents/hooks and rejection without partial resolution;
-full inherited compilation and isolated promotion remain required acceptance gates.
 
 ## Current execution — selected-endpoint DNS, R46
 

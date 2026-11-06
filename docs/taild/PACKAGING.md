@@ -1,5 +1,37 @@
 # Stage 9 local packaging contract
 
+## November 6 upstream maintenance — normal Windows +50 verified
+
+Normal [windows-v1.105.0+50](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B50)
+ships exact checked source `c6322e4ba7483d6ea27bd64e3f2c33b9be71a4d0` through
+release 42184714213. All eight gates pass with fresh isolated lifecycle,
+install/upgrade/rollback/uninstall and complete-product failed-migration recovery.
+Independent public retrieval verifies all eight assets and 444 payload members,
+pinned release/package/core
+Ed25519 signatures and key identities, exact source/core/base/sequence/AMD64/schema4,
+all five core PE version stamps, bundled runtimes/notices, native-tested UI assets
+and compiled R45/R46 polling, endpoint routing/status and scoped history removal.
+
+Installer 117520887 bytes, SHA-256
+`6869f3ea8aed554ec3144c4f6d649009f4d1f828926fccad9d0fa3e2f04d90a1`.
+Core `c9777dc3970f12dcb6ec55066928d8b1909535e9` is independently verified in TailDNS Windows
+1.105.0+50 and Android 1.103.312+48. GitHub inheritance 42182148476 preserves exact
+TailDNS `fb92cde78c48c1c2536a03706431d1d23a107791` ancestry. Actual typed-navigation
+conflicts are resolved only against the complete reviewed blob set; TailD shell,
+preference return, deep links and device presence survive full inherited Android/
+DNS/shared-core checks. Promoted-main contracts42184386447 and CodeQL42184386328
+pass; require/replace/sums, overlay/build guards and protected signer
+`c17b1fb353c2cfd29f2bdebfeda8fbe862f02380` agree. Signing logic and key identities
+are unchanged. Previous normal releases and separate update channels remain intact.
+
+Compact signed metadata, source inventories, verification and cleanup receipts:
+`D:/Projects/TailD-support/maintenance/20261106/upstream`.
+No Windows/Android installation or control, provider write or live-history action
+occurs in this cycle. Windows UI/history/runtime remain the delivered R46 behavior.
+Stage 10 remains the sole ACTIVE stage and B12 remains separately open; CI and
+package verification do not establish real-device rollout/rollback acceptance.
+This documentation-only receipt requires no additional payload release.
+
 ## Selected-endpoint DNS correction — normal Windows +49 verified
 
 Normal [windows-v1.105.0+49](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B49)
