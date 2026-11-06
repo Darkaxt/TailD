@@ -44,6 +44,16 @@ This remains an internal advancement blocker until the repaired complete Android
 DNS/core and Windows contracts pass through the normal GitHub-owned inheritance
 path. No local unchecked merge is promoted and no CI-to-device acceptance is claimed.
 
+Preparation692e7d1 preserves the reviewed typed-navigation fork hooks, but Git's
+old common ancestor still conflicts in those same three files. Capture now accepts
+only the exact reviewed upstream revision and all nine common/prepared/upstream
+blob identities, with regular-file modes and the complete conflict set validated
+before any resolution. It restores the already-reviewed prepared blobs and creates
+the ordinary two-parent candidate inside the no-secret verification job. Every
+unknown revision, changed blob or additional conflict fails closed. Synthetic Git
+regressions verify preserved parents/hooks and rejection without partial resolution;
+full inherited compilation and isolated promotion remain required acceptance gates.
+
 ## Current execution — selected-endpoint DNS, R46
 
 Stage10 remains the sole ACTIVE stage; B12 remains separately open. The user's

@@ -3,6 +3,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import inherit
 
@@ -87,6 +88,57 @@ class InheritanceTest(unittest.TestCase):
             inherit.prepare(self.repo, 'upstream')
         self.assertEqual(self.git('rev-parse', 'HEAD'), self.base)
         self.assertEqual((self.repo / 'android/dns.txt').read_text(), 'unsaved\n')
+
+    def reviewed_conflict(self):
+        common = self.git('rev-parse', 'HEAD:android/dns.txt')
+        upstream = self.upstream_commit()
+        theirs = self.git('rev-parse', upstream + ':android/dns.txt')
+        self.write('android/dns.txt', 'reviewed local and upstream DNS\n')
+        self.commit('reviewed reconciliation')
+        ours = self.git('rev-parse', 'HEAD:android/dns.txt')
+        record = {upstream: {'android/dns.txt': (common, ours, theirs)}}
+        return upstream, record
+
+    def test_exact_reviewed_reconciliation_preserves_both_parents(self):
+        upstream, record = self.reviewed_conflict()
+        before = self.git('rev-parse', 'HEAD')
+        with patch.object(inherit, 'REVIEWED_RECONCILIATIONS', record):
+            result = inherit.prepare(self.repo, 'upstream')
+        self.assertTrue(result['changed'])
+        self.assertEqual(self.git('show', '-s', '--format=%P', 'HEAD').split(),
+                         [before, upstream])
+        self.assertEqual(self.git('status', '--porcelain'), '')
+        self.assertEqual((self.repo / 'android/dns.txt').read_text(),
+                         'reviewed local and upstream DNS\n')
+
+    def test_changed_prepared_blob_rejects_reviewed_reconciliation(self):
+        _, record = self.reviewed_conflict()
+        self.write('android/dns.txt', 'unreviewed change\n')
+        self.commit('changed preparation')
+        before = self.git('rev-parse', 'HEAD')
+        with patch.object(inherit, 'REVIEWED_RECONCILIATIONS', record):
+            with self.assertRaisesRegex(inherit.InheritanceError, 'exact reviewed'):
+                inherit.prepare(self.repo, 'upstream')
+        self.assertEqual(self.git('rev-parse', 'HEAD'), before)
+        self.assertIn('android/dns.txt', self.git('diff', '--name-only', '--diff-filter=U'))
+
+    def test_extra_conflict_rejects_entire_reconciliation_before_changes(self):
+        upstream, record = self.reviewed_conflict()
+        self.write('android/extra.txt', 'local\n')
+        self.commit('local extra')
+        before = self.git('rev-parse', 'HEAD')
+        self.git('switch', 'upstream')
+        self.write('android/extra.txt', 'upstream\n')
+        self.commit('upstream extra')
+        updated = self.git('rev-parse', 'HEAD')
+        self.git('switch', 'main')
+        record[updated] = record.pop(upstream)
+        with patch.object(inherit, 'REVIEWED_RECONCILIATIONS', record):
+            with self.assertRaisesRegex(inherit.InheritanceError, 'exact reviewed'):
+                inherit.prepare(self.repo, 'upstream')
+        self.assertEqual(self.git('rev-parse', 'HEAD'), before)
+        self.assertEqual(set(self.git('diff', '--name-only', '--diff-filter=U').splitlines()),
+                         {'android/dns.txt', 'android/extra.txt'})
 
     def test_inconsistent_core_pin_is_rejected_even_without_update(self):
         text = (self.repo / 'go.mod').read_text()
