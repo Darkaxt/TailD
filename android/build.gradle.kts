@@ -16,15 +16,13 @@ repositories {
 kotlin { compilerOptions { jvmTarget = JvmTarget.JVM_17 } }
 
 android {
-  val androidApiLevel = providers.gradleProperty("androidApiLevel").get().toInt()
-
   ndkVersion = "23.1.7779620"
-  compileSdk = androidApiLevel
+  compileSdk = providers.gradleProperty("androidCompileSdk").get().toInt()
 
   defaultConfig {
     applicationId = "io.github.darkaxt.taildns"
     minSdk = 26
-    targetSdk = androidApiLevel
+    targetSdk = providers.gradleProperty("androidApiLevel").get().toInt()
 
     versionCode = computeVersionCode()
     versionName = getVersionProperty("TAILDNS_VERSION_NAME") ?: getVersionProperty("VERSION_LONG")
