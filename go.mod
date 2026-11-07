@@ -5,7 +5,7 @@ go 1.27.3
 require (
 	github.com/tailscale/wireguard-go v0.0.0-20261102205419-b884e294b6d8
 	golang.org/x/mobile v0.0.0-20240806205939-81131f6468ab
-	tailscale.com v1.103.0-pre.0.20261106063156-c9777dc3970f
+	tailscale.com v1.103.0-pre.0.20261107063048-15b8d25f1934
 )
 
 require (
@@ -56,7 +56,7 @@ require (
 	github.com/jellydator/ttlcache/v3 v3.4.1 // indirect
 	github.com/jsimonetti/rtnetlink v1.4.2 // indirect
 	github.com/kamstrup/intmap v0.5.2 // indirect
-	github.com/klauspost/compress v1.20.0 // indirect
+	github.com/klauspost/compress v1.20.2 // indirect
 	github.com/kortschak/wol v0.0.0-20200729010619-da482cc4850a // indirect
 	github.com/mdlayher/genetlink v1.4.0 // indirect
 	github.com/mdlayher/netlink v1.11.2 // indirect
@@ -94,4 +94,4 @@ require (
 	gvisor.dev/gvisor v0.0.0-20260915211658-a6f909f08a72 // indirect
 )
 
-replace tailscale.com => github.com/Darkaxt/tailscale v1.103.0-pre.0.20261106063156-c9777dc3970f
+replace tailscale.com => github.com/Darkaxt/tailscale v1.103.0-pre.0.20261107063048-15b8d25f1934
