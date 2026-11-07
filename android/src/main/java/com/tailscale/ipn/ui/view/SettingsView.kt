@@ -43,6 +43,9 @@ import com.tailscale.ipn.mdm.AlwaysNeverUserDecides
 import com.tailscale.ipn.mdm.MDMSettings
 import com.tailscale.ipn.mdm.ShowHide
 import com.tailscale.ipn.ui.Links
+import com.tailscale.ipn.ui.components.Header
+import com.tailscale.ipn.ui.components.ListItemSwitch
+import com.tailscale.ipn.ui.components.ListItemText
 import com.tailscale.ipn.ui.theme.link
 import com.tailscale.ipn.ui.theme.listItem
 import com.tailscale.ipn.ui.util.AndroidTVUtil
@@ -90,7 +93,11 @@ fun SettingsView(
   Scaffold(
       topBar = {
         if (!embedded)
-            Header(titleRes = R.string.settings_title, onBack = settingsNav.onNavigateBackHome)
+            Header(
+                titleRes = R.string.settings_title,
+                onBack = settingsNav.onNavigateBackHome,
+                isTv = isAndroidTV(),
+            )
       }
   ) { innerPadding ->
     Column(
@@ -102,6 +109,7 @@ fun SettingsView(
       if (isVPNPrepared) {
         UserView(
             profile = user,
+            isTv = isAndroidTV(),
             actionState = UserActionState.NAV,
             onClick = settingsNav.onNavigateToUserSwitcher,
         )
@@ -171,7 +179,7 @@ fun SettingsView(
       )
 
       Lists.ItemDivider()
-      Setting.Text(
+      ListItemText(
           R.string.split_tunneling,
           subtitle = stringResource(R.string.filter_apps_allowed_to_access_tailscale),
           onClick = settingsNav.onNavigateToSplitTunneling,
@@ -179,7 +187,7 @@ fun SettingsView(
 
       if (showTailnetLock.value == ShowHide.Show) {
         Lists.ItemDivider()
-        Setting.Text(
+        ListItemText(
             R.string.tailnet_lock,
             subtitle =
                 tailnetLockEnabled?.let {
@@ -190,11 +198,11 @@ fun SettingsView(
       }
       if (useTailscaleSubnets.value == AlwaysNeverUserDecides.UserDecides) {
         Lists.ItemDivider()
-        Setting.Text(R.string.subnet_routing, onClick = settingsNav.onNavigateToSubnetRouting)
+        ListItemText(R.string.subnet_routing, onClick = settingsNav.onNavigateToSubnetRouting)
       }
 
       Lists.ItemDivider()
-      Setting.Switch(
+      ListItemSwitch(
           R.string.client_remote_logging_enabled,
           subtitle =
               stringResource(
@@ -215,19 +223,19 @@ fun SettingsView(
 
       if (!AndroidTVUtil.isAndroidTV()) {
         Lists.ItemDivider()
-        Setting.Text(R.string.permissions, onClick = settingsNav.onNavigateToPermissions)
+        ListItemText(R.string.permissions, onClick = settingsNav.onNavigateToPermissions)
       }
 
       managedByOrganization.value?.let {
         Lists.ItemDivider()
-        Setting.Text(
+        ListItemText(
             title = stringResource(R.string.managed_by_orgName, it),
             onClick = settingsNav.onNavigateToManagedBy,
         )
       }
 
       Lists.SectionDivider()
-      Setting.Text(R.string.bug_report, onClick = settingsNav.onNavigateToBugReport)
+      ListItemText(R.string.bug_report, onClick = settingsNav.onNavigateToBugReport)
 
       Lists.ItemDivider()
       Setting.Text(
@@ -245,7 +253,7 @@ fun SettingsView(
       if (BuildConfig.DEBUG) {
         Lists.SectionDivider()
         Lists.MutedHeader(text = stringResource(R.string.internal_debug_options))
-        Setting.Text(R.string.mdm_settings, onClick = settingsNav.onNavigateToMDMSettings)
+        ListItemText(R.string.mdm_settings, onClick = settingsNav.onNavigateToMDMSettings)
       }
     }
   }

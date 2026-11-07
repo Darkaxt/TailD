@@ -12,6 +12,21 @@ ROOT=Path(__file__).resolve().parents[2]/'android/src/main/java/com/tailscale/ip
 
 
 class AndroidNavigationTest(unittest.TestCase):
+    def test_tv_component_inheritance_keeps_fork_preferences_and_accessibility(self):
+        settings=(ROOT/'ui/view/SettingsView.kt').read_text(encoding='utf-8')
+        self.assertTrue(re.search(r'if \(!embedded\)\s*Header\([^)]*settings_title',settings))
+        for marker in ('isTv = isAndroidTV()', 'R.string.taild_collect_analytics',
+                'onToggle = history::setEnabled', 'R.string.taild_delete_history',
+                'R.string.taild_use_exit_node', 'managedExit.value.isNullOrEmpty()',
+                'settingsNav.onNavigateToExitNodes', 'settingsNav.onNavigateToRunAsExitNode',
+                'TailDAboutDialog(', 'contentDescription = label'):
+            self.assertIn(marker,settings)
+        avatar=(ROOT/'ui/view/Avatar.kt').read_text(encoding='utf-8')
+        for marker in ('isTv: Boolean', 'sizeIn(minWidth = 48.dp, minHeight = 48.dp)',
+                'contentDescription = actionLabel', '.conditional(isTv, { padding(4.dp) })'):
+            self.assertIn(marker,avatar)
+        self.assertNotIn('AndroidTVUtil',avatar)
+
     def test_typed_graph_keeps_taild_shell_and_preference_returns(self):
         source=(ROOT/'MainActivity.kt').read_text(encoding='utf-8')
         self.assertTrue(re.search(r'composable<MainRoute>[^\n]*\{\s*com\.tailscale\.ipn\.taild\.TailDTailscaleView\(',source),

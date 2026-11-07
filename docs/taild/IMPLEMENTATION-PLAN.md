@@ -26,6 +26,17 @@ payload member, including unchanged R45/R46 runtime/UI behavior. Unknown conflic
 and stale/failing checks remain advancement blockers. No intermediate release.
 Compact receipts: `D:/Projects/TailD-support/maintenance/20261107/upstream`.
 
+Actual capture42350479800 fails before promotion on README, Avatar and SettingsView.
+Exact merge-tree diagnosis identifies canonical component/TV extraction overlapping
+TailD's product README, accessible avatar action and embedded preferences. A narrow
+preparation preserves TailD attribution/product instructions, 48dp avatar target/
+labels, analytics/history controls, MDM exit-node guards, source health and embedded
+header suppression while adopting the explicit upstream TV parameter/components.
+The existing fork setting controls retain their accessible switch labels. Unknown
+conflicts remain fatal. Source wiring regressions and full merged Kotlin/core gates
+are required; this is still an internal advancement blocker until normal checked
+capture/promotion succeeds. No unverified history merge or release is claimed.
+
 ## Current maintenance — upstream promotion, November 6
 
 The maintenance cycle is COMPLETE and independently verified through the normal
