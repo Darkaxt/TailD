@@ -213,6 +213,7 @@ fun MainView(
                     Avatar(
                         profile = user,
                         size = 36,
+                        isTv = isAndroidTV(),
                         { navigation.onNavigateToSettings() },
                         isFocusable = true,
                     )
