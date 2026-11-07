@@ -1,5 +1,31 @@
 # TailD staged execution
 
+## Current maintenance — upstream promotion, November 7
+
+The existing Stage 10 remains the sole ACTIVE stage; B12 remains separately open.
+Scheduled authority covers source repairs, checked integration and normal releases,
+with no device control, provider writes or production-history actions. No tracked
+deferrals. Preserve the delivered R45/R46 Windows behavior and native UI assets.
+
+Core PR49 passes exact trusted run42195133239, merges as15b8d25f19348572d87eec5b97f401404d8a3f87
+and publishes independently verified Windows1.105.0+51 through42347360533. Android
+capture initially fails on fork-owned go.mod/go.sum conflicts; narrow repairfd57bbf
+preserves every other upstream dependency change and rejects unrelated conflicts.
+Focused and exact real-merge checks pass, and repaired capture42348119462 succeeds.
+PR39 exact9b38696 passes trusted42348230022 plus ordinary Android/tidy/license
+checks, merges asc2a979e263b348a7014779476a97b8870b63bf5b and publishes verified
+Android1.103.312+49 through42349565504. Package/signer/base/code299005820, all assets,
+native ABI/core/module identities and notices verify before TailD preparation.
+
+Remaining acceptance: align exact core require/replace/sums, reviewed overlay/build
+guards and unchanged isolated signer logic; complete GitHub-owned inheritance with
+full Android/DNS/core/Windows preservation checks; verify exact promoted-main checks;
+publish one normal Windows51 with fresh isolated lifecycle/recovery/signing gates;
+independently verify public signatures/key identities, source/provenance and every
+payload member, including unchanged R45/R46 runtime/UI behavior. Unknown conflicts
+and stale/failing checks remain advancement blockers. No intermediate release.
+Compact receipts: `D:/Projects/TailD-support/maintenance/20261107/upstream`.
+
 ## Current maintenance — upstream promotion, November 6
 
 The maintenance cycle is COMPLETE and independently verified through the normal
