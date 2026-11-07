@@ -3,6 +3,25 @@
 Authority: [SPECIFICATION.md](SPECIFICATION.md), version 2.9.
 Assessment: [EVALUATION.md](EVALUATION.md).
 
+## November 7 updater repair
+
+Scheduled capture42347715976 fails before creating a candidate because canonical
+Android24fbeb48 changes its core requirement while TailDNS deliberately replaces
+that requirement with its reviewed core. Exact merge-tree diagnosis shows only
+go.mod/go.sum conflicts, confined to the vanilla tailscale.com requirement and
+checksums; all other dependency and source changes merge normally. Preserve dirty
+local Android work; the repair uses an isolated clean D: checkout.
+
+Bounded correction: on a failed canonical merge, require the complete regular-file
+go.mod/go.sum conflict set and matching existing fork require/replace. Resolve only
+core-owned conflict lines while preserving every other merged dependency/source
+change; reject unrelated conflicts before writing either file. Keep the existing
+reviewed-core pin/tidy, no-secret checks and signing boundaries. Acceptance requires
+focused rejection/preservation regressions, an exact real merge reproduction,
+successful GitHub capture and exact-head candidate checks, then the ordinary normal
+release and independent package/source/signer verification. No device or provider
+actions; existing stages and real-device validation gaps remain unchanged.
+
 Authorization: `already_authorized`. Implementation, GitHub signing, release, fork-aware auto-update and current-task monitoring are explicitly authorized. Stage 1 is BLOCKED on B3's unavailable controlled-network variants; Stage 2 is BLOCKED on B4's prohibited device-input action; Stages 3–8 and 10–12 are COMPLETE; Stage 9 is BLOCKED only on the target Fold's current ADB disconnection. Under specification 2.9, B3 and B4 remain honest validation gaps but do not block completion of the accessible workflow.
 
 There may be only one **ACTIVE** stage. Other allowed statuses are **NOT STARTED**, **BLOCKED**, and **COMPLETE**. Park an actual blocked stage with the exact requirement, cause, ownership, resolving condition and dependent work before activating another. Close a stage only with fresh evidence for every assigned criterion.
