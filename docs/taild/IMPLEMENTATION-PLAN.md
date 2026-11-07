@@ -2,40 +2,46 @@
 
 ## Current maintenance — upstream promotion, November 7
 
-The existing Stage 10 remains the sole ACTIVE stage; B12 remains separately open.
-Scheduled authority covers source repairs, checked integration and normal releases,
-with no device control, provider writes or production-history actions. No tracked
-deferrals. Preserve the delivered R45/R46 Windows behavior and native UI assets.
+The maintenance release is COMPLETE and independently verified. The existing
+Stage 10 remains the sole ACTIVE stage and B12 remains separately open. No required
+maintenance implementation blocker or tracked deferral remains.
 
-Core PR49 passes exact trusted run42195133239, merges as15b8d25f19348572d87eec5b97f401404d8a3f87
-and publishes independently verified Windows1.105.0+51 through42347360533. Android
-capture initially fails on fork-owned go.mod/go.sum conflicts; narrow repairfd57bbf
-preserves every other upstream dependency change and rejects unrelated conflicts.
-Focused and exact real-merge checks pass, and repaired capture42348119462 succeeds.
-PR39 exact9b38696 passes trusted42348230022 plus ordinary Android/tidy/license
-checks, merges asc2a979e263b348a7014779476a97b8870b63bf5b and publishes verified
-Android1.103.312+49 through42349565504. Package/signer/base/code299005820, all assets,
-native ABI/core/module identities and notices verify before TailD preparation.
+Core PR49 passes exact trusted checks, merges as `15b8d25f` and publishes verified
+TailDNS Windows 1.105.0+51 through 42347360533. Actual Android capture 42347715976
+fails on the fork-owned core requirement/checksums; narrow repair `fd57bbf` passes
+focused rejection/preservation tests and exact real-merge reproduction. Repaired
+capture 42348119462 succeeds. PR39 exact `9b38696` passes trusted 42348230022 and all
+ordinary Android/tidy/license checks, merges as `c2a979e` and publishes independently
+verified Android 1.103.312+49 through 42349565504, versionCode 299005820. Package,
+stable signer, branding, native ABI/core/module identities and notices verify.
 
-Remaining acceptance: align exact core require/replace/sums, reviewed overlay/build
-guards and unchanged isolated signer logic; complete GitHub-owned inheritance with
-full Android/DNS/core/Windows preservation checks; verify exact promoted-main checks;
-publish one normal Windows51 with fresh isolated lifecycle/recovery/signing gates;
-independently verify public signatures/key identities, source/provenance and every
-payload member, including unchanged R45/R46 runtime/UI behavior. Unknown conflicts
-and stale/failing checks remain advancement blockers. No intermediate release.
-Compact receipts: `D:/Projects/TailD-support/maintenance/20261107/upstream`.
+TailD's first capture 42350479800 fails before promotion on README/Avatar/SettingsView.
+Reviewed preparation preserves product attribution, 48dp avatar actions and labels,
+embedded header suppression, analytics/history controls, MDM exit-node guards and
+source health while adopting the explicit upstream TV/component APIs. Existing
+fork switch semantics remain. Only the exact complete reviewed conflict-blob set
+is reconciled; unknown inputs fail closed. Source guards and full merged backend,
+Android/DNS/shared Windows core checks pass through inheritance 42350775421.
+GitHub-owned promotion preserves both parents and the independently reconstructed
+tree `ff815fa49900c81b4536f12708e01ae02c476fab`. Exact-main contracts 42351822107 and
+CodeQL 42351821390 pass. Signer `0a6ccd96` changes only reviewed core constants in
+its trusted import closure; keys/signing logic stay unchanged.
 
-Actual capture42350479800 fails before promotion on README, Avatar and SettingsView.
-Exact merge-tree diagnosis identifies canonical component/TV extraction overlapping
-TailD's product README, accessible avatar action and embedded preferences. A narrow
-preparation preserves TailD attribution/product instructions, 48dp avatar target/
-labels, analytics/history controls, MDM exit-node guards, source health and embedded
-header suppression while adopting the explicit upstream TV parameter/components.
-The existing fork setting controls retain their accessible switch labels. Unknown
-conflicts remain fatal. Source wiring regressions and full merged Kotlin/core gates
-are required; this is still an internal advancement blocker until normal checked
-capture/promotion succeeds. No unverified history merge or release is claimed.
+Normal Windows 1.105.0+51 through release 42352019250 contains exact
+source `99b1d5c80976bb1157fd62cfabba0bdc4e7bebeb`. All eight fresh isolated release gates
+and independent public signatures/payload/source verification pass. PACKAGING.md
+records the exact installer hash/size. R45/R46 Windows runtime, history, analytics
+and native UI assets remain unchanged. SleepManager remains 17 ahead / 0 behind with
+unchanged independently verified 0.7.3.1 assets/current workflow; no duplicate release.
+
+Closure review finds no further consolidation required for this maintenance scope.
+The bounded resolvers preserve explicit ownership and reject unknown conflicts;
+no additional Windows runtime or UI refactor is needed for the verified outcome.
+
+Scheduled scope remains source integration and normal release publication only:
+no host/device control, provider writes or live-history operations. CI does not
+close broader B12 device acceptance. Compact receipts and cleanup evidence:
+`D:/Projects/TailD-support/maintenance/20261107/upstream`.
 
 ## Current maintenance — upstream promotion, November 6
 

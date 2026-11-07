@@ -1,5 +1,42 @@
 # Stage 9 local packaging contract
 
+## November 7 upstream maintenance — normal Windows +51 verified
+
+Normal [windows-v1.105.0+51](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B51)
+ships exact checked source `99b1d5c80976bb1157fd62cfabba0bdc4e7bebeb` through
+release 42352019250. All eight gates pass with fresh isolated
+install/upgrade/rollback/uninstall and complete-product failed-migration recovery.
+Independent public retrieval verifies all eight assets and 444
+payload members, pinned release/package/core Ed25519 signatures and key identities,
+source/core/base/sequence/AMD64/schema4, all five core version stamps, bundled
+runtimes/notices, unchanged native-tested UI assets and compiled R45/R46 behavior.
+
+Installer 117527022 bytes, SHA-256
+`5461e7e2ab11bb2eb8eff4022eea0a575470c5814b949f7c1028b78149b15bbc`.
+Core `15b8d25f19348572d87eec5b97f401404d8a3f87` is independently verified in TailDNS Windows
+1.105.0+51 and Android 1.103.312+49 (versionCode 299005820).
+Both exact candidate checks and normal releases pass. Android capture's actual
+core-pin conflict is repaired by resolving only owned module lines, preserving
+other dependencies and rejecting unrelated conflicts before writes.
+
+GitHub inheritance 42350775421 checks and promotes exact TailDNS
+`c2a979e263b348a7014779476a97b8870b63bf5b`. Three fork conflicts are bound to complete reviewed
+common/prepared/upstream blobs: product README, accessible avatar and embedded
+preferences survive the upstream component/TV extraction. Full inherited Android,
+DNS/shared Windows core and merged backend gates pass. The promoted tree equals
+independent merge-tree reconstruction with only those reviewed resolutions.
+Exact-main contracts 42351822107 and CodeQL 42351821390 pass; core pins, overlay
+and build guards match protected signer `0a6ccd96f747f6fff24a2271c2953f3ea166eeba`. Its import
+closure changes only core constants; signing logic and key identities are unchanged.
+
+Previous normal releases and separate update channels remain intact. Compact
+signed metadata, source inventories, verification and cleanup receipts:
+`D:/Projects/TailD-support/maintenance/20261107/upstream`.
+No host/device installation or control, provider write or live-history action
+occurs in this cycle. Stage 10 remains the sole ACTIVE stage; B12 device rollout,
+rollback and final reconciliation remain separately open. This documentation-only
+receipt requires no additional payload release.
+
 ## November 6 upstream maintenance — normal Windows +50 verified
 
 Normal [windows-v1.105.0+50](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B50)
