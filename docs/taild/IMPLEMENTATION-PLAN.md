@@ -1,5 +1,33 @@
 # TailD staged execution
 
+## Current maintenance — upstream promotion, November 8
+
+Scheduled maintenance remains within the existing sole ACTIVE Stage 10; B12
+real-device rollout/rollback/final reconciliation remains separately open. Core
+PR50 exact7c452474 passes trusted42357133183, merges asb2e34084 and publishes
+Windows1.105.0+52 through42455498095. Android capture42455881471 creates PR40
+exact0788b27a with only matching core requirement/replacement and checksum lines.
+Trusted42455978524 and ordinary Android/tidy/license gates pass. Normal merge
+64b9ab3e publishes Android1.103.312+50 through42457241747. Independent public
+verification passes source, signatures, keys, payload/core/module/ABI identities,
+branding, checksum/normal release and monotonic versionCode299020230. Spent public
+downloads are removed through inspected cleanup tickets.
+
+TailD's five guarded pin files match that exact verified source/module/sums.
+All14 public overlay inputs and18 outputs remain identical to the previously
+reviewed inventory. Focused real-source overlay/signer contracts pass without
+skips; trusted signere027bbc4 changes only three core constants in its import
+closure. Keys/signing logic, Windows runtime/history/analytics and desktop assets
+remain unchanged. Both protected signing refs select that immutable commit.
+
+Remaining maintenance acceptance: GitHub-owned checked inheritance of exact
+TailDNS64b9ab3e, exact-main checks, complete normal Windows +52 release through
+all isolated install/upgrade/rollback/uninstall/failed-migration/signing/publication
+gates, independent public verification and final cleanup/reconciliation. No
+installer-evidence reuse, device action, provider write or live-history operation
+is planned. No additional ACTIVE stage or tracked deferral is introduced.
+Compact receipts: D:/Projects/TailD-support/maintenance/20261108/upstream.
+
 ## Current maintenance — upstream promotion, November 7
 
 The maintenance release is COMPLETE and independently verified. The existing

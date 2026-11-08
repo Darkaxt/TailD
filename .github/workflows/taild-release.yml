@@ -149,7 +149,7 @@ jobs:
         with:
           # Reviewed signer tooling is independently immutable. Never import or
           # execute application/candidate files downloaded from build artifacts.
-          ref: 0a6ccd96f747f6fff24a2271c2953f3ea166eeba
+          ref: e027bbc487b7fc79934cddb8493c9e409203805f
           path: trusted
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
@@ -252,7 +252,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          ref: 0a6ccd96f747f6fff24a2271c2953f3ea166eeba
+          ref: e027bbc487b7fc79934cddb8493c9e409203805f
           path: trusted
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
@@ -304,6 +304,6 @@ jobs:
 
           Preserves the correction for sustained collector CPU and I/O: durable recent high-water marks, two-minute overlap, bounded resumable catch-up, hourly retained-history correction and idempotent DNS/traffic facts. Background history maintenance retains its fixed cutoff per cleanup sweep. Recent DNS keeps its fifteen-minute window, latest100 bound and exact retained seven-day First seen/Total with coverage and committed revisions. History schema4, deletion watermarks, rollback, credentials, opt-in analytics and provider policy are preserved.
 
-          Includes verified shared core 15b8d25f1934 and checked TailDNS main c2a979e2. Retains patched dependencies, profile controls, native per-app DNS, GlassWire IN/OUT activity, TailDrop file selection and the separate TailD update channel. Ed25519 signatures cover release, package and core manifests. Complete Windows x64 installer; Evergreen WebView2 required. Source: $GITHUB_SHA. Publication performs no device installation or rollout.
+          Includes verified shared core b2e34084c780 and checked TailDNS main 64b9ab3e. Retains patched dependencies, profile controls, native per-app DNS, GlassWire IN/OUT activity, TailDrop file selection and the separate TailD update channel. Ed25519 signatures cover release, package and core manifests. Complete Windows x64 installer; Evergreen WebView2 required. Source: $GITHUB_SHA. Publication performs no device installation or rollout.
           EOF
           gh release create "$tag" release/* --repo "$GITHUB_REPOSITORY" --verify-tag --title "TailD $version for Windows" --notes-file "$RUNNER_TEMP/taild-release-notes.md"
