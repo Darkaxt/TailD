@@ -2,31 +2,47 @@
 
 ## Current maintenance — upstream promotion, November 8
 
-Scheduled maintenance remains within the existing sole ACTIVE Stage 10; B12
-real-device rollout/rollback/final reconciliation remains separately open. Core
-PR50 exact7c452474 passes trusted42357133183, merges asb2e34084 and publishes
-Windows1.105.0+52 through42455498095. Android capture42455881471 creates PR40
+The bounded maintenance cycle is COMPLETE and independently verified. Stage 10
+remains the sole ACTIVE stage; B12 real-device rollout/rollback/final reconciliation
+remains separately open. No maintenance blocker or tracked deferral remains.
+
+Core PR50 exact7c452474 passes trusted42357133183, merges asb2e34084 and publishes
+TailDNS Windows1.105.0+52 through42455498095. Reviewed IPN watcher suspension is
+opt-in, preserving existing watch behavior and backend/policy ownership; conn25
+reset generations reject stale assignments; older openresolv empty-list handling
+preserves signal/stderr errors. Windows DNS/tray/installer/updater/rollback,
+branding/version contracts stay intact. Android capture42455881471 creates PR40
 exact0788b27a with only matching core requirement/replacement and checksum lines.
 Trusted42455978524 and ordinary Android/tidy/license gates pass. Normal merge
-64b9ab3e publishes Android1.103.312+50 through42457241747. Independent public
-verification passes source, signatures, keys, payload/core/module/ABI identities,
-branding, checksum/normal release and monotonic versionCode299020230. Spent public
-downloads are removed through inspected cleanup tickets.
+64b9ab3e publishes Android1.103.312+50 through42457241747; public package, unchanged
+pinned signer, branding, four native ABI/core identities, companions, notices and
+monotonic versionCode299020230 independently verify.
 
-TailD's five guarded pin files match that exact verified source/module/sums.
-All14 public overlay inputs and18 outputs remain identical to the previously
-reviewed inventory. Focused real-source overlay/signer contracts pass without
-skips; trusted signere027bbc4 changes only three core constants in its import
-closure. Keys/signing logic, Windows runtime/history/analytics and desktop assets
-remain unchanged. Both protected signing refs select that immutable commit.
+TailD's five core pin/build guards match exact verified source/module/sums.
+All14 public overlay inputs and18 outputs remain unchanged; focused real-source
+overlay/signer contracts pass without skips. Immutable signere027bbc487b7
+changes only three core constants in its trusted import closure; keys and signing
+logic remain unchanged. GitHub inheritance42458023634 passes merged
+backend, Android/DNS/shared Windows-core checks and ordinarily promotes both
+parents as `fcca1d8f626dfda5713c75823b540228a2392795`. Its independently reconstructed tree equals
+the prepared tree; no conflict exception or new repair is required. Exact-main
+checks 42459552593, 42459552186 pass. Inherited detection/releases remain disabled and update
+channels separate.
 
-Remaining maintenance acceptance: GitHub-owned checked inheritance of exact
-TailDNS64b9ab3e, exact-main checks, complete normal Windows +52 release through
-all isolated install/upgrade/rollback/uninstall/failed-migration/signing/publication
-gates, independent public verification and final cleanup/reconciliation. No
-installer-evidence reuse, device action, provider write or live-history operation
-is planned. No additional ACTIVE stage or tracked deferral is introduced.
-Compact receipts: D:/Projects/TailD-support/maintenance/20261108/upstream.
+Normal Windows1.105.0+52 through42459694349 passes all eight fresh isolated
+backend/build/install/upgrade/rollback/uninstall/failed-migration/signing/publication
+gates. Independent public retrieval verifies all eight assets and
+444 payload members, pinned release/package/core
+Ed25519 signatures/key identities, exact source/core/base/sequence/AMD64/schema4,
+all core PE stamps, bundled runtimes/notices, unchanged native-tested UI assets
+and compiled R45/R46 behavior. PACKAGING.md records installer size/hash.
+
+SleepManager remains17ahead/0behind with unchanged verified normal0.7.3.1 assets
+and healthy current workflow; no redundant release. Scope includes no device
+installation/control, provider writes or live-history operations. No CI-to-B12
+acceptance claim. The closure assessment finds no scope-relevant consolidation
+requirement: pin/overlay/signing mechanisms are reused unchanged. Compact signed
+metadata, verification and cleanup receipts: `D:/Projects/TailD-support/maintenance/20261108/upstream`.
 
 ## Current maintenance — upstream promotion, November 7
 
