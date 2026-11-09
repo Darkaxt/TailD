@@ -65,6 +65,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - name: Prepare checksum-verified inherited build tools
+        if: steps.merge.outputs.source_changed == 'true' || inputs.inherited_checks == true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -B scripts/taild/prepare_build_tools.py
       - name: Verify inherited Android, DNS and shared Windows core without signing
         if: steps.merge.outputs.source_changed == 'true' || inputs.inherited_checks == true
         run: |
@@ -80,7 +85,7 @@ jobs:
           core_dir="$(./tool/go list -m -f '{{.Dir}}' tailscale.com)"
           go_bin="$(./tool/go env GOROOT)/bin/go"
           (cd "$core_dir" && "$go_bin" test -mod=readonly ./ipn/... ./net/dns/... ./client/local ./cmd/taildns ./safesocket -count=1)
-          (cd android && ./gradlew ktfmtCheck test assembleRelease --max-workers=2 --no-parallel '-Dorg.gradle.jvmargs=-Xms512m -Xmx3g' '-Dkotlin.daemon.jvm.options=-Xmx3g' -PVERSION_CODE_BASE="$version_code_base")
+          (cd android && "$TAILD_GRADLE_BIN" ktfmtCheck test assembleRelease --max-workers=2 --no-parallel '-Dorg.gradle.jvmargs=-Xms512m -Xmx3g' '-Dkotlin.daemon.jvm.options=-Xmx3g' -PVERSION_CODE_BASE="$version_code_base")
           "$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer" manifest print android/build/outputs/apk/release/android-release-unsigned.apk > "$RUNNER_TEMP/manifest.xml"
           bash scripts/test-thor-recents-resilience.sh "$RUNNER_TEMP/manifest.xml"
           for command in taildns tailscaled tailscale taildns-ipn taildns-installer; do

@@ -33,6 +33,20 @@ No intermediate TailD release, installer-evidence reuse, device control, provide
 write or live-history action. Compact receipts:
 D:/Projects/TailD-support/maintenance/20261109/upstream.
 
+Inheritance42579772792 attempt1 passes backend/inherited shell, Android native
+and Go/core contracts, then cannot download Gradle9.8.2: the official distribution
+redirect's GitHub public edge returnsHTTP504. The original failed-job rerun
+attempt2 encounters the same edge failure fetching the pinned Go toolchain.
+This is a concrete CI availability defect, not a failing product contract.
+The bounded repair prepares the exact go.toolchain.rev and exact wrapper Gradle
+version through GitHub's official immutable asset-ID API in the existing read-only
+verification job. Asset sizes/digests are checked; Gradle additionally must match
+the unchanged source-pinned checksum. Existing TOOLCHAINDIR override selects the
+verified Go tree, and the verified exact Gradle executable runs unchanged tasks.
+No signing secret, workflow write identity, source pin, project wrapper or candidate
+promotion guard is changed. Full source readiness includes this integrated repair;
+focused asset-identity tests and a new exact-source inheritance run are required.
+
 ## Current maintenance — upstream promotion, November 8
 
 The bounded maintenance cycle is COMPLETE and independently verified. Stage 10
