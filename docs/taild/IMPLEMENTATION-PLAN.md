@@ -2,50 +2,62 @@
 
 ## Current maintenance — upstream promotion, November 9
 
-Scheduled maintenance remains within the sole ACTIVE Stage 10; B12 real-device
-rollout/rollback/final reconciliation remains separately open. Core PR51 first
-fails trusted42465414003 on a public toolchain HTTP504. The original rerun gets
-the pinned toolchain and exposes the actual fork integration failure: upstream
-GetWindowsDefault now returns MibIfRow2 while captive login expects address fields.
-Repair e61d658 preserves route selection and joins exact selected LUID to the
-existing adapter snapshot, retaining physical-interface guards, identity and DNS
-filtering. Focused Windows tests cover matching/missing adapter, network generation
-and scoped DNS. Trusted attempt3/job129020119646 passes exact repaired head;
-normal merge5353c2ba publishes verified Windows1.105.0+53 through42575284995.
+The bounded maintenance cycle is COMPLETE and independently verified. Stage10
+remains the sole ACTIVE stage; B12 real-device rollout/rollback/final reconciliation
+remains separately open. No maintenance blocker or tracked deferral remains.
 
-Android PR41 exactb5c9642a changes only matching core require/replace/checksums
-and reviewed WireGuard79ead109. Trusted42576026690 and all ordinary checks pass.
-Normal mergee3ae0bf6 publishes1.103.312+51 through42578112471; public package,
-versionCode299034740, unchanged signer, branding and core/ABI identities verify.
-A failing browser-download edge is diagnosed independently; GitHub's official
-asset-ID route retrieves identical immutable assets with all bounds/hashes and
-signature checks preserved. No signing or access boundary is bypassed.
+Core PR51 exposes a real Windows captive-login API incompatibility after the
+original trusted toolchain download failure recovers. Narrow repair e61d658 joins
+the exact selected MibIfRow2 LUID to its adapter address snapshot, preserving
+physical-interface/identity/DNS rules. Focused Windows regressions and trusted
+42465414003 attempt3 pass exact repaired head. Normal merge5353c2ba publishes
+independently verified TailDNS Windows1.105.0+53 through42575284995. The reviewed
+WireGuard duplicate-handshake update preserves authentication. DNS/tray/installer/
+updater/rollback/branding/version contracts remain intact.
 
-Source ready for validation: TailD's five guarded core pin/build files match that
-exact verified Android source and module/sums; immutable signerb0f9071 changes
-only core constants in its import closure. Both protected refs and notes select
-the same reviewed identities. Windows history/runtime/analytics and native UI are
-unchanged. No known source integration gap remains. Required validation: exact
-public-input overlay/signer contracts, ordinary GitHub checked inheritance,
-exact-main checks, full fresh isolated normal Windows +53 release and independent
-public payload/signature/source verification, then cleanup/final reconciliation.
-No intermediate TailD release, installer-evidence reuse, device control, provider
-write or live-history action. Compact receipts:
-D:/Projects/TailD-support/maintenance/20261109/upstream.
+Android PR41 exactb5c9642a changes only matching core requirement/replacement and
+checksums. Trusted42576026690 and ordinary Android/tidy/license checks pass.
+Normal mergee3ae0bf6 publishes Android1.103.312+51 through42578112471;
+public package/code299034740, permanent signer, branding, four ABI
+and embedded core identities, companion binaries and notices independently verify.
 
-Inheritance42579772792 attempt1 passes backend/inherited shell, Android native
-and Go/core contracts, then cannot download Gradle9.8.2: the official distribution
-redirect's GitHub public edge returnsHTTP504. The original failed-job rerun
-attempt2 encounters the same edge failure fetching the pinned Go toolchain.
-This is a concrete CI availability defect, not a failing product contract.
-The bounded repair prepares the exact go.toolchain.rev and exact wrapper Gradle
-version through GitHub's official immutable asset-ID API in the existing read-only
-verification job. Asset sizes/digests are checked; Gradle additionally must match
-the unchanged source-pinned checksum. Existing TOOLCHAINDIR override selects the
-verified Go tree, and the verified exact Gradle executable runs unchanged tasks.
-No signing secret, workflow write identity, source pin, project wrapper or candidate
-promotion guard is changed. Full source readiness includes this integrated repair;
-focused asset-identity tests and a new exact-source inheritance run are required.
+TailD's five pin/build guards and immutable signerb0f9071 match verified core5353.
+All14 public overlay inputs and18 output sources are unchanged. Original inheritance
+42579772792 passes product contracts but encounters repeated public-release-edge
+HTTP504 downloading exact Gradle/Go distributions. Repair95318c7 uses GitHub's
+official immutable asset-ID API only in the read-only validation job, enforcing
+asset size/digest and the unchanged source-pinned Gradle checksum. Actual repaired
+inheritance42581265475 verifies the complete inherited Android/DNS/
+shared Windows-core path and ordinarily promotes exact parents as
+`adef652e5cc5115a70b8cbee3a40585e511e328d`. Its tree independently matches prepared source; no conflict
+exception or write/signing-boundary change. Exact-main checks42583131292 and
+42583130670 pass. Inherited release/detection workflows remain disabled; update
+channels remain separate.
+
+Normal TailD Windows1.105.0+53 through42583467943 passes all eight fresh
+isolated backend/production-build/install/upgrade/rollback/uninstall/failed-migration/
+signing/publication gates, without installer evidence reuse. Independent retrieval
+through the official asset-ID API verifies all eight assets and
+444 payload members, three pinned Ed25519 signatures
+and key identities, exact source/core/base/sequence/AMD64/schema4, every core PE stamp,
+bundled runtimes/notices, native-tested UI assets and compiled R45/R46 behavior.
+
+SleepManager incorporates all four upstream commits throughae74e8b4 without rewriting
+history. Their changes concern README/badges only; the upstream badge writer is
+scoped to its own repository. Main0.7.3.2/code569 retains actual upstream0.7.3;
+unchanged Helper1.1.7.1/code1122 retains its existing version. Local focused tests,
+release lint-vital and clean signed paired assemblies pass through the installed
+Gradle gate with verified daemon exit. GitHub42586298740 passes the full signing
+and emulator regression path. Normal paired release0.7.3.2 independently verifies
+packages/versions/codes/common pinned signer/hashes/fork-only update URLs and source.
+All application/Helper/shared code, active-VPN selection, exact restore ownership,
+settings and signature-protected Helper contracts are preserved.
+
+No device installation/control, provider write or live-history operation occurs;
+CI is not B12 device acceptance. Previous verified releases remain intact. The
+closure assessment finds no acceptance-relevant consolidation requirement.
+Compact signed metadata, source verification and reviewed cleanup receipts:
+`D:/Projects/TailD-support/maintenance/20261109/upstream`. Documentation receipts require no additional payload release.
 
 ## Current maintenance — upstream promotion, November 8
 
