@@ -1,5 +1,38 @@
 # TailD staged execution
 
+## Current maintenance — upstream promotion, November 9
+
+Scheduled maintenance remains within the sole ACTIVE Stage 10; B12 real-device
+rollout/rollback/final reconciliation remains separately open. Core PR51 first
+fails trusted42465414003 on a public toolchain HTTP504. The original rerun gets
+the pinned toolchain and exposes the actual fork integration failure: upstream
+GetWindowsDefault now returns MibIfRow2 while captive login expects address fields.
+Repair e61d658 preserves route selection and joins exact selected LUID to the
+existing adapter snapshot, retaining physical-interface guards, identity and DNS
+filtering. Focused Windows tests cover matching/missing adapter, network generation
+and scoped DNS. Trusted attempt3/job129020119646 passes exact repaired head;
+normal merge5353c2ba publishes verified Windows1.105.0+53 through42575284995.
+
+Android PR41 exactb5c9642a changes only matching core require/replace/checksums
+and reviewed WireGuard79ead109. Trusted42576026690 and all ordinary checks pass.
+Normal mergee3ae0bf6 publishes1.103.312+51 through42578112471; public package,
+versionCode299034740, unchanged signer, branding and core/ABI identities verify.
+A failing browser-download edge is diagnosed independently; GitHub's official
+asset-ID route retrieves identical immutable assets with all bounds/hashes and
+signature checks preserved. No signing or access boundary is bypassed.
+
+Source ready for validation: TailD's five guarded core pin/build files match that
+exact verified Android source and module/sums; immutable signerb0f9071 changes
+only core constants in its import closure. Both protected refs and notes select
+the same reviewed identities. Windows history/runtime/analytics and native UI are
+unchanged. No known source integration gap remains. Required validation: exact
+public-input overlay/signer contracts, ordinary GitHub checked inheritance,
+exact-main checks, full fresh isolated normal Windows +53 release and independent
+public payload/signature/source verification, then cleanup/final reconciliation.
+No intermediate TailD release, installer-evidence reuse, device control, provider
+write or live-history action. Compact receipts:
+D:/Projects/TailD-support/maintenance/20261109/upstream.
+
 ## Current maintenance — upstream promotion, November 8
 
 The bounded maintenance cycle is COMPLETE and independently verified. Stage 10
