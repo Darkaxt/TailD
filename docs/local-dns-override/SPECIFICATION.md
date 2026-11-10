@@ -10,6 +10,13 @@ callbacks. All unknown conflicts and changed blob identities remain fatal. Verif
 synthetic fail-closed regressions and the actual saved Git merge, then require
 GitHub's exact-candidate Android/core checks before promotion and normal release.
 No settings, credentials, device or provider-policy change is authorized here.
+Trusted candidate42771662026 exposed an incomplete first resolution: constructing
+the whole interface from canonical source dropped the non-conflicting fork method
+Application.NotifyPrivateDNSChanged, breaking its Kotlin binding. Resolve only
+the exact reviewed conflict hunk in Git's already-merged file. Preserve every
+outside member byte-for-byte; regression and real Git proof must cover the
+Application callback as well as both AppContext observer methods before retrying
+the exact-candidate build. Never promote the failed ee61abcd candidate.
 
 2026-10-11 authorized amendment: ordinary transport outages now prioritize
 connectivity. The shared-core [encrypted outage recovery specification](https://github.com/Darkaxt/tailscale/blob/main/docs/dns-outage-recovery.md)

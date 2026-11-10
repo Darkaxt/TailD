@@ -18,19 +18,23 @@ def validate_paths(paths):
         raise ValueError('Unreviewed merge conflict paths')
 
 
-def resolve_interface(blobs, upstream):
+def resolve_interface(blobs, merged):
     if blobs != INTERFACE_BLOBS:
         raise ValueError('Unreviewed interface conflict blobs')
-    anchor = '\t// GetSyspolicyStringValue returns the current string value for the given system policy.\n'
-    if upstream.count(anchor) != 1:
-        raise ValueError('Reviewed interface anchor changed')
+    legacy = ('\t// GetPlatformDNSConfig gets a string representation of the current DNS\n'
+              '\t// configuration.\n'
+              '\tGetPlatformDNSConfig() string\n\n')
     owned = ('\t// ReadPrivateDNSProviderJSON reads the saved hostname and system mode without\n'
              '\t// privileged APIs. SetPrivateDNSObservation registers before the first read.\n'
              '\tReadPrivateDNSProviderJSON() (string, error)\n'
              '\tSetPrivateDNSObservation(enabled bool) error\n\n')
-    # Canonical network-state callbacks replace the old GetPlatformDNSConfig
-    # bridge. Preserve the two independent TailDNS Private DNS observer methods.
-    return upstream.replace(anchor, owned + anchor)
+    pattern = r'<<<<<<< HEAD\n' + re.escape(legacy + owned) + r'=======\n>>>>>>> [0-9a-f]{40}\n'
+    result, count = re.subn(pattern, lambda _: owned, merged)
+    if count != 1 or re.search(r'^(?:<<<<<<< |=======|>>>>>>> |\|\|\|\|\|\|\| )', result, re.M):
+        raise ValueError('Reviewed interface conflict changed shape')
+    # Keep the already-merged file, including every non-conflicting fork member
+    # such as Application.NotifyPrivateDNSChanged. Replace only the exact hunk.
+    return result
 
 
 def resolve(text, path):
@@ -97,7 +101,7 @@ def reconcile(upstream):
         if path.is_symlink():
             raise ValueError('Conflict path is a symlink')
         if name == INTERFACE_PATH:
-            resolved[name] = resolve_interface(stages[name], git('show', ':3:' + name))
+            resolved[name] = resolve_interface(stages[name], path.read_text(encoding='utf-8'))
         else:
             resolved[name] = resolve(path.read_text(encoding='utf-8'), name)
     if re.findall(r'^\s*tailscale\.com (v\S+)\s*$', resolved['go.mod'], re.M) != pin:

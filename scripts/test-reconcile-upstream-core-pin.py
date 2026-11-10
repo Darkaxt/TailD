@@ -42,14 +42,23 @@ class CorePinConflictTest(unittest.TestCase):
 
     def test_reviewed_interface_preserves_observer_and_upstream_network_callback(self):
         reconcile.validate_paths({'go.mod', 'go.sum', reconcile.INTERFACE_PATH})
-        anchor = '\t// GetSyspolicyStringValue returns the current string value for the given system policy.\n'
-        upstream = 'type AppContext interface {\n' + anchor + '}\n'
-        actual = reconcile.resolve_interface(dict(reconcile.INTERFACE_BLOBS), upstream)
+        legacy = ('\t// GetPlatformDNSConfig gets a string representation of the current DNS\n'
+                  '\t// configuration.\n\tGetPlatformDNSConfig() string\n\n')
+        observer = ('\t// ReadPrivateDNSProviderJSON reads the saved hostname and system mode without\n'
+                    '\t// privileged APIs. SetPrivateDNSObservation registers before the first read.\n'
+                    '\tReadPrivateDNSProviderJSON() (string, error)\n'
+                    '\tSetPrivateDNSObservation(enabled bool) error\n\n')
+        prefix = 'type AppContext interface {\n'
+        suffix = '}\ntype Application interface {\n\tNotifyPrivateDNSChanged()\n}\n'
+        merged = prefix + '<<<<<<< HEAD\n' + legacy + observer + '=======\n>>>>>>> ' + '1' * 40 + '\n' + suffix
+        actual = reconcile.resolve_interface(dict(reconcile.INTERFACE_BLOBS), merged)
         self.assertIn('ReadPrivateDNSProviderJSON() (string, error)', actual)
         self.assertIn('SetPrivateDNSObservation(enabled bool) error', actual)
         self.assertNotIn('GetPlatformDNSConfig', actual)
-        self.assertEqual(actual.count(anchor), 1)
-        self.assertTrue(actual.endswith(anchor + '}\n'))
+        self.assertEqual(actual, prefix + observer + suffix)
+        self.assertIn('NotifyPrivateDNSChanged()', actual)
+        with self.assertRaises(ValueError):
+            reconcile.resolve_interface(dict(reconcile.INTERFACE_BLOBS), merged.replace('GetPlatformDNSConfig() string', 'Changed() string'))
 
     def test_each_unreviewed_interface_blob_is_rejected(self):
         for stage in ('1', '2', '3'):
