@@ -62,10 +62,6 @@ type AppContext interface {
 	// interfaces.
 	GetInterfacesAsJson() (string, error)
 
-	// GetPlatformDNSConfig gets a string representation of the current DNS
-	// configuration.
-	GetPlatformDNSConfig() string
-
 	// ReadPrivateDNSProviderJSON reads the saved hostname and system mode without
 	// privileged APIs. SetPrivateDNSObservation registers before the first read.
 	ReadPrivateDNSProviderJSON() (string, error)

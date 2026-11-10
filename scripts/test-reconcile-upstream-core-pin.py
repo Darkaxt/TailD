@@ -40,6 +40,38 @@ class CorePinConflictTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             reconcile.validate_paths({'go.mod', 'go.sum', 'android/source.kt'})
 
+    def test_reviewed_interface_preserves_observer_and_upstream_network_callback(self):
+        reconcile.validate_paths({'go.mod', 'go.sum', reconcile.INTERFACE_PATH})
+        legacy = ('\t// GetPlatformDNSConfig gets a string representation of the current DNS\n'
+                  '\t// configuration.\n\tGetPlatformDNSConfig() string\n\n')
+        observer = ('\t// ReadPrivateDNSProviderJSON reads the saved hostname and system mode without\n'
+                    '\t// privileged APIs. SetPrivateDNSObservation registers before the first read.\n'
+                    '\tReadPrivateDNSProviderJSON() (string, error)\n'
+                    '\tSetPrivateDNSObservation(enabled bool) error\n\n')
+        prefix = 'type AppContext interface {\n'
+        suffix = '}\ntype Application interface {\n\tNotifyPrivateDNSChanged()\n}\n'
+        merged = prefix + '<<<<<<< HEAD\n' + legacy + observer + '=======\n>>>>>>> ' + '1' * 40 + '\n' + suffix
+        actual = reconcile.resolve_interface(dict(reconcile.INTERFACE_BLOBS), merged)
+        self.assertIn('ReadPrivateDNSProviderJSON() (string, error)', actual)
+        self.assertIn('SetPrivateDNSObservation(enabled bool) error', actual)
+        self.assertNotIn('GetPlatformDNSConfig', actual)
+        self.assertEqual(actual, prefix + observer + suffix)
+        self.assertIn('NotifyPrivateDNSChanged()', actual)
+        with self.assertRaises(ValueError):
+            reconcile.resolve_interface(dict(reconcile.INTERFACE_BLOBS), merged.replace('GetPlatformDNSConfig() string', 'Changed() string'))
+
+    def test_each_unreviewed_interface_blob_is_rejected(self):
+        for stage in ('1', '2', '3'):
+            blobs = dict(reconcile.INTERFACE_BLOBS)
+            blobs[stage] = '0' * 40
+            with self.subTest(stage=stage), self.assertRaises(ValueError):
+                reconcile.resolve_interface(blobs, '')
+
+    def test_fork_workflow_policy_is_restored_before_source_resolution(self):
+        workflow = (Path(__file__).resolve().parents[1] / '.github/workflows/upstream-candidate.yml').read_text()
+        restore = 'git restore --source="origin/$base" --staged --worktree -- .github/workflows'
+        self.assertLess(workflow.index(restore), workflow.index('python3 -B scripts/reconcile-upstream-core-pin.py --upstream'))
+
 
 if __name__ == '__main__':
     unittest.main()
