@@ -17,7 +17,7 @@ DOCKER_IMAGE := tailscale-android-build-amd64-20261106-1
 # integration tests. Bump this tag when docker/Dockerfile.android-integration
 # or the required tool versions change, using:
 # tailscale-android-integration-amd64-YYYYMMDD-N
-ANDROID_INTEGRATION_DOCKER_IMAGE := tailscale-android-integration-amd64-20261106-1
+ANDROID_INTEGRATION_DOCKER_IMAGE := tailscale-android-integration-amd64-20261106-2
 export TS_USE_TOOLCHAIN=1
 
 # If set, additional comma-separated build tags passed to the libtailscale Go
@@ -316,7 +316,7 @@ tag_release: tailscale.version ## Tag the current commit with the current versio
 
 .PHONY: bumposs ## Bump to the latest oss and update the versions.
 bumposs: update-oss tailscale.version
-	source tailscale.version && git commit -sm "android: bump OSS" -m "OSS and Version updated to $${VERSION_LONG}" go.toolchain.rev go.mod go.sum
+	source tailscale.version && git commit -sm "android: bump OSS" -m "OSS and Version updated to $${VERSION_LONG}" -m "skip-issuebot" go.toolchain.rev go.mod go.sum
 	@# Regenerate tailscale.version so VERSION_LONG's -g<hash> points at the
 	@# bump commit we just created, not its parent.
 	$(MKVERSION) > tailscale.version
