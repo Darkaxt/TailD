@@ -2,6 +2,22 @@
 
 ## November 10 R47 — device history and catch-up
 
+Current delivery: normal `windows-v1.105.0+55`, source
+`8a4660cb64c3893d0f9c7e617868ad57463e0d55`, passes all eight jobs in
+`42744741061`. Independent public download verifies eight assets, all 444 payload
+members, the pinned release/package/core signatures, exact source/core/version,
+unchanged native-tested UI assets and compiled coverage/startup corrections.
+Installer SHA256: `5eac8da2c647bac74dea237dc4201bba0776dc9caaab4625e9ef676a3a04d0e4`;
+size 117562184 bytes. Installed delivery is NOT complete: protected broker request
+`255d1354f5f25793277318bdedf7733f1f4c8bdf9f154201847347764e400b6e`
+returns `approval_timeout`, `launched=false`. Existing +54 background collection
+continues, but its main-device Recent DNS frame defect remains until +55 installs.
+The external boundary is renewed user direction and genuine administrator-command
+consent. Then run the normal installer once and verify its original automatic
+startup, GUI-independent rounds for all 16 endpoints, successful main two-hour/week
+reads, stable tray/collector working directories and preserved state. Retain the
+verified installer for that pending action; no automatic approval replay.
+
 Stage10 remains the sole ACTIVE stage. Already authorized by the reported defect,
 standing reliability repair authority, and the direct request for two hours on
 every device/seven days on the main. Beacon is the current main provider endpoint.
