@@ -81,9 +81,61 @@ needed by the two existing acquisition paths; no new service, timer, general
 scheduler, schema or credential boundary is introduced. No material current-scope
 refactoring requirement or tracked deferral remains.
 
-Advancement blockers: exact-main CI and final release/public/installed delivery
-acceptance, internal and being implemented. R47 is not yet delivered; installed
-client remains+53. B12 broader real rollout/rollback acceptance remains open.
+Normal+54 (source88e97f7) passes42738810214 and independent verification of8assets,
+all444payload members, pinned release/package/core signatures, core/base/sequence,
+exact native-tested assets and compiled R47 methods. Approved installer request
+2488b67aee628c89d4fc37e6d15265cc2fb534457d5a73e23ea1bd363c1a2376 exits0.
+Installed payload and preserved identity/settings/history checks pass before live
+verification finds two outstanding issues: its first installer-dispatched owner
+exits before acquisition, and main Recent DNS disconnects while secondary reads
+work. Supported owning-user background start restores collection, without GUI.
+The exact-source diagnostic startup also succeeds. Do not call startup resolved
+solely from that restoration; reconcile original launch evidence.
+
+Read-only root-cause measurement:165361 coverage attempts create a19176959byte
+response, over the16777216byte IPC frame; observations themselves occupy114149
+bytes. The Recent-only coverage calculation now streams revision-ordered runs
+once for both horizons and returns exact counts/partial flags, preserving later
+correction and deletion semantics without full attempt arrays. Source ready for
+affected validation: regression for170000 attempts, canonical coverage parity,
+real read-only response measurement and original installed read failures. The
+frontend and native source/assets are unchanged and their inspected acceptance
+remains applicable; no new native build is needed for the Python-only correction.
+One corrective normal release must pass its full fresh isolated gates and public/
+installed verification. Stage10 stays the sole ACTIVE stage; no tracked deferral.
+
+Startup evidence: the still-running installed tray's actual CWD is
+runtime/installer/is-LBIO2B5MZ1.tmp/{app}; its original collector has exited. A
+supported owning-user launch with stable runtime CWD starts the actual installed
+binary and keeps collection, ETW and the main stream active. No Application Error
+event establishes the original exception; AppControl's first bounded interval is
+truncated and does not establish an exit cause. The confirmed lifetime/path defect
+is corrected at its source: delivery launches core helpers from the installed
+parent, the enabled background parent enters its installed directory, and frozen
+collector children receive an explicit installed CWD. No sleep, retry, duplicate
+writer or new lifecycle service. Do not claim CWD is proven the sole first-exit
+cause. Acceptance requires normal installer-started background operation after
+the correction, without a supported-start workaround.
+
+Coverage regressions pass, including170000 attempts and canonical correction/
+gap/deletion parity. The actual read-only response falls from19176959bytes to
+112736bytes, retaining100 rows and exact165347attempt/42unresolved counts; the
+observed read is1.84seconds. The minor fixture correction includes the existing
+live-observation attempt in its expected count. All source paths for the cohesive
+coverage/startup correction are now ready for affected validation. Frontend/native
+source is unchanged. The original Stage10/scope identity is retained.
+
+Affected launch, packaged opt-in, shared startup serialization, fixed maintenance
+stop and delivery/recovery contracts now pass. The delivery test runner initially
+lacked its required private output variable; the fixture environment was corrected
+and affected checks pass. No production policy, history reset or credential change.
+Coverage and source hashes remain applicable; frontend/native evidence is reused
+only for unchanged assets. The next normal release includes the cohesive coverage
+and lifetime/path correction and requires fresh isolated acceptance.
+
+Advancement blockers: final corrective public/installed delivery, internal and
+being implemented; ordinary installed startup is still unverified for the correction.
+R47 remains incomplete. B12 broader real rollout/rollback acceptance stays open.
 Tracked deferrals: none. Private evidence:
 D:/Projects/TailD-support/validation/recent-count-20261110.
 

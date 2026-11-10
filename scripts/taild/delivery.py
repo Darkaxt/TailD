@@ -64,7 +64,8 @@ def core_command(candidate,action):
     # core manifest on install/update. No token or DNS override is passed.
     payload=Path(candidate)/'connectivity'
     result=subprocess.run([str(payload/'taildns-installer.exe'),'-action',action,'-payload',str(payload)],
-        stdout=subprocess.PIPE,stderr=subprocess.PIPE,creationflags=subprocess.CREATE_NO_WINDOW)
+        stdout=subprocess.PIPE,stderr=subprocess.PIPE,creationflags=subprocess.CREATE_NO_WINDOW,
+        cwd=installer.app_directory().parent)
     if result.returncode:raise manifest.PackageError('connectivity-'+action+'-failed')
     # Inherited output includes whitelisted node identity. Never put it in the
     # ordinary setup diagnostic log or a public workflow artifact.

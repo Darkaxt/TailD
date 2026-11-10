@@ -12,6 +12,20 @@ import desktop
 
 
 class DesktopActivationTest(unittest.TestCase):
+    @unittest.skipUnless(os.name=='nt','Windows owning-user startup')
+    def test_frozen_collector_child_uses_its_installed_working_directory(self):
+        import pywintypes,win32event
+        executable=Path(sys.executable).resolve(strict=True)
+        worker=Mock(pid=42,_handle=1)
+        with patch.object(sys,'frozen',True,create=True), \
+             patch.object(desktop,'server_pid',side_effect=pywintypes.error(2,'CreateFile','missing')), \
+             patch.object(desktop.subprocess,'Popen',return_value=worker) as launch, \
+             patch.object(win32event,'WaitForMultipleObjects',return_value=win32event.WAIT_OBJECT_0):
+            result=desktop._ensure_collector(executable.parent,'reader','startup-cwd-'+uuid.uuid4().hex,None,True,None)
+        self.assertEqual(result,(42,worker))
+        self.assertEqual(launch.call_args.kwargs['cwd'],executable.parent)
+        self.assertEqual(launch.call_args.args[0][:3],[str(executable),'collector','run'])
+
     @unittest.skipUnless(os.name=='nt','Windows launch serialization')
     def test_background_and_desktop_share_startup_gate_and_release_on_failure(self):
         import win32event

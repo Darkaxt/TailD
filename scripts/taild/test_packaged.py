@@ -19,6 +19,7 @@ class PackagedTest(unittest.TestCase):
             worker=Mock();worker.wait.return_value=0
             with patch.object(packaged,'installation_directory',return_value=root), \
                  patch.object(packaged.reader,'current_sid',return_value='fixture-owner'), \
+                 patch.object(packaged.os,'chdir') as directory, \
                  patch.dict(os.environ,{'LOCALAPPDATA':str(root)}), \
                  patch.object(packaged.desktop,'ensure_collector',return_value=(42,worker)) as ensure:
                 self.assertIsNone(packaged.main(['background']))
@@ -31,6 +32,7 @@ class PackagedTest(unittest.TestCase):
                 self.assertEqual(ensure.call_args.kwargs,{'background':True})
                 self.assertEqual(ensure.call_args.args[0],home)
                 worker.wait.assert_called_once()
+                directory.assert_called_once_with(root)
 
     def test_both_frozen_entrypoints_include_pywin32_filetime_dependency(self):
         spec=Path(__file__).resolve().parents[2]/'desktop/TailD.spec'

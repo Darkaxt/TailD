@@ -122,7 +122,8 @@ def _ensure_collector(home, reader_instance, instance, cli, background, security
             command=[str(pythonw),*(['collector'] if frozen else ['-B',str(Path(__file__).with_name('runtime.py'))]),'run',
                 '--history',str(home),'--reader-instance',reader_instance,'--instance',instance,'--ready-event',ready_name]
             if cli:command+=['--cli',cli]
-            worker=subprocess.Popen(command,creationflags=subprocess.CREATE_NO_WINDOW)
+            worker=subprocess.Popen(command,creationflags=subprocess.CREATE_NO_WINDOW,
+                cwd=pythonw.parent if frozen else None)
             result=win32event.WaitForMultipleObjects([ready,int(worker._handle)],False,win32event.INFINITE)
             if result!=win32event.WAIT_OBJECT_0:
                 worker.wait()

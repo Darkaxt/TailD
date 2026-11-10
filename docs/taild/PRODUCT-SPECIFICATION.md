@@ -37,6 +37,19 @@ history can also be viewed over seven days. First seen/Total use seven days for
 the main and two hours for secondary endpoints; incomplete coverage is explicit.
 Reads must remain bounded in memory and responsive for a populated main week;
 do not materialize a whole week to return one hundred facts. Search is local.
+Coverage in Recent DNS must return exact scoped gap/attempt/deletion counts and
+the canonical partial flag, rather than an unbounded list of old ingestion
+attempts. Installed+54 reveals165361 attempt details inflate a100-row response to
+19176959bytes, exceeding the16MiB IPC frame. Stream the coverage scan within the
+same committed snapshot for both horizons; retain later-correction resolution
+semantics and full detailed evidence in the existing analytics APIs/history.
+Installer-owned core/user launches and the continuing background parent/worker
+must use explicit stable installed working directories. Inspection of installed
++54 confirms its tray retains the temporary Inno candidate directory; its first
+collector exits, whereas an owning-user launch from a stable directory works.
+The exact first-exit mechanism is not established; do not claim that the directory
+alone proves it. Correct the evidenced transient-directory binding and verify
+the next normal installed startup and collection without a manual repair launch.
 Status must identify actual endpoint polling/stream/loading/denied/limited state,
 not depend on whether a GUI has previously selected that endpoint.
 

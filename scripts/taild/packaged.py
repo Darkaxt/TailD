@@ -52,6 +52,9 @@ def main(argv=None):
         if not saved.exists():return
         config=runtime.settings(reader.decode_message(saved.read_bytes()))
         if not config['traffic'] and not config['dns'] and not config['activity']:return
+        # This parent waits for the continuing collector. Never retain an
+        # installer's temporary working directory through that lifetime.
+        os.chdir(directory)
         sid=reader.current_sid();instance='owner-'+history.digest([sid,str(home).casefold()])[:32]
         cli=directory.parent/'tailscale.exe'
         # Runtime's owning-user mutex refuses a duplicate collector. Retained

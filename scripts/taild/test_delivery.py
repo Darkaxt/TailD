@@ -16,6 +16,12 @@ import package_manifest as manifest
 
 
 class DeliveryTest(unittest.TestCase):
+    def test_core_user_launches_do_not_inherit_temporary_installer_working_directory(self):
+        with patch.object(delivery.subprocess,'run',return_value=SimpleNamespace(returncode=0,stdout=b'{}')) as run, \
+             patch.object(delivery.subprocess,'CREATE_NO_WINDOW',0,create=True):
+            delivery.core_command(self.root/'candidate','resume-analytics')
+        self.assertEqual(run.call_args.kwargs['cwd'],self.app.parent)
+
     def setUp(self):
         self.root=Path(os.environ['TAILD_PACKAGE_TEST_OUTPUT'])/uuid.uuid4().hex
         self.root.mkdir(parents=True);self.app=self.root/'installed';self.state=self.root/'state';self.state.mkdir()

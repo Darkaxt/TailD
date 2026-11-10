@@ -7,6 +7,42 @@ import history
 
 OPERATIONS=frozenset(('recent-dns','recent-dns-observe'))
 
+def _coverage_summaries(store, sources, starts, end, floor):
+    """Exact coverage counts for both horizons, streaming one revision-ordered scan.
+
+    An incomplete attempt is resolved only by complete intervals committed later.
+    Keep the canonical coverage semantics without sending every old attempt to
+    a view that uses only the partial flag. No observation/history cap is added.
+    """
+    results=[{'incomplete':True,'sources':[],'detail':'coverage-counts-v1',
+        'snapshot_limit':'separate-source-transactions; later corrections possible'} for _ in starts]
+    low=max(min(starts),floor)
+    deleted=list(store.db.execute("SELECT source,start,end FROM suppressions WHERE kind='dns' AND end>? AND start<?",
+        (low,end)))
+    for source in sources:
+        counts=[dict(source=source,run_count=0,gap_count=0,incomplete_attempt_count=0,
+            unresolved_attempt_count=0,deletion_scopes=0) for _ in starts]
+        covered=[]
+        for left,right,state in store.db.execute('SELECT start,end,state FROM runs WHERE source=? AND end>? AND start<? ORDER BY revision DESC',
+                (source,low,end)):
+            if state=='complete':covered=store._coverage_union(covered,max(left,low),min(right,end))
+            for start,item in zip(starts,counts):
+                if right<=start or left>=end:continue
+                item['run_count']+=1
+                if state!='complete':
+                    item['incomplete_attempt_count']+=1
+                    if store._coverage_gaps(covered,max(left,start,floor),min(right,end)):
+                        item['unresolved_attempt_count']+=1
+        for start,item,result in zip(starts,counts,results):
+            if not item['run_count']:continue
+            item['gap_count']=int(start<floor)+len(store._coverage_gaps(covered,max(start,floor),end))
+            item['deletion_scopes']=sum(1 for owner,left,right in deleted
+                if (owner is None or owner==source) and right>start and left<end)
+            result['sources'].append(item)
+    for result in results:
+        result['incomplete']=not result['sources'] or any(s['gap_count'] or s['unresolved_attempt_count'] or s['deletion_scopes'] for s in result['sources'])
+    return results
+
 def instance_name(instance):
     return 'recent-'+hashlib.sha256(instance.encode('ascii')).hexdigest()[:32]
 
@@ -63,9 +99,8 @@ def read(store,body,provider,live_state):
             totals={(q,t):(first,total) for q,t,first,total in values}
         for row in rows:
             row['first_seen'],row['total']=totals[(row['question'],row['type'])]
-        api=analytics.Analytics(store);coverage_cache={}
-        metrics_coverage=api._coverage('dns',history.instant(metrics_start.isoformat()),history.instant(end.isoformat()),scope,cache=coverage_cache)
-        coverage=api._coverage('dns',history.instant(start.isoformat()),history.instant(end.isoformat()),scope,cache=coverage_cache)
+        metrics_coverage,coverage=_coverage_summaries(store,source_ids,
+            [history.instant(metrics_start.isoformat()),history.instant(start.isoformat())],history.instant(end.isoformat()),floor)
     finally:store.db.execute('ROLLBACK')
     return {'account':provider['account_scope'],'endpoint':endpoint,'live_state':live_state,
             'start':start.isoformat(),'end':end.isoformat(),'revision':revision,

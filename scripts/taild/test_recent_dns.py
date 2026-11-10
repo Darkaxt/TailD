@@ -3,6 +3,7 @@ from datetime import datetime,timedelta,timezone
 from pathlib import Path
 from contextlib import closing
 import tempfile
+import json
 import unittest
 from unittest.mock import patch
 import history
@@ -143,3 +144,46 @@ class RecentDNSTest(unittest.TestCase):
         self.assertEqual((result['window_seconds'],result['history_seconds'],result['is_main']),(604800,604800,True))
         self.assertEqual(len(result['rows']),100);self.assertTrue(result['has_more'])
         self.assertTrue(all(row['total']==100005 for row in result['rows']))
+
+    def test_large_attempt_history_returns_exact_counts_with_a_small_wire_response(self):
+        self.seed('retained.invalid')
+        source=self.store.db.execute('SELECT source FROM dns').fetchone()[0]
+        start=history.instant((self.now-timedelta(days=1)).isoformat())
+        end=history.instant(self.now.isoformat())
+        baseline=self.read()['metrics_coverage']['sources'][0]
+        with self.store.transaction():
+            self.store.db.executemany('INSERT INTO runs(source,start,end,state,collected,metadata) VALUES(?,?,?,?,?,?)',
+                ((source,start,end,'truncated',end,'{}') for _ in range(170000)))
+        with patch.object(history.History,'_coverage',side_effect=AssertionError('Unbounded attempt detail materialization forbidden')):
+            result=self.read()
+        coverage=result['metrics_coverage']['sources'][0]
+        self.assertEqual(coverage['incomplete_attempt_count'],170000+baseline['incomplete_attempt_count'])
+        self.assertEqual(coverage['unresolved_attempt_count'],170000+baseline['unresolved_attempt_count'])
+        self.assertTrue(result['metrics_coverage']['incomplete'])
+        self.assertLess(len(json.dumps(result).encode()),65536)
+        self.assertEqual(result['rows'][0]['total'],1)
+
+    def test_compact_coverage_preserves_late_correction_gaps_deletion_and_horizon_semantics(self):
+        self.seed('coverage.invalid')
+        source=self.store.db.execute('SELECT source FROM dns').fetchone()[0]
+        end=history.instant(self.now.isoformat());hour=3600*1000000
+        starts=[end-7*24*hour,end-2*hour]
+        with self.store.transaction():
+            for left,right,state in ((end-3*hour,end-hour,'truncated'),(end-3*hour,end-2*hour,'complete'),
+                    (end-2*hour,end-hour,'complete'),(end-hour,end,'complete'),(end-hour,end,'interrupted')):
+                self.store.db.execute('INSERT INTO runs(source,start,end,state,collected,metadata) VALUES(?,?,?,?,?,?)',
+                    (source,left,right,state,end,'{}'))
+            self.store.db.execute("INSERT INTO suppressions VALUES('dns',?,?,?,NULL)",(source,end-4*hour,end-3*hour))
+        with closing(self.store.read_view()) as view:
+            view.db.execute('BEGIN')
+            try:
+                actual=recent_dns._coverage_summaries(view,[source],starts,end,view.retention_floor())
+                for start,summary in zip(starts,actual):
+                    expected=view._coverage('dns',start,end,source)
+                    self.assertEqual(summary['incomplete'],expected['incomplete'])
+                    detail=expected['sources'][0];compact=summary['sources'][0]
+                    self.assertEqual(compact['gap_count'],len(detail['gaps']))
+                    self.assertEqual(compact['deletion_scopes'],detail['deletion_scopes'])
+                    self.assertEqual(compact['incomplete_attempt_count'],len(detail['incomplete_attempts']))
+                    self.assertEqual(compact['unresolved_attempt_count'],sum(not a['resolved'] for a in detail['incomplete_attempts']))
+            finally:view.db.execute('ROLLBACK')
