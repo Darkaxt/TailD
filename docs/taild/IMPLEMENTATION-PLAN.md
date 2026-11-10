@@ -1,5 +1,44 @@
 # TailD staged execution
 
+## November 10 upstream maintenance
+
+Stage10 remains the sole ACTIVE product stage; B12 and the R47 installed-startup
+acceptance remain separately open. This scheduled cycle performs no device,
+provider-policy or production-history action and does not replay expired consent.
+
+Verified prerequisites: core f892debf74644b4b61dc979008a3e2c62e878e41 / TailDNS Windows
+1.105.0+54; TailDNS a6c4eb78670f9f3ced50f92880f8b2a0d1f48202 / Android1.103.312+52,
+code299049310. Public assets, pinned identities and provenance independently pass.
+The updater's reviewed interface conflict now preserves the complete fork
+interface except canonical's obsolete platform getter; all three saved Private
+DNS observer/Application callback members survive exact-candidate checks.
+
+Source preparation: base76a3817 retains the complete R47 background/coverage/startup
+corrections. Core pin88a78fe updates only require/replace/sums and matching overlay,
+build and manifest constants. It is an intermediate immutable signing-tools ref,
+not a delivered result; the signer import closure must differ only in core
+constants. The release workflow now references that reviewed ref twice and names
+the exact verified core/Android sources. Existing signing boundaries, key, separate
+channel, runtime/UI, analytics opt-in, history schema/watermarks and rollback stay
+in place. No new daemon, stage, schedule or broad merge resolver is introduced.
+
+Preparation is ready for focused source/overlay/signer diagnostics. Remaining:
+independently reproduce exact overlay inputs/outputs, check source constants and
+signer closure, run affected contracts, then let GitHub capture/check/promote the
+actual TailDNS history. Inspect its real checked tree and inherited Android/core/
+Windows results. After exact-main checks, publish one normal Windows+56 with fresh
+installer/recovery and isolated signing gates, independently verify every public
+payload/manifest/source and clean expendable inputs. No local duplicate of healthy
+GitHub candidate builds. Compact evidence: D:/Projects/TailD-support/maintenance/20261110.
+
+Focused preparation diagnostics pass: all14 exact immutable input blobs and all18
+overlay outputs match the prior reviewed inventory. Core/signer contracts pass
+without skips. The immutable signer import closure changes only CORE, CORE_MODULE
+and CORE_SUM; signing logic and pinned key identities are unchanged. Every R45–R47
+runtime/history/ingestion/recent-read/startup and desktop path remains identical
+to76a3817. Actual inheritance and release acceptance are still pending, and these
+diagnostics do not close Stage10 or installed/B12 acceptance.
+
 ## November 10 R47 — device history and catch-up
 
 Current delivery: normal `windows-v1.105.0+55`, source
