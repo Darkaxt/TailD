@@ -11,7 +11,7 @@ import history
 
 
 def dns_windows(store, scope, endpoint, start, end, fetch, *, max_slices=1024, checkpoint=None,
-                defer_budget=False, resume_pending=None, progress=None, commit=None):
+                defer_budget=False, resume_pending=None, progress=None, commit=None, newest_first=False):
     """Deterministic UTC subdivision; a capped one-second slice stays incomplete.
 
     fetch is the existing GET-only boundary in the CLI. Each returned slice owns
@@ -71,7 +71,7 @@ def dns_windows(store, scope, endpoint, start, end, fetch, *, max_slices=1024, c
         if result['state'] == 'truncated':
             midpoint = ((x+y)//2000000)*1000000
             if x < midpoint < y and y-x > 1000000:
-                pending.extend([(midpoint,y),(x,midpoint)])
+                pending.extend([(x,midpoint),(midpoint,y)] if newest_first else [(midpoint,y),(x,midpoint)])
             else:
                 commit(lambda: store.record_gap('dns',scope,left,right,'irreducibly-capped',endpoint=endpoint))
     return finish()

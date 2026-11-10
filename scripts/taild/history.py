@@ -319,6 +319,33 @@ class History:
             self._expire()
         return self.health()
 
+    def expire_secondary_dns_batch(self, account, main_endpoint, floor, *, limit=256):
+        """Apply the requested two-hour policy using existing source watermarks.
+
+        The owner supplies one fixed cutoff per maintenance sweep. Primary and
+        other-account data are excluded, and old clients retain these schema4
+        suppression watermarks when reopening the same history.
+        """
+        if type(floor) is not int or type(limit) is not int or not 1<=limit<=256:
+            raise HistoryError('Expected a bounded endpoint retention batch')
+        selection="kind='dns' AND json_extract(metadata,'$.scope')=? AND json_extract(metadata,'$.endpoint')!=?"
+        remaining=limit;watermarks=False
+        with self.transaction():
+            for source, in self.db.execute('SELECT id FROM sources WHERE '+selection,(account,main_endpoint)).fetchall():
+                existing=self.db.execute("SELECT rowid,end FROM suppressions WHERE kind='dns' AND source=? AND start=0 AND application_hash IS NULL ORDER BY end DESC LIMIT 1",(source,)).fetchone()
+                if existing is None:
+                    self.db.execute("INSERT INTO suppressions VALUES('dns',?,0,?,NULL)",(source,floor));watermarks=True
+                elif existing[1]<floor:
+                    self.db.execute('UPDATE suppressions SET end=? WHERE rowid=?',(floor,existing[0]));watermarks=True
+            for table,condition in (('dns','time<?'),('runs','end<=?')):
+                changed=self.db.execute(f'DELETE FROM {table} WHERE rowid IN (SELECT rowid FROM {table} '
+                    f'WHERE source IN (SELECT id FROM sources WHERE {selection}) AND {condition} LIMIT ?)',
+                    (account,main_endpoint,floor,remaining)).rowcount
+                remaining-=changed
+                if not remaining:break
+            if watermarks or remaining!=limit:self._bump()
+        return {'changed':limit-remaining,'more':remaining==0,'cutoff':utc(floor)}
+
     def _source(self, kind, scope, generation=None, endpoint=None):
         if not isinstance(scope, str) or not scope.strip():
             raise HistoryError('Explicit host/account scope is required')

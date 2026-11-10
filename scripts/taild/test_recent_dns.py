@@ -6,6 +6,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 import history
+import analytics
+import desktop_api
 import recent_dns
 
 
@@ -32,7 +34,7 @@ class RecentDNSTest(unittest.TestCase):
     def test_current_account_endpoint_time_order_and_limit_are_enforced(self):
         self.seed('foreign-account.invalid',account='foreign')
         self.seed('foreign-endpoint.invalid',endpoint='second')
-        self.seed('old.invalid',seconds=901)
+        self.seed('old.invalid',seconds=7201)
         self.seed('future.invalid',seconds=-1)
         for number in range(105):self.seed(f'row-{number}.invalid',seconds=number+1)
         result=self.read()
@@ -62,7 +64,7 @@ class RecentDNSTest(unittest.TestCase):
         self.seed('blocked-in-name.example',action='1')
         self.seed('other.example',action='0')
         self.seed('foreign.example',account='foreign',action='0')
-        self.seed('old.example',seconds=901,action='0')
+        self.seed('old.example',seconds=7201,action='0')
         self.assertEqual({r['question'] for r in self.read({'search':'Blocked'})['rows']},
                          {'blocked-in-name.example','other.example'})
         self.assertEqual(self.read({'search':'not-present'})['rows'],[])
@@ -99,7 +101,7 @@ class RecentDNSTest(unittest.TestCase):
             self.assertEqual(row['total'],107)
             self.assertEqual(row['first_seen'],history.instant((self.now-timedelta(seconds=9001)).isoformat()))
         with closing(self.store.read_view()) as view:
-            dashboard=recent_dns.desktop_api.DesktopAPI(view).dispatch('view-query',{'queries':[
+            dashboard=desktop_api.DesktopAPI(view).dispatch('view-query',{'queries':[
                 {'kind':'dns','view':'summary','start':result['metrics_start'],'end':result['metrics_end'],
                  'scope':{'account':'current','endpoint':'device'},
                  'where':{'all':[{'field':'question','op':'eq','value':'repeat.invalid'},
@@ -108,13 +110,36 @@ class RecentDNSTest(unittest.TestCase):
 
     def test_metrics_and_recent_rows_share_a_snapshot_during_new_ingestion(self):
         self.seed('snapshot.invalid',seconds=1)
-        dispatch=recent_dns.desktop_api.DesktopAPI.dispatch
+        decode=analytics.Analytics._decode
         def ingest_after_facts(api,*args,**kwargs):
-            result=dispatch(api,*args,**kwargs)
+            result=list(decode(api,*args,**kwargs))
             self.seed('snapshot.invalid',seconds=2)
-            return result
-        with patch.object(recent_dns.desktop_api.DesktopAPI,'dispatch',ingest_after_facts):
+            return iter(result)
+        with patch.object(analytics.Analytics,'_decode',ingest_after_facts):
             result=self.read()
         self.assertEqual(result['rows'][0]['total'],1)
         self.assertEqual(result['rows'][0]['first_seen'],result['rows'][0]['timestamp'])
         self.assertEqual(self.read()['rows'][0]['total'],2)
+
+    def test_secondary_window_and_totals_are_two_hours(self):
+        self.seed('secondary.invalid',endpoint='second',seconds=10)
+        self.seed('secondary.invalid',endpoint='second',seconds=7100)
+        self.seed('secondary.invalid',endpoint='second',seconds=7300)
+        result=self.read({'endpoint':'second'})
+        self.assertEqual((result['window_seconds'],result['history_seconds'],result['is_main']),(7200,7200,False))
+        self.assertEqual(len(result['rows']),2)
+        self.assertTrue(all(row['total']==2 for row in result['rows']))
+        with self.assertRaises(ValueError):self.read({'endpoint':'second','window':'retained'})
+
+    def test_main_week_is_a_bounded_fact_page_over_large_history(self):
+        self.seed('dense.invalid',seconds=3*86400)
+        raw=self.store.db.execute('SELECT * FROM dns').fetchone()
+        with self.store.transaction():
+            self.store.db.executemany('INSERT INTO dns VALUES(?,?,?,?,?,?,?,?)',
+                ((raw['source'],raw['identity'],ordinal,raw['time'],raw['endpoint'],raw['question'],raw['revision'],raw['data'])
+                 for ordinal in range(2,100006)))
+        with patch.object(analytics.Analytics,'_load',side_effect=AssertionError('Whole-week materialization forbidden')):
+            result=self.read({'window':'retained'})
+        self.assertEqual((result['window_seconds'],result['history_seconds'],result['is_main']),(604800,604800,True))
+        self.assertEqual(len(result['rows']),100);self.assertTrue(result['has_more'])
+        self.assertTrue(all(row['total']==100005 for row in result['rows']))

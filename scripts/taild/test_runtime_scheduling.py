@@ -71,6 +71,8 @@ class SchedulingTest(unittest.TestCase):
         finally:release.set()
 
     def setUp(self):
+        inventory=patch.object(runtime.controld,'inventory',return_value={'devices':[]})
+        inventory.start();self.addCleanup(inventory.stop)
         isolated=patch.object(runtime.live_dns,'Stream',test_runtime.IsolatedLiveStream)
         isolated.start();self.addCleanup(isolated.stop)
         test_glasswire.GlassWireTest.setUp(self)

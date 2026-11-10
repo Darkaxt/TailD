@@ -304,10 +304,17 @@ class Collector:
         self.recent_target = None
         self.recent_generation = 0
         self.recent_thread = None
+        self.recent_active_provider = None
+        self.background_endpoint = None
         self.recent_due = 0
         self.recent_start_queued = False
         self.recent_force = False
         self.recent_observation = {'state':'not-requested','mode':'poll'}
+        self.endpoint_observations = {}
+        self.endpoint_cursor = 0
+        self.inventory_denied_revision = None
+        self._endpoint_cleanup_floor = None
+        self._maintenance_global_complete = False
         self.activity_stream = self.activity_thread = self.activity_tracker = None
         self.activity_due = 0
         self.activity_epoch = 0
@@ -621,6 +628,11 @@ class Collector:
             previous = self.config
             self.config = updated
             self.config_revision += 1
+            if previous['provider']!=updated['provider']:
+                self.endpoint_observations={};self.endpoint_cursor=0;self.inventory_denied_revision=None
+                self.recent_target=None;self.recent_generation+=1
+                self.recent_observation={'mode':'poll','state':'pending'}
+                self._endpoint_cleanup_floor=None
             if previous['activity']!=updated['activity']:
                 self.activity_epoch+=1
                 self.activity_due=0
@@ -680,7 +692,11 @@ class Collector:
             return {'mode':'stream',**dict(self.sources.get('dns_live',{'state':'disabled'}))}
         target=self.recent_target
         matches=provider and target and target['provider']=={**provider,'endpoint':endpoint} and target['revision']==self.config_revision
-        value=dict(self.recent_observation) if matches else {'mode':'poll','state':'not-requested'}
+        cached=self.endpoint_observations.get(endpoint,{})
+        inventory=self.sources.get('dns_endpoints',{})
+        fallback={'mode':'poll','state':inventory.get('state','pending')
+            if inventory.get('config_revision')==self.config_revision and inventory.get('state') not in ('collecting','polling') else 'pending'}
+        value=dict(self.recent_observation) if matches and (self.recent_thread is not None or self.recent_start_queued) else dict(cached if cached.get('config_revision')==self.config_revision else fallback)
         if unavailable:value['state']=unavailable
         elif time.monotonic()<self.not_before['dns']:value['state']='rate-limited'
         return value
@@ -702,6 +718,9 @@ class Collector:
         try:endpoint=controld._identifier(body.get('endpoint',provider['endpoint']))
         except controld.ControlDError:raise RuntimeError('invalid-command') from None
         force=body.get('force',False)
+        if force:
+            self.inventory_denied_revision=None
+            self.endpoint_observations.pop(endpoint,None)
         if endpoint==provider['endpoint']:
             self.recent_target=None;self.recent_generation+=1
             if force:
@@ -725,9 +744,12 @@ class Collector:
     def _start_recent(self, store, *, reconcile=False):
         if (self.recent_thread is not None or self.recent_target is None or self.closing or
                 self.paused or self.write_error or not self.config['dns'] or time.monotonic()<self.not_before['dns']):return
+        if self.background_endpoint==history.digest(self.recent_target['provider']):return
         target=dict(self.recent_target);generation=self.recent_generation
-        start=store.health()['expiry_floor'];end=history.utc(history.instant(self.now())//1000000*1000000)
+        end=history.utc(history.instant(self.now())//1000000*1000000)
+        start=history.utc(max(history.instant(store.health()['expiry_floor']),history.instant(end)-7200*1000000))
         self.recent_observation={**self.recent_observation,'mode':'poll','state':'reading'}
+        self.recent_active_provider=history.digest(target['provider'])
         self.recent_thread=threading.Thread(target=self._collect_recent,
             args=(store,target,generation,start,end,reconcile),name='TailD selected endpoint DNS')
         self.recent_thread.start()
@@ -753,7 +775,8 @@ class Collector:
                     endpoint=provider['endpoint'],organization=provider.get('organization'),limit=1000)
             def collect(left,right,budget,pending=None):
                 return ingestion.dns_windows(store,provider['account_scope'],provider['endpoint'],left,right,fetch,
-                    max_slices=budget,defer_budget=True,resume_pending=pending,checkpoint=checkpoint,commit=self._commit)
+                    max_slices=budget,defer_budget=True,resume_pending=pending,checkpoint=checkpoint,commit=self._commit,
+                    newest_first=True)
             # On first selection show the full recent window immediately; ordinary
             # follow reads then use the same durable overlap/catch-up as collection.
             state=self._poll_state(kind,history.digest(provider))
@@ -788,7 +811,83 @@ class Collector:
             with self.condition:
                 if generation==self.recent_generation:
                     self.recent_observation=status;self.recent_due=time.monotonic()+delay
+                if target['revision']==self.config_revision:
+                    self.endpoint_observations[provider['endpoint']]={**status,'config_revision':target['revision']}
                 self.queue.append(('_recent_finished',generation,None));self.condition.notify()
+
+    def _background_endpoints(self, store, token, provider, revision, start, end, checkpoint, budget):
+        """One existing DNS worker, one shared budget, fair durable endpoint work."""
+        if budget<=0 or not checkpoint():return 0
+        if self.inventory_denied_revision==revision:return 0
+        try:
+            inventory=controld.inventory(token,provider.get('organization'))
+        except controld.ControlDError as error:
+            if error.state=='denied' or error.status in (401,403):self.inventory_denied_revision=revision
+            self.sources['dns_endpoints']={'state':error.state or 'unavailable','status':error.status,'config_revision':revision}
+            if error.retry_after is not None:raise
+            return 0
+        if not checkpoint():return 0
+        endpoints=sorted({d['PK'] for d in inventory['devices'] if d['PK']!=provider['endpoint']})
+        self.sources['dns_endpoints']={'state':'collecting','authorized_endpoints':len(endpoints)+1,'config_revision':revision}
+        if not endpoints:
+            self.sources['dns_endpoints']={**self.sources['dns_endpoints'],'state':'polling',
+                'last_success_utc':self.now(),'csv_requests':0,'secondary_retention_seconds':7200}
+            return 0
+        position=self.endpoint_cursor%len(endpoints)
+        ordered=endpoints[position:]+endpoints[:position]
+        floor=history.utc(max(history.instant(start),history.instant(end)-7200*1000000))
+        attempts=0
+        for endpoint in ordered:
+            if attempts>=budget or not checkpoint():break
+            # An explicit GUI acquisition already services this endpoint. Its
+            # absence/closure never prevents the background round from doing so.
+            binding={**provider,'endpoint':endpoint};binding_hash=history.digest(binding);kind='dns-browse-'+binding_hash
+            with self.condition:
+                previous=self.endpoint_observations.get(endpoint,{})
+                denied=previous.get('state') in ('denied','endpoint-unavailable') and previous.get('config_revision')==revision
+                self.endpoint_cursor=(endpoints.index(endpoint)+1)%len(endpoints)
+                if self.recent_active_provider==binding_hash or denied:continue
+                self.background_endpoint=binding_hash
+                self.endpoint_observations[endpoint]={'mode':'poll','state':'reading','config_revision':revision}
+            endpoint_attempts=0
+            def fetch(left,right):
+                nonlocal endpoint_attempts
+                endpoint_attempts+=1
+                return controld.activity_slice(token,binding['account_type'],binding['instance'],left,right,
+                    endpoint=endpoint,organization=binding.get('organization'),limit=1000)
+            def collect(left,right,allowance,pending=None):
+                return ingestion.dns_windows(store,binding['account_scope'],endpoint,left,right,fetch,
+                    max_slices=allowance,defer_budget=True,resume_pending=pending,checkpoint=checkpoint,
+                    commit=self._commit,newest_first=True)
+            value=None
+            try:
+                state=self._poll_state(kind,history.digest(binding))
+                if state['through'] is None:
+                    state['through']=history.utc(max(history.instant(floor),history.instant(end)-900*1000000))
+                    self._save_poll_state(kind,state)
+                result=self._collect_poll(kind,history.digest(binding),floor,end,collect,checkpoint,
+                    lambda:self._dns_progress(binding,floor,end,kind=kind),
+                    lambda value:self._save_dns_progress(value,kind=kind),request_budget=min(2,budget-attempts))
+                value={'mode':'poll','state':'interrupted' if result.get('interrupted') else 'polling',
+                    'result':result,'last_success_utc':self.now(),'config_revision':revision}
+            except controld.ControlDError as error:
+                value={'mode':'poll','state':error.state or 'unavailable','status':error.status,'config_revision':revision}
+                if error.retry_after is not None:
+                    with self.condition:
+                        if revision==self.config_revision:self.endpoint_observations[endpoint]=value
+                    raise
+            finally:
+                with self.condition:
+                    self.background_endpoint=None
+                    if revision==self.config_revision and value is not None:
+                        self.endpoint_observations[endpoint]=value
+                        if self.recent_target and self.recent_target['provider']==binding and self.recent_thread is None:
+                            self.recent_observation=dict(value);self.recent_due=time.monotonic()+self.config['dns_seconds']
+                            self.recent_force=False
+            attempts+=endpoint_attempts
+        self.sources['dns_endpoints']={**self.sources['dns_endpoints'],'state':'polling','last_success_utc':self.now(),
+            'csv_requests':attempts,'secondary_retention_seconds':7200}
+        return attempts
 
     def _start_acquisition(self, store, kind, *, policy=False, reconcile=False):
         if (kind in self.acquisitions or self.closing or self.paused or self.write_error or
@@ -865,6 +964,7 @@ class Collector:
                 self.traffic_available=True
             else:
                 provider = config['provider']
+                start=history.utc(max(history.instant(start),history.instant(end)-7*86400*1000000))
                 token = transient_token or credentials.CredentialStore().read()
                 if token is None:
                     raise RuntimeError('credential-required')
@@ -877,7 +977,13 @@ class Collector:
                             left,right,fetch,max_slices=budget,defer_budget=True,resume_pending=pending,
                             checkpoint=checkpoint,progress=report_progress,commit=self._commit)
                     result=self._collect_poll(kind,history.digest(provider),start,end,collect,checkpoint,
-                        lambda:self._dns_progress(provider,start,end,reconcile=reconcile),self._save_dns_progress)
+                        lambda:self._dns_progress(provider,start,end,reconcile=reconcile),self._save_dns_progress,
+                        request_budget=8)
+                    if not result.get('interrupted') and checkpoint():
+                        secondary=self._background_endpoints(store,token,provider,revision,start,end,checkpoint,
+                            16-result['slices_read'])
+                        result={**result,'secondary_slices_read':secondary,
+                            'total_csv_requests':result['slices_read']+secondary,'request_budget':16}
                     if policy and not result.get('interrupted') and checkpoint():
                         captured_policy = controld.policy_snapshot(token,provider['endpoint'],
                             account_scope=provider['account_scope'],organization=provider.get('organization'))
@@ -932,11 +1038,19 @@ class Collector:
                 self.queue.append(('_finished',kind,None))
                 self.condition.notify()
 
-    def _collect_poll(self, kind, scope, start, end, collect, checkpoint, load_progress, save_progress):
+    def _collect_poll(self, kind, scope, start, end, collect, checkpoint, load_progress, save_progress, *, request_budget=16):
         # Current activity gets eight requests first. Unfinished recent reads get
         # at least four, plus unused current-read allowance, leaving at least
         # four for history. All are budgets, never cancellation deadlines.
         state=self._poll_state(kind,scope)
+        if kind=='dns' or kind.startswith('dns-browse-'):
+            # Secondary endpoint history is explicitly bounded to two hours.
+            # Keep every unexpired child, but do not replay an obsolete root.
+            if state['through'] is not None and history.instant(state['through'])<history.instant(start):state['through']=start
+            if state['recent'] is not None:
+                pending=[[history.utc(max(history.instant(x),history.instant(start))),y]
+                    for x,y in state['recent']['pending_windows'] if history.instant(y)>history.instant(start)]
+                state['recent']={**state['recent'],'start':max(start,state['recent']['start']),'pending_windows':pending} if pending else None
         left=self._recent_start(state,start,end)
         if state['recent'] is not None:
             # The existing continuation owns its captured interval. Reopening
@@ -944,18 +1058,23 @@ class Collector:
             # completed children forever. Read new time first, then finish the
             # saved children; normal correction overlap resumes once drained.
             left=max(left,min(state['recent']['end'],end))
-        recent=(collect(left,end,8) if history.instant(left)<history.instant(end) else
+        captured_start=left;deferred=[]
+        if kind.startswith('dns-browse-'):
+            visible=history.utc(max(history.instant(start),history.instant(end)-900*1000000))
+            if history.instant(left)<history.instant(visible):deferred=[[left,visible]];left=visible
+        recent=(collect(left,end,min(8,max(1,request_budget//2))) if history.instant(left)<history.instant(end) else
             {'pending_windows':[],'slices_read':0})
         if recent['pending_windows'] is None:
             # Pause admitted before traffic catalog discovery. Nothing was
             # enumerated, so retain the previous durable high-water verbatim.
-            return {'slice_attempts':0,'request_budget':16,'recent_pending_windows':0,
+            return {'slice_attempts':0,'request_budget':request_budget,'recent_pending_windows':0,
                 'backfill_pending_windows':0,'interrupted':True}
-        pending=self._recent_pending(kind,state['recent'],left,end,recent['pending_windows'])
+        pending=self._recent_pending(kind,state['recent'],captured_start,end,deferred+recent['pending_windows'])
         attempts=recent.get('slice_attempts',recent.get('slices_read',0))
         interrupted=recent.get('interrupted',False)
-        if pending is not None and not interrupted and checkpoint():
-            resumed=collect(pending['start'],pending['end'],12-attempts,pending['pending_windows'])
+        resume_budget=max(0,request_budget-min(4,request_budget//4)-attempts)
+        if pending is not None and resume_budget and not interrupted and checkpoint():
+            resumed=collect(pending['start'],pending['end'],resume_budget,pending['pending_windows'])
             attempts+=resumed.get('slice_attempts',resumed.get('slices_read',0))
             interrupted=resumed.get('interrupted',False)
             pending['pending_windows']=resumed['pending_windows']
@@ -968,8 +1087,8 @@ class Collector:
         if not self.write_error:self._save_poll_state(kind,state)
         progress=load_progress()
         if not checkpoint():interrupted=True
-        if progress['pending_windows']!=[] and not interrupted and checkpoint():
-            backfill=collect(progress['start'],progress['end'],min(8,16-attempts),progress['pending_windows'])
+        if progress['pending_windows']!=[] and attempts<request_budget and not interrupted and checkpoint():
+            backfill=collect(progress['start'],progress['end'],min(8,request_budget-attempts),progress['pending_windows'])
             attempts+=backfill.get('slice_attempts',backfill.get('slices_read',0))
             interrupted=backfill.get('interrupted',False)
             progress['pending_windows']=backfill['pending_windows']
@@ -978,7 +1097,7 @@ class Collector:
                 if not progress['pending_windows'] and not interrupted:
                     state['reconciled_at']=self.now()
                     self._save_poll_state(kind,state)
-        return {('slice_attempts' if kind=='traffic' else 'slices_read'):attempts,'request_budget':16,
+        return {('slice_attempts' if kind=='traffic' else 'slices_read'):attempts,'request_budget':request_budget,
             'recent_pending_windows':len(pending['pending_windows']) if pending else 0,
             'backfill_pending_windows':len(progress['pending_windows'] or []),'interrupted':interrupted}
 
@@ -1041,8 +1160,17 @@ class Collector:
                 active+=delta;left=point
         if not merged:return None
         if len(merged)>(32768 if kind=='traffic' else 1024):raise history.HistoryError('Recent continuation resource limit')
-        # Stack pop services the oldest unfinished recent interval first.
-        merged.sort(key=lambda item:item['start'] if kind=='traffic' else item[0],reverse=True)
+        if kind.startswith('dns-browse-'):
+            floor=history.instant(end)-900*1000000;older=[];visible=[]
+            for x,y in merged:
+                a,b=history.bounds(x,y)
+                if a<floor<b:older.append([x,history.utc(floor)]);visible.append([history.utc(floor),y])
+                elif b<=floor:older.append([x,y])
+                else:visible.append([x,y])
+            # Stack pop serves visible recent children newest first, then old
+            # catch-up oldest first. Existing subdivision boundaries survive.
+            merged=sorted(older,reverse=True)+sorted(visible)
+        else:merged.sort(key=lambda item:item['start'] if kind=='traffic' else item[0],reverse=True)
         return {'start':min(start,previous['start']) if previous else start,
             'end':max(end,previous['end']) if previous else end,'pending_windows':merged}
 
@@ -1088,6 +1216,10 @@ class Collector:
             a,b = history.bounds(value['start'],value['end'])
             if (value['scope']==scope and b<=history.instant(end) and b>history.instant(start) and
                     (value['pending_windows'] or not reconcile and not self._reconciliation_due(kind,scope,value['end'],end))):
+                if history.instant(value['start'])<history.instant(start):
+                    value={**value,'start':start,'pending_windows':[
+                        [history.utc(max(history.instant(x),history.instant(start))),y]
+                        for x,y in value['pending_windows'] if history.instant(y)>history.instant(start)]}
                 return value
         return {'scope':scope,'start':start,'end':end,'pending_windows':[[start,end]]}
 
@@ -1143,7 +1275,7 @@ class Collector:
         if op=='_recent_finished':
             self.recent_thread.join()
             with self.condition:
-                self.recent_thread=None
+                self.recent_thread=None;self.recent_active_provider=None
                 if body!=self.recent_generation and self._start_recent(store,reconcile=self.recent_force):self.recent_force=False
             return
         if op=='_app_dns_finished':
@@ -1433,14 +1565,26 @@ class Collector:
                 if maintain:
                     try:
                         store.now=history.instant(self.now())
-                        result=store.cleanup_batch()
-                        self.maintenance={'state':'cleaning' if result['more'] else 'idle',
-                            'rows_processed':self.maintenance['rows_processed']+result['changed'],
+                        result=(store.cleanup_batch() if not self._maintenance_global_complete else
+                            {'changed':0,'more':False,'cutoff':self.maintenance['cutoff']})
+                        self._maintenance_global_complete=not result['more']
+                        secondary={'changed':0,'more':False}
+                        provider=self.config['provider']
+                        if provider and result['changed']<256:
+                            policy=(provider['account_scope'],provider['endpoint'])
+                            if self._endpoint_cleanup_floor is None or self._endpoint_cleanup_floor[:2]!=policy:
+                                self._endpoint_cleanup_floor=(*policy,history.instant(self.now())-7200*1000000)
+                            secondary=store.expire_secondary_dns_batch(*self._endpoint_cleanup_floor,
+                                limit=256-result['changed'])
+                        more=result['more'] or secondary['more']
+                        if not more:self._maintenance_global_complete=False;self._endpoint_cleanup_floor=None
+                        self.maintenance={'state':'cleaning' if more else 'idle',
+                            'rows_processed':self.maintenance['rows_processed']+result['changed']+secondary['changed'],
                             'cutoff':result['cutoff'],'last_success_utc':self.now()}
                         # This is only the next maintenance opportunity; no work
                         # is cancelled or classified by elapsed time. Pending
                         # batches run immediately, after yielding to controls.
-                        self.maintenance_due=0 if result['more'] else time.monotonic()+60
+                        self.maintenance_due=0 if more else time.monotonic()+60
                     except (sqlite3.Error,history.HistoryError):
                         self.write_error=True
                         self.maintenance={**self.maintenance,'state':'write-error'}

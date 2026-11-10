@@ -58,7 +58,7 @@ export interface State {state:string;sources:Record<string,Source>;settings:Sett
         <app-dashboard-widget label="Control D binding · read only" brand="controld">
           <div class="fields"><label class="field">Account scope
             <input id="provider-account" maxlength="128" [(ngModel)]="provider.account_scope" (blur)="bindProvider()" [disabled]="busy()"></label>
-            <label class="field">Endpoint ID
+            <label class="field">Main endpoint ID · 7 days
             <input id="provider-endpoint" maxlength="128" [(ngModel)]="provider.endpoint" (blur)="bindProvider()" [disabled]="busy()"></label>
             <label class="field">Account type
               <select id="provider-type" [(ngModel)]="provider.account_type" (change)="bindProvider()" [disabled]="busy()">
@@ -67,7 +67,7 @@ export interface State {state:string;sources:Record<string,Source>;settings:Sett
               <input id="provider-instance" maxlength="128" [(ngModel)]="provider.instance" (blur)="bindProvider()" [disabled]="busy()"></label>
             <label class="field" *ngIf="provider.account_type==='organization'">Organization
               <input id="provider-org" maxlength="128" [(ngModel)]="provider.organization" (blur)="bindProvider()" [disabled]="busy()"></label>
-          </div><p class="hint">Valid, complete binding fields autosave on leaving the field. Endpoint scope does not prove host attribution.</p>
+          </div><p class="hint">Valid, complete binding fields autosave on leaving the field. DNS history is collected in the background: seven days for this main endpoint and two hours for every other authorized endpoint. Endpoint scope does not prove host attribution.</p>
           <label class="field">READ API token (optional if already in your Windows vault)
             <input id="read-token" type="password" autocomplete="off" [(ngModel)]="token" [disabled]="busy()"></label>
           <label><input id="read-confirm" type="checkbox" style="width:auto" [(ngModel)]="readOnly"> This token has READ permissions only</label>

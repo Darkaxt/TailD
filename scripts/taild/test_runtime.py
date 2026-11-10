@@ -196,6 +196,11 @@ class RuntimeTest(unittest.TestCase):
         self.assertEqual(errors,[])
 
     def setUp(self):
+        from datetime import datetime
+        clock=patch.object(controld,'utc_now',side_effect=lambda:datetime.fromisoformat(self.collector.now().replace('Z','+00:00')))
+        clock.start();self.addCleanup(clock.stop)
+        inventory=patch.object(runtime.controld,'inventory',return_value={'devices':[]})
+        inventory.start();self.addCleanup(inventory.stop)
         isolated_activity=patch.object(runtime.tailscale_activity,'Stream',IsolatedActivityStream)
         isolated_activity.start();self.addCleanup(isolated_activity.stop)
         isolated=patch.object(runtime.live_dns,'Stream',IsolatedLiveStream)

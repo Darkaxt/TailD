@@ -19,7 +19,7 @@ type RecordValue=Record<string,any>;
     <div role="status" class="hint incident-notice" *ngIf="notice()">{{notice()}}</div>
     <div id="management-binding" class="incident-header-controls">
       <span class="badge" [class.good]="collectionState==='collecting'" title="Collection status, independent of history read status">{{collectionState}}</span>
-      <label>Endpoint<select id="management-endpoint" [(ngModel)]="endpoint" (change)="load()" [disabled]="busy()"><option *ngFor="let d of devices()" [value]="d.PK">{{d.name || 'Collection endpoint'}}</option></select></label>
+      <label>Endpoint<select id="management-endpoint" [(ngModel)]="endpoint" (change)="endpointChanged()" [disabled]="busy()"><option *ngFor="let d of devices()" [value]="d.PK">{{d.name || 'Collection endpoint'}}</option></select></label>
       <span class="enforced-profile" *ngIf="snapshot()">{{profileName()}}</span>
       <button id="management-reload" class="icon-button refresh-button" (click)="load(true)" [disabled]="busy()" [attr.aria-busy]="busy()" aria-label="Reload policy" title="Reload policy"><taild-refresh-icon /></button>
     </div>
@@ -32,11 +32,12 @@ type RecordValue=Record<string,any>;
     </div>
     <app-dashboard-widget label="Recent DNS · incident resolutions" brand="controld" id="management-recent" *ngIf="section==='recent'">
       <div class="incident-recent-controls"><label class="rounded-search"><span class="sr-only">Search resolutions</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="m15 15 6 6" /></svg><input id="incident-dns-search" [ngModel]="dnsSearch" placeholder="Domain / decision" (ngModelChange)="searchChanged($event)"></label>
-        <label class="incident-confirm"><input type="checkbox" [(ngModel)]="observe" (ngModelChange)="followingChanged()"> Follow recent activity</label>
+        <label class="incident-confirm" title="Keep this view updated. Background device collection also continues with this window closed."><input type="checkbox" [(ngModel)]="observe" (ngModelChange)="followingChanged()"> Follow recent activity</label>
         <button id="incident-dns-refresh" class="icon-button refresh-button" [disabled]="reading()" (click)="observeEndpoint(true)" aria-label="Refresh DNS" [title]="reading()?'Reading recent DNS':'Refresh DNS'" [attr.aria-busy]="reading()"><taild-refresh-icon /></button>
         <span id="incident-dns-source" class="badge" [class.good]="observation()?.mode==='stream'&&liveState()==='connected'">{{sourceLabel()}}</span></div>
-      <details class="recent-coverage"><summary>Recent 15 minutes · totals over 7 days</summary><p class="hint">Latest 100 stored observations for the selected endpoint. First seen and Total cover each question/type in retained history over the last 7 days, independent of search. Selected endpoints use READ access and polling; the configured background endpoint retains its stream. Gaps do not mean zero activity.</p></details>
-      <p id="incident-dns-partial" class="hint" role="status" *ngIf="partial()">Seven-day totals are partial; this endpoint's history coverage is incomplete.</p>
+      <div class="incident-recent-controls"><label>History window<select id="incident-dns-window" [(ngModel)]="recentWindow" (change)="windowChanged()"><option value="recent">Last 2 hours</option><option value="retained" *ngIf="isMain()">Last 7 days · main device</option></select></label><span id="incident-dns-count" class="hint">{{recentRows().length}} observations shown{{hasMore()?' · latest 100; more match in history':''}}</span></div>
+      <details class="recent-coverage"><summary>{{recentWindow==='retained'?'Last 7 days':'Last 2 hours'}} · totals over {{historySeconds()===604800?'7 days':'2 hours'}}</summary><p class="hint">Latest 100 individual observations for the selected endpoint. First seen and Total cover each question/type in its retained history, independent of search. The main device retains seven days; every other authorized device retains two hours. Background collection continues with the window closed. Gaps do not mean zero activity.</p></details>
+      <p id="incident-dns-partial" class="hint" role="status" *ngIf="partial()">Totals are partial; this endpoint's history coverage is incomplete.</p>
       <div class="recent-content" [attr.aria-busy]="reading()||loadingSelected()">
       <div class="recent-loading" *ngIf="(reading()||loadingSelected())&&!recentRows().length" role="status" id="recent-loading"><div class="loading-dialog"><div class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></div><strong>Reading recent DNS</strong><span>{{loadingSelected()?"Fetching this endpoint's observations":"Reading this endpoint's local observations"}}</span></div></div>
       <div *ngIf="recentError()" class="error" role="alert">{{recentError()}}</div>
@@ -147,6 +148,9 @@ export class ControlDManagement implements OnInit,OnDestroy,OnChanges {
   endpoint='';hostname='';ruleAction=0;comment='';ruleSearch='';serviceSearch='';dnsSearch='';confirmed=false;observe=true;
   private disposed=false;private timer?:number;private generation=0;private pendingRecent=false;private knownDevices:RecordValue[]=[];
   private observer=crypto.randomUUID();observation=signal<RecordValue|null>(null);partial=signal(false);
+  recentWindow='recent';isMain=signal(false);historySeconds=signal(7200);hasMore=signal(false);
+  endpointChanged(){this.recentWindow='recent';this.isMain.set(false);this.historySeconds.set(7200);this.hasMore.set(false);void this.load()}
+  windowChanged(){this.recentRows.set([]);void this.recent()}
   ngOnInit(){void this.load();this.schedule()}
   ngOnChanges(changes:SimpleChanges){if(changes['section']&&!changes['section'].firstChange){this.generation++;if(this.section==='recent')void this.observeEndpoint();else void this.stopObservation()}}
   loadingSelected(){return ['reading','pending'].includes(this.observation()?.state)}
@@ -219,10 +223,10 @@ export class ControlDManagement implements OnInit,OnDestroy,OnChanges {
   followingChanged(){if(this.observe)void this.observeEndpoint();else void this.stopObservation()}
   private async stopObservation(){try{await command('recent-dns-observe',{owner:this.observer,stop:true})}catch{/* Window detach also cancels its transient observation. */}}
   async recent(){if(this.disposed)return;if(this.reading()){this.pendingRecent=true;return;}
-    this.pendingRecent=false;this.reading.set(true);this.recentError.set('');const generation=this.generation,endpoint=this.endpoint,search=this.dnsSearch;
-    try{const result=await command<RecordValue>('recent-dns',{...(endpoint?{endpoint}:{}),...(search?{search}:{})});
-      if(!this.disposed&&generation===this.generation&&search===this.dnsSearch&&(!endpoint||endpoint===this.endpoint)){this.endpoint=result.endpoint;this.recentRows.set(result.rows);this.liveState.set(result.live_state);this.observation.set(result.observation);this.partial.set(result.coverage?.dns?.incomplete===true)}}
-    catch(e){if(!this.disposed&&generation===this.generation&&search===this.dnsSearch)this.recentError.set((e as Error).message)}finally{this.reading.set(false);if(this.pendingRecent&&!this.disposed)void this.recent()}
+    this.pendingRecent=false;this.reading.set(true);this.recentError.set('');const generation=this.generation,endpoint=this.endpoint,search=this.dnsSearch,window=this.recentWindow;
+    try{const result=await command<RecordValue>('recent-dns',{...(endpoint?{endpoint}:{}),...(search?{search}:{}),window});
+      if(!this.disposed&&generation===this.generation&&search===this.dnsSearch&&window===this.recentWindow&&(!endpoint||endpoint===this.endpoint)){this.endpoint=result.endpoint;this.recentRows.set(result.rows);this.isMain.set(result.is_main===true);this.historySeconds.set(result.history_seconds||7200);this.hasMore.set(result.has_more===true);this.liveState.set(result.live_state);this.observation.set(result.observation);this.partial.set((result.metrics_coverage||result.coverage?.dns)?.incomplete===true)}}
+    catch(e){if(!this.disposed&&generation===this.generation&&search===this.dnsSearch&&window===this.recentWindow)this.recentError.set((e as Error).message)}finally{this.reading.set(false);if(this.pendingRecent&&!this.disposed)void this.recent()}
   }
   async history(){try{const end=new Date();const result=await command<RecordValue>('view-query',{queries:[{kind:'policy',view:'facts',start:new Date(end.getTime()-7*86400000).toISOString(),end:end.toISOString(),scope:{endpoint:this.endpoint},limit:100}]});this.policyHistory.set(result.results[0])}catch(e){this.error.set((e as Error).message)}}
   private schedule(){if(this.disposed)return;this.timer=window.setTimeout(async()=>{if(this.section==='recent'&&this.observe&&!document.hidden)await this.observeEndpoint();this.schedule()},5000)}

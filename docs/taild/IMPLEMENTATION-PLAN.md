@@ -1,5 +1,92 @@
 # TailD staged execution
 
+## November 10 R47 — device history and catch-up
+
+Stage10 remains the sole ACTIVE stage. Already authorized by the reported defect,
+standing reliability repair authority, and the direct request for two hours on
+every device/seven days on the main. Beacon is the current main provider endpoint.
+Broader B12 remains open. No second product stage, new daemon or schedule.
+
+R47 source work: make the existing primary DNS acquisition perform fair bounded
+secondary-endpoint rounds without any GUI; preserve optional selected refresh.
+Prioritize visible pending windows, retain unexpired continuations, bound the
+round to16 CSV requests, and apply scoped two-hour secondary retention through
+the existing maintenance loop. Recent reads/UI expose two-hour/seven-day horizons
+and retrieve the latest100 without whole-week materialization.
+
+Integrated validation follows whole-scope source readiness: focused synthetic
+collector/ingestion/history/Recent DNS and frontend checks, native rendered
+window/count/status evidence and authenticated read-only provider comparisons.
+Then exact-main CI, one normal signed release with fresh isolated lifecycle and
+failed-migration gates, independent public verification, supported installed
+update/verification with genuine administrator consent, and reviewed cleanup.
+
+Current evidence: installed+53 / sourceadef652; BeaconEdge provider148 vs stored43
+for the same interval; pending catch-up beginsNovember5 while only00:59/01:00
+facts are stored. Main Beacon's417 stored vs427 provider reflects its current
+poll cutoff. Two focused regressions fail on missing recent rows and stale
+first-read bounds, confirming the scheduling defect. No production mutation.
+Source ready for validation (scope `r47-background-dns-history`, existing stage
+`stage10`, requirementR47). Required source paths are integrated: runtime.py reuses
+the existing primary DNS worker for fair inventory-driven rounds, shared16-request
+budgets and endpoint status; ingestion.py services selected dense slices newest
+first; recent continuations retain unexpired children and clip expired two-hour
+work. history.py adds bounded source-specific expiry using existing schema4
+suppression watermarks within the fixed-cutoff maintenance sweep. Recent DNS uses
+indexed bounded SQL pages, exact committed horizon metrics and explicit main-week
+selection; the existing desktop controls expose the window/count/main binding.
+Read-only auth, account scope, shutdown/opt-in and signing/update boundaries remain
+in place. Release notes describe the complete R47 behavior. No known source wiring
+gap remains; correctness is not yet verified. Source hashes are captured with the
+first validation/readiness receipt in the private evidence directory.
+
+First integrated check found test-fixture gaps (missing shared fixture method,
+an outdated dense-window threshold and a synthetic clock outside the provider's
+calendar-month boundary). These are corrected without changing provider error
+semantics. Source review also found that automatic and explicit acquisitions
+could own the same endpoint continuation; an exact binding claim now serializes
+those paths and transfers background status to an opened view. A held-read
+regression covers opening that endpoint while collection is active. This is the
+same R47 scope, with updated source hashes before affected revalidation; no
+native compilation ticket has yet been issued.
+
+Prepared checks: focused runtime/selection/background/ingestion/history/Recent DNS
+regressions (including populated-week bounded reads); existing frontend contracts,
+one production Angular build, managed Debug native shell build, and actual native
+selection/window/count/stale-reply/viewport validation. Then established full CI,
+fresh normal release gates and independent public/installed delivery verification.
+Integrated R47 verification: the failing visible-window regressions now pass;
+automatic account rounds, fair shared budget, exact binding ownership, pause,
+denial/Retry-After, durable restart and source-scoped expiry pass. Bounded SQL
+retrieves the latest100 from100005 main-week facts with exact question/type
+metrics, without whole-window materialization. Existing affected history,
+scheduling and concurrent snapshot checks remain applicable.
+
+Locked frontend contracts/typecheck/production assets pass. Managed native Debug
+build uses original receiptdf8ae014cfa237d6f6d90508a0480505, attempt1,
+workflow498603d66a53bf5eddfa0eafe818c8de; native exit0 and whole-tree exit verified.
+Actual WebView2 at https://taild.local/index.html verifies selected rows, main-week
+selection, secondary two-hour totals, counts, stale endpoint replies and850px fit;
+no renderer errors. Real authenticated inventory/CSV populates all16 authorized
+endpoint sources and15 durable secondary continuations with no GUI, in isolated
+history. Initial acquisition is bounded and incomplete coverage remains explicit;
+this does not claim all historical catch-up is already complete. An assertion
+initially compared fractional capture time with whole-second API boundaries;
+inspection of the original persisted reads confirms the actual scoped bounds,
+without replaying provider requests or changing production history.
+
+Design-debt reconciliation: existing collector worker, snapshot/history schema,
+continuation files and maintenance loop are reused. Exact endpoint ownership is
+needed by the two existing acquisition paths; no new service, timer, general
+scheduler, schema or credential boundary is introduced. No material current-scope
+refactoring requirement or tracked deferral remains.
+
+Advancement blockers: exact-main CI and final release/public/installed delivery
+acceptance, internal and being implemented. R47 is not yet delivered; installed
+client remains+53. B12 broader real rollout/rollback acceptance remains open.
+Tracked deferrals: none. Private evidence:
+D:/Projects/TailD-support/validation/recent-count-20261110.
+
 ## Current maintenance — upstream promotion, November 9
 
 The bounded maintenance cycle is COMPLETE and independently verified. Stage10

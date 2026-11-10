@@ -1,7 +1,7 @@
 """Selected endpoint acquisition uses real collector, writer and scoped facts."""
 import os
 import json
-from contextlib import contextmanager
+from contextlib import contextmanager,ExitStack
 import threading
 import unittest
 from datetime import datetime, timezone
@@ -33,10 +33,13 @@ class SelectedDNSTest(unittest.TestCase):
             'query_window':{'start_inclusive':start,'end_inclusive':end},'endpoint_id':endpoint,'truncated':False,'rows':rows}
 
     @contextmanager
-    def source(self, fetch=None, devices=('beacon','edge','tablet','empty')):
+    def source(self, fetch=None, devices=('beacon','edge','tablet','empty'), *, background=False):
         with patch.object(runtime.credentials.CredentialStore,'read',return_value='fixture-read'), \
              patch.object(controld,'activity_slice',fetch or self.slice), \
-             patch.object(controld,'inventory',return_value={'devices':[{'PK':d} for d in devices]}):
+             patch.object(controld,'inventory',return_value={'devices':[{'PK':d} for d in devices]}),ExitStack() as stack:
+            # These tests isolate explicit selection. The dedicated background
+            # suite enables and verifies actual automatic account collection.
+            if not background:stack.enter_context(patch.object(self.collector,'_background_endpoints',return_value=0))
             self.collector.command('configure',{'provider':PROVIDER,'dns':True})
             try:yield
             finally:
@@ -62,6 +65,52 @@ class SelectedDNSTest(unittest.TestCase):
         result = self.collector.dispatch({'op':'recent-dns', 'body':{'endpoint':'edge'}})
         self.assertNotEqual(result['live_state'], 'connected')
         self.assertEqual(result['endpoint'], 'edge')
+
+    def test_visible_window_precedes_multiday_selected_continuation(self):
+        done=threading.Event();calls=[]
+        provider={**PROVIDER,'endpoint':'edge'};kind='dns-browse-'+history.digest(provider)
+        def fetch(*args,**kwargs):
+            result=self.slice(*args,**kwargs)
+            if kwargs['endpoint']=='edge':
+                left,right=args[3:5];calls.append((left,right))
+                result['truncated']=history.instant(right)-history.instant(left)>900*1000000
+                for point,name in [('2026-10-07T23:50:00Z','visible-before-last-poll.invalid'),
+                                   ('2026-10-07T23:59:30Z','newest.invalid')]:
+                    if history.instant(left)<=history.instant(point)<history.instant(right):
+                        result['rows'].append({'source':'controld-activity-csv','raw':{'timestamp':point,
+                            'endpointId':'edge','question':name,'rrType':'A','action':'0','profileId':'profile'}})
+            return result
+        with self.source(fetch),patch.object(self.collector,'_deliver',self.finished(done)):
+            self.collector._save_poll_state(kind,{'scope':history.digest(provider),
+                'through':'2026-10-07T23:58:00Z','reconciled_at':None,
+                'recent':{'start':'2026-10-04T00:00:00Z','end':'2026-10-07T23:58:00Z',
+                    'pending_windows':[['2026-10-04T00:00:00Z','2026-10-07T23:58:00Z']]}})
+            self.select();self.assertTrue(done.wait(10),'Diagnostic: selected pass did not settle')
+            rows=self.recent()['rows']
+            self.assertIn('visible-before-last-poll.invalid',{r['question'] for r in rows})
+            self.assertIn('newest.invalid',{r['question'] for r in rows})
+            self.assertLessEqual(len(calls),16)
+            saved=json.loads((self.home/('runtime-'+kind+'-poll.json')).read_bytes())
+            self.assertTrue(saved['recent']['pending_windows'],'Older unfinished work was discarded')
+
+    def test_reselected_stale_endpoint_starts_with_visible_window(self):
+        done=threading.Event();calls=[]
+        provider={**PROVIDER,'endpoint':'edge'};kind='dns-browse-'+history.digest(provider)
+        def fetch(*args,**kwargs):
+            result=self.slice(*args,**kwargs)
+            if kwargs['endpoint']=='edge':
+                calls.append(args[3:5])
+                result['truncated']=history.instant(args[4])-history.instant(args[3])>900*1000000
+            return result
+        with self.source(fetch),patch.object(self.collector,'_deliver',self.finished(done)):
+            self.collector._save_poll_state(kind,{'scope':history.digest(provider),
+                'through':'2026-10-04T00:00:00Z','reconciled_at':None,'recent':None})
+            self.select();self.assertTrue(done.wait(10),'Diagnostic: selected pass did not settle')
+            self.assertEqual(calls[0],('2026-10-07T23:45:00Z','2026-10-08T00:00:00Z'))
+            self.assertEqual([r['question'] for r in self.recent()['rows']],['edge.invalid'])
+            self.assertLessEqual(len(calls),16)
+            saved=json.loads((self.home/('runtime-'+kind+'-poll.json')).read_bytes())
+            self.assertTrue(saved['recent']['pending_windows'],'Stale catch-up interval was lost')
 
     def test_old_stream_does_not_label_new_binding_connected_while_it_drains(self):
         entered=threading.Event();release=threading.Event()
@@ -121,8 +170,8 @@ class SelectedDNSTest(unittest.TestCase):
             before=calls.count('edge')
             result=self.recent(search='edge')
             self.assertEqual([r['question'] for r in result['rows']],['edge.invalid'])
-            self.assertEqual(result['rows'][0]['total'],2)
-            self.assertEqual(result['rows'][0]['first_seen'],history.instant('2026-10-06T00:00:00Z'))
+            self.assertEqual(result['rows'][0]['total'],1)
+            self.assertEqual(result['rows'][0]['first_seen'],history.instant('2026-10-07T23:59:00Z'))
             self.assertEqual(calls.count('edge'),before,'Search started another provider acquisition')
             self.assertEqual((self.home/'runtime.json').read_bytes(),saved)
 
@@ -234,7 +283,7 @@ class SelectedDNSTest(unittest.TestCase):
         def fetch(*args,**kwargs):
             result=self.slice(*args,**kwargs)
             calls.append((kwargs['endpoint'],args[3],args[4]))
-            result['truncated']=history.instant(args[4])-history.instant(args[3])>3600*1000000
+            result['truncated']=history.instant(args[4])-history.instant(args[3])>300*1000000
             return result
         with self.source(fetch):
             with patch.object(self.collector,'_deliver',self.finished(done)):

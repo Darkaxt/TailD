@@ -188,6 +188,20 @@ class HistoryTest(unittest.TestCase):
                 'endpoint_id': 'synthetic', 'truncated': truncated,
                 'rows': [copy.deepcopy(row), copy.deepcopy(row)] if rows is None else rows}
 
+    def test_selected_dense_window_subdivides_newest_first_without_losing_pending_work(self):
+        point=history.instant(END)-500000;calls=[]
+        def fetch(left,right):
+            calls.append((left,right));a,b=history.bounds(left,right)
+            rows=[{'source':'controld-activity-csv','raw':{'timestamp':history.utc(point),
+                'endpointId':'synthetic','question':'latest.invalid','rrType':'A','action':'0'}}] if a<=point<b else []
+            return self.dns(rows=rows,start=left,end=right,truncated=b-a>1000000)
+        result=ingestion.dns_windows(self.store,'account','synthetic',START,END,fetch,
+            max_slices=3,defer_budget=True,newest_first=True)
+        self.assertEqual(calls[1][1],END)
+        self.assertEqual([row[0] for row in self.store.db.execute('SELECT question FROM dns')],['latest.invalid'])
+        self.assertTrue(result['pending_windows'])
+        self.assertEqual(result['slices_read'],3)
+
     def test_persist_restart_replay_exact_and_filtered(self):
         self.writer.execute('update traffic_stats set inbound_bytes=?', (2**53+7,))
         self.writer.commit()

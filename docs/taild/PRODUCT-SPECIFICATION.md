@@ -1,6 +1,58 @@
 # TailD remaining-product specification
 
-Version 1.25, 2026-11-05. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+Version 1.26, 2026-11-10. Authoritative extension to [SPECIFICATION.md](SPECIFICATION.md).
+
+### R47 — Background device history and recent-first catch-up
+
+The November10 report is reproduced on installed1.105.0+53: for the same fifteen
+minutes, Control D returns148 BeaconEdge observations while TailD stores43.
+Its durable pending interval startsNovember5 and services oldest children before
+missing current rows. The existing worker for secondary endpoints also requires
+an open GUI. Both behaviors must be corrected within Stage10.
+
+The user explicitly requests the last two hours for every authorized device and
+the last week for the main device. The configured provider endpoint (currently
+Beacon) is the main endpoint: preserve its seven-day history, resolver binding
+and stream. The existing owning-user collector must acquire every authenticated
+Control D endpoint while DNS analytics is enabled, including with no GUI open.
+Secondary endpoints have a rolling two-hour acquisition/retention horizon.
+This supersedes R46's GUI-only secondary acquisition and fixed fifteen-minute
+display window. Pause, disable, credential/account changes and shutdown retain
+their original safety semantics. No new daemon, schedule or provider write.
+
+Reuse authenticated inventory, the existing primary acquisition worker, scoped
+continuations, writer and rate-limit state. Share at most sixteen activity CSV
+requests per background round across the primary and secondary endpoints, rotate
+secondary work fairly and prioritize current observations before older catch-up.
+An explicit selected-endpoint refresh retains its existing bounded read worker;
+it cannot rebind the main endpoint. Preserve exact duplicate multiplicity,
+corrections, deletion/expiry watermarks, schema4, private WAL and rollback. Clip
+obsolete secondary continuation work to the authorized two-hour horizon, without
+resetting history or losing unexpired pending work. Expire old secondary facts
+through bounded background maintenance, never startup or GUI blocking work.
+
+Recent DNS defaults to the selected endpoint's latest two hours, returns the
+latest100 individual observations and identifies the retained horizon. Main
+history can also be viewed over seven days. First seen/Total use seven days for
+the main and two hours for secondary endpoints; incomplete coverage is explicit.
+Reads must remain bounded in memory and responsive for a populated main week;
+do not materialize a whole week to return one hundred facts. Search is local.
+Status must identify actual endpoint polling/stream/loading/denied/limited state,
+not depend on whether a GUI has previously selected that endpoint.
+
+Acceptance: reproduce the starvation with saved multi-day continuation; verify
+background acquisition of populated/empty authorized endpoints without a window,
+fair shared request bounds, current-first and dense-slice continuation, retention
+of unexpired facts/pending work, exact scoped metrics and horizon selection.
+Verify pause/disable/close/restart/credential changes, provider denial/Retry-After
+and original-operation draining. Use synthetic private histories for mutation
+tests; authenticated production comparisons are read-only. Verify native displayed
+counts/windows/status and no stale endpoint replies. Publish one normal signed
+Windows release through all existing isolated gates; independently verify public
+assets/source/signatures/payload, then restore the same installed component through
+its supported update and required per-command administrator consent. Preserve
+settings, credentials, connectivity ownership and history; no Android device use.
+Broader Stage10/B12 real rollout/rollback acceptance remains separately open.
 
 ### R46 — Selected-endpoint DNS observations
 

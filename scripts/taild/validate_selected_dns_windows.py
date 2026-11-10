@@ -110,9 +110,17 @@ def run(shell, output, *, provider=None, devices=None, clock=END, search='edge.i
             page.wait_for_function("()=>document.querySelector('#incident-dns-source')?.textContent.trim()==='Live stream: connected' && document.querySelectorAll('#management-recent tbody tr').length>0",timeout=0)
             configured_count=page.locator('#management-recent tbody tr').count()
             if not authenticated:
+                page.locator('#incident-dns-window').select_option('retained')
+                page.wait_for_function("()=>document.querySelector('#management-recent .recent-content')?.getAttribute('aria-busy')==='false' && document.querySelectorAll('#management-recent tbody tr').length===2",timeout=0)
+                assert 'Last 7 days' in page.locator('.recent-coverage summary').inner_text()
+                assert '7 days' in page.locator('.recent-coverage summary').inner_text()
+                assert '2 observations shown' in page.locator('#incident-dns-count').inner_text()
+            if not authenticated:
                 page.locator('#management-endpoint').select_option('empty')
                 page.wait_for_function("()=>document.querySelector('#incident-dns-source')?.textContent.trim()==='Updates: Polling' && document.querySelector('#management-recent .recent-content')?.getAttribute('aria-busy')==='false' && document.querySelectorAll('#management-recent tbody tr').length===0",timeout=0)
                 assert 'Connected' not in page.locator('#incident-dns-source').inner_text()
+                assert page.locator('#incident-dns-window').input_value()=='recent'
+                assert 'totals over 2 hours' in page.locator('.recent-coverage summary').inner_text()
             page.set_viewport_size({'width':850,'height':800})
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
             assert not errors, errors
@@ -120,6 +128,7 @@ def run(shell, output, *, provider=None, devices=None, clock=END, search='edge.i
                 'policy_fixture_only':True,'sse_fixture_only':True,'selected_search_rows':expected,
                 'configured_visible_rows':configured_count,'configured_binding_unchanged':True,
                 'selected_status':'Updates: Polling','selected_empty_checked':not authenticated,
+                'two_hour_secondary_and_seven_day_main_controls_verified':not authenticated,
                 'stale_endpoint_reply_checked':stale_checked,
                 'selection_to_rows_and_poll_completion_seconds':selected_seconds,'renderer':selected_snapshot,
                 'served_url':page.url,'viewport_minimum_checked':850,'page_errors':errors,
