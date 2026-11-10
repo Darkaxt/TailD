@@ -1,5 +1,16 @@
 # Local DNS override — authoritative specification
 
+2026-11-10 bounded maintenance repair: updater42770719738 refuses canonical
+67ca022e because a fork-owned workflow and AppContext conflict accompany the
+owned module pins. Restore fork workflow policy before source reconciliation;
+resolve only the exact reviewed common/fork/upstream interface blob triple.
+Preserve ReadPrivateDNSProviderJSON and SetPrivateDNSObservation, while adopting
+canonical's removal of GetPlatformDNSConfig in favor of serialized network-state
+callbacks. All unknown conflicts and changed blob identities remain fatal. Verify
+synthetic fail-closed regressions and the actual saved Git merge, then require
+GitHub's exact-candidate Android/core checks before promotion and normal release.
+No settings, credentials, device or provider-policy change is authorized here.
+
 2026-10-11 authorized amendment: ordinary transport outages now prioritize
 connectivity. The shared-core [encrypted outage recovery specification](https://github.com/Darkaxt/tailscale/blob/main/docs/dns-outage-recovery.md)
 supersedes R08's prior no-other-provider rule for eligible default-route queries

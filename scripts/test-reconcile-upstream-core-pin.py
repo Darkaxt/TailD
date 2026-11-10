@@ -40,6 +40,29 @@ class CorePinConflictTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             reconcile.validate_paths({'go.mod', 'go.sum', 'android/source.kt'})
 
+    def test_reviewed_interface_preserves_observer_and_upstream_network_callback(self):
+        reconcile.validate_paths({'go.mod', 'go.sum', reconcile.INTERFACE_PATH})
+        anchor = '\t// GetSyspolicyStringValue returns the current string value for the given system policy.\n'
+        upstream = 'type AppContext interface {\n' + anchor + '}\n'
+        actual = reconcile.resolve_interface(dict(reconcile.INTERFACE_BLOBS), upstream)
+        self.assertIn('ReadPrivateDNSProviderJSON() (string, error)', actual)
+        self.assertIn('SetPrivateDNSObservation(enabled bool) error', actual)
+        self.assertNotIn('GetPlatformDNSConfig', actual)
+        self.assertEqual(actual.count(anchor), 1)
+        self.assertTrue(actual.endswith(anchor + '}\n'))
+
+    def test_each_unreviewed_interface_blob_is_rejected(self):
+        for stage in ('1', '2', '3'):
+            blobs = dict(reconcile.INTERFACE_BLOBS)
+            blobs[stage] = '0' * 40
+            with self.subTest(stage=stage), self.assertRaises(ValueError):
+                reconcile.resolve_interface(blobs, '')
+
+    def test_fork_workflow_policy_is_restored_before_source_resolution(self):
+        workflow = (Path(__file__).resolve().parents[1] / '.github/workflows/upstream-candidate.yml').read_text()
+        restore = 'git restore --source="origin/$base" --staged --worktree -- .github/workflows'
+        self.assertLess(workflow.index(restore), workflow.index('python3 -B scripts/reconcile-upstream-core-pin.py --upstream'))
+
 
 if __name__ == '__main__':
     unittest.main()
