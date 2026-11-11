@@ -20,6 +20,15 @@ normal Windows release gates and independent complete public-package verificatio
 No product completion or B12 acceptance is inferred from preparation or CI.
 Compact evidence: D:/Projects/TailD-support/maintenance/20261111.
 
+Actual Git composition exposes one PeerDetails conflict: canonical lifecycle/data
+source extraction overlaps TailD's device presence header and five extra detail
+rows. The complete prepared file integrates canonical ViewModel/favorites/ping/TV
+behavior with those existing TailD fields and lifecycle-aware connection state.
+The existing reconciliation accepts only the exact captured upstream commit and
+common/prepared/upstream blobs. Unknown or extra conflicts still fail before
+changing any conflicted file. Focused navigation regression fails before and
+passes after; exact merged Kotlin/core/Windows acceptance is still required.
+
 ## November 10 upstream maintenance
 
 All four normal releases are published and independently verified: TailDNS

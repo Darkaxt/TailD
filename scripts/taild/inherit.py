@@ -14,6 +14,12 @@ class InheritanceError(RuntimeError):
 # Reviewed typed-navigation reconciliation. Each tuple is the exact common,
 # prepared TailD, and upstream blob. Unknown revisions/conflicts still fail.
 REVIEWED_RECONCILIATIONS = {
+    '3a192a84f81d4eaa2aa2e5adb74f2b9d452ba5de': {
+        'android/src/main/java/com/tailscale/ipn/ui/view/PeerDetails.kt': (
+            '3d3b3707afa7bb1e649bcf08c7e9137af03818eb',
+            'ae878d26615e1847b809b08d8638bc9e3df62492',
+            '721782d96f550e6729e8aec3988d12e74b21360b'),
+    },
     'c2a979e263b348a7014779476a97b8870b63bf5b': {
         'README.md': (
             '1124d45ece1db5a6169b2c4914f4ca2687bff883',
