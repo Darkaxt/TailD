@@ -16,17 +16,23 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tailscale.ipn.R
 import com.tailscale.ipn.ui.components.Header
+import com.tailscale.ipn.ui.dataSource.PeerDetailsDataSource
+import com.tailscale.ipn.ui.model.Ipn
+import com.tailscale.ipn.ui.model.Netmap
+import com.tailscale.ipn.ui.model.Tailcfg
+import com.tailscale.ipn.ui.theme.AppTheme
 import com.tailscale.ipn.ui.theme.listItem
 import com.tailscale.ipn.ui.util.AndroidTVUtil.isAndroidTV
 import com.tailscale.ipn.ui.util.Lists
@@ -37,127 +43,57 @@ import com.tailscale.ipn.ui.viewModel.PingViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PeerDetails(
+fun PeerDetailsView(
     onNavigateBack: () -> Unit,
     nodeId: String,
-    pingViewModel: PingViewModel,
-    model: PeerDetailsViewModel =
-        viewModel(
-            factory =
-                PeerDetailsViewModelFactory(nodeId, LocalContext.current.filesDir, pingViewModel)
-        ),
+    dataSource: PeerDetailsDataSource,
+    pingViewModel: PingViewModel = viewModel(),
 ) {
-  val isPinging by model.isPinging.collectAsState()
-  val connectionState by com.tailscale.ipn.ui.notifier.Notifier.state.collectAsState()
+  val factory =
+      remember(dataSource) { PeerDetailsViewModelFactory(nodeId, pingViewModel, dataSource) }
+  val peerDetailsViewModel: PeerDetailsViewModel = viewModel(factory = factory)
 
-  model.netmap.collectAsState().value?.let { netmap ->
-    model.node.collectAsState().value?.let { node ->
-      Scaffold(
-          topBar = {
-            Header(
-                title = {
-                  com.tailscale.ipn.taild.DevicePresenceName(
-                      node,
-                      netmap.SelfNode.StableID,
-                      connectionState,
-                  )
-                },
-                actions = {
-                  IconButton(onClick = { model.startPing() }) {
-                    Icon(
-                        painter = painterResource(R.drawable.sensors_24),
-                        contentDescription = "Ping device",
-                    )
-                  }
+  val isPinging by peerDetailsViewModel.isPinging.collectAsStateWithLifecycle()
+  val connectionState by com.tailscale.ipn.ui.notifier.Notifier.state.collectAsStateWithLifecycle()
+  val favorites by peerDetailsViewModel.favorites.collectAsStateWithLifecycle()
+  val isWriting by peerDetailsViewModel.isWritingFavorites.collectAsStateWithLifecycle()
+  val netmap by peerDetailsViewModel.netmap.collectAsStateWithLifecycle()
+  val node by peerDetailsViewModel.node.collectAsStateWithLifecycle()
 
-                  val favorites by model.favorites.collectAsState()
-                  val isWriting by model.isWritingFavorites.collectAsState()
-                  val isPinned = favorites?.isFavoriteDevice(node.StableID) == true
+  val currentNetmap = netmap ?: return
+  val currentNode = node ?: return
 
-                  IconButton(enabled = !isWriting, onClick = { model.togglePin() }) {
-                    Icon(
-                        painterResource(if (isPinned) R.drawable.unpin_24 else R.drawable.pin_24),
-                        contentDescription =
-                            stringResource(
-                                if (isPinned) R.string.unpin_device else R.string.pin_device
-                            ),
-                    )
-                  }
-                },
-                onBack = onNavigateBack,
-                isTv = isAndroidTV(),
-            )
-          },
-      ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier.padding(innerPadding),
-        ) {
-          item(key = "tailscaleAddresses") {
-            Lists.MutedHeader(stringResource(R.string.tailscale_addresses))
-          }
+  val isPinned = favorites?.isFavoriteDevice(currentNode.StableID) == true
 
-          itemsWithDividers(node.displayAddresses, key = { it.address }) {
-            AddressRow(address = it.address, type = it.typeString)
-          }
+  PeerDetailsScreen(
+      state =
+          PeerDetailsUIState(
+              node = currentNode,
+              netmap = currentNetmap,
+              connectionState = connectionState,
+              isWriting = isWriting,
+              isPinned = isPinned,
+          ),
+      startPing = { peerDetailsViewModel.startPing() },
+      togglePin = { peerDetailsViewModel.togglePin() },
+      onBack = onNavigateBack,
+      isTv = isAndroidTV(),
+  )
 
-          item(key = "infoDivider") { Lists.SectionDivider() }
-
-          itemsWithDividers(node.info, key = { "info_${it.titleRes}" }) {
-            ValueRow(title = stringResource(id = it.titleRes), value = it.value.getString())
-          }
-          item(key = "taildOwner") {
-            ValueRow(
-                title = "Owner",
-                value =
-                    netmap.userProfile(node.User)?.DisplayName?.ifBlank { null }
-                        ?: netmap.userProfile(node.User)?.LoginName
-                        ?: "Unknown",
-            )
-          }
-          item(key = "taildPresence") {
-            ValueRow(
-                title = "Presence",
-                value =
-                    when (node.Online) {
-                      true -> "Online"
-                      false -> "Offline"
-                      null -> "Unknown"
-                    },
-            )
-          }
-          item(key = "taildLastSeen") {
-            ValueRow(title = "Last online", value = node.LastSeen ?: "Unknown")
-          }
-          item(key = "taildRoutes") {
-            ValueRow(
-                title = "Allowed routes",
-                value = node.AllowedIPs?.joinToString("\n") ?: "Unknown",
-            )
-          }
-          item(key = "taildTags") {
-            ValueRow(
-                title = "Tags",
-                value = node.Tags?.joinToString(", ")?.ifEmpty { "None" } ?: "Unknown",
-            )
-          }
-        }
-        if (isPinging) {
-          ModalBottomSheet(onDismissRequest = { model.onPingDismissal() }) {
-            PingView(model = model.pingViewModel)
-          }
-        }
-      }
+  if (isPinging) {
+    ModalBottomSheet(onDismissRequest = { peerDetailsViewModel.onPingDismissal() }) {
+      PingView(model = peerDetailsViewModel.pingViewModel)
     }
   }
 }
 
 @Composable
-fun AddressRow(address: String, type: String) {
+private fun AddressRow(address: String, type: String, isTv: Boolean) {
   val localClipboardManager = LocalClipboardManager.current
 
   // Android TV doesn't have a clipboard, nor any way to use the values, so visible only.
   val modifier =
-      if (isAndroidTV()) {
+      if (isTv) {
         Modifier.focusable(false)
       } else {
         Modifier.clickable { localClipboardManager.setText(AnnotatedString(address)) }
@@ -170,7 +106,7 @@ fun AddressRow(address: String, type: String) {
       supportingContent = { Text(text = type) },
       trailingContent = {
         // TODO: there is some overlap with other uses of clipboard, DRY
-        if (!isAndroidTV()) {
+        if (!isTv) {
           Icon(painter = painterResource(id = R.drawable.clipboard), null)
         }
       },
@@ -178,10 +114,147 @@ fun AddressRow(address: String, type: String) {
 }
 
 @Composable
-fun ValueRow(title: String, value: String) {
+private fun ValueRow(title: String, value: String) {
   ListItem(
       colors = MaterialTheme.colorScheme.listItem,
       headlineContent = { Text(text = title) },
       supportingContent = { Text(text = value) },
   )
+}
+
+private data class PeerDetailsUIState(
+    val node: Tailcfg.Node,
+    val netmap: Netmap.NetworkMap,
+    val connectionState: Ipn.State,
+    val isWriting: Boolean,
+    val isPinned: Boolean,
+)
+
+@Composable
+private fun PeerDetailsScreen(
+    state: PeerDetailsUIState,
+    startPing: () -> Unit,
+    togglePin: () -> Unit,
+    onBack: () -> Unit,
+    isTv: Boolean,
+) {
+  Scaffold(
+      topBar = {
+        Header(
+            title = {
+              com.tailscale.ipn.taild.DevicePresenceName(
+                  state.node,
+                  state.netmap.SelfNode.StableID,
+                  state.connectionState,
+              )
+            },
+            isTv = isTv,
+            actions = {
+              IconButton(onClick = startPing) {
+                Icon(
+                    painter = painterResource(R.drawable.sensors_24),
+                    contentDescription = "Ping device",
+                )
+              }
+
+              IconButton(enabled = !state.isWriting, onClick = togglePin) {
+                Icon(
+                    painterResource(if (state.isPinned) R.drawable.unpin_24 else R.drawable.pin_24),
+                    contentDescription =
+                        stringResource(
+                            if (state.isPinned) R.string.unpin_device else R.string.pin_device
+                        ),
+                )
+              }
+            },
+            onBack = onBack,
+        )
+      },
+  ) { innerPadding ->
+    LazyColumn(
+        modifier = Modifier.padding(innerPadding),
+    ) {
+      item(key = "tailscaleAddresses") {
+        Lists.MutedHeader(stringResource(R.string.tailscale_addresses))
+      }
+
+      itemsWithDividers(state.node.displayAddresses, key = { it.address }) { display ->
+        AddressRow(address = display.address, type = display.typeString, isTv = isTv)
+      }
+
+      item(key = "infoDivider") { Lists.SectionDivider() }
+
+      itemsWithDividers(state.node.info, key = { "info_${it.titleRes}" }) { info ->
+        ValueRow(title = stringResource(id = info.titleRes), value = info.value.getString())
+      }
+      item(key = "taildOwner") {
+        ValueRow(
+            title = "Owner",
+            value =
+                state.netmap.userProfile(state.node.User)?.DisplayName?.ifBlank { null }
+                    ?: state.netmap.userProfile(state.node.User)?.LoginName
+                    ?: "Unknown",
+        )
+      }
+      item(key = "taildPresence") {
+        ValueRow(
+            title = "Presence",
+            value =
+                when (state.node.Online) {
+                  true -> "Online"
+                  false -> "Offline"
+                  null -> "Unknown"
+                },
+        )
+      }
+      item(key = "taildLastSeen") {
+        ValueRow(title = "Last online", value = state.node.LastSeen ?: "Unknown")
+      }
+      item(key = "taildRoutes") {
+        ValueRow(
+            title = "Allowed routes",
+            value = state.node.AllowedIPs?.joinToString("\n") ?: "Unknown",
+        )
+      }
+      item(key = "taildTags") {
+        ValueRow(
+            title = "Tags",
+            value = state.node.Tags?.joinToString(", ")?.ifEmpty { "None" } ?: "Unknown",
+        )
+      }
+    }
+  }
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun PeerDetailsPreview() {
+  AppTheme {
+    PeerDetailsScreen(
+        state =
+            PeerDetailsUIState(
+                node =
+                    Tailcfg.Node(
+                        ComputedName = "My node",
+                        Addresses = listOf("100.100.100.100", "::1"),
+                        Hostinfo = Tailcfg.Hostinfo(OS = "Android"),
+                        Name = "node.taiilscale.ts.net",
+                    ),
+                netmap =
+                    Netmap.NetworkMap(
+                        SelfNode = Tailcfg.Node(),
+                        Domain = "tailscale.com",
+                        TKAEnabled = false,
+                        UserProfiles = emptyMap(),
+                    ),
+                connectionState = Ipn.State.Running,
+                isWriting = false,
+                isPinned = true,
+            ),
+        startPing = {},
+        togglePin = {},
+        onBack = {},
+        isTv = false,
+    )
+  }
 }

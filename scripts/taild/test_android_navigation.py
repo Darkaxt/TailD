@@ -12,6 +12,21 @@ ROOT=Path(__file__).resolve().parents[2]/'android/src/main/java/com/tailscale/ip
 
 
 class AndroidNavigationTest(unittest.TestCase):
+    def test_peer_modernization_keeps_fork_presence_and_details(self):
+        source=(ROOT/'ui/view/PeerDetails.kt').read_text(encoding='utf-8')
+        for marker in ('fun PeerDetailsView(', 'dataSource: PeerDetailsDataSource',
+                'PeerDetailsViewModelFactory(nodeId, pingViewModel, dataSource)',
+                'Notifier.state.collectAsStateWithLifecycle()',
+                'DevicePresenceName(', 'state.connectionState',
+                'peerDetailsViewModel.startPing()', 'peerDetailsViewModel.togglePin()',
+                'peerDetailsViewModel.onPingDismissal()',
+                'item(key = "taildOwner")', 'item(key = "taildPresence")',
+                'item(key = "taildLastSeen")', 'item(key = "taildRoutes")',
+                'item(key = "taildTags")'):
+            self.assertIn(marker,source)
+        self.assertFalse(re.search(r'(?<![.\w])model\.',source))
+        self.assertFalse(re.search(r'^(?:<<<<<<<|=======|>>>>>>>)',source,re.M))
+
     def test_tv_component_inheritance_keeps_fork_preferences_and_accessibility(self):
         settings=(ROOT/'ui/view/SettingsView.kt').read_text(encoding='utf-8')
         self.assertTrue(re.search(r'if \(!embedded\)\s*Header\([^)]*settings_title',settings))
