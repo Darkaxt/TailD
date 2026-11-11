@@ -1,5 +1,24 @@
 # Stage 9 local packaging contract
 
+## November 11 upstream maintenance — normal Windows +57 verified
+
+Normal [windows-v1.105.0+57](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B57) ships checked source
+`e471ec5e7b025729223d44e7e1998b5dc3814b2a` through42983616464. All eight fresh isolated lifecycle,
+failed-migration, production-build, signing and publication gates pass with no
+evidence reuse. Independent public retrieval verifies eight assets/444members,
+pinned release/package/core signatures/key identities, source/core/base/sequence/
+AMD64/schema4, every core PE stamp, runtime/notices and preserved R45-R47 UI/compiled
+behavior. Installer117602219bytes, SHA256`21516e933f3ed40b25e5c6e9304aed2d02351bd3f9ff66c1a82bba4a54f4f2a2`.
+
+Exact corefeff6ade and Android3a192a8 ship verified TailDNS Windows+55 and Android
+1.103.312+53/code299063650. GitHub inheritance42981466399 preserves checked exact
+history/tree/pins and isolated writer/signer boundaries; reviewed peer lifecycle
+reconciliation retains all fork device presentation. SleepManager0.8.0.1/code571
+and unchanged Helper1.1.7.1/code1122 also independently verify. Previous releases
+and separate channels remain intact. Stage10/B12 remain open; no device/provider/
+production-history action or new device acceptance is claimed.
+Compact receipts: `D:/Projects/TailD-support/maintenance/20261111`. Evidence-only updates need no payload release.
+
 ## November 10 upstream maintenance — normal Windows +56 verified
 
 Normal [windows-v1.105.0+56](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B56) ships exact checked source

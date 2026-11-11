@@ -2,32 +2,65 @@
 
 ## November 11 upstream maintenance
 
-Stage10 remains the sole ACTIVE product stage; B12 stays open. Scheduled source
-maintenance follows independently verified TailDNS Windows1.105.0+55/corefeff6ade5be38f10c48e8c644b8881ed1bb21b7b
-and Android1.103.312+53/source3a192a84f81d4eaa2aa2e5adb74f2b9d452ba5de. No device, provider-policy or production
-history actions are authorized by this maintenance.
+All four normal releases are published and independently verified: TailDNS Windows
+1.105.0+55, Android1.103.312+53/code299063650, TailD Windows1.105.0+57 and
+SleepManager0.8.0.1/code571 with unchanged Helper1.1.7.1/code1122. Stage10 remains
+the sole ACTIVE TailD product stage; B12 and remaining real rollout/rollback/final
+reconciliation stay open. No device, provider-policy or production-history actions
+were performed; previous verified releases and separate update channels remain.
 
-TailD exact core require/replace, checksum and overlay/build pins are prepared.
-All14 immutable overlay inputs and18 outputs match the previous reviewed source;
-focused overlay/signer contracts pass without skips. Isolated signer closure at
-0d7dc2e1814426c58ca0918bac6ec228df246926 changes only exact core/module/checksum constants.
-R45-R47 history/runtime/UI, signing-key identities, separate update channel and
-disabled inherited workflows are preserved. GitHub still owns actual inherited
-Android/core/Windows checks and ordinary promotion of exact TailDNS history.
+The failed core capture exposed workflow-policy and captive-dial conflicts.
+Repair3e0c96e restores only the exact fork workflow tree before accepting one
+three-blob-bound captive hunk. It preserves canonical ControlContext and the fork
+network-family argument plus every non-conflicting merged byte; unknown source
+conflicts still fail. Real Git and focused regressions pass. Trusted42975137496
+checks exact PR53/e736888; mergefeff6ade5be38f10c48e8c644b8881ed1bb21b7b ships through isolated42976274027.
+Independent retrieval verifies four assets, checksums, pinned Ed25519 manifest/key,
+source/base/sequence/architecture and all five daemon/CLI/resolver/tray/installer PEs.
 
-Current maintenance acceptance remaining: checked exact inheritance/main, all
-normal Windows release gates and independent complete public-package verification.
-No product completion or B12 acceptance is inferred from preparation or CI.
-Compact evidence: D:/Projects/TailD-support/maintenance/20261111.
+Android PR43/acb22dd passes trusted42977064601 and all exact Android/tidy/license
+checks before merge3a192a84f81d4eaa2aa2e5adb74f2b9d452ba5de. Canonical peer/managed-by modernization
+retains the TailDNS deep-link scheme and DNS contracts. Isolated42979467536 ships
+seven verified assets, the pinned APK signer/package/brand/name/code, four ABI core
+identities and companion Windows payloads/notices. Frozen upstream base1.103.312
+is preserved; shared core is exactfeff6ade5be38f10c48e8c644b8881ed1bb21b7b.
 
-Actual Git composition exposes one PeerDetails conflict: canonical lifecycle/data
-source extraction overlaps TailD's device presence header and five extra detail
-rows. The complete prepared file integrates canonical ViewModel/favorites/ping/TV
-behavior with those existing TailD fields and lifecycle-aware connection state.
-The existing reconciliation accepts only the exact captured upstream commit and
-common/prepared/upstream blobs. Unknown or extra conflicts still fail before
-changing any conflicted file. Focused navigation regression fails before and
-passes after; exact merged Kotlin/core/Windows acceptance is still required.
+TailD pin/signer preparation0d7dc2e preserves14immutable inputs/18overlay outputs.
+The one peer-details conflict integrates canonical lifecycle/data-source/ping/
+favorites/TV behavior with DevicePresenceName and all five TailD detail rows.
+Exact common/prepared/upstream blob reconciliation rejects drift. Focused regression,
+canonical-matching formatter and real Git composition pass. GitHub42981466399
+verifies full inherited Android/core/Windows and ordinarily promotes exact
+e471ec5e7b025729223d44e7e1998b5dc3814b2a, parentsd780807+3a192a8/treefc8069ca. Exact-main focused
+42983299983 and CodeQL42983299506 pass. Disabled inherited workflows, isolated
+writers/signers, source-aware UI and R45-R47 history/background behavior survive.
+
+Normal TailD42983616464 passes all eight fresh backend/production-build/isolated
+install-upgrade-rollback-uninstall/failed-migration/signing/publication jobs; no
+installer evidence is reused. Independent public verification covers all eight
+assets/444members, pinned release/package/core signatures/key identities, exact
+source/core/base/sequence/AMD64/schema4, runtime identities/notices, UI assets and
+compiled R45-R47 behavior. Installer117602219bytes, SHA256
+`21516e933f3ed40b25e5c6e9304aed2d02351bd3f9ff66c1a82bba4a54f4f2a2`. Existing truthful executable signing status is retained.
+
+SleepManager merges two exact commits through76d1f0ca689a259bdbf87ca40fe526ae1cc0190b,
+including actual upstream0.8.0/code570. Optional Key Mapper4.7+ owned pause/restore
+and worker-based Home refresh integrate normally. Four document/version conflicts
+preserve fork history, identities and monotonic0.8.0.1/code571. Tailscale/TailDNS
+active-client/restore contracts, Helper/shared source, signature permissions,
+permanent common signer and fork-only update origin stay unchanged. Local clean
+signed pair, integration/updater/UI-state tests and lint-vital pass through native
+readinessb0967b37/workflow543a7b5e with verified tree/daemon exit and resource profile.
+GitHub42987228718 passes all signing/emulator/publication gates from
+76b4c17e6c5abbb6c4715a58c6c1e6fa096b1307. Four independently retrieved public assets verify both package
+IDs, versions/codes, common signer, v2 signatures, protected permissions, hashes,
+manifest URLs and exact source/tag; upstream ancestry has zero behind.
+
+Spent task builds/caches/downloads/extractions and scoped private signing-input
+JSON are transactionally cleaned after their consumers exit. Retained evidence
+contains no plaintext signing input; original credentials and keys stay unchanged.
+Compact exact-source/signature/terminal verification receipts: `D:/Projects/TailD-support/maintenance/20261111`.
+This evidence-only reconciliation changes no payload and requires no new release.
 
 ## November 10 upstream maintenance
 
