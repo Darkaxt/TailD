@@ -1,5 +1,23 @@
 # TailD staged execution
 
+## November 12 upstream maintenance
+
+Stage10 remains the sole ACTIVE product stage; B12 stays open. Independently
+verified prerequisite releases are TailDNS Windows1.105.0+56/core0ecf80badaf971f6859dafda1156e1706586efe7 and
+Android1.103.312+54/code299078090/source4932e51d1f82e959c9d0f3a07f6bd0277e9d1b0d. No device, provider-policy or
+production-history actions are authorized by this maintenance.
+
+Compatible require/replace/checksum and overlay/build pins are prepared. All14
+immutable inputs and18 overlay outputs equal the previous verified source; focused
+overlay/signer contracts pass without skips. Signer closurefcd7bcd9331aa63029dd908d7f3011b369d0ff39 changes only
+core/module/checksum constants. R45-R47 runtime/history/UI and TailD product changes,
+production key isolation, disabled inherited workflows and separate channel remain.
+
+Remaining maintenance acceptance: GitHub-owned exact TailDNS inheritance and full
+Android/core/Windows checks, exact-main checks, all fresh normal Windows release
+gates and independent complete public-package verification. Preparation is not
+product completion or B12 acceptance. Compact receipts: D:/Projects/TailD-support/maintenance/20261112.
+
 ## November 11 upstream maintenance
 
 All four normal releases are published and independently verified: TailDNS Windows
