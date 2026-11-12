@@ -33,6 +33,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python3 -B scripts/test-reconcile-upstream-core-pin.py
+          python3 -B scripts/test-upstream-workflow-composition.py
           bash scripts/test-append-taildns-version.sh
           bash scripts/test-taildns-branding.sh
           bash scripts/test-thor-recents-resilience.sh

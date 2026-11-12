@@ -1,5 +1,15 @@
 # Local DNS override — authoritative specification
 
+2026-11-12 bounded maintenance repair: capture43171244622 has only a fork workflow
+conflict. Policy restoration resolves every Git stage, so the strict core-pin
+resolver must not be invoked with an empty conflict set. Verify the immutable
+active MERGE_HEAD, restore exact fork workflow policy, and run source resolution
+only when unmerged stages remain. Keep the resolver's accepted paths/blob triples
+unchanged; unknown source conflicts must still abort. Real Git regression covers
+workflow-only, clean, owned-module and unknown-source cases with both parent
+identities and preserved policy/source. Require exact refreshed GitHub checks and
+normal signed releases. No device, settings, credentials or provider-policy action.
+
 2026-11-10 bounded maintenance repair: updater42770719738 refuses canonical
 67ca022e because a fork-owned workflow and AppContext conflict accompany the
 owned module pins. Restore fork workflow policy before source reconciliation;

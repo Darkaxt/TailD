@@ -73,6 +73,7 @@ jobs:
           git checkout -B "$branch" "origin/$base"
           if [[ "$android_changed" == true ]]; then
             if ! git merge --no-ff --no-commit "$android_head"; then
+              test "$(git rev-parse --verify MERGE_HEAD)" = "$android_head"
               # Restore fork-owned workflow policy before the conflict resolver
               # validates the remaining source conflicts. This is the same
               # policy restoration already required before the merge commit.
@@ -80,11 +81,15 @@ jobs:
               # The canonical core requirement conflicts with our deliberately
               # replaced core. Resolve those owned lines and the exact reviewed
               # interface triple; unknown dependency/source conflicts stay fatal.
-              python3 -B scripts/test-reconcile-upstream-core-pin.py
-              if ! python3 -B scripts/reconcile-upstream-core-pin.py --upstream "$android_head"; then
-                git diff --name-only --diff-filter=U >> "$GITHUB_STEP_SUMMARY"
-                git merge --abort || true
-                exit 1
+              # A workflow-only conflict is fully resolved by policy restoration.
+              # Invoke the strict source resolver only for remaining Git stages.
+              if test -n "$(git ls-files --unmerged)"; then
+                python3 -B scripts/test-reconcile-upstream-core-pin.py
+                if ! python3 -B scripts/reconcile-upstream-core-pin.py --upstream "$android_head"; then
+                  git diff --name-only --diff-filter=U >> "$GITHUB_STEP_SUMMARY"
+                  git merge --abort || true
+                  exit 1
+                fi
               fi
             fi
             # Fork workflows are policy owned by TailDNS. Restoring them before
