@@ -436,6 +436,11 @@ domain lists and previews. Retain TailDNS profile-owned local DNS, Android
 Private DNS observation and resume refresh, manual Done-only commits, follow
 mode and escape hatch, strict/unknown-mode warnings and tailnet-resolver labels.
 Private endpoint values remain redacted in diagnostic string representations.
+New launcher shortcuts must target this fork's package and CONNECT/DISCONNECT
+actions, retaining the technically required implementation class namespace.
+Activity intent filters must use the actual application ID; long labels retain
+TailDNS branding. Source and packaged-resource checks must reject official-app
+targets or mismatched action identities.
 
 The newest read alone may update local DNS state. A save invalidates older
 reads and keeps controls locked through its successful post-write status read;

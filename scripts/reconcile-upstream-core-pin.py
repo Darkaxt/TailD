@@ -36,6 +36,42 @@ DNS_PAYLOADS = {
     DNS_VIEW: '8a7775b993ea277d32b654a358610a7266ad84605e69d8352e9b46319b4fa106',
     DNS_TEST: '5d5df45dfc51b6aa8aaba38e440d8837e273149dc6cb471c7ea636c42d84a4c2',
 }
+SHORTCUT = 'android/src/main/res/xml/shortcuts.xml'
+MANIFEST = 'android/src/main/AndroidManifest.xml'
+STRINGS = 'android/src/main/res/values/strings.xml'
+SHORTCUT_BLOBS = {
+    SHORTCUT: '549e0aaa21c3ac96e5e12b18e3192334394b5305',
+    MANIFEST: '4cd639930fbc5396439df7046f14fc8dbc85977b',
+    STRINGS: '90a21dc4adb116c1013f84b94cc480b57ae4d3a0',
+}
+
+
+def resolve_shortcuts(blobs, texts):
+    if blobs != SHORTCUT_BLOBS or set(texts) != set(SHORTCUT_BLOBS):
+        raise ValueError('Unreviewed launcher shortcut inputs')
+    result = dict(texts)
+    replacements = {
+        SHORTCUT: [('android:targetPackage="com.tailscale.ipn"',
+                    'android:targetPackage="io.github.darkaxt.taildns"', 2),
+                   ('android:action="com.tailscale.ipn.CONNECT_VPN"',
+                    'android:action="io.github.darkaxt.taildns.CONNECT_VPN"', 1),
+                   ('android:action="com.tailscale.ipn.DISCONNECT_VPN"',
+                    'android:action="io.github.darkaxt.taildns.DISCONNECT_VPN"', 1)],
+        MANIFEST: [('android:name="com.tailscale.ipn.CONNECT_VPN"',
+                    'android:name="${applicationId}.CONNECT_VPN"', 1),
+                   ('android:name="com.tailscale.ipn.DISCONNECT_VPN"',
+                    'android:name="${applicationId}.DISCONNECT_VPN"', 1)],
+        STRINGS: [('name="shortcut_connect_long">Connect to Tailscale</string>',
+                   'name="shortcut_connect_long">Connect to TailDNS</string>', 1),
+                  ('name="shortcut_disconnect_long">Disconnect from Tailscale</string>',
+                   'name="shortcut_disconnect_long">Disconnect from TailDNS</string>', 1)],
+    }
+    for name, edits in replacements.items():
+        for before, after, count in edits:
+            if result[name].count(before) != count:
+                raise ValueError('Reviewed launcher shortcut changed shape')
+            result[name] = result[name].replace(before, after)
+    return result
 
 
 def resolve_dns(upstream, blobs, companion):
@@ -146,6 +182,12 @@ def reconcile(upstream):
             raise ValueError('DNS regression test target already exists')
         resolved.update(resolve_dns(upstream, {p: stages[p] for p in DNS_BLOBS},
                                     DNS_SOURCE_BLOB))
+        companions = {}
+        for name, blob in SHORTCUT_BLOBS.items():
+            if git('ls-files', '-s', '--', name).strip() != '100644 ' + blob + ' 0\t' + name:
+                raise ValueError('Unreviewed launcher shortcut index entry')
+            companions[name] = git('show', ':0:' + name)
+        resolved.update(resolve_shortcuts(SHORTCUT_BLOBS, companions))
     for name in sorted(stages):
         path = Path(name)
         if path.is_symlink():

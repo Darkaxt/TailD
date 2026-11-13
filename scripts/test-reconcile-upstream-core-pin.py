@@ -10,6 +10,35 @@ spec.loader.exec_module(reconcile)
 
 
 class CorePinConflictTest(unittest.TestCase):
+    def test_shortcuts_keep_classes_and_policy_but_target_fork_identity(self):
+        texts = {
+            reconcile.SHORTCUT: 'android:targetPackage="com.tailscale.ipn"\n' * 2 +
+                'android:action="com.tailscale.ipn.CONNECT_VPN"\n' +
+                'android:action="com.tailscale.ipn.DISCONNECT_VPN"\n' +
+                'android:targetClass="com.tailscale.ipn.AutomationActivity"\n',
+            reconcile.MANIFEST: 'android:excludeFromRecents="true"\n' +
+                'android:name="com.tailscale.ipn.CONNECT_VPN"\n' +
+                'android:name="com.tailscale.ipn.DISCONNECT_VPN"\n',
+            reconcile.STRINGS: '<string name="shortcut_connect_long">Connect to Tailscale</string>\n' +
+                '<string name="shortcut_disconnect_long">Disconnect from Tailscale</string>\n' +
+                '<string name="attribution">Tailscale</string>\n',
+        }
+        result = reconcile.resolve_shortcuts(reconcile.SHORTCUT_BLOBS, texts)
+        self.assertIn('android:targetPackage="io.github.darkaxt.taildns"', result[reconcile.SHORTCUT])
+        self.assertIn('android:targetClass="com.tailscale.ipn.AutomationActivity"', result[reconcile.SHORTCUT])
+        self.assertIn('android:name="${applicationId}.CONNECT_VPN"', result[reconcile.MANIFEST])
+        self.assertIn('android:excludeFromRecents="true"', result[reconcile.MANIFEST])
+        self.assertIn('Connect to TailDNS', result[reconcile.STRINGS])
+        self.assertIn('<string name="attribution">Tailscale</string>', result[reconcile.STRINGS])
+        for path in reconcile.SHORTCUT_BLOBS:
+            blobs = dict(reconcile.SHORTCUT_BLOBS)
+            blobs[path] = '0' * 40
+            with self.subTest(path=path), self.assertRaises(ValueError):
+                reconcile.resolve_shortcuts(blobs, texts)
+        texts[reconcile.SHORTCUT] += 'android:targetPackage="com.tailscale.ipn"\n'
+        with self.assertRaises(ValueError):
+            reconcile.resolve_shortcuts(reconcile.SHORTCUT_BLOBS, texts)
+
     def test_reviewed_dns_migration_preserves_both_implementations(self):
         reconcile.validate_paths({'go.mod', 'go.sum', *reconcile.DNS_BLOBS})
         result = reconcile.resolve_dns(reconcile.DNS_UPSTREAM, reconcile.DNS_BLOBS,
