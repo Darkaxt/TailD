@@ -57,7 +57,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.tailscale.ipn.mdm.MDMSettings
 import com.tailscale.ipn.mdm.ShowHide
+import com.tailscale.ipn.ui.dataSource.DNSSettingsDataSourceImpl
+import com.tailscale.ipn.ui.dataSource.ExitNodePickerDataSourceImpl
+import com.tailscale.ipn.ui.dataSource.HealthDataSourceImpl
 import com.tailscale.ipn.ui.dataSource.PeerDetailsDataSourceImpl
+import com.tailscale.ipn.ui.dataSource.RunExitNodeDataSourceImpl
+import com.tailscale.ipn.ui.dataSource.SettingsDataSourceImpl
+import com.tailscale.ipn.ui.dataSource.SubnetRoutingDataSourceImpl
+import com.tailscale.ipn.ui.dataSource.TailnetLockSetupDataSourceImpl
 import com.tailscale.ipn.ui.model.Ipn
 import com.tailscale.ipn.ui.navigation.AboutRoute
 import com.tailscale.ipn.ui.navigation.BugReportRoute
@@ -93,7 +100,7 @@ import com.tailscale.ipn.ui.util.universalFit
 import com.tailscale.ipn.ui.view.AboutView
 import com.tailscale.ipn.ui.view.BugReportView
 import com.tailscale.ipn.ui.view.DNSSettingsView
-import com.tailscale.ipn.ui.view.ExitNodePicker
+import com.tailscale.ipn.ui.view.ExitNodePickerView
 import com.tailscale.ipn.ui.view.HealthView
 import com.tailscale.ipn.ui.view.IntroView
 import com.tailscale.ipn.ui.view.LoginQRView
@@ -103,8 +110,8 @@ import com.tailscale.ipn.ui.view.MDMSettingsDebugView
 import com.tailscale.ipn.ui.view.MainView
 import com.tailscale.ipn.ui.view.MainViewNavigation
 import com.tailscale.ipn.ui.view.ManagedByView
-import com.tailscale.ipn.ui.view.MullvadExitNodePicker
-import com.tailscale.ipn.ui.view.MullvadExitNodePickerList
+import com.tailscale.ipn.ui.view.MullvadExitNodePickerListView
+import com.tailscale.ipn.ui.view.MullvadExitNodePickerView
 import com.tailscale.ipn.ui.view.MullvadInfoView
 import com.tailscale.ipn.ui.view.NotificationsView
 import com.tailscale.ipn.ui.view.PeerDetailsView
@@ -414,20 +421,52 @@ class MainActivity : ComponentActivity() {
                 )
               }
               composable<SettingsRoute> {
-                SettingsView(settingsNav = settingsNav, appViewModel = appViewModel)
+                val dataSource = remember { SettingsDataSourceImpl() }
+                SettingsView(
+                    settingsNav = settingsNav,
+                    dataSource = dataSource,
+                    mainViewModel = viewModel,
+                    appViewModel = appViewModel,
+                )
               }
-              composable<ExitNodesRoute> { ExitNodePicker(exitNodePickerNav) }
-              composable<HealthRoute> { HealthView(backTo<MainRoute>()) }
-              composable<MullvadRoute> { MullvadExitNodePickerList(exitNodePickerNav) }
+              composable<ExitNodesRoute> {
+                val dataSource = remember { ExitNodePickerDataSourceImpl() }
+                ExitNodePickerView(
+                    exitNodePickerNav = exitNodePickerNav,
+                    dataSource = dataSource,
+                )
+              }
+              composable<HealthRoute> {
+                val dataSource = remember { HealthDataSourceImpl() }
+                HealthView(
+                    backToSettings = backTo<MainRoute>(),
+                    dataSource = dataSource,
+                )
+              }
+              composable<MullvadRoute> {
+                val dataSource = remember { ExitNodePickerDataSourceImpl() }
+                MullvadExitNodePickerListView(
+                    exitNodePickerNav = exitNodePickerNav,
+                    dataSource = dataSource,
+                )
+              }
               composable<MullvadInfoRoute> { MullvadInfoView(exitNodePickerNav) }
               composable<MullvadCountryRoute> { entry ->
                 val route = entry.toRoute<MullvadCountryRoute>()
-                MullvadExitNodePicker(
+                val dataSource = remember { ExitNodePickerDataSourceImpl() }
+                MullvadExitNodePickerView(
                     countryCode = route.countryCode,
-                    exitNodePickerNav,
+                    exitNodePickerNav = exitNodePickerNav,
+                    dataSource = dataSource,
                 )
               }
-              composable<RunExitNodeRoute> { RunExitNodeView(exitNodePickerNav) }
+              composable<RunExitNodeRoute> {
+                val dataSource = remember { RunExitNodeDataSourceImpl() }
+                RunExitNodeView(
+                    exitNodePickerNav = exitNodePickerNav,
+                    dataSource = dataSource,
+                )
+              }
               composable<PeerDetailsRoute> { entry ->
                 val route = entry.toRoute<PeerDetailsRoute>()
                 val dataSource = remember { PeerDetailsDataSourceImpl() }
@@ -438,10 +477,28 @@ class MainActivity : ComponentActivity() {
                 )
               }
               composable<BugReportRoute> { BugReportView(backTo<SettingsRoute>()) }
-              composable<DNSSettingsRoute> { DNSSettingsView(backTo<SettingsRoute>()) }
+              composable<DNSSettingsRoute> {
+                val dataSource = remember { DNSSettingsDataSourceImpl() }
+                DNSSettingsView(
+                    backToSettings = backTo<SettingsRoute>(),
+                    dataSource = dataSource,
+                )
+              }
               composable<SplitTunnelingRoute> { SplitTunnelAppPickerView(backTo<SettingsRoute>()) }
-              composable<TailnetLockRoute> { TailnetLockSetupView(backTo<SettingsRoute>()) }
-              composable<SubnetRoutingRoute> { SubnetRoutingView(backTo<SettingsRoute>()) }
+              composable<SubnetRoutingRoute> {
+                val dataSource = remember { SubnetRoutingDataSourceImpl() }
+                SubnetRoutingView(
+                    backToSettings = backTo<SettingsRoute>(),
+                    dataSource = dataSource,
+                )
+              }
+              composable<TailnetLockRoute> {
+                val dataSource = remember { TailnetLockSetupDataSourceImpl() }
+                TailnetLockSetupView(
+                    backToSettings = backTo<SettingsRoute>(),
+                    dataSource = dataSource,
+                )
+              }
               composable<AboutRoute> { AboutView(backTo<SettingsRoute>()) }
               composable<MDMSettingsRoute> { MDMSettingsDebugView(backTo<SettingsRoute>()) }
               composable<ManagedByRoute> { ManagedByView(backTo<SettingsRoute>()) }

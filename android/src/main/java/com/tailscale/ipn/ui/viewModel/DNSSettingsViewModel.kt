@@ -3,7 +3,6 @@
 
 package com.tailscale.ipn.ui.viewModel
 
-import android.provider.Settings
 import androidx.annotation.StringRes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -11,36 +10,44 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.tailscale.ipn.App
 import com.tailscale.ipn.R
-import com.tailscale.ipn.mdm.MDMSettings
-import com.tailscale.ipn.ui.localapi.Client
+import com.tailscale.ipn.ui.dataSource.DNSSettingsDataSource
 import com.tailscale.ipn.ui.model.Ipn
 import com.tailscale.ipn.ui.model.LocalDNSStatus
 import com.tailscale.ipn.ui.model.LocalDNSUpdate
 import com.tailscale.ipn.ui.model.Tailcfg
-import com.tailscale.ipn.ui.notifier.Notifier
 import com.tailscale.ipn.ui.theme.off
 import com.tailscale.ipn.ui.theme.success
-import com.tailscale.ipn.ui.util.set
-import com.tailscale.ipn.util.TSLog
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class DNSSettingsViewModelFactory : ViewModelProvider.Factory {
+class DNSSettingsViewModelFactory(private val dataSource: DNSSettingsDataSource) :
+    ViewModelProvider.Factory {
   @Suppress("UNCHECKED_CAST")
   override fun <T : ViewModel> create(modelClass: Class<T>): T {
-    return DNSSettingsViewModel() as T
+    if (modelClass.isAssignableFrom(DNSSettingsViewModel::class.java)) {
+      return DNSSettingsViewModel(dataSource) as T
+    }
+    throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
   }
 }
 
-class DNSSettingsViewModel : IpnViewModel() {
-  val enablementState: StateFlow<DNSEnablementState> =
-      MutableStateFlow(DNSEnablementState.NOT_RUNNING)
-  val dnsConfig: StateFlow<Tailcfg.DNSConfig?> = MutableStateFlow(null)
+data class DNSSettingsUiState(
+    val enablementState: DNSEnablementState = DNSEnablementState.NOT_RUNNING,
+    val dnsConfig: Tailcfg.DNSConfig? = null,
+    val useCorpDNS: Boolean = false,
+    val mdmHiddenFromUser: Boolean = false,
+)
+
+class DNSSettingsViewModel(private val dataSource: DNSSettingsDataSource) : ViewModel() {
   val localDNS = MutableStateFlow<LocalDNSStatus?>(null)
   val localDNSError = MutableStateFlow(false)
   val savingLocalDNS = MutableStateFlow(false)
@@ -51,52 +58,68 @@ class DNSSettingsViewModel : IpnViewModel() {
   init {
     viewModelScope.launch {
       combine(
-              Notifier.state,
-              Notifier.prefs,
-              Notifier.netmap,
-              loggedInUser,
-              MDMSettings.useTailscaleDNSSettings.flow,
-          ) { _, _, _, _, _ ->
+              dataSource.prefs,
+              dataSource.netmap,
+              dataSource.dnsSettingsPolicy,
+              dataSource.privateDNSChanges,
+          ) { _, _, _, _ ->
             Unit
           }
-          .combine(App.get().privateDNSChanges) { _, _ -> Unit }
           .collect { refreshLocalDNS() }
     }
     viewModelScope.launch {
-      Notifier.netmap
-          .combine(Notifier.prefs) { netmap, prefs -> Pair(netmap, prefs) }
-          .stateIn(viewModelScope)
-          .collect { (netmap, prefs) ->
-            TSLog.d("DNSSettingsViewModel", "prefs: CorpDNS=" + prefs?.CorpDNS.toString())
-            prefs?.let {
-              if (it.CorpDNS) {
-                enablementState.set(DNSEnablementState.ENABLED)
-              } else {
-                enablementState.set(DNSEnablementState.DISABLED)
-              }
-            } ?: run { enablementState.set(DNSEnablementState.NOT_RUNNING) }
-            netmap?.let { dnsConfig.set(netmap.DNS) }
+      // Preserve the profile-completion refresh previously provided by IpnViewModel,
+      // without inheriting its unrelated global exit-node and account observers.
+      combine(
+              dataSource.state,
+              dataSource.netmap.map { it?.SelfNode?.User }.distinctUntilChanged(),
+          ) { _, _ ->
+            Unit
           }
+          .collect { dataSource.currentProfile(viewModelScope) { refreshLocalDNS() } }
     }
   }
 
-  fun refreshLocalDNS() {
-    strictPrivateDNS.value =
-        runCatching {
-          val resolver = App.get().contentResolver
-          when (
-              Settings.Global.getString(resolver, "private_dns_mode")
-                  ?: Settings.Global.getString(resolver, "private_dns_default_mode")
-          ) {
-            "hostname" -> true
-            "opportunistic",
-            "off" -> false
-            else -> null
+  private val dnsConfig: StateFlow<Tailcfg.DNSConfig?> =
+      dataSource.netmap
+          .filterNotNull()
+          .map { it.DNS }
+          .stateIn(
+              viewModelScope,
+              SharingStarted.WhileSubscribed(5_000),
+              null,
+          )
+
+  val uiState: StateFlow<DNSSettingsUiState> =
+      combine(
+              dataSource.prefs,
+              dnsConfig,
+              dataSource.dnsSettingsPolicy,
+          ) { prefs, dnsConfig, policy ->
+            val corpDNS = prefs?.CorpDNS == true
+
+            DNSSettingsUiState(
+                enablementState =
+                    when (prefs?.CorpDNS) {
+                      null -> DNSEnablementState.NOT_RUNNING
+                      true -> DNSEnablementState.ENABLED
+                      false -> DNSEnablementState.DISABLED
+                    },
+                dnsConfig = dnsConfig,
+                useCorpDNS = corpDNS,
+                mdmHiddenFromUser = policy.value.hiddenFromUser,
+            )
           }
-        }
-            .getOrNull()
+          .stateIn(
+              viewModelScope,
+              SharingStarted.WhileSubscribed(5_000),
+              DNSSettingsUiState(),
+          )
+
+  fun refreshLocalDNS() {
+    strictPrivateDNS.value = dataSource.strictPrivateDNS()
     val generation = ++localDNSGeneration
-    Client(viewModelScope).localDNS { result ->
+    dataSource.localDNS(viewModelScope) { result ->
       if (generation != localDNSGeneration) return@localDNS
       localDNS.value = result.getOrNull()
       localDNSError.value = result.isFailure
@@ -116,8 +139,9 @@ class DNSSettingsViewModel : IpnViewModel() {
     if (savingLocalDNS.value) return
     savingLocalDNS.value = true
     ++localDNSGeneration
-    Client(viewModelScope).editLocalDNS(
-        LocalDNSUpdate(profileID, enabled, endpoint, followAndroid)
+    dataSource.editLocalDNS(
+        viewModelScope,
+        LocalDNSUpdate(profileID, enabled, endpoint, followAndroid),
     ) { result ->
       localDNSError.value = result.isFailure
       // Re-read current state: a successful edit may have preceded a profile switch.
@@ -132,17 +156,17 @@ class DNSSettingsViewModel : IpnViewModel() {
     }
   }
 
-  fun toggleCorpDNS(callback: (Result<Ipn.Prefs>) -> Unit) {
-    val prefs =
-        Notifier.prefs.value
-            ?: run {
-              callback(Result.failure(Exception("no prefs")))
-              return@toggleCorpDNS
-            }
+  fun setCorpDNS(
+      enabled: Boolean,
+      callback: (Result<Ipn.Prefs>) -> Unit,
+  ) {
+    if (dataSource.prefs.value == null) {
+      callback(Result.failure(Exception("no prefs")))
+      return
+    }
 
-    val prefsOut = Ipn.MaskedPrefs()
-    prefsOut.CorpDNS = !prefs.CorpDNS
-    Client(viewModelScope).editPrefs(prefsOut, callback)
+    val prefsOut = Ipn.MaskedPrefs().apply { CorpDNS = enabled }
+    dataSource.editPrefs(viewModelScope, prefsOut, callback)
   }
 }
 
