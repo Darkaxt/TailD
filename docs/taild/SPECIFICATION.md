@@ -20,6 +20,12 @@ path is absent from the shipped Windows runtime; retain that static assessment
 without claiming exploit validation. Verify the exact lockfile-only diff and
 head checks, then include it in the normal production build/package gates.
 
+November13 maintenance acceptance is verified by GitHub inheritance43393847269,
+exact-main checks43396581014/43396580257 and all8fresh release43396989833 gates.
+Independent public+59 verification binds sourcebea5f544/core82faf5dc, all444
+payload members and three pinned signatures. All three fork families have
+verified normal releases; this does not close Stage10/B12 or device acceptance.
+
 Authoritative initial-increment specification, 2026-10-07. Initial implementation
 was authorized and is complete. The 2026-10-08
 [remaining-product specification](PRODUCT-SPECIFICATION.md) adds R08–R18 and

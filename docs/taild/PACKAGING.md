@@ -1,5 +1,34 @@
 # Stage 9 local packaging contract
 
+## November 13 upstream maintenance — normal Windows +59 verified
+
+Normal [windows-v1.105.0+59](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B59)
+ships exact checked source `bea5f544996cea670f7915a8a100558dcc6d2c69` through43396989833.
+All8fresh backend, production-build, isolated install/upgrade/rollback/uninstall,
+complete-product failed-migration recovery, signing and publication gates pass;
+no installer evidence is reused. Independent public retrieval verifies8assets/
+444members, pinned release/package/core Ed25519 signatures and identities,
+exact source/core/base/sequence/AMD64/schema4, all core PE stamps, runtimes/notices,
+unchanged UI assets and compiled R45-R47 background-retention/collector behavior.
+Installer117610713bytes, SHA256`6c8e386d8154b502ec0ddadb3004ff1bb168ed278a47062b752e3e741cac6faf`.
+Signing status is unchanged and accurately described by the manifests.
+
+GitHub inherit43393847269 preserves both histories and the independently
+reconstructed tree, exact verified TailDNS298ce62b/core82faf5dc pins, TailD settings,
+navigation, DNS overrides, isolated writer/signer boundaries and separate channel.
+Checked Dependabot PR2 updates only compatible development lockfile entries;
+GitHub alert26 is fixed. Inherited release/detection workflows remain disabled.
+
+TailDNS Windows1.105.0+57 and Android1.103.312+55/code299092630 independently verify.
+SleepManager0.8.0.3/code573 and unchanged Helper1.1.7.1/code1122 independently verify
+from exact history-preserving merge `e557bdb59e8bada826433e51a00ed4d39a4b1e3b`. Package IDs, permanent
+common certificate, signature-protected pairing, settings and fork origin remain.
+Previous releases are retained. Stage10 remains the sole ACTIVE TailD product
+stage; B12 and original TD-10 acceptance remain open. No device installation,
+provider-policy change, live-history operation or new device acceptance occurs.
+Compact receipts: `D:/Projects/TailD-support/maintenance/20261113`.
+This evidence-only reconciliation requires no additional payload release.
+
 ## November 12 upstream maintenance — normal Windows +58 verified
 
 Normal [windows-v1.105.0+58](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B58) ships exact checked source
