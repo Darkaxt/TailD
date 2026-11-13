@@ -34,6 +34,7 @@ import com.tailscale.ipn.App
 import com.tailscale.ipn.R
 import com.tailscale.ipn.ShareActivity
 import com.tailscale.ipn.ui.Links
+import com.tailscale.ipn.ui.dataSource.SettingsDataSourceImpl
 import com.tailscale.ipn.ui.util.AndroidTVUtil.isAndroidTV
 import com.tailscale.ipn.ui.view.*
 import com.tailscale.ipn.ui.viewModel.AppViewModel
@@ -170,7 +171,16 @@ fun TailDTailscaleView(
                   if (map?.SelfNode?.isAdmin != true) Text("An administrator account is required.")
                 }
               }
-              4 -> SettingsView(settingsNav, appViewModel = appViewModel, embedded = true)
+              4 -> {
+                val settingsDataSource = remember { SettingsDataSourceImpl() }
+                SettingsView(
+                    settingsNav = settingsNav,
+                    dataSource = settingsDataSource,
+                    mainViewModel = viewModel,
+                    appViewModel = appViewModel,
+                    embedded = true,
+                )
+              }
             }
           }
         } else

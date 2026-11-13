@@ -15,7 +15,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +34,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tailscale.ipn.App
 import com.tailscale.ipn.BuildConfig
@@ -46,217 +46,107 @@ import com.tailscale.ipn.ui.Links
 import com.tailscale.ipn.ui.components.Header
 import com.tailscale.ipn.ui.components.ListItemSwitch
 import com.tailscale.ipn.ui.components.ListItemText
+import com.tailscale.ipn.ui.dataSource.SettingsDataSource
+import com.tailscale.ipn.ui.model.IpnLocal
+import com.tailscale.ipn.ui.theme.AppTheme
 import com.tailscale.ipn.ui.theme.link
 import com.tailscale.ipn.ui.theme.listItem
-import com.tailscale.ipn.ui.util.AndroidTVUtil
+import com.tailscale.ipn.ui.util.AdvertisedRoutesHelper
 import com.tailscale.ipn.ui.util.AndroidTVUtil.isAndroidTV
 import com.tailscale.ipn.ui.util.AppVersion
 import com.tailscale.ipn.ui.util.Lists
 import com.tailscale.ipn.ui.util.set
 import com.tailscale.ipn.ui.viewModel.AppViewModel
+import com.tailscale.ipn.ui.viewModel.MainViewModel
 import com.tailscale.ipn.ui.viewModel.SettingsNav
 import com.tailscale.ipn.ui.viewModel.SettingsViewModel
+import com.tailscale.ipn.ui.viewModel.SettingsViewModelFactory
+import kotlin.Boolean
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SettingsView(
     settingsNav: SettingsNav,
-    viewModel: SettingsViewModel = viewModel(),
+    dataSource: SettingsDataSource,
+    mainViewModel: MainViewModel = viewModel(),
     appViewModel: AppViewModel = viewModel(),
     embedded: Boolean = false,
 ) {
   val handler = LocalUriHandler.current
 
-  val user by viewModel.loggedInUser.collectAsState()
-  val isAdmin by viewModel.isAdmin.collectAsState()
-  val managedByOrganization by viewModel.managedByOrganization.collectAsState()
-  val tailnetLockEnabled by viewModel.tailNetLockEnabled.collectAsState()
-  val corpDNSEnabled by viewModel.corpDNSEnabled.collectAsState()
-  val isVPNPrepared by appViewModel.vpnPrepared.collectAsState()
-  val showTailnetLock by MDMSettings.manageTailnetLock.flow.collectAsState()
-  val useTailscaleSubnets by MDMSettings.useTailscaleSubnets.flow.collectAsState()
-  val isClientRemoteLoggingEnabled by viewModel.isClientRemoteLoggingEnabled.collectAsState()
+  val factory = remember(dataSource) { SettingsViewModelFactory(dataSource) }
+  val settingsViewModel: SettingsViewModel = viewModel(factory = factory)
+
+  val user by mainViewModel.loggedInUser.collectAsStateWithLifecycle()
+  val managedByOrganization by mainViewModel.managedByOrganization.collectAsStateWithLifecycle()
+  val isAdmin by settingsViewModel.isAdmin.collectAsStateWithLifecycle()
+  val tailnetLockEnabled by settingsViewModel.tailNetLockEnabled.collectAsStateWithLifecycle()
+  val corpDNSEnabled by settingsViewModel.corpDNSEnabled.collectAsStateWithLifecycle()
+  val isClientRemoteLoggingEnabled by
+      settingsViewModel.isClientRemoteLoggingEnabled.collectAsStateWithLifecycle()
+  val isVPNPrepared by appViewModel.vpnPrepared.collectAsStateWithLifecycle()
+  val showTailnetLock by MDMSettings.manageTailnetLock.flow.collectAsStateWithLifecycle()
+  val useTailscaleSubnets by MDMSettings.useTailscaleSubnets.flow.collectAsStateWithLifecycle()
+
   var showDisableLoggingDialog by remember { mutableStateOf(false) }
   var showDeleteHistoryDialog by remember { mutableStateOf(false) }
   var showSourceHealth by remember { mutableStateOf(false) }
   val history = App.get().tailDHistory
-  val recording by history.enabled.collectAsState()
-  val exitPrefs by viewModel.prefs.collectAsState()
-  val map by viewModel.netmap.collectAsState()
-  val exitPicker by MDMSettings.exitNodesPicker.flow.collectAsState()
-  val managedExit by MDMSettings.exitNodeID.flow.collectAsState()
+  val recording by history.enabled.collectAsStateWithLifecycle()
+  val exitPrefs by dataSource.prefs.collectAsStateWithLifecycle()
+  val map by dataSource.netmap.collectAsStateWithLifecycle()
+  val exitPicker by MDMSettings.exitNodesPicker.flow.collectAsStateWithLifecycle()
+  val managedExit by MDMSettings.exitNodeID.flow.collectAsStateWithLifecycle()
   val exitEnabled = !exitPrefs?.activeExitNodeID.isNullOrEmpty()
-  val runningAsExit by viewModel.isRunningExitNode.collectAsState()
+  val runningAsExit = exitPrefs?.let { AdvertisedRoutesHelper.exitNodeOnFromPrefs(it) } ?: false
   var exitChangePending by remember { mutableStateOf(false) }
   var exitError by remember { mutableStateOf(false) }
 
-  Scaffold(
-      topBar = {
-        if (!embedded)
-            Header(
-                titleRes = R.string.settings_title,
-                onBack = settingsNav.onNavigateBackHome,
-                isTv = isAndroidTV(),
-            )
-      }
-  ) { innerPadding ->
-    Column(
-        modifier =
-            Modifier.padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .testTag("taild-preferences")
-    ) {
-      if (isVPNPrepared) {
-        UserView(
-            profile = user,
-            isTv = isAndroidTV(),
-            actionState = UserActionState.NAV,
-            onClick = settingsNav.onNavigateToUserSwitcher,
-        )
-      }
-
-      if (isAdmin && !isAndroidTV()) {
-        Lists.ItemDivider()
-        AdminTextView { handler.openUri(Links.ADMIN_URL) }
-      }
-
-      Lists.SectionDivider()
-      Setting.Switch(
-          R.string.taild_collect_analytics,
-          subtitle = stringResource(R.string.taild_collect_analytics_detail),
-          isOn = recording,
-          onToggle = history::setEnabled,
-      )
-      Setting.Text(R.string.taild_delete_history, onClick = { showDeleteHistoryDialog = true })
-      if (exitPicker.value == ShowHide.Show) {
-        Lists.ItemDivider()
-        Setting.Switch(
-            R.string.taild_use_exit_node,
-            isOn = exitEnabled,
-            enabled = exitPrefs != null && managedExit.value.isNullOrEmpty() && !exitChangePending,
-            onToggle = {
-              if (exitPrefs?.activeExitNodeID != null || exitPrefs?.selectedExitNodeID != null) {
-                exitError = false
-                exitChangePending = true
-                viewModel.toggleExitNode { result ->
-                  exitChangePending = false
-                  exitError = result.isFailure
-                }
-              } else settingsNav.onNavigateToExitNodes()
-            },
-        )
-        if (exitEnabled) {
-          Setting.Text(
-              R.string.exit_node,
-              subtitle =
-                  map?.Peers?.find { it.StableID == exitPrefs?.activeExitNodeID }?.displayName
-                      ?: stringResource(R.string.taild_exit_node_unavailable),
-              onClick = settingsNav.onNavigateToExitNodes,
-          )
-        }
-        if (exitError)
-            Text(
-                stringResource(R.string.taild_exit_node_failed),
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(horizontal = 16.dp),
-            )
-        Setting.Text(
-            R.string.taild_run_exit_node,
-            subtitle = stringResource(if (runningAsExit) R.string.enabled else R.string.disabled),
-            onClick = settingsNav.onNavigateToRunAsExitNode,
-        )
-      }
-      Lists.ItemDivider()
-      Setting.Text(
-          R.string.dns_settings,
-          subtitle =
-              corpDNSEnabled?.let {
-                stringResource(
-                    if (it) R.string.using_tailscale_dns else R.string.not_using_tailscale_dns
-                )
-              },
-          onClick = settingsNav.onNavigateToDNSSettings,
-      )
-
-      Lists.ItemDivider()
-      ListItemText(
-          R.string.split_tunneling,
-          subtitle = stringResource(R.string.filter_apps_allowed_to_access_tailscale),
-          onClick = settingsNav.onNavigateToSplitTunneling,
-      )
-
-      if (showTailnetLock.value == ShowHide.Show) {
-        Lists.ItemDivider()
-        ListItemText(
-            R.string.tailnet_lock,
-            subtitle =
-                tailnetLockEnabled?.let {
-                  stringResource(if (it) R.string.enabled else R.string.disabled)
-                },
-            onClick = settingsNav.onNavigateToTailnetLock,
-        )
-      }
-      if (useTailscaleSubnets.value == AlwaysNeverUserDecides.UserDecides) {
-        Lists.ItemDivider()
-        ListItemText(R.string.subnet_routing, onClick = settingsNav.onNavigateToSubnetRouting)
-      }
-
-      Lists.ItemDivider()
-      ListItemSwitch(
-          R.string.client_remote_logging_enabled,
-          subtitle =
-              stringResource(
-                  if (MDMSettings.isMDMConfigured)
-                      R.string.client_remote_logging_enabled_subtitle_mdm
-                  else R.string.client_remote_logging_enabled_subtitle
-              ),
-          isOn = isClientRemoteLoggingEnabled,
-          enabled = !MDMSettings.isMDMConfigured,
-          onToggle = {
-            if (isClientRemoteLoggingEnabled) {
-              showDisableLoggingDialog = true
-            } else {
-              viewModel.toggleIsClientRemoteLoggingEnabled()
-            }
-          },
-      )
-
-      if (!AndroidTVUtil.isAndroidTV()) {
-        Lists.ItemDivider()
-        ListItemText(R.string.permissions, onClick = settingsNav.onNavigateToPermissions)
-      }
-
-      managedByOrganization.value?.let {
-        Lists.ItemDivider()
-        ListItemText(
-            title = stringResource(R.string.managed_by_orgName, it),
-            onClick = settingsNav.onNavigateToManagedBy,
-        )
-      }
-
-      Lists.SectionDivider()
-      ListItemText(R.string.bug_report, onClick = settingsNav.onNavigateToBugReport)
-
-      Lists.ItemDivider()
-      Setting.Text(
-          title = "About TailD · history & source health",
-          onClick = { showSourceHealth = true },
-      )
-      Lists.ItemDivider()
-      Setting.Text(
-          R.string.about_tailscale,
-          subtitle = "${stringResource(id = R.string.version)} ${AppVersion.Short()}",
-          onClick = settingsNav.onNavigateToAbout,
-      )
-
-      // TODO: put a heading for the debug section
-      if (BuildConfig.DEBUG) {
-        Lists.SectionDivider()
-        Lists.MutedHeader(text = stringResource(R.string.internal_debug_options))
-        ListItemText(R.string.mdm_settings, onClick = settingsNav.onNavigateToMDMSettings)
-      }
-    }
-  }
+  SettingsScreen(
+      state =
+          SettingsUIState(
+              user = user,
+              isAdmin = isAdmin,
+              managedByOrganization = managedByOrganization.value,
+              tailnetLockEnabled = tailnetLockEnabled,
+              corpDNSEnabled = corpDNSEnabled,
+              isVPNPrepared = isVPNPrepared,
+              showTailnetLock = showTailnetLock.value == ShowHide.Show,
+              showSubnetRouting = useTailscaleSubnets.value == AlwaysNeverUserDecides.UserDecides,
+              isClientRemoteLoggingEnabled = isClientRemoteLoggingEnabled,
+              isMDMConfigured = MDMSettings.isMDMConfigured,
+              isDebugBuild = BuildConfig.DEBUG,
+              appVersion = AppVersion.Short(),
+              embedded = embedded,
+              recording = recording,
+              showExitPicker = exitPicker.value == ShowHide.Show,
+              exitEnabled = exitEnabled,
+              canToggleExit =
+                  exitPrefs != null && managedExit.value.isNullOrEmpty() && !exitChangePending,
+              exitNodeName =
+                  map?.Peers?.find { it.StableID == exitPrefs?.activeExitNodeID }?.displayName,
+              runningAsExit = runningAsExit,
+              exitError = exitError,
+          ),
+      nav = settingsNav,
+      isTv = isAndroidTV(),
+      toggleIsClientRemoteLoggingEnabled = settingsViewModel::toggleIsClientRemoteLoggingEnabled,
+      showDisableLoggingDialog = { showDisableLoggingDialog = true },
+      openAdmin = { handler.openUri(Links.ADMIN_URL) },
+      onRecordingChange = history::setEnabled,
+      onDeleteHistory = { showDeleteHistoryDialog = true },
+      onSourceHealth = { showSourceHealth = true },
+      onToggleExitNode = {
+        if (exitPrefs?.activeExitNodeID != null || exitPrefs?.selectedExitNodeID != null) {
+          exitError = false
+          exitChangePending = true
+          mainViewModel.toggleExitNode { result ->
+            exitChangePending = false
+            exitError = result.isFailure
+          }
+        } else settingsNav.onNavigateToExitNodes()
+      },
+  )
 
   if (showSourceHealth)
       com.tailscale.ipn.taild.TailDAboutDialog(
@@ -300,7 +190,7 @@ fun SettingsView(
           TextButton(
               onClick = {
                 showDisableLoggingDialog = false
-                viewModel.toggleIsClientRemoteLoggingEnabled()
+                settingsViewModel.toggleIsClientRemoteLoggingEnabled()
               }
           ) {
             Text(
@@ -396,7 +286,7 @@ object Setting {
 }
 
 @Composable
-fun AdminTextView(onNavigateToAdminConsole: () -> Unit) {
+private fun AdminTextView(onNavigateToAdminConsole: () -> Unit) {
   val adminStr = buildAnnotatedString {
     append(stringResource(id = R.string.settings_admin_prefix))
 
@@ -415,13 +305,240 @@ fun AdminTextView(onNavigateToAdminConsole: () -> Unit) {
   Lists.InfoItem(adminStr, onClick = onNavigateToAdminConsole)
 }
 
-@Preview
+private data class SettingsUIState(
+    val user: IpnLocal.LoginProfile?,
+    val isAdmin: Boolean,
+    val managedByOrganization: String?,
+    val tailnetLockEnabled: Boolean?,
+    val corpDNSEnabled: Boolean?,
+    val isVPNPrepared: Boolean,
+    val showTailnetLock: Boolean,
+    val showSubnetRouting: Boolean,
+    val isClientRemoteLoggingEnabled: Boolean,
+    val isMDMConfigured: Boolean,
+    val isDebugBuild: Boolean,
+    val appVersion: String,
+    val embedded: Boolean = false,
+    val recording: Boolean = false,
+    val showExitPicker: Boolean = false,
+    val exitEnabled: Boolean = false,
+    val canToggleExit: Boolean = false,
+    val exitNodeName: String? = null,
+    val runningAsExit: Boolean = false,
+    val exitError: Boolean = false,
+)
+
 @Composable
-fun SettingsPreview() {
-  val vm = SettingsViewModel()
-  vm.corpDNSEnabled.set(true)
-  vm.tailNetLockEnabled.set(true)
-  vm.isAdmin.set(true)
-  vm.managedByOrganization.set("Tails and Scales Inc.")
-  SettingsView(SettingsNav({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}), vm)
+private fun SettingsScreen(
+    state: SettingsUIState,
+    nav: SettingsNav,
+    isTv: Boolean,
+    toggleIsClientRemoteLoggingEnabled: () -> Unit,
+    showDisableLoggingDialog: () -> Unit,
+    openAdmin: () -> Unit,
+    onRecordingChange: (Boolean) -> Unit,
+    onDeleteHistory: () -> Unit,
+    onSourceHealth: () -> Unit,
+    onToggleExitNode: (Boolean) -> Unit,
+) {
+  Scaffold(
+      topBar = {
+        if (!state.embedded)
+            Header(
+                titleRes = R.string.settings_title,
+                onBack = nav.onNavigateBackHome,
+                isTv = isTv,
+            )
+      }
+  ) { innerPadding ->
+    Column(
+        modifier =
+            Modifier.padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .testTag("taild-preferences")
+    ) {
+      if (state.isVPNPrepared) {
+        UserView(
+            profile = state.user,
+            isTv = isTv,
+            actionState = UserActionState.NAV,
+            onClick = nav.onNavigateToUserSwitcher,
+        )
+      }
+
+      if (state.isAdmin && !isTv) {
+        Lists.ItemDivider()
+        AdminTextView(openAdmin)
+      }
+
+      Lists.SectionDivider()
+      Setting.Switch(
+          R.string.taild_collect_analytics,
+          subtitle = stringResource(R.string.taild_collect_analytics_detail),
+          isOn = state.recording,
+          onToggle = onRecordingChange,
+      )
+      Setting.Text(R.string.taild_delete_history, onClick = onDeleteHistory)
+      if (state.showExitPicker) {
+        Lists.ItemDivider()
+        Setting.Switch(
+            R.string.taild_use_exit_node,
+            isOn = state.exitEnabled,
+            enabled = state.canToggleExit,
+            onToggle = onToggleExitNode,
+        )
+        if (state.exitEnabled) {
+          Setting.Text(
+              R.string.exit_node,
+              subtitle = state.exitNodeName ?: stringResource(R.string.taild_exit_node_unavailable),
+              onClick = nav.onNavigateToExitNodes,
+          )
+        }
+        if (state.exitError)
+            Text(
+                stringResource(R.string.taild_exit_node_failed),
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+        Setting.Text(
+            R.string.taild_run_exit_node,
+            subtitle =
+                stringResource(if (state.runningAsExit) R.string.enabled else R.string.disabled),
+            onClick = nav.onNavigateToRunAsExitNode,
+        )
+      }
+      Lists.ItemDivider()
+      Setting.Text(
+          R.string.dns_settings,
+          subtitle =
+              state.corpDNSEnabled?.let {
+                stringResource(
+                    if (it) R.string.using_tailscale_dns else R.string.not_using_tailscale_dns
+                )
+              },
+          onClick = nav.onNavigateToDNSSettings,
+      )
+
+      Lists.ItemDivider()
+      ListItemText(
+          R.string.split_tunneling,
+          subtitle = stringResource(R.string.filter_apps_allowed_to_access_tailscale),
+          onClick = nav.onNavigateToSplitTunneling,
+      )
+
+      if (state.showTailnetLock) {
+        Lists.ItemDivider()
+        ListItemText(
+            R.string.tailnet_lock,
+            subtitle =
+                state.tailnetLockEnabled?.let {
+                  stringResource(if (it) R.string.enabled else R.string.disabled)
+                },
+            onClick = nav.onNavigateToTailnetLock,
+        )
+      }
+      if (state.showSubnetRouting) {
+        Lists.ItemDivider()
+        ListItemText(R.string.subnet_routing, onClick = nav.onNavigateToSubnetRouting)
+      }
+
+      Lists.ItemDivider()
+      ListItemSwitch(
+          R.string.client_remote_logging_enabled,
+          subtitle =
+              stringResource(
+                  if (state.isMDMConfigured) R.string.client_remote_logging_enabled_subtitle_mdm
+                  else R.string.client_remote_logging_enabled_subtitle
+              ),
+          isOn = state.isClientRemoteLoggingEnabled,
+          enabled = !state.isMDMConfigured,
+          onToggle = {
+            if (state.isClientRemoteLoggingEnabled) {
+              showDisableLoggingDialog()
+            } else {
+              toggleIsClientRemoteLoggingEnabled()
+            }
+          },
+      )
+
+      if (!isTv) {
+        Lists.ItemDivider()
+        ListItemText(R.string.permissions, onClick = nav.onNavigateToPermissions)
+      }
+
+      state.managedByOrganization?.let {
+        Lists.ItemDivider()
+        ListItemText(
+            title = stringResource(R.string.managed_by_orgName, it),
+            onClick = nav.onNavigateToManagedBy,
+        )
+      }
+
+      Lists.SectionDivider()
+      ListItemText(R.string.bug_report, onClick = nav.onNavigateToBugReport)
+
+      Lists.ItemDivider()
+      Setting.Text(title = "About TailD · history & source health", onClick = onSourceHealth)
+      Lists.ItemDivider()
+      Setting.Text(
+          R.string.about_tailscale,
+          subtitle = "${stringResource(id = R.string.version)} ${state.appVersion}",
+          onClick = nav.onNavigateToAbout,
+      )
+
+      // TODO: put a heading for the debug section
+      if (state.isDebugBuild) {
+        Lists.SectionDivider()
+        Lists.MutedHeader(text = stringResource(R.string.internal_debug_options))
+        ListItemText(R.string.mdm_settings, onClick = nav.onNavigateToMDMSettings)
+      }
+    }
+  }
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun SettingsPreview() {
+  AppTheme {
+    SettingsScreen(
+        state =
+            SettingsUIState(
+                user = null,
+                isAdmin = true,
+                managedByOrganization = "Tails and Scales Inc.",
+                tailnetLockEnabled = true,
+                corpDNSEnabled = true,
+                isVPNPrepared = true,
+                showTailnetLock = true,
+                showSubnetRouting = true,
+                isClientRemoteLoggingEnabled = true,
+                isMDMConfigured = true,
+                isDebugBuild = true,
+                appVersion = "1.104.0",
+            ),
+        nav =
+            SettingsNav(
+                onNavigateToBugReport = {},
+                onNavigateToAbout = {},
+                onNavigateToDNSSettings = {},
+                onNavigateToSplitTunneling = {},
+                onNavigateToTailnetLock = {},
+                onNavigateToSubnetRouting = {},
+                onNavigateToMDMSettings = {},
+                onNavigateToManagedBy = {},
+                onNavigateToUserSwitcher = {},
+                onNavigateToPermissions = {},
+                onNavigateBackHome = {},
+                onBackToSettings = {},
+            ),
+        isTv = false,
+        toggleIsClientRemoteLoggingEnabled = {},
+        showDisableLoggingDialog = {},
+        openAdmin = {},
+        onRecordingChange = {},
+        onDeleteHistory = {},
+        onSourceHealth = {},
+        onToggleExitNode = {},
+    )
+  }
 }

@@ -43,3 +43,7 @@ fi
 assert_contains "$manifest_file" '        android:label="@string/fork_app_name"'
 
 printf 'TailD product-branding contract passed.\n'
+
+if [[ -f "$repo_root/android/src/main/res/xml/shortcuts.xml" ]]; then
+  python3 -B "$repo_root/scripts/test-shortcut-identity.py"
+fi

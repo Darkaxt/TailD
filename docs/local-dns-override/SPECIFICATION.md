@@ -425,6 +425,39 @@ MagicDNS. A rehearsed upstream-base transition verifies the official MSI before
 overlay and proves failure containment. The task-attached monitor performs the
 dependency-ordered promotion/release path and records its automation identity.
 
+### R23 — Preserve local DNS during upstream DNS screen migration
+
+The 2026-11-13 Android capture failed where upstream replaces the DNS screen's
+global ViewModel with an injected data source, lifecycle-aware state and a
+stateless screen. Reconcile this exact reviewed conflict without discarding
+either implementation. Retain upstream explicit CorpDNS values, MDM visibility,
+factory/data-source injection, TV header, scaffold padding, routes, resolver and
+domain lists and previews. Retain TailDNS profile-owned local DNS, Android
+Private DNS observation and resume refresh, manual Done-only commits, follow
+mode and escape hatch, strict/unknown-mode warnings and tailnet-resolver labels.
+Private endpoint values remain redacted in diagnostic string representations.
+New launcher shortcuts must target this fork's package and CONNECT/DISCONNECT
+actions, retaining the technically required implementation class namespace.
+Activity intent filters must use the actual application ID; long labels retain
+TailDNS branding. Source and packaged-resource checks must reject official-app
+targets or mismatched action identities.
+
+The newest read alone may update local DNS state. A save invalidates older
+reads and keeps controls locked through its successful post-write status read;
+profile/backend changes must cause a fresh current-profile/status observation.
+No timer, retry, device installation or provider-policy change is introduced.
+Extend the existing DNS data source for these already-required operations;
+keep the screen stateless and render lifecycle-aware state.
+
+Acceptance: the updater accepts only the exact reviewed common/fork/upstream
+DNS conflict blobs and companion data-source blob, preserving unknown-conflict
+rejection and atomic validation before writes. Tests cover stale callbacks,
+write/read locking, profile and Private DNS changes, MDM and explicit CorpDNS
+values. A real Git composition proves history/workflow preservation, and the
+exact GitHub candidate passes Kotlin formatting, Android/core and Windows
+checks before normal merge and independently verified signed release. CI does
+not satisfy outstanding real-device acceptance.
+
 ## 4. Evidence record and completion rule
 
 For each requirement record: implementation commit(s), exact core/Android revision, test command and outcome, platform/OS/target SDK, configuration generation, real-boundary evidence where required, and redacted failure/restoration observations. Record unsupported environments explicitly. A compatibility claim must name the actual tested matrix rather than imply every OEM works.

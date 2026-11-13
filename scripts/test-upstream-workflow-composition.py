@@ -24,6 +24,9 @@ class WorkflowCompositionTest(unittest.TestCase):
         self.git('config', 'core.autocrlf', 'false')
         for name in ('reconcile-upstream-core-pin.py', 'test-reconcile-upstream-core-pin.py'):
             self.write('scripts/' + name, (ROOT / 'scripts' / name).read_text(encoding='utf-8'))
+        for payload in (ROOT / 'scripts/upstream-reconciliations/dns-settings').glob('*.kt'):
+            self.write('scripts/upstream-reconciliations/dns-settings/' + payload.name,
+                       payload.read_text(encoding='utf-8'))
         self.workflow = (ROOT / '.github/workflows/upstream-candidate.yml').read_text(encoding='utf-8')
         self.write('.github/workflows/upstream-candidate.yml', self.workflow)
         self.write('.github/workflows/integration-test.yml', 'name: common policy\n')

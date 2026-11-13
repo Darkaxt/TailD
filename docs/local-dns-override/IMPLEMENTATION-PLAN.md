@@ -484,5 +484,6 @@ Remaining: none. Blockers: none. Tracked deferrals: none.
 | R20 updater-compatible subversion | Stage 10 | Public release verification, one-time Thor migration and next-release comparison contract |
 | R21 Windows in-place upgrade | Stage 11 | Beacon state/Tailnet Lock preservation, resolver application and rollback proof |
 | R22 Windows auto-update and upstream promotion | Stage 12 | Signed manifest, Beacon update transition and task-attached promotion rehearsal |
+| R23 DNS screen migration preservation | Stage 12 maintenance | Exact-input conflict reconciliation, stale-callback/profile regressions, trusted candidate and signed release verification |
 
 Before each stage closure, update its evidence, satisfied/remaining criteria, blockers and tracked deferrals. Do not substitute commit volume, component count or passing-test totals for a demonstrated workflow. Unknown implementation details must be resolved inside the owning stage without introducing speculative infrastructure.
