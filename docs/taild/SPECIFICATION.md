@@ -1,5 +1,25 @@
 # TailD: inherited TailDNS client and Control D analytics
 
+2026-11-13 R03 maintenance reconciliation: verified TailDNS298ce62b and
+core82faf5dc require a reviewed navigation/Settings/branding merge. Preserve
+canonical injected data sources, lifecycle-aware state, stateless screens and
+explicit DNS values, together with TailD navigation, embedded preferences,
+device presentation and product identity. Keep the existing application ID and
+connect/disconnect actions; new shortcut long labels identify TailD. Apply only
+exact reviewed common/fork/upstream blobs and companion inputs, validating the
+whole resolution before writes; unknown conflicts and drift remain fatal. Keep
+prepared source payloads outside active Android sources until GitHub composes
+the complete candidate. Acceptance requires focused regressions, independent
+real Git reconstruction, GitHub's full inherited Android/core/Windows gates,
+ordinary fast-forward promotion and independently verified normal Windows
+release. Stage10 remains the sole ACTIVE product stage and B12 remains open.
+This maintenance authorizes no device, provider-policy or live-history actions.
+The same cycle includes checked Dependabot PR2's patch-only development lockfile
+update, @hono/node-server2.1.8 and hono4.13.18. The affected reverse-proxy server
+path is absent from the shipped Windows runtime; retain that static assessment
+without claiming exploit validation. Verify the exact lockfile-only diff and
+head checks, then include it in the normal production build/package gates.
+
 Authoritative initial-increment specification, 2026-10-07. Initial implementation
 was authorized and is complete. The 2026-10-08
 [remaining-product specification](PRODUCT-SPECIFICATION.md) adds R08–R18 and

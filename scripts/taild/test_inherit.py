@@ -1,4 +1,5 @@
 import os
+import hashlib
 from pathlib import Path
 import subprocess
 import tempfile
@@ -6,6 +7,42 @@ import unittest
 from unittest.mock import patch
 
 import inherit
+
+
+class SettingsReconciliationTest(unittest.TestCase):
+    def test_reviewed_payloads_are_pinned(self):
+        root = Path(inherit.__file__).parent / 'inheritance-resolutions' / '20261113'
+        for _, (name, digest) in inherit.SETTINGS_PAYLOADS.items():
+            data = (root / name).read_bytes().replace(b'\r\n', b'\n')
+            self.assertEqual(hashlib.sha256(data).hexdigest(), digest)
+
+    def test_changed_payload_is_rejected_before_any_git_or_write(self):
+        with patch.object(Path, 'read_bytes', return_value=b'unreviewed'), \
+                patch.object(inherit, 'git') as git:
+            with self.assertRaisesRegex(inherit.InheritanceError, 'payload changed'):
+                inherit.settings_outputs(Path.cwd())
+        git.assert_not_called()
+
+    def test_changed_companion_index_prevents_all_output_writes(self):
+        with patch.object(inherit, 'git') as git, \
+                patch.object(Path, 'write_bytes') as write:
+            git.return_value.stdout = '100644 unknown 0\tunexpected'
+            with self.assertRaisesRegex(inherit.InheritanceError, 'companion index changed'):
+                inherit.settings_outputs(Path.cwd())
+        write.assert_not_called()
+
+    def test_shortcuts_keep_package_and_actions_while_rebranding_labels(self):
+        text = ('Connect to TailDNS\nDisconnect from TailDNS\nTailDNS launcher package\n'
+                'io.github.darkaxt.taildns.CONNECT\ncom.tailscale.ipn.AutomationActivity\n')
+        actual = inherit.settings_companion('scripts/test-shortcut-identity.py', text)
+        self.assertEqual(actual, text.replace('to TailDNS', 'to TailD')
+                         .replace('from TailDNS', 'from TailD')
+                         .replace('TailDNS launcher', 'TailD launcher'))
+
+    def test_changed_or_duplicate_label_is_rejected(self):
+        for text in ('unknown', 'Connect to TailDNS\nConnect to TailDNS'):
+            with self.assertRaisesRegex(inherit.InheritanceError, 'companion changed'):
+                inherit.settings_companion('android/src/main/res/values/strings.xml', text)
 
 
 class InheritanceTest(unittest.TestCase):
