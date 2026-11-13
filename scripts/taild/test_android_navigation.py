@@ -29,13 +29,32 @@ class AndroidNavigationTest(unittest.TestCase):
 
     def test_tv_component_inheritance_keeps_fork_preferences_and_accessibility(self):
         settings=(ROOT/'ui/view/SettingsView.kt').read_text(encoding='utf-8')
-        self.assertTrue(re.search(r'if \(!embedded\)\s*Header\([^)]*settings_title',settings))
+        self.assertTrue(re.search(r'if \(!(?:state\.)?embedded\)\s*Header\([^)]*settings_title',settings))
         for marker in ('isTv = isAndroidTV()', 'R.string.taild_collect_analytics',
-                'onToggle = history::setEnabled', 'R.string.taild_delete_history',
+                'R.string.taild_delete_history',
                 'R.string.taild_use_exit_node', 'managedExit.value.isNullOrEmpty()',
-                'settingsNav.onNavigateToExitNodes', 'settingsNav.onNavigateToRunAsExitNode',
                 'TailDAboutDialog(', 'contentDescription = label'):
             self.assertIn(marker,settings)
+        if 'private fun SettingsScreen(' in settings:
+            for marker in ('onRecordingChange = history::setEnabled',
+                    'onToggle = onRecordingChange', 'onDeleteHistory = { showDeleteHistoryDialog = true }',
+                    'onSourceHealth = { showSourceHealth = true }',
+                    'onClick = nav.onNavigateToRunAsExitNode',
+                    'settingsNav.onNavigateToExitNodes()',
+                    'val factory = remember(dataSource) { SettingsViewModelFactory(dataSource) }',
+                    'dataSource.prefs.collectAsStateWithLifecycle()',
+                    'dataSource.netmap.collectAsStateWithLifecycle()',
+                    'embedded = embedded', 'if (!state.embedded)',
+                    'history.deleteHistory()', 'tailDControlD.clearHistory()'):
+                self.assertIn(marker,settings)
+            shell=(ROOT/'taild/TailDTailscaleView.kt').read_text(encoding='utf-8')
+            for marker in ('remember { SettingsDataSourceImpl() }', 'dataSource = settingsDataSource',
+                    'mainViewModel = viewModel', 'embedded = true'):
+                self.assertIn(marker,shell)
+        else:
+            for marker in ('onToggle = history::setEnabled',
+                    'settingsNav.onNavigateToExitNodes', 'settingsNav.onNavigateToRunAsExitNode'):
+                self.assertIn(marker,settings)
         avatar=(ROOT/'ui/view/Avatar.kt').read_text(encoding='utf-8')
         for marker in ('isTv: Boolean', 'sizeIn(minWidth = 48.dp, minHeight = 48.dp)',
                 'contentDescription = actionLabel', '.conditional(isTv, { padding(4.dp) })'):
@@ -52,8 +71,20 @@ class AndroidNavigationTest(unittest.TestCase):
                 ('SplitTunneling','SplitTunnelAppPickerView'),('TailnetLock','TailnetLockSetupView'),
                 ('SubnetRouting','SubnetRoutingView'),('About','AboutView'),
                 ('MDMSettings','MDMSettingsDebugView'),('ManagedBy','ManagedByView')):
-            self.assertTrue(re.search(r'composable<'+route+r'Route>\s*\{\s*'+view+r'\(backToPreferences\)',source),
-                route+' must keep its fork preference return')
+            block=re.search(r'composable<'+route+r'Route>\s*\{(.*?)(?=\n              composable<|\n            \})',source,re.S)
+            self.assertIsNotNone(block,route+' destination must remain present')
+            body=block[1]
+            if route in ('DNSSettings','TailnetLock','SubnetRouting') and 'val dataSource = remember' in body:
+                factory={'DNSSettings':'DNSSettingsDataSourceImpl',
+                         'TailnetLock':'TailnetLockSetupDataSourceImpl',
+                         'SubnetRouting':'SubnetRoutingDataSourceImpl'}[route]
+                self.assertIn('val dataSource = remember { '+factory+'() }',body)
+                self.assertIn(view+'(',body)
+                self.assertIn('backToSettings = backToPreferences',body)
+                self.assertIn('dataSource = dataSource',body)
+            else:
+                self.assertIn(view+'(backToPreferences)',body,
+                    route+' must keep its fork preference return')
         self.assertTrue('onNavigateToExitNodes = { navController.navigate(ExitNodesRoute) }' in source)
         self.assertTrue('onNavigateToRunAsExitNode = { navController.navigate(RunExitNodeRoute) }' in source)
         self.assertTrue('destinationState = taildDestination' in source and 'tabState = taildTailscaleTab' in source)
