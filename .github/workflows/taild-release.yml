@@ -149,7 +149,7 @@ jobs:
         with:
           # Reviewed signer tooling is independently immutable. Never import or
           # execute application/candidate files downloaded from build artifacts.
-          ref: fcd7bcd9331aa63029dd908d7f3011b369d0ff39
+          ref: 6827250bbd18cb5eed5187b5a6a846768ad95fef
           path: trusted
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
@@ -252,7 +252,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          ref: fcd7bcd9331aa63029dd908d7f3011b369d0ff39
+          ref: 6827250bbd18cb5eed5187b5a6a846768ad95fef
           path: trusted
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
@@ -306,6 +306,6 @@ jobs:
 
           Preserves the correction for sustained collector CPU and I/O: durable recent high-water marks, two-minute overlap, bounded resumable catch-up, hourly retained-history correction and idempotent DNS/traffic facts. Background history maintenance retains its fixed cutoff per cleanup sweep and expires secondary DNS facts in small scoped batches. Recent DNS shows the latest100 individual queries from two hours, with a seven-day main-device option and exact First seen/Total over each device's retained horizon. Bounded SQL pages avoid materializing a populated week. History schema4, deletion watermarks, rollback, credentials, opt-in analytics and provider policy are preserved.
 
-          Includes verified shared core 0ecf80badaf9 and checked TailDNS main 4932e51d. Carries reviewed canonical login/lifecycle, context-aware network dialing, scoped file serving and dependency updates, plus lifecycle-aware Android peer/managed-policy screens. The complete TailDNS Private DNS observer, deep links and DNS ownership contracts remain intact. Preserves captive-login network identity and scoped DNS. Retains patched dependencies, profile controls, native per-app DNS, GlassWire IN/OUT activity, TailDrop file selection and the separate TailD update channel. Ed25519 signatures cover release, package and core manifests. Complete Windows x64 installer; Evergreen WebView2 required. Source: $GITHUB_SHA. Publication performs no device installation or rollout.
+          Includes verified shared core 82faf5dca463 and checked TailDNS main 298ce62b. Updates inherited connectivity while retaining TailD analytics, profile controls, background DNS history, TailDrop file selection and the separate TailD update channel. Ed25519 signatures cover release, package and core manifests. Complete Windows x64 installer; Evergreen WebView2 required. Source: $GITHUB_SHA. Publication performs no device installation or rollout.
           EOF
           gh release create "$tag" release/* --repo "$GITHUB_REPOSITORY" --verify-tag --title "TailD $version for Windows" --notes-file "$RUNNER_TEMP/taild-release-notes.md"
