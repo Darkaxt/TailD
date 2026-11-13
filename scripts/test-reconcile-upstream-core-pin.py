@@ -2,6 +2,7 @@
 import importlib.util
 from pathlib import Path
 import unittest
+from unittest import mock
 
 spec = importlib.util.spec_from_file_location('reconcile', Path(__file__).with_name('reconcile-upstream-core-pin.py'))
 reconcile = importlib.util.module_from_spec(spec)
@@ -9,6 +10,38 @@ spec.loader.exec_module(reconcile)
 
 
 class CorePinConflictTest(unittest.TestCase):
+    def test_reviewed_dns_migration_preserves_both_implementations(self):
+        reconcile.validate_paths({'go.mod', 'go.sum', *reconcile.DNS_BLOBS})
+        result = reconcile.resolve_dns(reconcile.DNS_UPSTREAM, reconcile.DNS_BLOBS,
+                                       reconcile.DNS_SOURCE_BLOB)
+        self.assertEqual(set(result), set(reconcile.DNS_PAYLOADS))
+        view = result[reconcile.DNS_VIEW]
+        self.assertIn('collectAsStateWithLifecycle()', view)
+        self.assertIn('Modifier.padding(innerPadding)', view)
+        self.assertIn('onSaveLocalDNS(', view)
+        self.assertIn('isLocalDNSToggleEnabled(', view)
+        self.assertIn('remember(saved.ProfileID, saved.ManualEndpoint)', view)
+        self.assertIn('local_dns_tailnet_resolvers', view)
+
+    def test_dns_resolution_rejects_every_unknown_input(self):
+        for path in reconcile.DNS_BLOBS:
+            for stage in ('1', '2', '3'):
+                blobs = {p: dict(v) for p, v in reconcile.DNS_BLOBS.items()}
+                blobs[path][stage] = '0' * 40
+                with self.subTest(path=path, stage=stage), self.assertRaises(ValueError):
+                    reconcile.resolve_dns(reconcile.DNS_UPSTREAM, blobs,
+                                          reconcile.DNS_SOURCE_BLOB)
+        for upstream, companion in (('0' * 40, reconcile.DNS_SOURCE_BLOB),
+                                    (reconcile.DNS_UPSTREAM, '0' * 40)):
+            with self.assertRaises(ValueError):
+                reconcile.resolve_dns(upstream, reconcile.DNS_BLOBS, companion)
+
+    def test_changed_dns_payload_is_rejected_before_resolution(self):
+        with mock.patch.object(Path, 'read_bytes', return_value=b'changed reviewed source'):
+            with self.assertRaisesRegex(ValueError, 'payload changed'):
+                reconcile.resolve_dns(reconcile.DNS_UPSTREAM, reconcile.DNS_BLOBS,
+                                      reconcile.DNS_SOURCE_BLOB)
+
     def test_only_core_requirement_uses_fork_pin_and_preserves_merged_dependency(self):
         text = ('require (\n\tother.example/module v2.0.0\n<<<<<<< HEAD\n'
                 '\ttailscale.com v1.2.3-fork\n=======\n'

@@ -1,5 +1,6 @@
 """Resolve owned core pins and an exact reviewed interface conflict; fail closed."""
 import argparse
+import hashlib
 from pathlib import Path
 import re
 import subprocess
@@ -12,9 +13,50 @@ INTERFACE_BLOBS = {
     '3': 'ac702a03c6aea91edbca70cc390fa2e1848e11b6',
 }
 
+# Reviewed canonical DNS lifecycle migration, composed with the profile-owned
+# TailDNS controls. Whole-file inputs are immutable; unknown changes fail closed.
+DNS_UPSTREAM = '2994f80c7f2e5d6b2ec6bb47c06b1c7a3a949d30'
+DNS_ROOT = 'android/src/main/java/com/tailscale/ipn/ui/'
+DNS_VIEW = DNS_ROOT + 'view/DNSSettingsView.kt'
+DNS_MODEL = DNS_ROOT + 'viewModel/DNSSettingsViewModel.kt'
+DNS_SOURCE = DNS_ROOT + 'dataSource/DNSSettingsDataSource.kt'
+DNS_TEST = 'android/src/test/kotlin/com/tailscale/ipn/ui/viewModel/DNSSettingsViewModelTest.kt'
+DNS_SOURCE_BLOB = 'bdbb8484ed9771dd15ddaf543c4af1c2376f50fe'
+DNS_BLOBS = {
+    DNS_VIEW: {'1': '75e2f4769a2b5e882e52747ed2264f41ed505307',
+               '2': 'a1559e4dd74f1b30da95caf9a3e8729c0d5b7115',
+               '3': 'e9f2d7be21e78908e4f8afdddc632c1d70c928f5'},
+    DNS_MODEL: {'1': 'e770cfdaac5c222b275457c0d492fd941403aca0',
+                '2': 'e06e635ab84e6cff21f18658863cabd95b4c5602',
+                '3': 'be6307b5f6ee8c222c4557139be9bbb73981d2cc'},
+}
+DNS_PAYLOADS = {
+    DNS_SOURCE: '5be51c22e0f3be891ab496ecdebaa3d5c363c7876245155fdb6cb8201ad01ce9',
+    DNS_MODEL: '6a38a0f941ced86bcd716156f198ccb4f1a3cd5b5df5340027dda6bd7a657a74',
+    DNS_VIEW: '8a7775b993ea277d32b654a358610a7266ad84605e69d8352e9b46319b4fa106',
+    DNS_TEST: '5d5df45dfc51b6aa8aaba38e440d8837e273149dc6cb471c7ea636c42d84a4c2',
+}
+
+
+def resolve_dns(upstream, blobs, companion):
+    if upstream != DNS_UPSTREAM or blobs != DNS_BLOBS or companion != DNS_SOURCE_BLOB:
+        raise ValueError('Unreviewed DNS migration inputs')
+    payload_root = Path(__file__).resolve().parent / 'upstream-reconciliations/dns-settings'
+    resolved = {}
+    for name, digest in DNS_PAYLOADS.items():
+        payload = payload_root / Path(name).name
+        if payload.is_symlink():
+            raise ValueError('DNS payload is a symlink')
+        data = payload.read_bytes()
+        if hashlib.sha256(data).hexdigest() != digest:
+            raise ValueError('Reviewed DNS payload changed')
+        resolved[name] = data.decode('utf-8')
+    return resolved
+
 
 def validate_paths(paths):
-    if paths not in ({'go.mod', 'go.sum'}, {'go.mod', 'go.sum', INTERFACE_PATH}):
+    if paths not in ({'go.mod', 'go.sum'}, {'go.mod', 'go.sum', INTERFACE_PATH},
+                     {'go.mod', 'go.sum', *DNS_BLOBS}):
         raise ValueError('Unreviewed merge conflict paths')
 
 
@@ -96,10 +138,20 @@ def reconcile(upstream):
     if len(pin) != 1 or pin != replacement:
         raise ValueError('Expected matching fork-owned core require/replace')
     resolved = {}
+    if DNS_VIEW in stages:
+        companion = git('ls-files', '-s', '--', DNS_SOURCE).strip()
+        if companion != '100644 ' + DNS_SOURCE_BLOB + ' 0\t' + DNS_SOURCE:
+            raise ValueError('Unreviewed DNS data source index entry')
+        if git('ls-files', '--', DNS_TEST).strip() or Path(DNS_TEST).exists():
+            raise ValueError('DNS regression test target already exists')
+        resolved.update(resolve_dns(upstream, {p: stages[p] for p in DNS_BLOBS},
+                                    DNS_SOURCE_BLOB))
     for name in sorted(stages):
         path = Path(name)
         if path.is_symlink():
             raise ValueError('Conflict path is a symlink')
+        if name in DNS_BLOBS:
+            continue
         if name == INTERFACE_PATH:
             resolved[name] = resolve_interface(stages[name], path.read_text(encoding='utf-8'))
         else:
@@ -110,7 +162,11 @@ def reconcile(upstream):
         raise ValueError('Fork-owned replacement was not preserved')
     # Validate every conflict before changing either file. The updater then
     # installs the exact reviewed core and runs tidy plus trusted candidate gates.
+    for name in resolved:
+        if Path(name).is_symlink():
+            raise ValueError('Resolution target is a symlink')
     for name, text in resolved.items():
+        Path(name).parent.mkdir(parents=True, exist_ok=True)
         Path(name).write_bytes(text.encode('utf-8'))
     subprocess.run(['git', 'add', '--', *sorted(resolved)], check=True)
 
