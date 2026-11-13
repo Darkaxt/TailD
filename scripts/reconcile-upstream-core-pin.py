@@ -34,7 +34,7 @@ DNS_PAYLOADS = {
     DNS_SOURCE: '5be51c22e0f3be891ab496ecdebaa3d5c363c7876245155fdb6cb8201ad01ce9',
     DNS_MODEL: '6a38a0f941ced86bcd716156f198ccb4f1a3cd5b5df5340027dda6bd7a657a74',
     DNS_VIEW: '8a7775b993ea277d32b654a358610a7266ad84605e69d8352e9b46319b4fa106',
-    DNS_TEST: '5d5df45dfc51b6aa8aaba38e440d8837e273149dc6cb471c7ea636c42d84a4c2',
+    DNS_TEST: '78242aaa211c3f5de1d4b1eb247c5b365f6536a4713a74b5558068ef22e2862c',
 }
 SHORTCUT = 'android/src/main/res/xml/shortcuts.xml'
 MANIFEST = 'android/src/main/AndroidManifest.xml'
