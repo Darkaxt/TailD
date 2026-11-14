@@ -49,6 +49,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -79,7 +80,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.tailscale.ipn.App
 import com.tailscale.ipn.R
 import com.tailscale.ipn.mdm.MDMSettings
@@ -127,7 +127,7 @@ data class MainViewNavigation(
     val onNavigateToSearch: () -> Unit,
 )
 
-@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainView(
     loginAtUrl: (String) -> Unit,
@@ -263,7 +263,13 @@ fun MainView(
         }
       }
       currentPingDevice?.let { _ ->
-        ModalBottomSheet(onDismissRequest = { viewModel.onPingDismissal() }) {
+        ModalBottomSheet(
+            onDismissRequest = { viewModel.onPingDismissal() },
+            sheetState =
+                rememberModalBottomSheetState(
+                    skipPartiallyExpanded = true,
+                ),
+        ) {
           PingView(model = viewModel.pingViewModel)
         }
       }
@@ -1030,24 +1036,22 @@ fun ExpiryNotification(netmap: Netmap.NetworkMap, action: () -> Unit = {}) {
   }
 }
 
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun PromptForMissingPermissions(viewModel: MainViewModel) {
   if (viewModel.skipPromptsForAuthKeyLogin()) {
     return
   }
-  Permissions.prompt.forEach { (permission, state) ->
+  Permissions.prompt.forEach { (permission, requestPermissions) ->
     ErrorDialog(
         title = permission.title,
         message = permission.description,
         buttonText = R.string._continue,
     ) {
-      state.launchPermissionRequest()
+      requestPermissions()
     }
   }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Search(
     onSearchBarClick: () -> Unit, // Callback for navigating to SearchView
