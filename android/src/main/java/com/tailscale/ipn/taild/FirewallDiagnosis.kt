@@ -23,26 +23,28 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.patrykandpatrick.vico.compose.axis.axisGuidelineComponent
-import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
-import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
-import com.patrykandpatrick.vico.compose.chart.Chart
-import com.patrykandpatrick.vico.compose.chart.column.columnChart
-import com.patrykandpatrick.vico.compose.chart.layout.fullWidth
-import com.patrykandpatrick.vico.compose.component.lineComponent
-import com.patrykandpatrick.vico.compose.component.textComponent
-import com.patrykandpatrick.vico.compose.m3.style.m3ChartStyle
-import com.patrykandpatrick.vico.compose.style.ProvideChartStyle
-import com.patrykandpatrick.vico.core.axis.AxisItemPlacer
-import com.patrykandpatrick.vico.core.chart.column.ColumnChart
-import com.patrykandpatrick.vico.core.chart.layout.HorizontalLayout
-import com.patrykandpatrick.vico.core.entry.FloatEntry
-import com.patrykandpatrick.vico.core.entry.entryModelOf
+import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
+import com.patrykandpatrick.vico.compose.cartesian.Zoom
+import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
+import com.patrykandpatrick.vico.compose.cartesian.axis.VerticalAxis
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisGuidelineComponent
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLabelComponent
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianValueFormatter
+import com.patrykandpatrick.vico.compose.cartesian.data.columnModel
+import com.patrykandpatrick.vico.compose.cartesian.layer.ColumnCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
+import com.patrykandpatrick.vico.compose.cartesian.rememberVicoZoomState
+import com.patrykandpatrick.vico.compose.common.Fill
+import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
 import com.tailscale.ipn.App
 import com.tailscale.ipn.R
 import java.time.Instant
@@ -513,73 +515,78 @@ private fun DiagnosisHourlyChart(
     }
     return
   }
-  val chartModel =
-      remember(received, sent) {
-        entryModelOf(
-            received.mapIndexed { i, (_, bytes) -> FloatEntry(i.toFloat(), bytes.toFloat()) },
-            sent.mapIndexed { i, (_, bytes) -> FloatEntry(i.toFloat(), bytes.toFloat()) },
-        )
+  val modelProducer = remember { CartesianChartModelProducer() }
+  LaunchedEffect(received, sent) {
+    modelProducer.runTransaction {
+      columnModel {
+        series(y = received.map { it.second })
+        series(y = sent.map { it.second })
       }
-  ProvideChartStyle(m3ChartStyle()) {
-    Chart(
-        chart =
-            columnChart(
-                columns =
-                    listOf(
-                        lineComponent(MaterialTheme.colorScheme.primary, 7.dp),
-                        lineComponent(MaterialTheme.colorScheme.tertiary, 7.dp),
-                    ),
-                mergeMode = ColumnChart.MergeMode.Stack,
-                spacing = 2.dp,
-            ),
-        model = chartModel,
-        modifier =
-            Modifier.fillMaxWidth()
-                .height(if (compact) 88.dp else 132.dp)
-                .padding(top = 4.dp)
-                .testTag("taild-diagnosis-hourly-chart")
-                .semantics { contentDescription = description },
-        isZoomEnabled = false,
-        horizontalLayout = HorizontalLayout.fullWidth(),
-        startAxis =
-            rememberStartAxis(
-                valueFormatter = { value, _ -> trafficBytes(value.toLong()) },
-                itemPlacer =
-                    remember(compact) {
-                      AxisItemPlacer.Vertical.default(maxItemCount = if (compact) 2 else 3)
-                    },
-                label =
-                    textComponent(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textSize = 11.sp,
-                    ),
-                guideline =
-                    axisGuidelineComponent(color = MaterialTheme.colorScheme.outlineVariant),
-            ),
-        bottomAxis =
-            rememberBottomAxis(
-                itemPlacer =
-                    remember {
-                      AxisItemPlacer.Horizontal.default(spacing = 6, addExtremeLabelPadding = true)
-                    },
-                valueFormatter = { value, _ ->
-                  DateTimeFormatter.ofPattern("HH")
-                      .withZone(ZoneId.systemDefault())
-                      .format(
-                          Instant.ofEpochMilli(
-                              received[value.toInt().coerceIn(received.indices)].first
-                          )
-                      )
-                },
-                label =
-                    textComponent(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textSize = 11.sp,
-                    ),
-                guideline = null,
-            ),
-    )
+    }
   }
+  val labels =
+      rememberAxisLabelComponent(
+          style = TextStyle(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
+      )
+  CartesianChartHost(
+      chart =
+          rememberCartesianChart(
+              rememberColumnCartesianLayer(
+                  columnProvider =
+                      ColumnCartesianLayer.ColumnProvider.series(
+                          rememberLineComponent(Fill(MaterialTheme.colorScheme.primary), 7.dp),
+                          rememberLineComponent(Fill(MaterialTheme.colorScheme.tertiary), 7.dp),
+                      ),
+                  mergeMode = { ColumnCartesianLayer.MergeMode.Stacked },
+                  columnCollectionSpacing = 2.dp,
+              ),
+              startAxis =
+                  VerticalAxis.rememberStart(
+                      valueFormatter =
+                          CartesianValueFormatter { _, value, _ -> trafficBytes(value.toLong()) },
+                      itemPlacer =
+                          remember(compact) {
+                            VerticalAxis.ItemPlacer.count(count = { if (compact) 2 else 3 })
+                          },
+                      label = labels,
+                      guideline =
+                          rememberAxisGuidelineComponent(
+                              Fill(MaterialTheme.colorScheme.outlineVariant)
+                          ),
+                  ),
+              bottomAxis =
+                  HorizontalAxis.rememberBottom(
+                      itemPlacer =
+                          remember {
+                            HorizontalAxis.ItemPlacer.aligned(
+                                spacing = { 6 },
+                                addExtremeLabelPadding = true,
+                            )
+                          },
+                      valueFormatter =
+                          CartesianValueFormatter { _, value, _ ->
+                            DateTimeFormatter.ofPattern("HH")
+                                .withZone(ZoneId.systemDefault())
+                                .format(
+                                    Instant.ofEpochMilli(
+                                        received[value.toInt().coerceIn(received.indices)].first
+                                    )
+                                )
+                          },
+                      label = labels,
+                      guideline = null,
+                  ),
+          ),
+      modelProducer = modelProducer,
+      modifier =
+          Modifier.fillMaxWidth()
+              .height(if (compact) 88.dp else 132.dp)
+              .padding(top = 4.dp)
+              .testTag("taild-diagnosis-hourly-chart")
+              .semantics { contentDescription = description },
+      scrollState = rememberVicoScrollState(scrollEnabled = false),
+      zoomState = rememberVicoZoomState(zoomEnabled = false, initialZoom = Zoom.Content),
+  )
 }
 
 @Composable

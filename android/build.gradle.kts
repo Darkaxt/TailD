@@ -88,7 +88,6 @@ dependencies {
   // Kotlin dependencies.
   implementation(libs.kotlinx.serialization.json)
   implementation(libs.kotlinx.coroutines.core)
-  implementation(libs.androidx.room.ktx)
   runtimeOnly(libs.kotlinx.coroutines.android)
   implementation(libs.kotlin.stdlib)
   implementation(libs.kotlin.reflect)
@@ -103,8 +102,6 @@ dependencies {
   implementation(libs.androidx.lifecycle.viewmodel.ktx)
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.activity.compose)
-  implementation(libs.accompanist.permissions)
-  implementation(libs.accompanist.systemuicontroller)
   implementation(libs.androidx.core.splashscreen)
   implementation(libs.androidx.compose.animation)
 
@@ -114,6 +111,7 @@ dependencies {
 
   // Supporting libraries.
   implementation(libs.coil.compose)
+  implementation(libs.coil.network.okhttp)
   implementation("com.squareup.okhttp3:okhttp:4.12.0")
   implementation(libs.zxing.core)
   implementation(libs.vico.compose)
@@ -132,14 +130,9 @@ dependencies {
   androidTestImplementation(libs.androidx.test.uiautomator)
   androidTestImplementation(libs.junit)
 
-  // Authentication only for tests.
-  androidTestImplementation(libs.kotlin.onetimepassword)
-  androidTestImplementation(libs.commons.codec)
-
   // Unit tests.
   testImplementation(libs.junit)
   testImplementation(libs.mockito.core)
-  testImplementation(libs.mockito.inline)
   testImplementation(libs.mockito.kotlin)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
