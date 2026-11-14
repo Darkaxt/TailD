@@ -2,6 +2,16 @@
 
 ## November 14 upstream maintenance
 
+Inheritance43651071260 stopped before promotion: the canonical Vico3 dependency
+migration removes Vico1 packages still used by TailD's hourly diagnosis chart.
+Its prepared, exact-hash companion migrates only rendering APIs, retaining both
+identity-filtered byte series, stacking/colors,88/132dp sizes, byte/hour labels,
+noninteractive full-width layout and existing empty/zero/accessibility behavior.
+All conflict/companion inputs and outputs validate before any writes. Active
+Android sources retain their compatible old library implementation until GitHub
+composes the complete dependency migration. The corrected full inherited gate,
+ordinary promotion, production release and public verification remain required.
+
 The real dependency merge conflicts at TailD's direct OkHttp and canonical Coil3
 network dependency insertion. The exact reviewed blob triple, single conflict hunk
 and complete output hash now preserve both dependencies and all merged surroundings.

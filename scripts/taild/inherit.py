@@ -73,6 +73,9 @@ REVIEWED_RECONCILIATIONS = {
 
 DEPENDENCIES_UPSTREAM = '65f924c48a8181d8bb753b1ef9790349b3b30130'
 DEPENDENCIES_SHA256 = '35e15d5f55287aa954900b010821d5dcc3f23cd3701e66fde26fa7e463ad292d'
+DEPENDENCIES_COMPANION = 'android/src/main/java/com/tailscale/ipn/taild/FirewallDiagnosis.kt'
+DEPENDENCIES_COMPANION_BLOB = '78620d43f2a12217e25af757b4e0957419059a7d'
+DEPENDENCIES_COMPANION_SHA256 = 'ab61415f8890ac9148a2d3a3e6c6edeea324f321edeb76dd99b258b7224c3788'
 
 
 def reconcile_dependency_hunk(data):
@@ -89,6 +92,34 @@ def reconcile_dependency_hunk(data):
     if any(marker in resolved for marker in (b'<<<<<<<', b'=======', b'>>>>>>>')):
         raise InheritanceError('Additional dependency conflict hunk')
     return resolved
+
+
+def dependency_outputs(repo):
+    """Validate the complete library merge and API companion before any write."""
+    repo = Path(repo).resolve()
+    outputs = {}
+    for name in ('android/build.gradle.kts', DEPENDENCIES_COMPANION):
+        path = repo / name
+        if path.is_symlink() or not path.resolve().is_relative_to(repo):
+            raise InheritanceError('Unsafe dependency output path')
+    path = repo / 'android/build.gradle.kts'
+    data = reconcile_dependency_hunk(path.read_bytes().replace(b'\r\n', b'\n'))
+    if hashlib.sha256(data).hexdigest() != DEPENDENCIES_SHA256:
+        raise InheritanceError('Reviewed dependency output changed')
+    outputs['android/build.gradle.kts'] = data
+    index = git(repo, 'ls-files', '--stage', '--', DEPENDENCIES_COMPANION).stdout.strip()
+    if index != f'100644 {DEPENDENCIES_COMPANION_BLOB} 0\t{DEPENDENCIES_COMPANION}':
+        raise InheritanceError('Reviewed dependency companion index changed')
+    data = (repo / DEPENDENCIES_COMPANION).read_bytes().replace(b'\r\n', b'\n')
+    blob = hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest()
+    if blob != DEPENDENCIES_COMPANION_BLOB:
+        raise InheritanceError('Reviewed dependency companion content changed')
+    payload = Path(__file__).parent / 'inheritance-resolutions/20261114/FirewallDiagnosis.kt'
+    data = payload.read_bytes().replace(b'\r\n', b'\n')
+    if hashlib.sha256(data).hexdigest() != DEPENDENCIES_COMPANION_SHA256:
+        raise InheritanceError('Reviewed dependency companion payload changed')
+    outputs[DEPENDENCIES_COMPANION] = data
+    return outputs
 
 
 SETTINGS_UPSTREAM = '298ce62b6f10952590cbe40049adeeb27d99a6d3'
@@ -199,14 +230,10 @@ def reconcile_reviewed_merge(repo, base, upstream):
             path: dict(enumerate(blobs, 1)) for path, blobs in expected.items()}:
         raise InheritanceError('Merge conflicts differ from the exact reviewed reconciliation')
     if upstream == DEPENDENCIES_UPSTREAM:
-        path = Path(repo) / 'android/build.gradle.kts'
-        if path.is_symlink() or not path.resolve().is_relative_to(Path(repo).resolve()):
-            raise InheritanceError('Unsafe dependency output path')
-        data = reconcile_dependency_hunk(path.read_bytes().replace(b'\r\n', b'\n'))
-        if hashlib.sha256(data).hexdigest() != DEPENDENCIES_SHA256:
-            raise InheritanceError('Reviewed dependency output changed')
-        path.write_bytes(data)
-        git(repo, 'add', '--', 'android/build.gradle.kts')
+        outputs = dependency_outputs(repo)
+        for path, data in outputs.items():
+            (Path(repo) / path).write_bytes(data)
+        git(repo, 'add', '--', *outputs)
         git(repo, 'commit', '--no-edit')
         return
     if upstream == SETTINGS_UPSTREAM:

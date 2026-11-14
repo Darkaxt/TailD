@@ -51,6 +51,37 @@ class DependencyReconciliationTest(unittest.TestCase):
         write.assert_not_called()
         self.assertEqual(git.call_count, 1, 'Only the conflict-stage read may execute')
 
+    def test_changed_companion_index_prevents_all_output_writes(self):
+        path = 'android/build.gradle.kts'
+        blobs = inherit.REVIEWED_RECONCILIATIONS[inherit.DEPENDENCIES_UPSTREAM][path]
+        stages = ''.join(f'100644 {blob} {stage}\t{path}\0'
+                         for stage, blob in enumerate(blobs, 1))
+        reads = [subprocess.CompletedProcess([], 0, stdout=stages),
+                 subprocess.CompletedProcess([], 0, stdout='unknown companion')]
+        with patch.object(inherit, 'git', side_effect=reads) as git, \
+                patch.object(inherit, 'reconcile_dependency_hunk', return_value=b'gradle'), \
+                patch.object(inherit, 'DEPENDENCIES_SHA256', hashlib.sha256(b'gradle').hexdigest()), \
+                patch.object(Path, 'read_bytes', return_value=b'gradle'), \
+                patch.object(Path, 'write_bytes') as write:
+            with self.assertRaisesRegex(inherit.InheritanceError, 'companion index changed'):
+                inherit.reconcile_reviewed_merge(Path.cwd(), 'base', inherit.DEPENDENCIES_UPSTREAM)
+        write.assert_not_called()
+        self.assertEqual(git.call_count, 2, 'Only source/index reads may execute')
+
+    def test_prepared_chart_payload_is_pinned_and_keeps_hourly_contract(self):
+        root = Path(inherit.__file__).parent / 'inheritance-resolutions/20261114'
+        data = (root / 'FirewallDiagnosis.kt').read_bytes().replace(b'\r\n', b'\n')
+        self.assertEqual(hashlib.sha256(data).hexdigest(), inherit.DEPENDENCIES_COMPANION_SHA256)
+        text = data.decode()
+        for marker in ('series(y = received.map { it.second })',
+                       'series(y = sent.map { it.second })', 'MergeMode.Stacked',
+                       'height(if (compact) 88.dp else 132.dp)',
+                       'zoomEnabled = false, initialZoom = Zoom.Content',
+                       'scrollEnabled = false', 'contentDescription = description',
+                       'Hourly traffic unavailable', 'No recorded traffic'):
+            self.assertIn(marker, text)
+        self.assertNotIn('com.patrykandpatrick.vico.core.', text)
+
 
 class SettingsReconciliationTest(unittest.TestCase):
     def test_reviewed_payloads_are_pinned(self):

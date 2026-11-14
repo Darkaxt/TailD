@@ -11,6 +11,15 @@ regressions, an independent complete Git tree, GitHub's inherited Android/core/
 Windows checks and ordinary isolated promotion, followed by the normal signed
 Windows release and independent public verification. Stage10 remains the sole
 ACTIVE product stage; B12 remains open. No device, provider or live-history action.
+Actual inheritance43651071260 additionally fails Kotlin compilation in the existing
+TailD-only hourly diagnosis chart after canonical Vico3.3.1 removes Vico1 packages.
+Prepare its narrow Vico3 API companion outside active Android sources until the
+dependency merge. Preserve identity filtering, received/sent stacked bytes, theme
+colors,88/132dp heights, byte/hour labels, full-width noninteractive rendering and
+empty/zero/accessibility semantics. Validate its exact index/content input and
+prepared output with the Gradle resolution before any writes. The repaired exact
+candidate must pass the same full inherited gates; do not downgrade canonical
+libraries, omit the chart, bypass checks or promote the failed candidate.
 
 2026-11-13 R03 maintenance reconciliation: verified TailDNS298ce62b and
 core82faf5dc require a reviewed navigation/Settings/branding merge. Preserve
