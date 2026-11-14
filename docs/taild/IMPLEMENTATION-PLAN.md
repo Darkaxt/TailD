@@ -2,6 +2,14 @@
 
 ## November 14 upstream maintenance
 
+The real dependency merge conflicts at TailD's direct OkHttp and canonical Coil3
+network dependency insertion. The exact reviewed blob triple, single conflict hunk
+and complete output hash now preserve both dependencies and all merged surroundings.
+Focused conflict, unknown-input, duplicate-hunk and no-write-on-drift regressions
+and an independently reconstructed full Git tree pass. No inherited Android source
+is pre-copied into main. GitHub must compose, check and ordinarily promote the full
+candidate; its full Android/core/Windows checks and normal release remain required.
+
 Stage10 remains the sole ACTIVE product stage; B12 stays open. Independently
 verified prerequisite releases are TailDNS Windows1.105.0+58/core09218454feb67fb99613c24459519bae8780d695 and
 Android1.103.312+56/code299116020/source65f924c48a8181d8bb753b1ef9790349b3b30130. No device, provider-policy or

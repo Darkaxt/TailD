@@ -9,6 +9,49 @@ from unittest.mock import patch
 import inherit
 
 
+class DependencyReconciliationTest(unittest.TestCase):
+    def conflict(self):
+        return (b'<<<<<<< HEAD\n'
+                b'  implementation("com.squareup.okhttp3:okhttp:4.12.0")\n'
+                b'=======\n'
+                b'  implementation(libs.coil.network.okhttp)\n'
+                b'>>>>>>> 65f924c48a8181d8bb753b1ef9790349b3b30130\n')
+
+    def test_coil_and_fork_okhttp_survive_without_changing_merged_surroundings(self):
+        text = b'canonical and fork prefix\n' + self.conflict() + b'merged suffix\n'
+        expected = (b'canonical and fork prefix\n'
+                    b'  implementation(libs.coil.network.okhttp)\n'
+                    b'  implementation("com.squareup.okhttp3:okhttp:4.12.0")\n'
+                    b'merged suffix\n')
+        self.assertEqual(inherit.reconcile_dependency_hunk(text), expected)
+
+    def test_changed_dependency_or_upstream_hunk_is_rejected(self):
+        for before, after in ((b'4.12.0', b'4.13.0'),
+                              (b'65f924c48a8181d8bb753b1ef9790349b3b30130', b'unknown')):
+            with self.assertRaisesRegex(inherit.InheritanceError, 'dependency conflict'):
+                inherit.reconcile_dependency_hunk(self.conflict().replace(before, after))
+
+    def test_duplicate_or_additional_conflict_is_rejected(self):
+        for text in (self.conflict() * 2,
+                     self.conflict() + b'<<<<<<< HEAD\nother\n=======\nchange\n>>>>>>> other\n'):
+            with self.assertRaisesRegex(inherit.InheritanceError, 'dependency conflict'):
+                inherit.reconcile_dependency_hunk(text)
+
+    def test_changed_complete_output_is_rejected_before_write_or_commit(self):
+        path = 'android/build.gradle.kts'
+        blobs = inherit.REVIEWED_RECONCILIATIONS[inherit.DEPENDENCIES_UPSTREAM][path]
+        stages = ''.join(f'100644 {blob} {stage}\t{path}\0'
+                         for stage, blob in enumerate(blobs, 1))
+        with patch.object(inherit, 'git') as git, \
+                patch.object(Path, 'read_bytes', return_value=self.conflict() + b'drift'), \
+                patch.object(Path, 'write_bytes') as write:
+            git.return_value.stdout = stages
+            with self.assertRaisesRegex(inherit.InheritanceError, 'dependency output changed'):
+                inherit.reconcile_reviewed_merge(Path.cwd(), 'base', inherit.DEPENDENCIES_UPSTREAM)
+        write.assert_not_called()
+        self.assertEqual(git.call_count, 1, 'Only the conflict-stage read may execute')
+
+
 class SettingsReconciliationTest(unittest.TestCase):
     def test_reviewed_payloads_are_pinned(self):
         root = Path(inherit.__file__).parent / 'inheritance-resolutions' / '20261113'

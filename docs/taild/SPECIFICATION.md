@@ -1,5 +1,17 @@
 # TailD: inherited TailDNS client and Control D analytics
 
+2026-11-14 R03 maintenance: exact TailDNS65f924c4/core09218454 inheritance
+conflicts only at the adjacent OkHttp dependency insertion in android/build.gradle.kts.
+Preserve both canonical Coil3 network support and TailD's explicit OkHttp dependency,
+Shizuku/AIDL integration, UI instrumentation and MockWebServer dependencies. Retain
+canonical obsolete-alias removals and all nonconflicting library/API migrations.
+Accept only the exact reviewed common/fork/upstream blobs, one exact conflict hunk
+and the complete resolved output hash; reject drift before writes. Verify focused
+regressions, an independent complete Git tree, GitHub's inherited Android/core/
+Windows checks and ordinary isolated promotion, followed by the normal signed
+Windows release and independent public verification. Stage10 remains the sole
+ACTIVE product stage; B12 remains open. No device, provider or live-history action.
+
 2026-11-13 R03 maintenance reconciliation: verified TailDNS298ce62b and
 core82faf5dc require a reviewed navigation/Settings/branding merge. Preserve
 canonical injected data sources, lifecycle-aware state, stateless screens and

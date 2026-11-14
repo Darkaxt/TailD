@@ -15,6 +15,12 @@ class InheritanceError(RuntimeError):
 # Reviewed typed-navigation reconciliation. Each tuple is the exact common,
 # prepared TailD, and upstream blob. Unknown revisions/conflicts still fail.
 REVIEWED_RECONCILIATIONS = {
+    '65f924c48a8181d8bb753b1ef9790349b3b30130': {
+        'android/build.gradle.kts': (
+            '8254d8c09d4a1f5c4bd8d23d43b65fc76d227c6f',
+            'bfe08d55f72d51c0aaecac1a80052045a68fef65',
+            '0fda65a4c73d0d16f81a129b9dfdffd883507757'),
+    },
     '298ce62b6f10952590cbe40049adeeb27d99a6d3': {
         'android/src/main/java/com/tailscale/ipn/MainActivity.kt': (
             '456d1567bf323fa19ef2c2b4d73f8987e6e7da1e',
@@ -64,6 +70,26 @@ REVIEWED_RECONCILIATIONS = {
             '9e35065bf3a25567c89f88845c26d7cc7ec8d3bd'),
     },
 }
+
+DEPENDENCIES_UPSTREAM = '65f924c48a8181d8bb753b1ef9790349b3b30130'
+DEPENDENCIES_SHA256 = '35e15d5f55287aa954900b010821d5dcc3f23cd3701e66fde26fa7e463ad292d'
+
+
+def reconcile_dependency_hunk(data):
+    conflict = (b'<<<<<<< HEAD\n'
+                b'  implementation("com.squareup.okhttp3:okhttp:4.12.0")\n'
+                b'=======\n'
+                b'  implementation(libs.coil.network.okhttp)\n'
+                b'>>>>>>> 65f924c48a8181d8bb753b1ef9790349b3b30130\n')
+    if data.count(conflict) != 1:
+        raise InheritanceError('Unreviewed dependency conflict hunk')
+    resolved = data.replace(conflict,
+        b'  implementation(libs.coil.network.okhttp)\n'
+        b'  implementation("com.squareup.okhttp3:okhttp:4.12.0")\n')
+    if any(marker in resolved for marker in (b'<<<<<<<', b'=======', b'>>>>>>>')):
+        raise InheritanceError('Additional dependency conflict hunk')
+    return resolved
+
 
 SETTINGS_UPSTREAM = '298ce62b6f10952590cbe40049adeeb27d99a6d3'
 SETTINGS_PAYLOADS = {
@@ -172,6 +198,17 @@ def reconcile_reviewed_merge(repo, base, upstream):
     if not expected or actual != {
             path: dict(enumerate(blobs, 1)) for path, blobs in expected.items()}:
         raise InheritanceError('Merge conflicts differ from the exact reviewed reconciliation')
+    if upstream == DEPENDENCIES_UPSTREAM:
+        path = Path(repo) / 'android/build.gradle.kts'
+        if path.is_symlink() or not path.resolve().is_relative_to(Path(repo).resolve()):
+            raise InheritanceError('Unsafe dependency output path')
+        data = reconcile_dependency_hunk(path.read_bytes().replace(b'\r\n', b'\n'))
+        if hashlib.sha256(data).hexdigest() != DEPENDENCIES_SHA256:
+            raise InheritanceError('Reviewed dependency output changed')
+        path.write_bytes(data)
+        git(repo, 'add', '--', 'android/build.gradle.kts')
+        git(repo, 'commit', '--no-edit')
+        return
     if upstream == SETTINGS_UPSTREAM:
         outputs = settings_outputs(repo)
         for path, data in outputs.items():
