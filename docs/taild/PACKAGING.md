@@ -1,5 +1,45 @@
 # Stage 9 local packaging contract
 
+## November 14 upstream maintenance — normal Windows +60 verified
+
+Normal [windows-v1.105.0+60](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B60)
+ships exact checked source `ff29b645cf858d7eb0d9e14692c1eb17f582ffe0` through43654635079.
+All eight fresh backend, Windows production, isolated install/upgrade/rollback/
+uninstall, complete-product failed-migration recovery, signing and publication
+gates pass. No installer evidence is reused. Independent public retrieval verifies
+all eight assets and 444 payload members, pinned release/package/core
+Ed25519 signatures and key identities, exact source/core/base/sequence/AMD64/schema4,
+every core PE stamp, bundled runtimes/notices, unchanged Windows UI assets and
+compiled R45-R47 history/collector/retention behavior. Installer 117633471
+bytes, SHA256 `eadb86b65ff738859506aff881557a5a87465800e5304532dcc0a264194ff27f`. Signing status remains accurately
+represented by the manifests; publication performs no device installation.
+
+Original inheritance43651071260 failed before promotion because TailD's hourly
+chart retained Vico1 APIs after the canonical Vico3.3.1 migration. The narrow
+prepared companion preserves both identity-filtered series, stacking/theme colors,
+88/132dp heights, byte/hour labels, full-width noninteractive layout and existing
+empty/zero/accessibility behavior. Exact Gradle/companion inputs and complete
+outputs validate atomically before writes. The sole dependency conflict preserves
+both canonical Coil3 networking and TailD OkHttp/Shizuku/AIDL/UI-test dependencies.
+Focused regressions and independent full tree5f5e9583 pass; corrected GitHub
+inheritance43653179092 passes Android/core/Windows gates and isolated FF promotion.
+Exact-main focused43654408569 and CodeQL43654407303 pass. Both histories, exact
+TailDNS65f924c4/core09218454 pins, immutable signer8d0f239e, disabled inherited
+workflows, scoped writers, production signing isolation and separate channel remain.
+
+TailDNS Windows1.105.0+58 and Android1.103.312+56/code299116020 independently verify.
+SleepManager0.8.0.4/code574 and unchanged Helper1.1.7.1/code1122 independently verify
+from exact history-preserving source `505118b2680b4b189e9195de8bb47c4c33dce316`. Its two upstream badge
+commits change no application/shared/Helper/updater/signing behavior. Permanent
+common certificate, paired permissions, settings and fork origin remain intact.
+
+This maintenance is verified; no maintenance blocker or deferral remains.
+Stage10 remains the sole ACTIVE TailD product stage; B12, real rollout/rollback/
+final reconciliation and original TD-10 device acceptance remain open. No device,
+provider-policy or production-history action occurred. Previous verified releases
+are retained. Compact receipts: `D:/Projects/TailD-support/maintenance/20261114`.
+This evidence-only reconciliation changes no payload and requires no extra release.
+
 ## November 13 upstream maintenance — normal Windows +59 verified
 
 Normal [windows-v1.105.0+59](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B59)

@@ -47,6 +47,14 @@ Independent public+59 verification binds sourcebea5f544/core82faf5dc, all444
 payload members and three pinned signatures. All three fork families have
 verified normal releases; this does not close Stage10/B12 or device acceptance.
 
+November14 maintenance acceptance is verified: corrected inheritance43653179092,
+exact-main43654408569/43654407303 and all8fresh release43654635079 gates pass.
+Independent normal+60 public verification binds sourceff29b645/core09218454,
+all444 payload members and three pinned signatures. The narrow Vico3 API
+companion preserves the chart contract; original failure43651071260 remains
+recorded. All three fork families have verified normal releases. This does
+not close Stage10/B12, rollout/rollback/final reconciliation or device acceptance.
+
 Authoritative initial-increment specification, 2026-10-07. Initial implementation
 was authorized and is complete. The 2026-10-08
 [remaining-product specification](PRODUCT-SPECIFICATION.md) adds R08–R18 and
