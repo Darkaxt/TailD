@@ -55,6 +55,13 @@ companion preserves the chart contract; original failure43651071260 remains
 recorded. All three fork families have verified normal releases. This does
 not close Stage10/B12, rollout/rollback/final reconciliation or device acceptance.
 
+November16 maintenance acceptance is verified: inheritance43851581144,
+exact-main43854551630, 43854551923 and all8fresh release43854940845 gates pass. Independent
+normal+61 public verification binds source19c60c4e/coree0ce3e67,
+all444payload members and three pinned signatures. TailDNS Windows+59/Android+57
+and SleepManager0.8.0.5 independently verify. Stage10/B12, real rollout/rollback/
+final reconciliation and device acceptance remain open; no device action occurs.
+
 Authoritative initial-increment specification, 2026-10-07. Initial implementation
 was authorized and is complete. The 2026-10-08
 [remaining-product specification](PRODUCT-SPECIFICATION.md) adds R08–R18 and

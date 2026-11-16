@@ -1,5 +1,44 @@
 # Stage 9 local packaging contract
 
+## November 16 upstream maintenance — normal Windows +61 verified
+
+Normal [windows-v1.105.0+61](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B61)
+ships exact checked source `19c60c4e72311c7cf154334b1859f50c8b33e332` through43854940845.
+All eight fresh backend, Windows production, isolated install/upgrade/rollback/
+uninstall, failed-migration recovery, protected signing and publication gates pass.
+No installer evidence is reused. Independent public retrieval verifies all eight
+assets and 444 payload members, pinned release/package/core Ed25519 signatures
+and key identities, source/core/base/sequence/AMD64/schema4, all five core PE
+stamps, runtime identities/notices, exact UI assets and compiled R45-R47 behavior.
+Installer 117632480 bytes, SHA256 `a3fe358d95ef0fc766f2d954dd5e4ba35b529b3a40487598780fb27fedf5a3a2`.
+Executables remain without Authenticode signatures; Ed25519 signs the manifests.
+
+GitHub-owned inheritance43851581144 verifies inherited Android/core/Windows
+and promotes the independently reconstructed complete tree `e91e97ef7de7e828a5c6c9a5a394af8d0f24707c`.
+Exact-main focused/CodeQL checks 43854551630, 43854551923 pass. The pin-only Android merge
+adds exact TailDNS history `8868553df1c27fc6581511f09740854d655de55d` without further tree changes after
+compatible require/replace/checksum preparation. All14 immutable overlay inputs
+and18outputs remain identical. Immutable signer `b513dbe37e698ada5d8e3be837232222bcc2e67f` changes only
+core/module/checksum constants in its import closure; key pins and signing logic
+are unchanged. Disabled inherited workflows, scoped writers, isolated production
+keys, TailD product/analytics changes and separate update channel remain intact.
+
+TailDNS Windows 1.105.0+59/core `e0ce3e67bf04503317ea4c16f88f899ca49fd12d` and
+Android 1.103.312+57/code299137520 independently verify. SleepManager
+0.8.0.5/code575 and unchanged Helper1.1.7.1/code1122 independently verify from
+history-preserving source `2985185bf6acbf7857a8e88a55c45066628f0a8c` through43841874217.
+Its badge-only upstream merge preserves application/shared/Helper/update behavior,
+package IDs, persistent common signer, protected pairing, settings and fork origin.
+The new core candidate arrived after that paired release and was then promoted
+through the complete dependency-ordered core/Android/TailD cycle.
+
+No maintenance blocker or tracked deferral remains. Stage10 remains the sole
+ACTIVE TailD product stage. B12, real rollout/rollback/final reconciliation and
+original TD-10 device acceptance remain open. No device was installed/controlled,
+provider policy changed or production history modified. Previous verified releases
+remain. Compact receipts: `D:/Projects/TailD-support/maintenance/20261116`.
+This evidence-only closure changes no payload and requires no extra release.
+
 ## November 14 upstream maintenance — normal Windows +60 verified
 
 Normal [windows-v1.105.0+60](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B60)
