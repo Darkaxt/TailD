@@ -17,13 +17,13 @@ export interface GeographyRow {value:string|null;total_bytes?:string;events?:num
     <div class="map-key"><span><i></i> {{metric==='decisions'?'Provider DNS decisions':'Inferred candidate bytes'}}</span><span>Unobserved countries stay neutral</span></div>
     <p class="hint">{{metric==='decisions'?'Control D reported answer metadata · independent endpoint scope.':'Control D answer metadata · unique temporal traffic candidates.'}} Not measured routes or device location.</p>
     <p class="hint" *ngIf="unmapped()>0n">Unknown / unmapped: {{quantityLabel(unmapped())}}. Retained in the country table.</p>`,
-  styles:[`:host{display:block;min-width:0}.map-surface{height:340px;background:#1f1e1e;border-radius:4px;overflow:hidden}
+  styles:[`:host{display:block;min-width:0}.map-surface{height:340px;background:var(--background);border-radius:4px;overflow:hidden}
     .map-key{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:12px 0;font-size:10px;color:var(--text-tertiary)}
-    i{display:inline-block;width:8px;height:8px;background:#4b70cc;margin-right:5px}
-    .map-surface ::ng-deep path{fill:#3b3939;stroke:#1f1e1e;stroke-width:.7;stroke-linejoin:round}
-    .map-surface ::ng-deep path.observed{fill:#4b70cc;cursor:pointer}
-    .map-surface ::ng-deep path.observed:hover,.map-surface ::ng-deep path.observed:focus{fill:#85aaf5;stroke:#f9f7f6;outline:none}
-    .map-surface ::ng-deep path.highlighted{fill:#85aaf5;stroke:#f9f7f6}
+    i{display:inline-block;width:8px;height:8px;background:var(--selection);margin-right:5px}
+    .map-surface ::ng-deep path{fill:var(--map-land);stroke:var(--background);stroke-width:.7;stroke-linejoin:round}
+    .map-surface ::ng-deep path.observed{fill:var(--selection);cursor:pointer}
+    .map-surface ::ng-deep path.observed:hover,.map-surface ::ng-deep path.observed:focus{fill:var(--chart-received);stroke:var(--text-primary);outline:none}
+    .map-surface ::ng-deep path.highlighted{fill:var(--chart-received);stroke:var(--text-primary)}
     @media(max-width:850px){.map-surface{height:300px}}`]})
 export class WorldMapComponent implements AfterViewInit {
   private element=inject(ElementRef<HTMLElement>);private destroy=inject(DestroyRef);private disposed=false;

@@ -55,7 +55,7 @@ export class SfngNetqueryLineChartComponent implements AfterViewInit {
       if(this.mode==='bytes'&&b.coverage_incomplete&&exact(b.total_bytes)===0n)return null;
       const observed=Number(exact(b[key]));return this.mode==='rate'?observed*1000000/b.represented_microseconds:observed;
     };
-    const series:readonly (readonly ['inbound_bytes'|'outbound_bytes'|'events',string])[]=this.metric==='decisions'?[['events','#85aaf5']]:[['inbound_bytes','#85aaf5'],['outbound_bytes','#b7a7ec']];
+    const series:readonly (readonly ['inbound_bytes'|'outbound_bytes'|'events',string])[]=this.metric==='decisions'?[['events','var(--chart-received)']]:[['inbound_bytes','var(--chart-received)'],['outbound_bytes','var(--chart-sent)']];
     const max=d3.max(this.bins,b=>Math.max(...series.map(([key])=>value(b,key)||0)))||0;
     this.hasValues=this.bins.some(b=>series.some(([key])=>value(b,key)!==null));
     const y=d3.scaleLinear().range([height-margin.bottom,margin.top]).domain([0,max>0?max*1.15:1]);
@@ -65,10 +65,10 @@ export class SfngNetqueryLineChartComponent implements AfterViewInit {
     for(const [key,color] of series){
       const line=d3.line<Bin>().defined(b=>value(b,key)!==null).x(b=>x(new Date(b.start))).y(b=>y(value(b,key)!)).curve(d3.curveLinear);
       const area=d3.area<Bin>().defined(b=>value(b,key)!==null).x(b=>x(new Date(b.start))).y0(height-margin.bottom).y1(b=>y(value(b,key)!)).curve(d3.curveLinear);
-      svg.append('path').datum(this.bins).attr('fill',color).attr('opacity',.09).attr('d',area);
-      svg.append('path').datum(this.bins).attr('fill','none').attr('stroke',color).attr('stroke-width',1.5).attr('d',line);
+      svg.append('path').datum(this.bins).style('fill',color).attr('opacity',.09).attr('d',area);
+      svg.append('path').datum(this.bins).attr('fill','none').style('stroke',color).attr('stroke-width',1.5).attr('d',line);
       svg.append('g').selectAll('circle').data(this.bins.filter(b=>value(b,key)!==null)).join('circle')
-        .attr('cx',b=>x(new Date(b.start))).attr('cy',b=>y(value(b,key)!)).attr('r',3).attr('fill',color)
+        .attr('cx',b=>x(new Date(b.start))).attr('cy',b=>y(value(b,key)!)).attr('r',3).style('fill',color)
         .on('click',(_,b)=>this.select.emit(b)).append('title')
         .text(b=>`${b.scope_start||b.start} – ${b.scope_end||b.end}\n${key==='events'?'DNS decisions':key==='inbound_bytes'?'Received':'Sent'}: ${b[key]}${key==='events'?'':' bytes'}\n${b.coverage_incomplete?'Partial / lower bound':'Observed'}${key==='events'?'':'; rate '+(b.rate===null?'unavailable':'sampled, not instantaneous')}`);
     }
@@ -115,15 +115,15 @@ export class CircularBarChartComponent implements AfterViewInit {
       .append('g').attr('transform',`translate(${width/2},${height/2})`);
     const arc=d3.arc<d3.SeriesPoint<[string,Consumer]>>().innerRadius(d=>y(d[0])).outerRadius(d=>y(d[1]))
       .startAngle(d=>x(d.data[0])!).endAngle(d=>x(d.data[0])!+x.bandwidth()).padAngle(.015).padRadius(innerRadius);
-    svg.append('g').selectAll('g').data(series).join('g').attr('fill',s=>s.key==='inbound_bytes'?'#85aaf5':'#b7a7ec')
+    svg.append('g').selectAll('g').data(series).join('g').style('fill',s=>s.key==='inbound_bytes'?'var(--chart-received)':'var(--chart-sent)')
       .selectAll('path').data(s=>s.map(p=>Object.assign(p,{series:s.key}))).join('path').attr('d',arc)
       .on('click',(_,d)=>{if(Number(d.data[0])<8)this.select.emit(this.rows[Number(d.data[0])])})
       .append('title').text(d=>`${d.data[1].label||d.data[1].value||'Unknown'}${d.data[1].fullPath?'\n'+d.data[1].fullPath:''}\nReceived ${d.data[1].inbound_bytes} bytes\nSent ${d.data[1].outbound_bytes} bytes`);
     svg.append('g').attr('text-anchor','middle').selectAll('g').data(y.ticks(3).slice(1)).join('g')
-      .call(g=>g.append('circle').attr('stroke','#fff').attr('stroke-opacity',.15).attr('fill','none').attr('r',y))
+      .call(g=>g.append('circle').style('stroke','currentColor').attr('stroke-opacity',.15).attr('fill','none').attr('r',y))
       .call(g=>g.append('text').attr('y',d=>-y(d)).attr('dy','.35em').attr('fill','currentColor').attr('font-size',10).text(d=>d3.format('.2s')(d)));
     svg.append('g').selectAll('g').data(['Received','Sent']).join('g').attr('transform',(_,i)=>`translate(-32,${i*20-6})`)
-      .call(g=>g.append('circle').attr('r',4).attr('fill',(_,i)=>i===0?'#85aaf5':'#b7a7ec'))
+      .call(g=>g.append('circle').attr('r',4).style('fill',(_,i)=>i===0?'var(--chart-received)':'var(--chart-sent)'))
       .call(g=>g.append('text').attr('x',10).attr('y',4).attr('font-size',10).attr('fill','currentColor').text(d=>d));
   }
 }
