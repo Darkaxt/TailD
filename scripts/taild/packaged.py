@@ -62,13 +62,17 @@ def main(argv=None):
         # Runtime's owning-user mutex refuses a duplicate collector. Retained
         # opt-in settings are read unchanged; no UI or new startup task appears.
         # Sign-in and post-update launches can overlap: one supervisor only.
-        import maintenance,win32api,win32event
-        single=win32event.CreateMutex(None,False,'Local\\Darkaxt.TailD.Background.'+instance)
+        import maintenance
+        single=None
+        if os.name=='nt':
+            import win32api,win32event
+            single=win32event.CreateMutex(None,False,'Local\\Darkaxt.TailD.Background.'+instance)
         try:
-            if win32api.GetLastError()==183:return 0
+            if single is not None and win32api.GetLastError()==183:return 0
             return desktop.supervise(home,reader_instance(sid),instance,str(cli),enabled=enabled,
                 wait_stop=lambda seconds:maintenance.wait(sid,instance,seconds))
-        finally:win32api.CloseHandle(single)
+        finally:
+            if single is not None:win32api.CloseHandle(single)
     if arguments and arguments[0]=='desktop':
         # Explicit arguments support isolated package verification; the normal
         # shortcut below uses only installed deterministic paths.

@@ -2,6 +2,7 @@
 from contextlib import closing
 import copy
 import json
+import os
 from pathlib import Path
 import sqlite3
 import subprocess
@@ -117,6 +118,7 @@ class HistoryTest(unittest.TestCase):
             db.execute('CREATE TABLE filler(x)')
             db.execute('INSERT INTO filler SELECT randomblob(4000) FROM (WITH RECURSIVE r(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM r WHERE i<2000) SELECT i FROM r)')
             db.commit();db.execute('DELETE FROM filler WHERE rowid%2=0');db.commit()
+        if os.name!='nt':os.chmod(legacy/'history.sqlite3',0o600)
         before=(legacy/'history.sqlite3').stat().st_size
         result=history.compact(legacy)
         self.assertEqual(result['state'],'compacted')

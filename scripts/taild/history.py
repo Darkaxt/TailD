@@ -174,6 +174,7 @@ def compact(directory):
         # the replacement. The last connection's close removes it normally.
         if any((directory / name).exists() for name in ('history.sqlite3-wal','history.sqlite3-journal')):
             raise HistoryError('History is still in use; compaction deferred')
+        if os.name != 'nt':os.chmod(target, 0o600)  # Windows inherits the private directory ACL.
         os.replace(target, path)
     except BaseException:
         if target.exists():target.unlink()
