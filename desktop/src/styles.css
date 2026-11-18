@@ -384,3 +384,4 @@ app-dashboard-widget>button,app-dashboard-widget>.actions>button{align-self:flex
 .decision-actions .icon-button:not(:disabled):hover{background:var(--cards-tertiary)}
 .decision-actions .edit-rule-icon{color:var(--text-secondary)}
 .row-title.policy-name{gap:10px}
+#management-policy .incident-table td{vertical-align:middle}
