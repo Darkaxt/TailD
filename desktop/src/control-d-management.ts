@@ -31,17 +31,17 @@ type RecordValue=Record<string,any>;
         <p class="hint">Browsing uses READ access. Explicit changes use the separate Write credential. Allow creates a Bypass rule and can override filter blocks.</p></details>
     </div>
     <app-dashboard-widget label="Recent DNS · incident resolutions" brand="controld" id="management-recent" *ngIf="section==='recent'">
-      <div class="incident-recent-controls"><label class="rounded-search"><span class="sr-only">Search resolutions</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="m15 15 6 6" /></svg><input id="incident-dns-search" [ngModel]="dnsSearch" placeholder="Domain / decision" (ngModelChange)="searchChanged($event)"></label>
+      <div class="incident-recent-controls recent-toolbar"><label class="rounded-search"><span class="sr-only">Search resolutions</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="m15 15 6 6" /></svg><input id="incident-dns-search" [ngModel]="dnsSearch" placeholder="Domain / decision" (ngModelChange)="searchChanged($event)"></label>
+        <label class="compact-choice recent-window"><span>Window</span><select id="incident-dns-window" [(ngModel)]="recentWindow" (change)="windowChanged()"><option value="recent">Last 2 hours</option><option value="retained" *ngIf="isMain()">Last 7 days · main device</option></select></label>
         <label class="incident-confirm" title="Keep this view updated. Background device collection also continues with this window closed."><input type="checkbox" [(ngModel)]="observe" (ngModelChange)="followingChanged()"> Follow recent activity</label>
-        <button id="incident-dns-refresh" class="icon-button refresh-button" [disabled]="reading()" (click)="observeEndpoint(true)" aria-label="Refresh DNS" [title]="reading()?'Reading recent DNS':'Refresh DNS'" [attr.aria-busy]="reading()"><taild-refresh-icon /></button>
-        <span id="incident-dns-source" class="badge" [class.good]="observation()?.mode==='stream'&&liveState()==='connected'">{{sourceLabel()}}</span></div>
-      <div class="incident-recent-controls"><label>History window<select id="incident-dns-window" [(ngModel)]="recentWindow" (change)="windowChanged()"><option value="recent">Last 2 hours</option><option value="retained" *ngIf="isMain()">Last 7 days · main device</option></select></label><span id="incident-dns-count" class="hint">{{recentRows().length}} observations shown{{hasMore()?' · latest 100; more match in history':''}}</span></div>
-      <details class="recent-coverage"><summary>{{recentWindow==='retained'?'Last 7 days':'Last 2 hours'}} · totals over {{historySeconds()===604800?'7 days':'2 hours'}}</summary><p class="hint">Latest 100 individual observations for the selected endpoint. First seen and Total cover each question/type in its retained history, independent of search. The main device retains seven days; every other authorized device retains two hours. Background collection continues with the window closed. Gaps do not mean zero activity.</p></details>
-      <p id="incident-dns-partial" class="hint" role="status" *ngIf="partial()">Totals are partial; this endpoint's history coverage is incomplete.</p>
+        <span class="toolbar-meta"><span id="incident-dns-count" class="hint">{{recentRows().length}} shown{{hasMore()?' · latest 100':''}}</span>
+        <span id="incident-dns-partial" class="coverage-chip" role="status" *ngIf="partial()" title="Totals are partial; this endpoint's history coverage is incomplete. Gaps do not mean zero activity.">Partial totals</span>
+        <span id="incident-dns-source" class="badge" [class.good]="observation()?.mode==='stream'&&liveState()==='connected'">{{sourceLabel()}}</span>
+        <button id="incident-dns-refresh" class="icon-button refresh-button" [disabled]="reading()" (click)="observeEndpoint(true)" aria-label="Refresh DNS" [title]="reading()?'Reading recent DNS':'Refresh DNS'" [attr.aria-busy]="reading()"><taild-refresh-icon /></button></span></div>
       <div class="recent-content" [attr.aria-busy]="reading()||loadingSelected()">
       <div class="recent-loading" *ngIf="(reading()||loadingSelected())&&!recentRows().length" role="status" id="recent-loading"><div class="loading-dialog"><div class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></div><strong>Reading recent DNS</strong><span>{{loadingSelected()?"Fetching this endpoint's observations":"Reading this endpoint's local observations"}}</span></div></div>
       <div *ngIf="recentError()" class="error" role="alert">{{recentError()}}</div>
-      <div class="table-scroll incident-table"><table><thead><tr><th>Time</th><th>Question</th><th>Decision / reason</th><th>First seen</th><th>Total</th></tr></thead><tbody>
+      <div class="table-scroll incident-table" [class.is-empty]="!recentRows().length"><table><thead><tr><th>Time</th><th>Question</th><th>Decision / reason</th><th>First seen</th><th>Total</th></tr></thead><tbody>
         <tr *ngFor="let r of recentRows()"><td><time [title]="exactTime(r.timestamp)">{{firstSeen(r.timestamp)}}</time></td><td><strong>{{r.question}}</strong> <small>{{r.type}}</small></td><td>
           <div class="decision-heading"><strong class="decision-badge" [ngClass]="decisionClass(r.outcome)">{{decisionLabel(r.outcome)}}</strong><span class="decision-actions">
             <button *ngIf="r.outcome!=='block'" class="icon-button decision-action-block" (click)="incident(r,0)" [disabled]="busy()||!snapshot()||r.profile!==snapshot()?.profile" aria-label="Block" [title]="'Block '+r.question+' in the shared profile'"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8" /><path d="m6.3 6.3 11.4 11.4" fill="none" stroke="currentColor" stroke-width="1.8" /></svg></button>
@@ -49,9 +49,10 @@ type RecordValue=Record<string,any>;
             <button class="icon-button edit-rule-icon" (click)="editQuestion(r)" [disabled]="busy()||!snapshot()||r.profile!==snapshot()?.profile" [attr.aria-label]="'Edit rule for '+r.question" title="Edit rule"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m14 5 5 5M4 20l5-1L20 8a2.8 2.8 0 0 0-4-4L5 15l-1 5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" /></svg></button>
           </span></div>
           <details><summary [title]="reason(r)">{{reason(r)}} · details</summary><p class="hint">Classification: {{categories(r).join(', ')||'Not supplied'}}</p><p class="hint">Category labels describe the domain; the provider trigger above identifies the decision cause. Names from current policy are display labels, not historical policy proof.</p><taild-evidence [data]="r.fact" /></details></td><td><time [title]="exactTime(r.first_seen)">{{firstSeen(r.first_seen)}}</time></td><td>{{r.total}}</td></tr>
+        <tr *ngIf="!recentRows().length&&!reading()&&!loadingSelected()&&!recentError()"><td colspan="5" class="empty-state">{{dnsSearch?'No resolutions match this search in the selected endpoint’s recent window. Clear the search to see stored activity.':'No stored resolutions in this endpoint’s recent window. Check its update status and coverage; this is not proof of no DNS traffic.'}}</td></tr>
       </tbody></table></div>
-      <p class="empty-state" *ngIf="!recentRows().length&&!reading()&&!loadingSelected()&&!recentError()">{{dnsSearch?'No resolutions match this search in the selected endpoint’s recent window. Clear the search to see stored activity.':'No stored resolutions in this endpoint’s recent window. Check its update status and coverage; this is not proof of no DNS traffic.'}}</p>
-      </div><p class="hint">Actions require current policy verification and a matching event profile. Policy loading does not block reading resolutions.</p>
+      </div>
+      <details class="recent-coverage"><summary>{{recentWindow==='retained'?'Last 7 days':'Last 2 hours'}} · totals over {{historySeconds()===604800?'7 days':'2 hours'}}{{hasMore()?' · more matches in history':''}}</summary><p class="hint">Latest 100 individual observations for the selected endpoint. First seen and Total cover each question/type in its retained history, independent of search. The main device retains seven days; every other authorized device retains two hours. Background collection continues with the window closed. Gaps do not mean zero activity.</p><p class="hint">Actions require current policy verification and a matching event profile. Policy loading does not block reading resolutions.</p></details>
     </app-dashboard-widget>
     <dialog #policyDialog class="incident-dialog" [attr.aria-label]="editing()?'Edit policy rule':'Review policy change'" (cancel)="dismiss($event)">
     <div class="incident-dialog-header"><h2>{{editing()?'Edit policy rule':'Review policy change'}}</h2><button class="icon-button" aria-label="Close policy dialog" (click)="dismiss()" [disabled]="busy()">×</button></div>
@@ -85,33 +86,31 @@ type RecordValue=Record<string,any>;
     <app-dashboard-widget *ngIf="snapshot()&&section==='policy'" [label]="tab()" brand="controld" id="management-policy">
       <fieldset class="incident-controls" [disabled]="busy()||!!preview()">
         <ng-container *ngIf="tab()==='Rules'">
-          <button id="incident-new-rule" (click)="editRule({PK:'',action:{do:0}})">New rule</button>
-          <label>Find rules<input id="management-rule-search" [(ngModel)]="ruleSearch" placeholder="Search hostnames"></label>
+          <div class="policy-toolbar"><label class="rounded-search"><span class="sr-only">Find rules</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="m15 15 6 6" /></svg><input id="management-rule-search" [(ngModel)]="ruleSearch" placeholder="Search hostnames"></label>
+          <button id="incident-new-rule" class="primary" (click)="editRule({PK:'',action:{do:0}})">New rule</button></div>
           <p class="hint" *ngIf="resourceState('rules')!=='available'">{{resourceState('rules')}} · rules cannot be edited.</p>
-          <div class="table-scroll incident-table"><table><thead><tr><th>Hostname</th><th>Action</th><th>Incident actions</th></tr></thead><tbody>
+          <div class="table-scroll incident-table"><table><thead><tr><th>Hostname</th><th>Action</th><th class="actions-heading">Enabled · tools</th></tr></thead><tbody>
             <tr *ngFor="let r of rules()"><td><span class="policy-name"><span class="policy-state-dot" [class.enabled]="r.action?.status===1" [class.unknown]="r.action?.status!==0&&r.action?.status!==1" role="img" [attr.aria-label]="statusLabel(r.action?.status)" [title]="statusLabel(r.action?.status)"></span>{{r.PK}}</span></td><td><span class="decision-badge" [ngClass]="decisionClass(actionName(r.action?.do))">{{actionName(r.action?.do)}}</span></td><td class="actions">
-              <button (click)="editRule(r)">{{r.action?.do>1?'Replace action…':'Edit'}}</button><button [disabled]="r.action?.do!==0&&r.action?.do!==1" (click)="prepare({kind:'rule',hostname:r.PK,do:r.action?.do,status:r.action?.status===1?0:1,comment:r.comment||''})">{{r.action?.status===1?'Disable':'Enable'}}</button>
-              <button (click)="prepare({kind:'rule',hostname:r.PK,delete:true})">Delete</button></td></tr>
+              <button class="connection-switch policy-switch" role="switch" [attr.aria-checked]="r.action?.status===1" [class.on]="r.action?.status===1" [disabled]="r.action?.do!==0&&r.action?.do!==1" (click)="prepare({kind:'rule',hostname:r.PK,do:r.action?.do,status:r.action?.status===1?0:1,comment:r.comment||''})" [attr.aria-label]="'Rule enabled · '+r.PK" [title]="r.action?.status===1?'Disable rule':'Enable rule'"><span aria-hidden="true"></span></button>
+              <button class="icon-button tool-button" (click)="editRule(r)" [attr.aria-label]="(r.action?.do>1?'Replace action for ':'Edit rule ')+r.PK" [title]="r.action?.do>1?'Replace action…':'Edit rule'"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m14 5 5 5M4 20l5-1L20 8a2.8 2.8 0 0 0-4-4L5 15l-1 5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" /></svg></button>
+              <button class="icon-button tool-button danger" (click)="prepare({kind:'rule',hostname:r.PK,delete:true})" [attr.aria-label]="'Delete rule '+r.PK" title="Delete rule"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /></svg></button></td></tr>
           </tbody></table></div>
           <p class="hint" *ngIf="!rules().length">No matching rules in the returned policy.</p>
         </ng-container>
         <ng-container *ngIf="tab()==='Filters'">
-          <p class="hint">Dots show current status. Select a level, then use the button to apply it. Only one level can be active.</p>
+          <p class="hint">Dots and switches show current status. Choose a level, then switch the filter on (or apply the new level). Only one level can be active.</p>
           <div class="incident-setting filter-setting" *ngFor="let f of resource('filters')"><div><strong class="policy-name"><span class="policy-state-dot" [class.enabled]="f.status===1" [class.unknown]="f.status!==0&&f.status!==1" role="img" [attr.aria-label]="statusLabel(f.status)" [title]="statusLabel(f.status)"></span>{{f.name||f.PK}}</strong><p class="hint">{{f.description}}</p><small class="hint" *ngIf="filterChoices(f).length>1">Current: {{activeLevel(f)}}</small></div>
-            <div class="filter-levels" role="group" [attr.aria-label]="'Select level for '+(f.name||f.PK)" *ngIf="filterChoices(f).length>1">
-              <label class="policy-checkbox" *ngFor="let choice of filterChoices(f)">
-                <input type="checkbox" [checked]="f.selected===choice.id" [disabled]="choice.enabled===null"
-                  [attr.aria-label]="(f.name||f.PK)+' · '+choice.label" (change)="selectFilterLevel(f,choice,$event)"><span>{{choice.label}}</span>
-              </label>
-            </div><button class="policy-state-action" *ngIf="filterAction(f) as change" [disabled]="change.disabled" (click)="prepare({kind:'filter',id:change.id,status:change.status})">{{change.label}}</button></div>
+            <label class="compact-choice filter-level" *ngIf="filterChoices(f).length>1"><span>Level</span><select [ngModel]="f.selected||filterAction(f).id" (ngModelChange)="f.selected=$event" [attr.aria-label]="'Level for '+(f.name||f.PK)"><option *ngFor="let choice of filterChoices(f)" [value]="choice.id" [disabled]="choice.enabled===null">{{choice.label}}</option></select></label>
+            <button class="apply-level" *ngIf="filterAction(f) as change" [hidden]="change.label!=='Apply level'" (click)="prepare({kind:'filter',id:change.id,status:change.status})">Apply level</button>
+            <button class="connection-switch policy-switch" role="switch" [attr.aria-checked]="f.status===1" [class.on]="f.status===1" [disabled]="filterUnknown(f)" (click)="prepare({kind:'filter',id:f.status===1?(f.action?.lvl||f.PK):(f.selected||f.action?.lvl||f.PK),status:f.status===1?0:1})" [attr.aria-label]="'Enabled · '+(f.name||f.PK)" [title]="f.status===1?'Disable filter':'Enable filter'"><span aria-hidden="true"></span></button></div>
           <p class="hint" *ngIf="resourceState('filters')!=='available'">{{resourceState('filters')}} · filter changes unavailable.</p>
         </ng-container>
         <ng-container *ngIf="tab()==='Services'">
           <label>Find services<input [(ngModel)]="serviceSearch" placeholder="Search services"></label>
           <div class="incident-setting" *ngFor="let s of services()"><div><strong class="policy-name"><span class="policy-state-dot" [class.enabled]="s.action?.status===1" [class.unknown]="s.action?.status!==0&&s.action?.status!==1" role="img" [attr.aria-label]="statusLabel(s.action?.status)" [title]="statusLabel(s.action?.status)"></span>{{s.name||s.PK}}</strong><p class="hint">{{s.category}} · {{actionName(s.action?.do)}}</p></div>
-            <button *ngIf="s.action?.status!==1||s.action?.do!==0" (click)="prepare({kind:'service',id:s.PK,status:1,do:0})">Block</button>
-            <button *ngIf="s.action?.status!==1||s.action?.do!==1" (click)="prepare({kind:'service',id:s.PK,status:1,do:1})">Allow · Bypass</button>
-            <button *ngIf="s.action?.status===1" (click)="prepare({kind:'service',id:s.PK,status:0,do:s.action?.do===1?1:0})" [disabled]="s.action?.do!==0&&s.action?.do!==1">Disable</button></div>
+            <button *ngIf="s.action?.status===1&&s.action?.do===1" (click)="prepare({kind:'service',id:s.PK,status:1,do:0})">Block instead</button>
+            <button *ngIf="s.action?.status===1&&s.action?.do===0" (click)="prepare({kind:'service',id:s.PK,status:1,do:1})">Allow · Bypass instead</button>
+            <button class="connection-switch policy-switch" role="switch" [attr.aria-checked]="s.action?.status===1" [class.on]="s.action?.status===1" [disabled]="s.action?.status===1&&s.action?.do!==0&&s.action?.do!==1" (click)="prepare(s.action?.status===1?{kind:'service',id:s.PK,status:0,do:s.action?.do===1?1:0}:{kind:'service',id:s.PK,status:1,do:0})" [attr.aria-label]="'Rule active · '+(s.name||s.PK)" [title]="s.action?.status===1?'Disable service rule':'Enable (Block)'"><span aria-hidden="true"></span></button></div>
           <p class="hint" *ngIf="resourceState('services')!=='available'">{{resourceState('services')}} · service changes unavailable.</p>
         </ng-container>
         <ng-container *ngIf="tab()==='Profile Options'">
@@ -119,8 +118,8 @@ type RecordValue=Record<string,any>;
           <div class="incident-setting" *ngFor="let o of resource('options')"><div><strong class="policy-name"><span class="policy-state-dot" *ngIf="o.type==='toggle'" [class.enabled]="optionEnabled(o)===true" [class.unknown]="optionEnabled(o)===null" role="img" [attr.aria-label]="optionEnabled(o)===null?'Provider default / state unavailable':optionEnabled(o)?'Enabled':'Disabled'" [title]="optionEnabled(o)===null?'Provider default / state unavailable':optionEnabled(o)?'Enabled':'Disabled'"></span>{{o.title||o.name||o.PK}}</strong><p class="hint">{{o.description}}</p><p class="hint" *ngIf="o.type!=='toggle'">Current value: {{o.value??'Provider default / not explicitly configured'}}</p></div>
             <label *ngIf="o.type!=='toggle'">New value<input [(ngModel)]="o.editValue" [attr.aria-label]="'Value for '+o.PK" maxlength="1024"></label>
             <ng-container *ngIf="o.type==='toggle'">
-              <button class="policy-state-action" *ngIf="optionEnabled(o)!==null" (click)="prepare({kind:'option',id:o.PK,status:optionEnabled(o)?0:1})">{{optionEnabled(o)?'Disable':'Enable'}}</button>
-              <ng-container *ngIf="optionEnabled(o)===null"><span class="hint">Provider default / state unavailable</span><button (click)="prepare({kind:'option',id:o.PK,status:1})">Enable</button></ng-container>
+              <span class="hint" *ngIf="optionEnabled(o)===null">Provider default</span>
+              <button class="connection-switch policy-switch" role="switch" [attr.aria-checked]="optionEnabled(o)===true" [class.on]="optionEnabled(o)===true" (click)="prepare({kind:'option',id:o.PK,status:optionEnabled(o)?0:1})" [attr.aria-label]="'Enabled · '+(o.title||o.name||o.PK)" [title]="optionEnabled(o)?'Disable':'Enable'"><span aria-hidden="true"></span></button>
             </ng-container>
             <ng-container *ngIf="o.type!=='toggle'"><button (click)="prepare({kind:'option',id:o.PK,status:1,value:o.editValue})">Set value</button>
               <button *ngIf="o.configured===true" (click)="prepare({kind:'option',id:o.PK,status:0})">Reset to default</button></ng-container></div>
@@ -134,9 +133,9 @@ type RecordValue=Record<string,any>;
   </section>`})
 export class ControlDManagement implements OnInit,OnDestroy,OnChanges {
   filterChoices=filterChoices;filterAction=filterAction;optionEnabled=optionEnabled;
+  filterUnknown(f:RecordValue){const c=filterChoices(f);return !c.length||c.some(x=>x.enabled===null)}
   statusLabel(value:unknown){return value===1?'Enabled':value===0?'Disabled':'State unavailable'}
   activeLevel(filter:RecordValue){return filterChoices(filter).find(c=>c.enabled===true)?.label||this.statusLabel(filter.status)}
-  selectFilterLevel(filter:RecordValue,choice:FilterChoice,event:Event){if(choice.enabled===null)return;filter.selected=(event.target as HTMLInputElement).checked?choice.id:''}
   @Input() collectionState='Connecting';
   firstSeen(value:number){return relativeSeen(new Date(value/1000).toISOString(),false)}
   exactTime(value:number){return new Date(value/1000).toISOString()}
