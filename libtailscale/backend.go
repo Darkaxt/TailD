@@ -453,6 +453,7 @@ func (a *App) newBackend(dataDir string, appCtx AppContext, store *stateStore,
 		return nil, fmt.Errorf("startNetstack: %w", err)
 	}
 	if b.logger != nil {
+		lb.SetLogUploader(b.logger)
 		lb.SetLogFlusher(b.logger.StartFlush)
 	}
 	b.engine = engine
