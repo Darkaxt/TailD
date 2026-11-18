@@ -179,6 +179,19 @@ def prepare(candidate,owner=None):
     return new
 
 
+def resume_collection():
+    """Relaunch the owner's background collector after an unsuccessful update.
+
+    An update stops collection before it installs; only a completed install
+    resumed it. Regression 2026-11-18: an aborted +63 update left collection
+    stopped with no relaunch. Background exits when collection is disabled and
+    its single-instance mutex refuses duplicates, so this is always safe.
+    """
+    import delivery
+    app=app_directory();manifest.verify(app,installed=True)
+    delivery.core_command(app,'resume-analytics')
+
+
 def blocks_installation(path,app,allow_uninstaller=False):
     return path.is_relative_to(app) and not (allow_uninstaller and path==app/'unins000.exe')
 
@@ -340,7 +353,7 @@ def uninstall(delete_history=False):
 
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('operation',choices=('owner','owner-installed','verify','prepare','finish','stop','remove-reader','rollback','abort','remove-history','check-uninstall','uninstall','update','wait-parent','recover'))
+    parser.add_argument('operation',choices=('owner','owner-installed','verify','prepare','finish','stop','remove-reader','rollback','abort','remove-history','check-uninstall','uninstall','update','wait-parent','recover','resume'))
     parser.add_argument('--candidate',type=Path);parser.add_argument('--owner');parser.add_argument('--owner-file',type=Path)
     parser.add_argument('--delete-history',action='store_true')
     parser.add_argument('--parent-pid',type=int);parser.add_argument('--parent-start',type=int)
@@ -363,6 +376,8 @@ def main(argv=None):
     if args.operation=='update':
         import updater
         updater.dispatch();return
+    if args.operation=='resume':
+        resume_collection();return
     local_data=None
     if args.owner_file:
         original=json.loads(args.owner_file.read_bytes());args.owner=original['owner_sid'];local_data=original['local_data']

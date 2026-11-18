@@ -175,4 +175,29 @@ class DeliveryTest(unittest.TestCase):
         process.assert_not_called() # Core update preserves the current preference itself.
 
 
+    def test_resume_relaunches_installed_collector_after_unsuccessful_update(self):
+        # Regression 2026-11-18: an aborted +63 update left collection stopped.
+        new,_=self.candidate(2);self.installed(new)
+        with patch.object(delivery,'core_command',return_value={}) as core:
+            installer.resume_collection()
+        core.assert_called_once_with(self.app,'resume-analytics')
+        (self.app/'TailD.Background.exe').write_bytes(b'tampered')
+        with patch.object(delivery,'core_command') as core,self.assertRaises(manifest.PackageError):
+            installer.resume_collection()
+        core.assert_not_called()
+
+    @unittest.skipUnless(os.name=='nt','Windows updater dispatch boundary')
+    def test_dispatch_resumes_collection_when_installer_cannot_start(self):
+        import updater,release_channel
+        with patch.object(updater,'owner',return_value={'highest_subversion':1,'owner_sid':self.owner,'local_data':str(self.local)}),             patch.object(updater.manifest,'verify',return_value={'upstream_version':'1.105.0'}),             patch.object(release_channel,'prepare',return_value=(self.root/'setup.exe',{})),             patch.object(updater,'graceful_stop') as stop,             patch.object(updater.subprocess,'Popen',side_effect=OSError(2,'missing')),             patch.object(installer,'resume_collection') as resume,             self.assertRaises(OSError):
+            updater.dispatch()
+        stop.assert_called_once();resume.assert_called_once_with()
+
+    def test_failed_or_cancelled_setup_resumes_collection(self):
+        source=(Path(__file__).resolve().parents[2]/'desktop/installer.iss').read_text()
+        cleanup=source.split('procedure DeinitializeSetup;',1)[1].split('function ',1)[0]
+        self.assertIn("not Finished",cleanup)
+        self.assertIn("'resume'",cleanup)
+        self.assertLess(cleanup.index("'abort --candidate"),cleanup.index("'resume'"))
+
 if __name__=='__main__':unittest.main()

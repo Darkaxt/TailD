@@ -111,6 +111,11 @@ begin
     if not Helper(Candidate + '\TailD.Setup.exe', 'abort --candidate "' + Candidate + '"') then
       Log('TailD recovery did not complete; retain the verified rollback directory for explicit recovery.');
   end;
+  { Preparation stops owner collection; only a finished install resumed it.
+    Any unsuccessful or cancelled attempt relaunches the retained collector. }
+  if (Candidate <> '') and not Finished then
+    if not Helper(Candidate + '\TailD.Setup.exe', 'resume') then
+      Log('TailD could not resume owner collection after the unsuccessful update; reopen TailD.');
 end;
 
 function GetCustomSetupExitCode: Integer;

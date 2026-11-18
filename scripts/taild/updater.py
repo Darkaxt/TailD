@@ -115,13 +115,19 @@ def dispatch():
             if str(error)=='release-replay-or-downgrade':return
             raise
         graceful_stop(config)
-        parent_created=process_creation(win32api.GetCurrentProcess())
-        # Inno waits for this exact helper identity to exit before replacing any
-        # loaded library. No self-overwrite, delay or race with DLL unmapping.
-        command=[str(executable),'/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/TAILDAUTO=1',
-            '/TAILDPARENTPID='+str(os.getpid()),'/TAILDPARENTSTART='+str(parent_created),
-            '/LOG='+str(root/'installer.log')]
-        subprocess.Popen(command,creationflags=subprocess.DETACHED_PROCESS|subprocess.CREATE_NEW_PROCESS_GROUP|subprocess.CREATE_BREAKAWAY_FROM_JOB)
+        try:
+            parent_created=process_creation(win32api.GetCurrentProcess())
+            # Inno waits for this exact helper identity to exit before replacing any
+            # loaded library. No self-overwrite, delay or race with DLL unmapping.
+            command=[str(executable),'/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/TAILDAUTO=1',
+                '/TAILDPARENTPID='+str(os.getpid()),'/TAILDPARENTSTART='+str(parent_created),
+                '/LOG='+str(root/'installer.log')]
+            subprocess.Popen(command,creationflags=subprocess.DETACHED_PROCESS|subprocess.CREATE_NEW_PROCESS_GROUP|subprocess.CREATE_BREAKAWAY_FROM_JOB)
+        except BaseException:
+            # Collection was stopped for an installer that never started.
+            try:installer.resume_collection()
+            except Exception:pass  # The original failure is the one reported.
+            raise
     finally:
         if owned:win32event.ReleaseMutex(lock)
         win32api.CloseHandle(lock)
