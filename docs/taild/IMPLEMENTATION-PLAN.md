@@ -1,5 +1,21 @@
 # TailD staged execution
 
+## November 18 upstream maintenance
+
+Stage10 remains the sole ACTIVE product stage; B12 stays open. Independently
+verified prerequisite releases are TailDNS Windows 1.105.0+60/core
+3b3c23a841a2f2b7bd1cef45005e642cccfb6e6a and Android 1.103.312+58/source
+ff6792294c4d11ba191236a307b04e1cfb28cefa. No device, provider-policy or
+production-history actions are authorized by this maintenance.
+
+Compatible require/replace/checksum and overlay/build pins are prepared in
+82690736. All 14 immutable overlay inputs and 18 overlay outputs equal the
+previous verified source; the full backend suite passes (424, 1 skipped).
+Signer closure 82690736ee90305f60874c7339c5fda9e2af0b68 differs from b513dbe only
+in core/module/checksum constants. The first +66 attempt (run 44268833938)
+correctly refused signing because the closure was still bound to b513dbe.
+Compact receipts: D:/Projects/TailD-support/maintenance/20261118.
+
 ## November 16 upstream maintenance — normal Windows +61 verified
 
 Normal [windows-v1.105.0+61](https://github.com/Darkaxt/TailD/releases/tag/windows-v1.105.0%2B61)
