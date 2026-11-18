@@ -122,7 +122,7 @@ export class Collection implements OnDestroy {
 @Component({selector:'taild-analytics-preference',standalone:true,
   imports:[CommonModule,FormsModule,SfngToggleSwitchComponent],template:`
   <div class="analytics-preference">
-    <div class="row"><div><div class="row-title">Collect analytics</div>
+    <div class="row"><div><div class="row-title policy-name"><span class="policy-state-dot" [class.enabled]="enabled()" aria-hidden="true"></span>Collect analytics</div>
       <small class="hint" id="analytics-preference-status" role="status">{{busy()?'Reading / saving recording preference…':enabled()?'Recording Tailscale activity and available DNS/traffic integrations.':'Off · retained history remains available.'}}</small></div>
       <sfng-toggle name="Collect analytics" controlId="analytics-toggle" [ngModel]="enabled()" #recordingControl="ngModel"
         (ngModelChange)="configure($event,recordingControl)" [disabled]="busy()||!state()" /></div>

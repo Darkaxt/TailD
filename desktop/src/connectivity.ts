@@ -46,16 +46,16 @@ interface ConnectivityState {revision:string;profile:string;account:string;state
         </app-dashboard-widget>
       </div>
       <app-dashboard-widget label="Device preferences" brand="tailscale" *ngIf="view==='Preferences'">
-        <ng-container *ngFor="let pref of s.preferences"><div class="row" *ngIf="pref.visible"><div><div class="row-title">{{pref.label}}</div><small class="hint" *ngIf="!pref.editable">Managed by system policy / account</small></div>
+        <ng-container *ngFor="let pref of s.preferences"><div class="row" *ngIf="pref.visible"><div><div class="row-title policy-name"><span class="policy-state-dot" [class.enabled]="pref.value" aria-hidden="true"></span>{{pref.label}}</div><small class="hint" *ngIf="!pref.editable">Managed by system policy / account</small></div>
           <sfng-toggle [name]="pref.label" [controlId]="'connectivity-'+pref.id" [ngModel]="pref.value" (ngModelChange)="edit(pref.id,$event)" [disabled]="busy()||!pref.editable" /></div></ng-container>
         <taild-analytics-preference />
         <ng-container *ngIf="s.show_exit">
-          <div class="row"><div><div class="row-title">Use an exit node</div><small class="hint">Route Internet traffic through a selected tailnet device.</small></div>
+          <div class="row"><div><div class="row-title policy-name"><span class="policy-state-dot" [class.enabled]="exitEnabled||!!s.prefs.ExitNodeID" aria-hidden="true"></span>Use an exit node</div><small class="hint">Route Internet traffic through a selected tailnet device.</small></div>
             <sfng-toggle name="Use an exit node" controlId="connectivity-use-exit" [ngModel]="exitEnabled||!!s.prefs.ExitNodeID" (ngModelChange)="toggleExit($event)" [disabled]="busy()||!s.can_exit" /></div>
           <div class="row" *ngIf="exitEnabled||s.prefs.ExitNodeID"><label for="connectivity-exit">Exit node</label><select id="connectivity-exit" [ngModel]="s.prefs.ExitNodeID||''" (ngModelChange)="edit('exit-node',$event)" [disabled]="busy()||!s.can_exit"><option value="" disabled>Select an exit node</option><option *ngFor="let peer of exitNodes()" [value]="peer.id">{{peer.name}}{{peer.online?'':' · offline'}}</option></select></div>
-          <div class="row" *ngIf="s.prefs.ExitNodeID"><span>Allow local network access</span><sfng-toggle name="Allow local network access" controlId="connectivity-exit-lan" [ngModel]="s.prefs.ExitNodeAllowLANAccess" (ngModelChange)="edit('exit-node-lan',$event)" [disabled]="busy()||!s.can_exit||!s.can_exit_lan" /></div>
+          <div class="row" *ngIf="s.prefs.ExitNodeID"><span class="row-title policy-name"><span class="policy-state-dot" [class.enabled]="s.prefs.ExitNodeAllowLANAccess" aria-hidden="true"></span>Allow local network access</span><sfng-toggle name="Allow local network access" controlId="connectivity-exit-lan" [ngModel]="s.prefs.ExitNodeAllowLANAccess" (ngModelChange)="edit('exit-node-lan',$event)" [disabled]="busy()||!s.can_exit||!s.can_exit_lan" /></div>
         </ng-container>
-        <div class="row" *ngIf="s.show_run_exit"><span>Run as exit node</span><sfng-toggle name="Run as exit node" controlId="connectivity-run-exit" [ngModel]="s.prefs.RunExitNode" (ngModelChange)="edit('run-exit-node',$event)" [disabled]="busy()||!s.can_run_exit" /></div>
+        <div class="row" *ngIf="s.show_run_exit"><span class="row-title policy-name"><span class="policy-state-dot" [class.enabled]="s.prefs.RunExitNode" aria-hidden="true"></span>Run as exit node</span><sfng-toggle name="Run as exit node" controlId="connectivity-run-exit" [ngModel]="s.prefs.RunExitNode" (ngModelChange)="edit('run-exit-node',$event)" [disabled]="busy()||!s.can_run_exit" /></div>
         <details class="preference-details"><summary>How preferences apply</summary><p class="hint">Changes save automatically through the same local daemon API as the tray. A changed profile or setting requires reload. Managed preferences stay visible but cannot be edited.</p></details>
         <button id="connectivity-reset" *ngIf="s.show_reset" [disabled]="busy()||!s.can_reset" (click)="ask('reset')">Reset to defaults…</button>
       </app-dashboard-widget>
