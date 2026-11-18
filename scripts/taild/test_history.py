@@ -94,6 +94,47 @@ class HistoryTest(unittest.TestCase):
         self.assertEqual(len(result['rows']),1)
         self.assertEqual(result['rows'][0]['total'],1)
 
+    def test_gaps_below_retention_floor_are_not_rewritten(self):
+        # Regression (2026-11-18): an expired GlassWire gap below the floor was
+        # rewritten every poll and deleted by the next sweep, forever.
+        floor=self.store.db.execute('SELECT expiry_floor FROM settings').fetchone()[0]
+        runs=lambda:self.store.db.execute('SELECT count(*) FROM runs').fetchone()[0]
+        before=runs()
+        result=self.store.record_gap('dns','account',history.utc(floor-3600*1000000),history.utc(floor),
+            'source-expired',endpoint='synthetic')
+        self.assertIsNone(result['revision']);self.assertEqual(runs(),before)
+        crossing=self.store.record_gap('dns','account',history.utc(floor-3600*1000000),history.utc(floor+1000000),
+            'source-expired',endpoint='synthetic')
+        self.assertEqual(self.store.db.execute('SELECT start FROM runs WHERE revision=?',
+            (crossing['revision'],)).fetchone()[0],floor)
+
+    def test_legacy_history_compacts_once_and_reclaims_freed_pages(self):
+        # Regression (2026-11-18): auto_vacuum=NONE kept 4.7 GB of freed
+        # retention pages inside a 13.7 GB history forever.
+        legacy=self.root/'legacy';legacy=history.private_directory(legacy)
+        with closing(sqlite3.connect(legacy/'history.sqlite3')) as db:
+            db.execute('PRAGMA journal_mode=WAL');db.execute('PRAGMA user_version=4')
+            db.execute('CREATE TABLE filler(x)')
+            db.execute('INSERT INTO filler SELECT randomblob(4000) FROM (WITH RECURSIVE r(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM r WHERE i<2000) SELECT i FROM r)')
+            db.commit();db.execute('DELETE FROM filler WHERE rowid%2=0');db.commit()
+        before=(legacy/'history.sqlite3').stat().st_size
+        result=history.compact(legacy)
+        self.assertEqual(result['state'],'compacted')
+        self.assertLess(result['bytes_after'],before*0.75)
+        self.assertFalse((legacy/'history.sqlite3.compact').exists())
+        with closing(sqlite3.connect(legacy/'history.sqlite3')) as db:
+            self.assertEqual(db.execute('PRAGMA auto_vacuum').fetchone()[0],2)
+            self.assertEqual(db.execute('PRAGMA user_version').fetchone()[0],4)
+            self.assertEqual(db.execute('SELECT count(*) FROM filler').fetchone()[0],1000)
+        self.assertEqual(history.compact(legacy)['state'],'not-needed')
+        # New histories start incremental; freed pages leave the file.
+        self.assertEqual(self.store.db.execute('PRAGMA auto_vacuum').fetchone()[0],2)
+        self.store.db.execute('CREATE TABLE filler(x)')
+        self.store.db.execute('INSERT INTO filler SELECT randomblob(4000) FROM (WITH RECURSIVE r(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM r WHERE i<2000) SELECT i FROM r)')
+        self.store.db.execute('DELETE FROM filler')
+        self.assertGreater(self.store.reclaim(pages=100000),1000)
+        self.assertLess(self.store.db.execute('PRAGMA freelist_count').fetchone()[0],256)
+
     def test_cleanup_batches_have_one_total_row_budget_and_converge(self):
         self.ingest();self.store.import_dns(self.dns(),'account','synthetic')
         self.store.defer_cleanup=True
@@ -144,6 +185,8 @@ class HistoryTest(unittest.TestCase):
         self.assertIsNone(self.store.db.execute('SELECT * FROM checkpoints').fetchone())
         self.store.import_dns(self.dns(),'local','synthetic')
         self.assertEqual(self.store.db.execute('SELECT count(*) FROM dns').fetchone()[0],2)
+        # The complete window replaces the per-event live observation runs.
+        self.assertEqual(self.store.db.execute("SELECT count(*) FROM runs WHERE state='observed-live'").fetchone()[0],0)
         self.store.import_live_dns(raw,'local','synthetic',collected=NOW)
         self.assertEqual(self.store.db.execute('SELECT count(*) FROM dns').fetchone()[0],2)
         self.store.import_dns(self.dns(rows=[]),'local','synthetic')

@@ -49,9 +49,11 @@ def main(argv=None):
         if metadata['owner_sid']!=reader.current_sid():return
         home=Path(os.environ['LOCALAPPDATA'])/'TailD'/'history'
         saved=home/'runtime.json'
-        if not saved.exists():return
-        config=runtime.settings(reader.decode_message(saved.read_bytes()))
-        if not config['traffic'] and not config['dns'] and not config['activity']:return
+        def enabled():
+            if not saved.exists():return False
+            config=runtime.settings(reader.decode_message(saved.read_bytes()))
+            return bool(config['traffic'] or config['dns'] or config['activity'])
+        if not enabled():return
         # This parent waits for the continuing collector. Never retain an
         # installer's temporary working directory through that lifetime.
         os.chdir(directory)
@@ -59,8 +61,14 @@ def main(argv=None):
         cli=directory.parent/'tailscale.exe'
         # Runtime's owning-user mutex refuses a duplicate collector. Retained
         # opt-in settings are read unchanged; no UI or new startup task appears.
-        _,worker=desktop.ensure_collector(home,reader_instance(sid),instance,str(cli),background=True)
-        return worker.wait() if worker is not None else 0
+        # Sign-in and post-update launches can overlap: one supervisor only.
+        import maintenance,win32api,win32event
+        single=win32event.CreateMutex(None,False,'Local\\Darkaxt.TailD.Background.'+instance)
+        try:
+            if win32api.GetLastError()==183:return 0
+            return desktop.supervise(home,reader_instance(sid),instance,str(cli),enabled=enabled,
+                wait_stop=lambda seconds:maintenance.wait(sid,instance,seconds))
+        finally:win32api.CloseHandle(single)
     if arguments and arguments[0]=='desktop':
         # Explicit arguments support isolated package verification; the normal
         # shortcut below uses only installed deterministic paths.

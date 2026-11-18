@@ -298,7 +298,7 @@ def remove_history(dry_run=False):
     if not root.exists():return
     history.private_directory(root)
     names={'history.sqlite3','history.sqlite3-journal','history.sqlite3-wal','history.sqlite3-shm',
-        'desktop-queries.json','desktop-queries.pending.json',
+        'history.sqlite3.compact','desktop-queries.json','desktop-queries.pending.json',
         'runtime.json','runtime.pending.json','runtime-status.json','runtime-status.pending.json',
         'runtime-dns-progress.json','runtime-dns-progress.pending.json',
         'runtime-traffic-progress.json','runtime-traffic-progress.pending.json',

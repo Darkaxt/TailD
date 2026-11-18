@@ -87,6 +87,16 @@ The CLI prints counts/status, not application paths, DNS questions or tokens.
 Query exports are new, non-overwriting files inside the private history directory.
 Token input is stdin only; no credential persistence or new provider writes.
 
+Storage reclamation (2026-11-18): new histories use incremental auto-vacuum.
+An older history is converted once, before the owning collector opens it. A
+`VACUUM INTO` sibling replaces it only after `quick_check` passes and no WAL
+remains; any failure keeps the original. Maintenance then returns at most
+2048 free pages per sweep, and the WAL is truncated to 64 MiB after
+checkpoints. Gaps that lie wholly below the retention floor are not
+recorded. A complete CSV window drops the per-event live-observation runs it
+replaces. Each sweep reserves at least 64 rows for the secondary two-hour
+endpoint policy.
+
 ## Developer commands
 
 Run with Python 3.11+ from the repo. Use a dedicated directory with an existing

@@ -9,16 +9,33 @@ def name(sid,instance):
     return 'Global\\Darkaxt.TailD.UpdateStop.'+sid+'.'+instance
 
 
+def create(sid,instance):
+    import pywintypes,win32event,win32security
+    attributes=pywintypes.SECURITY_ATTRIBUTES()
+    # Only the owner and trusted installation identities can request a
+    # graceful stop. Other users do not gain access to the owner data pipe.
+    attributes.SECURITY_DESCRIPTOR=win32security.ConvertStringSecurityDescriptorToSecurityDescriptor(
+        'D:P(A;;GA;;;SY)(A;;GA;;;BA)(A;;GA;;;'+sid+')',win32security.SDDL_REVISION_1)
+    return win32event.CreateEvent(attributes,True,False,name(sid,instance))
+
+
+def wait(sid,instance,seconds):
+    """Hold the update-stop event while no collector exists; True if signalled.
+
+    A supervising launcher in relaunch backoff stays update-cooperative: the
+    updater finds this event, signals it and the launcher exits instead.
+    """
+    import win32api,win32event
+    handle=create(sid,instance)
+    try:return win32event.WaitForSingleObject(handle,int(seconds*1000))==win32event.WAIT_OBJECT_0
+    finally:win32api.CloseHandle(handle)
+
+
 class StopEvent:
     def __init__(self,collector,sid,instance):
-        import pywintypes,win32event,win32security
+        import win32event
         self.instance=instance;self.collector=collector
-        attributes=pywintypes.SECURITY_ATTRIBUTES()
-        # Only the owner and trusted installation identities can request a
-        # graceful stop. Other users do not gain access to the owner data pipe.
-        attributes.SECURITY_DESCRIPTOR=win32security.ConvertStringSecurityDescriptorToSecurityDescriptor(
-            'D:P(A;;GA;;;SY)(A;;GA;;;BA)(A;;GA;;;'+sid+')',win32security.SDDL_REVISION_1)
-        self.event=win32event.CreateEvent(attributes,True,False,name(sid,instance))
+        self.event=create(sid,instance)
         self.done=win32event.CreateEvent(None,True,False,None)
         self.thread=threading.Thread(target=self._wait,name='TailD update stop')
         self.thread.start()

@@ -84,6 +84,16 @@ and reattaches to the owning-user runtime without manual ingestion commands.
 Worker defects settle the dequeued command before terminal shutdown, and typed
 query errors remain bounded public errors rather than terminating the pipe.
 
+Background supervision (2026-11-18): `TailD.Background.exe` is a single
+per-owner supervisor. It watches the collector it starts, or one another
+launcher started. A clean exit (explicit stop, update stop, collection disabled)
+ends supervision. A defect exit is nonzero and is relaunched after a 30 s
+backoff that doubles up to 15 min. While backing off, the supervisor holds the
+update-stop event, so updates still proceed. The defect class (never its
+message) is published as `start_error` in `runtime-status.json`. After an
+outage, the main endpoint first reads the two hours that Recent DNS shows,
+newest first; the older offline interval follows.
+
 ## Verification at the current checkpoint
 
 - Native owner pipe -> real synthetic SQLite/WAL -> private history -> close/

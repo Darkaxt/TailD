@@ -5,6 +5,7 @@ from ctypes import wintypes
 from pathlib import Path
 import subprocess
 import sys
+import time
 
 import history
 import reader
@@ -132,6 +133,38 @@ def _ensure_collector(home, reader_instance, instance, cli, background, security
         finally:
             win32api.CloseHandle(ready)
     return pid,worker
+
+
+def wait_process(pid):
+    """Exit code of an existing collector this launcher did not spawn, or None."""
+    import pywintypes, win32api, win32con, win32event, win32process
+    try:process=win32api.OpenProcess(win32con.SYNCHRONIZE|0x1000,False,pid)
+    except pywintypes.error:return None
+    try:
+        win32event.WaitForSingleObject(process,win32event.INFINITE)
+        return win32process.GetExitCodeProcess(process)
+    finally:process.Close()
+
+
+def supervise(home, reader_instance, instance, cli, *, enabled, wait_stop, initial_delay=30, maximum_delay=900):
+    """Keep enabled background collection alive across unexpected collector exits.
+
+    A clean exit (explicit stop, update stop, collection disabled) ends
+    supervision. A defect exit is relaunched after a bounded exponential
+    backoff that stays update-cooperative. Regression 2026-11-18: a collector
+    that failed shortly after an upgrade stayed dead for 37 hours.
+    """
+    delay=initial_delay
+    while True:
+        pid,worker=ensure_collector(home,reader_instance,instance,cli,background=True)
+        started=time.monotonic()
+        code=worker.wait() if worker is not None else wait_process(pid) if pid is not None else None
+        if code==0:return 0
+        if code is None:pause=initial_delay  # Attached window or vanished owner: recheck.
+        else:
+            if time.monotonic()-started>=600:delay=initial_delay
+            pause=delay;delay=min(delay*2,maximum_delay)
+        if wait_stop(pause) or not enabled():return 0
 
 
 def main(argv=None):

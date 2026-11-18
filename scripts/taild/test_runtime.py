@@ -913,7 +913,11 @@ class RuntimeTest(unittest.TestCase):
             writer.execute('UPDATE traffic_stats SET inbound_bytes=135');writer.commit()
         for kind in calls:
             calls[kind].clear();result=poll(kind)
-            self.assertEqual(calls[kind][0][:2],('2026-10-08T00:04:00Z',clock[0]))
+            # The main DNS endpoint reads the two hours Recent DNS shows first,
+            # then the older offline interval; traffic spans it in one read.
+            first='2026-10-08T02:00:00Z' if kind=='dns' else '2026-10-08T00:04:00Z'
+            self.assertEqual(calls[kind][0][:2],(first,clock[0]))
+            if kind=='dns':self.assertEqual(calls[kind][1][2],[['2026-10-08T00:04:00Z','2026-10-08T02:00:00Z']])
             self.assertEqual(result['backfill_pending_windows'],0)
         self.assertEqual(store.db.execute('SELECT inbound FROM traffic').fetchone()[0],135)
         self.assertEqual(store.db.execute('SELECT count(*) FROM dns').fetchone()[0],1)
@@ -925,6 +929,44 @@ class RuntimeTest(unittest.TestCase):
         self.assertEqual(store.db.execute('SELECT count(*) FROM dns').fetchone()[0],0)
         self.assertEqual(store.db.execute('PRAGMA integrity_check').fetchone()[0],'ok')
         self.assertEqual(store.db.execute('PRAGMA user_version').fetchone()[0],4)
+
+    def test_main_endpoint_offline_gap_reads_visible_two_hours_newest_first(self):
+        # Regression (2026-11-18): after a 37-hour collector outage the main
+        # endpoint caught up oldest-first, so Recent DNS showed nothing for
+        # queries minutes old while thousands of older slices were pending.
+        end='2026-10-08T12:00:00Z';through='2026-10-06T23:00:00Z'
+        owner=object.__new__(runtime.Collector)
+        owner.directory=self.root/'visible';owner.directory.mkdir()
+        owner.write_error=False;owner.now=lambda:end
+        store=history.History(self.root/'visible-history',now=end);self.addCleanup(store.close)
+        provider={'account_scope':'fixture','endpoint':'fixture','account_type':'personal','instance':'europe'}
+        points={'2026-10-08T11:59:00Z':'newest.invalid','2026-10-08T10:30:00Z':'visible.invalid',
+                '2026-10-07T00:00:00Z':'old.invalid'}
+        calls=[]
+        def fetch(left,right):
+            calls.append((left,right));a,b=history.bounds(left,right)
+            # Dense traffic: any window over thirty minutes hits the row cap.
+            return {'source':'controld-activity-csv','endpoint_id':'fixture','truncated':b-a>1800*1000000,
+                'collected_at_utc':end,'query_window':{'start_inclusive':left,'end_exclusive':right},
+                'rows':[{'source':'controld-activity-csv','raw':{'timestamp':t,'endpointId':'fixture',
+                    'question':q,'action':'blocked'}} for t,q in points.items() if a<=history.instant(t)<b]}
+        def collect(left,right,budget,pending=None):
+            return ingestion.dns_windows(store,'fixture','fixture',left,right,fetch,max_slices=budget,
+                resume_pending=pending,defer_budget=True,newest_first=True)
+        scope=history.digest(provider);floor='2026-10-01T12:00:00Z'
+        owner._save_poll_state('dns',{'scope':scope,'through':through,'reconciled_at':through,'recent':None})
+        owner._save_dns_progress({'scope':scope,'start':floor,'end':through,'pending_windows':[]})
+        owner._collect_poll('dns',scope,floor,end,collect,lambda:True,
+            lambda:owner._dns_progress(provider,floor,through),owner._save_dns_progress,request_budget=8)
+        self.assertEqual(calls[0],('2026-10-08T10:00:00Z',end))
+        self.assertTrue(all(history.instant(a)>=history.instant('2026-10-08T10:00:00Z') for a,_ in calls[:6]),
+            'Older catch-up preceded the visible two hours')
+        found={r[0] for r in store.db.execute("SELECT json_extract(data,'$.raw.question') FROM dns")}
+        self.assertIn('newest.invalid',found);self.assertIn('visible.invalid',found)
+        self.assertNotIn('old.invalid',found)
+        saved=json.loads((owner.directory/'runtime-dns-poll.json').read_bytes())
+        self.assertIn(['2026-10-06T22:58:00Z','2026-10-08T10:00:00Z'],saved['recent']['pending_windows'],
+            'Older offline interval was discarded')
 
     def test_native_resume_subscription_is_hidden_and_unregisters_on_stop(self):
         import win32con

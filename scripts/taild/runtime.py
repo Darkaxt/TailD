@@ -975,7 +975,7 @@ class Collector:
                     def collect(left,right,budget,pending=None):
                         return ingestion.dns_windows(store,provider['account_scope'],provider['endpoint'],
                             left,right,fetch,max_slices=budget,defer_budget=True,resume_pending=pending,
-                            checkpoint=checkpoint,progress=report_progress,commit=self._commit)
+                            checkpoint=checkpoint,progress=report_progress,commit=self._commit,newest_first=True)
                     result=self._collect_poll(kind,history.digest(provider),start,end,collect,checkpoint,
                         lambda:self._dns_progress(provider,start,end,reconcile=reconcile),self._save_dns_progress,
                         request_budget=8)
@@ -1058,9 +1058,10 @@ class Collector:
             # completed children forever. Read new time first, then finish the
             # saved children; normal correction overlap resumes once drained.
             left=max(left,min(state['recent']['end'],end))
-        captured_start=left;deferred=[]
-        if kind.startswith('dns-browse-'):
-            visible=history.utc(max(history.instant(start),history.instant(end)-900*1000000))
+        captured_start=left;deferred=[];horizon=self._visible_horizon(kind)
+        if horizon:
+            # Read the interval the Recent DNS view shows before older catch-up.
+            visible=history.utc(max(history.instant(start),history.instant(end)-horizon*1000000))
             if history.instant(left)<history.instant(visible):deferred=[[left,visible]];left=visible
         recent=(collect(left,end,min(8,max(1,request_budget//2))) if history.instant(left)<history.instant(end) else
             {'pending_windows':[],'slices_read':0})
@@ -1136,6 +1137,12 @@ class Collector:
         return history.utc(max(history.instant(start),min(history.instant(state['through'] or end),history.instant(end))-120*1000000))
 
     @staticmethod
+    def _visible_horizon(kind):
+        # The main endpoint's Recent DNS view spans two hours; a selected
+        # endpoint's visible fast path is its newest fifteen minutes.
+        return 7200 if kind=='dns' else 900 if kind.startswith('dns-browse-') else None
+
+    @staticmethod
     def _recent_pending(kind, previous, start, end, pending):
         if pending is None:
             raise history.HistoryError('Recent catalog discovery was interrupted')
@@ -1160,8 +1167,9 @@ class Collector:
                 active+=delta;left=point
         if not merged:return None
         if len(merged)>(32768 if kind=='traffic' else 1024):raise history.HistoryError('Recent continuation resource limit')
-        if kind.startswith('dns-browse-'):
-            floor=history.instant(end)-900*1000000;older=[];visible=[]
+        horizon=Collector._visible_horizon(kind)
+        if horizon:
+            floor=history.instant(end)-horizon*1000000;older=[];visible=[]
             for x,y in merged:
                 a,b=history.bounds(x,y)
                 if a<floor<b:older.append([x,history.utc(floor)]);visible.append([history.utc(floor),y])
@@ -1334,6 +1342,7 @@ class Collector:
         data = {'version':'taild-runtime-v1','owner_pid':os.getpid(),
                 'observed_at_utc':self.now(),'state':self._state()['state'],
                 'sources':source_status,'queue_depth':len(self.queue),'maintenance':dict(self.maintenance)}
+        if self.start_error:data['start_error']=self.start_error
         pending = self.directory/'runtime-status.pending.json'
         target = self.directory/'runtime-status.json'
         if pending.is_symlink() or target.is_symlink():
@@ -1512,6 +1521,15 @@ class Collector:
         store = None
         self.due = {'traffic':0, 'dns':0}
         try:
+            prior=self.maintenance['state']
+            try:
+                self.maintenance={**self.maintenance,'state':'compacting'};self._publish_status()
+                self.compaction=history.compact(self.directory)
+            except (sqlite3.Error,OSError,history.HistoryError) as error:
+                # Compaction is storage hygiene; collection continues on the
+                # unchanged original and retries at the next start.
+                self.compaction={'state':'deferred','error_type':type(error).__name__}
+            self.maintenance={**self.maintenance,'state':prior}
             store = history.History(self.directory, now=self.now(),defer_cleanup=True)
             self.store = store
             self.activity_tracker = tailscale_activity.Tracker(store)
@@ -1565,18 +1583,22 @@ class Collector:
                 if maintain:
                     try:
                         store.now=history.instant(self.now())
-                        result=(store.cleanup_batch() if not self._maintenance_global_complete else
+                        # The global sweep leaves a quarter of each batch to the
+                        # secondary two-hour policy; a long global backlog must
+                        # not starve it (secondary endpoints held ~74 h).
+                        result=(store.cleanup_batch(limit=192) if not self._maintenance_global_complete else
                             {'changed':0,'more':False,'cutoff':self.maintenance['cutoff']})
                         self._maintenance_global_complete=not result['more']
                         secondary={'changed':0,'more':False}
                         provider=self.config['provider']
-                        if provider and result['changed']<256:
+                        if provider:
                             policy=(provider['account_scope'],provider['endpoint'])
                             if self._endpoint_cleanup_floor is None or self._endpoint_cleanup_floor[:2]!=policy:
                                 self._endpoint_cleanup_floor=(*policy,history.instant(self.now())-7200*1000000)
                             secondary=store.expire_secondary_dns_batch(*self._endpoint_cleanup_floor,
                                 limit=256-result['changed'])
                         more=result['more'] or secondary['more']
+                        store.reclaim()
                         if not more:self._maintenance_global_complete=False;self._endpoint_cleanup_floor=None
                         self.maintenance={'state':'cleaning' if more else 'idle',
                             'rows_processed':self.maintenance['rows_processed']+result['changed']+secondary['changed'],
@@ -1614,6 +1636,10 @@ class Collector:
             if store is not None:
                 store.close()
             self._transient_token = None
+            # Leave the defect class (never its message) for diagnosis.
+            if self.start_error:
+                try:self._publish_status()
+                except Exception:pass  # Diagnostic only; exit proceeds.
             self.closed.set()
 
     def close(self):
@@ -1690,6 +1716,8 @@ def main(argv=None):
         collector.closed.wait()
         control.stop()
         thread.join()
+        # A defect exit is nonzero so the background supervisor relaunches it.
+        return 1 if collector.start_error else 0
     finally:
         if control is not None:
             control.stop()

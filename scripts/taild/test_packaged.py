@@ -34,6 +34,32 @@ class PackagedTest(unittest.TestCase):
                 worker.wait.assert_called_once()
                 directory.assert_called_once_with(root)
 
+    def test_background_supervisor_relaunches_defect_exit_and_honours_stops(self):
+        # Regression (2026-11-18): a collector that failed shortly after an
+        # upgrade stayed dead for 37 hours because nothing relaunched it.
+        def worker(code):
+            value=Mock();value.wait.return_value=code;return value
+        pauses=[]
+        def stop(seconds):pauses.append(seconds);return False
+        workers=[worker(1),worker(1),worker(0)]
+        with patch.object(packaged.desktop,'ensure_collector',side_effect=[(n,w) for n,w in enumerate(workers)]) as ensure:
+            self.assertEqual(packaged.desktop.supervise('home','reader','owner',None,enabled=lambda:True,wait_stop=stop),0)
+        self.assertEqual(ensure.call_count,3);self.assertEqual(pauses,[30,60])
+        # An update stop during backoff ends supervision without relaunch.
+        with patch.object(packaged.desktop,'ensure_collector',return_value=(1,worker(1))) as ensure:
+            self.assertEqual(packaged.desktop.supervise('home','reader','owner',None,enabled=lambda:True,
+                wait_stop=lambda seconds:True),0)
+        ensure.assert_called_once()
+        # Collection disabled while backing off: no relaunch.
+        with patch.object(packaged.desktop,'ensure_collector',return_value=(1,worker(1))) as ensure:
+            self.assertEqual(packaged.desktop.supervise('home','reader','owner',None,enabled=lambda:False,
+                wait_stop=lambda seconds:False),0)
+        ensure.assert_called_once()
+        # A collector owned by another launcher is watched, not duplicated.
+        with patch.object(packaged.desktop,'ensure_collector',return_value=(7,None)),              patch.object(packaged.desktop,'wait_process',return_value=0) as watched:
+            self.assertEqual(packaged.desktop.supervise('home','reader','owner',None,enabled=lambda:True,wait_stop=stop),0)
+        watched.assert_called_once_with(7)
+
     def test_both_frozen_entrypoints_include_pywin32_filetime_dependency(self):
         spec=Path(__file__).resolve().parents[2]/'desktop/TailD.spec'
         analyses=[node for node in ast.walk(ast.parse(spec.read_text()))

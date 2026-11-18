@@ -112,7 +112,7 @@ def private_directory(path):
                 _run(['icacls', str(path), '/inheritance:r', '/grant:r',
                       f'*{sid}:(OI)(CI)F', '*S-1-5-18:(OI)(CI)F', '*S-1-5-32-544:(OI)(CI)F'])
             private_names = ('history.sqlite3','history.sqlite3-journal','history.sqlite3-wal','history.sqlite3-shm',
-                'runtime.json','runtime.pending.json','runtime-status.json','runtime-status.pending.json',
+                'history.sqlite3.compact','runtime.json','runtime.pending.json','runtime-status.json','runtime-status.pending.json',
                 'runtime-dns-progress.json','runtime-dns-progress.pending.json',
                 'runtime-traffic-progress.json','runtime-traffic-progress.pending.json',
                 'runtime-dns-poll.json','runtime-dns-poll.pending.json',
@@ -132,6 +132,57 @@ def private_directory(path):
         raise HistoryError('Cannot establish private history directory') from None
 
 
+def compact(directory):
+    """One-time conversion of an existing history to incremental auto-vacuum.
+
+    Older histories were created with auto_vacuum=NONE, so retention deletes
+    only grew an internal freelist (4.7 GB of a 13.7 GB file). The owning
+    collector calls this before it opens any connection. VACUUM INTO writes a
+    compact sibling that replaces the original only after it verifies and the
+    original's WAL is fully checkpointed; any failure keeps the original.
+    """
+    package_sqlite.require_runtime()
+    directory = private_directory(directory)
+    path = directory / 'history.sqlite3'
+    target = directory / 'history.sqlite3.compact'
+    if target.is_symlink():raise HistoryError('History database must be an owned regular file')
+    if target.exists():target.unlink()
+    if not path.exists():return {'state':'not-needed'}
+    if path.is_symlink() or path.stat().st_nlink != 1:
+        raise HistoryError('History database must be an owned regular file')
+    db = sqlite3.connect(path, isolation_level=None)
+    try:
+        if db.execute('PRAGMA auto_vacuum').fetchone()[0] == 2:
+            db.close();return {'state':'not-needed'}
+        before = path.stat().st_size
+        db.execute('PRAGMA wal_checkpoint(TRUNCATE)').fetchall()
+        db.execute('PRAGMA auto_vacuum=INCREMENTAL')
+        db.execute('VACUUM INTO ?', (str(target),))
+    except BaseException:
+        db.close()
+        if target.exists():target.unlink()
+        raise
+    db.close()
+    try:
+        check = sqlite3.connect(target.as_uri()+'?mode=ro', uri=True)
+        try:
+            if (check.execute('PRAGMA quick_check').fetchone()[0] != 'ok' or
+                    check.execute('PRAGMA auto_vacuum').fetchone()[0] != 2):
+                raise HistoryError('Compacted history failed verification; original kept')
+        finally:check.close()
+        # A surviving WAL belongs to the original file; never pair it with
+        # the replacement. The last connection's close removes it normally.
+        if any((directory / name).exists() for name in ('history.sqlite3-wal','history.sqlite3-journal')):
+            raise HistoryError('History is still in use; compaction deferred')
+        os.replace(target, path)
+    except BaseException:
+        if target.exists():target.unlink()
+        raise
+    for name in ('history.sqlite3-shm',):
+        if (directory / name).exists():(directory / name).unlink()
+    return {'state':'compacted','bytes_before':before,'bytes_after':path.stat().st_size}
+
+
 class History:
     def __init__(self, directory, *, now=None, retention_days=None, defer_cleanup=False):
         package_sqlite.require_runtime()
@@ -142,9 +193,16 @@ class History:
         self.now = instant(now or controld.utc_now().isoformat())
         self.defer_cleanup = defer_cleanup
         self._cleanup_floor = None
+        created = not self.path.exists()
         self.db = sqlite3.connect(self.path, isolation_level=None)
         self.db.row_factory = sqlite3.Row
         try:
+            # Deleted retention pages return to disk through bounded
+            # incremental vacuum; this must precede the first table.
+            if created:self.db.execute('PRAGMA auto_vacuum=INCREMENTAL')
+            # Checkpointed WAL space is truncated instead of persisting at its
+            # largest historical size.
+            self.db.execute('PRAGMA journal_size_limit=67108864')
             self.db.execute('PRAGMA foreign_keys=ON')
             self.db.execute('PRAGMA secure_delete=ON')
             self.db.execute('PRAGMA synchronous=FULL')
@@ -163,6 +221,14 @@ class History:
 
     def close(self):
         self.db.close()
+
+    def reclaim(self, *, pages=2048):
+        """Return a bounded number of free pages to the filesystem."""
+        if self.db.execute('PRAGMA auto_vacuum').fetchone()[0]!=2:return 0
+        free=self.db.execute('PRAGMA freelist_count').fetchone()[0]
+        if free<256:return 0
+        self.db.execute(f'PRAGMA incremental_vacuum({int(min(free,pages))})').fetchall()
+        return free-self.db.execute('PRAGMA freelist_count').fetchone()[0]
 
     def read_view(self, *, now=None):
         """A caller-owned, physically read-only view of this validated history.
@@ -478,6 +544,13 @@ class History:
                     self.db.executemany('INSERT INTO dns VALUES(?,?,?,?,?,?,?,?)',
                         ((source,key,ordinal,time,endpoint,question,revision,raw)
                          for (key,ordinal),(time,endpoint,question,raw) in expected.items()))
+                # Each live event carried a one-microsecond observation run.
+                # The complete window now owns that time; drop the replaced
+                # markers instead of retaining one coverage row per event.
+                # Any live row in [a,b) differs from its CSV form, so the
+                # replacement above already removed every row they labelled.
+                self.db.execute("DELETE FROM runs WHERE source=? AND state='observed-live' AND start>=? AND end<=?",
+                    (source, a, b))
             self._checkpoint(source, revision)
             self._expire()
         return {'revision': revision, 'state': state, 'source': source}
@@ -487,8 +560,13 @@ class History:
             raise HistoryError('Unsupported source gap')
         a, b = bounds(start, end)
         with self.transaction():
+            # Time below the retention floor is already outside history; a gap
+            # there is deleted by the next sweep and was rewritten every poll.
+            floor = self.db.execute('SELECT expiry_floor FROM settings').fetchone()[0]
+            if b <= floor:
+                return {'revision': None, 'source': None, 'state': reason}
             source = self._source(kind, scope, generation, endpoint)
-            revision = self._run(source, a, b, {'collected_at_utc': utc(self.now), 'reason': reason}, reason)
+            revision = self._run(source, max(a, floor), b, {'collected_at_utc': utc(self.now), 'reason': reason}, reason)
         return {'revision': revision, 'source': source, 'state': reason}
 
     def delete(self, kind, start, end, *, source=None, application_path=None):
