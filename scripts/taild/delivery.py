@@ -6,6 +6,7 @@ verified against the embedded key; paths/commands never come from that journal.
 import base64
 import hashlib
 import json
+import time
 import os
 from pathlib import Path
 import subprocess
@@ -66,7 +67,16 @@ def core_command(candidate,action):
     result=subprocess.run([str(payload/'taildns-installer.exe'),'-action',action,'-payload',str(payload)],
         stdout=subprocess.PIPE,stderr=subprocess.PIPE,creationflags=subprocess.CREATE_NO_WINDOW,
         cwd=installer.app_directory().parent)
-    if result.returncode:raise manifest.PackageError('connectivity-'+action+'-failed')
+    if result.returncode:
+        # The inherited helper reports its failing step only on stderr. Keep it
+        # in the administrator-only state directory (never the setup log or a
+        # public artifact): it may name the node. Diagnostics never mask the
+        # original failure.
+        try:
+            (state_directory()/('connectivity-'+action+'-error.txt')).write_bytes(
+                time.strftime('%Y-%m-%dT%H:%M:%SZ\n',time.gmtime()).encode()+bytes(result.stderr or b'')[-8192:])
+        except Exception:pass
+        raise manifest.PackageError('connectivity-'+action+'-failed')
     # Inherited output includes whitelisted node identity. Never put it in the
     # ordinary setup diagnostic log or a public workflow artifact.
     return json.loads(result.stdout)

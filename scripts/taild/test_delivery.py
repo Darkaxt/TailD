@@ -22,6 +22,14 @@ class DeliveryTest(unittest.TestCase):
             delivery.core_command(self.root/'candidate','resume-analytics')
         self.assertEqual(run.call_args.kwargs['cwd'],self.app.parent)
 
+    def test_failed_core_step_keeps_its_reason_in_administrator_state_only(self):
+        failure=SimpleNamespace(returncode=1,stdout=b'',stderr=b'TailDNS installer: public DNS verification failed\n')
+        with patch.object(delivery.subprocess,'run',return_value=failure), \
+             patch.object(delivery.subprocess,'CREATE_NO_WINDOW',0,create=True), \
+             self.assertRaisesRegex(manifest.PackageError,'^connectivity-update-failed$'):
+            delivery.core_command(self.root/'candidate','update')
+        self.assertIn(b'public DNS verification failed',(self.state/'connectivity-update-error.txt').read_bytes())
+
     def setUp(self):
         self.root=Path(os.environ['TAILD_PACKAGE_TEST_OUTPUT'])/uuid.uuid4().hex
         self.root.mkdir(parents=True);self.app=self.root/'installed';self.state=self.root/'state';self.state.mkdir()

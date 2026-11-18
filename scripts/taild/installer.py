@@ -7,6 +7,7 @@ import argparse
 import ctypes
 from ctypes import wintypes
 import json
+import time
 import os
 import re
 from pathlib import Path
@@ -196,6 +197,15 @@ def blocks_installation(path,app,allow_uninstaller=False):
     return path.is_relative_to(app) and not (allow_uninstaller and path==app/'unins000.exe')
 
 
+def record_blocker(path):
+    """Name the installed executable that blocked an update (admin-only state)."""
+    try:
+        state=known_folder(0x23)/'TailD'
+        if state.is_dir():
+            (state/'quiescence-blocker.txt').write_text(time.strftime('%Y-%m-%dT%H:%M:%SZ ',time.gmtime())+str(path)+'\n',encoding='utf-8')
+    except Exception:pass
+
+
 def ensure_quiescent(app,allow_uninstaller=False):
     import pywintypes,win32api,win32process,win32service
     manager=win32service.OpenSCManager(None,None,win32service.SC_MANAGER_CONNECT)
@@ -219,7 +229,9 @@ def ensure_quiescent(app,allow_uninstaller=False):
             buffer=ctypes.create_unicode_buffer(32768);size=wintypes.DWORD(len(buffer))
             if not kernel.QueryFullProcessImageNameW(int(process),0,buffer,ctypes.byref(size)):continue
             path=Path(buffer.value)
-            if blocks_installation(path,app,allow_uninstaller):raise manifest.PackageError('close-taild-and-stop-collection-before-installing')
+            if blocks_installation(path,app,allow_uninstaller):
+                record_blocker(path)
+                raise manifest.PackageError('close-taild-and-stop-collection-before-installing')
         finally:process.Close()
 
 
