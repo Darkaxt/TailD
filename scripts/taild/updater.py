@@ -97,6 +97,22 @@ def graceful_stop(config):
     installer.ensure_quiescent(app)
 
 
+# Inno's [Setup] SetupMutex (desktop/installer.iss). Held for the whole setup
+# transaction, including the connectivity-core update.
+SETUP_MUTEX=r'Global\Darkaxt.TailD.Setup'
+
+
+def setup_running():
+    """True while a TailD setup transaction holds its Inno mutex."""
+    import pywintypes,win32api,win32event
+    try:handle=win32event.OpenMutex(win32event.SYNCHRONIZE,False,SETUP_MUTEX)
+    except pywintypes.error as error:
+        if error.winerror==2:return False  # ERROR_FILE_NOT_FOUND: no setup is running.
+        raise
+    win32api.CloseHandle(handle)
+    return True
+
+
 def dispatch():
     import win32api,win32event
     # Global cross-session collision control, independent of the interactive
@@ -108,6 +124,12 @@ def dispatch():
         if selected==win32event.WAIT_TIMEOUT:return  # Diagnostic collision, no operation is canceled.
         if selected not in (win32event.WAIT_OBJECT_0,win32event.WAIT_ABANDONED):raise manifest.PackageError('update-lock-unavailable')
         owned=True
+        # The core update restarts tailscaled, whose startup preference check
+        # dispatches again while the original setup may still be verifying the
+        # core. On 2026-11-18 that second updater ran from the installed directory
+        # during the failed +64/+65 core updates, before their rollbacks were
+        # refused as non-quiescent. Never interfere with a running transaction.
+        if setup_running():return
         config=owner();app=installer.app_directory();current=manifest.verify(app,installed=True)
         root=delivery.state_directory()/'updates'/uuid.uuid4().hex
         try:executable,data=release_channel.prepare(root,config['highest_subversion'],current['upstream_version'])

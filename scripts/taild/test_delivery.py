@@ -201,6 +201,27 @@ class DeliveryTest(unittest.TestCase):
             updater.dispatch()
         stop.assert_called_once();resume.assert_called_once_with()
 
+    @unittest.skipUnless(os.name=='nt','Windows updater dispatch boundary')
+    def test_dispatch_is_a_no_op_while_a_setup_transaction_runs(self):
+        import updater,release_channel,win32api,win32event
+        name=r'Local\TailD.Test.Setup.'+uuid.uuid4().hex
+        with patch.object(updater,'SETUP_MUTEX',name):
+            self.assertFalse(updater.setup_running())
+            held=win32event.CreateMutex(None,True,name)
+            try:
+                self.assertTrue(updater.setup_running())
+                with patch.object(release_channel,'prepare') as prepare,patch.object(updater,'graceful_stop') as stop,                     patch.object(updater.subprocess,'Popen') as popen:
+                    updater.dispatch()
+                prepare.assert_not_called();stop.assert_not_called();popen.assert_not_called()
+            finally:
+                win32event.ReleaseMutex(held);win32api.CloseHandle(held)
+            self.assertFalse(updater.setup_running())
+
+    def test_updater_guards_the_installer_setup_mutex(self):
+        import updater
+        source=(Path(__file__).resolve().parents[2]/'desktop/installer.iss').read_text()
+        self.assertIn('SetupMutex='+updater.SETUP_MUTEX+chr(10),source)
+
     def test_failed_or_cancelled_setup_resumes_collection(self):
         source=(Path(__file__).resolve().parents[2]/'desktop/installer.iss').read_text()
         cleanup=source.split('procedure DeinitializeSetup;',1)[1].split('function ',1)[0]
