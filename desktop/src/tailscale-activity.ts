@@ -17,11 +17,11 @@ interface ActivityView {rows:Observation[];profiles:string[];truncated:boolean;e
 @Component({selector:'taild-tailscale-activity',standalone:true,
   imports:[CommonModule,FormsModule,DashboardWidgetComponent,RefreshIcon],template:`
   <section id="tailscale-activity" [attr.aria-busy]="busy()">
-    <div class="taildrop-primary-actions" *ngIf="view==='TailDrop'"><button id="taildrop-open-downloads" (click)="openDownloads()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h7l2 3h9v12H3z" /></svg>Open received files</button><span class="hint">Downloads · same destination as the tray receiver</span></div>
     <div class="activity-toolbar">
-      <div class="activity-opt-in"><span class="badge" [class.good]="tracking()">{{tracking()?'Analytics recording enabled':'Recording disabled · retained history'}}</span>
-        <button id="activity-preferences" (click)="preferences.emit()">Preferences →</button></div>
-      <span id="activity-source" class="badge" [class.good]="data()?.source?.state==='connected'" role="status">{{data()?.source?.state||'Not loaded'}}</span>
+      <button *ngIf="view==='TailDrop'" id="taildrop-open-downloads" class="primary" (click)="openDownloads()" title="Downloads · same destination as the tray receiver"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h7l2 3h9v12H3z" /></svg>Open received files</button>
+      <span class="hint" *ngIf="view==='TailDrop'">Downloads · same destination as the tray receiver</span>
+      <span class="activity-status"><span class="policy-state-dot" [class.enabled]="tracking()&&data()?.source?.state==='connected'" aria-hidden="true"></span><span id="activity-source" role="status">{{status()}}</span></span>
+      <button id="activity-preferences" (click)="preferences.emit()">Preferences →</button>
       <button id="activity-reload" class="icon-button refresh-button" aria-label="Refresh Tailscale history" title="Refresh Tailscale history" (click)="load()" [disabled]="busy()" [attr.aria-busy]="busy()"><taild-refresh-icon /></button>
       <span *ngIf="busy()" class="activity-loading" role="status"><span class="loading-dots" aria-hidden="true"><span></span><span></span><span></span></span>Reading local history</span>
     </div>
@@ -70,6 +70,10 @@ export class TailscaleActivity implements OnChanges,OnDestroy {
     finally{this.busy.set(false);if(!this.disposed){if(this.queued){this.queued=false;void this.load()}
       else this.timer=window.setTimeout(()=>void this.load(),5000)}} // Observation refresh only; never cancels an operation.
   }
+  /** One status: recording preference first; the daemon source state only when it adds information. */
+  status(){const state=this.data()?.source?.state;if(!this.data())return 'Not loaded';
+    if(!this.tracking())return state&&state!=='disabled'?`Recording disabled · source ${state}`:'Recording disabled · retained history shown';
+    return state||'Not loaded'}
   applySearch(){this.appliedSearch=this.search;this.generation++;void this.load()}
   async openDownloads(){this.mutationError.set('');try{await command('taildrop-open-downloads')}catch(e){this.mutationError.set((e as Error).message)}}
   async remove(){if(this.busy())return;this.busy.set(true);this.mutationError.set('');

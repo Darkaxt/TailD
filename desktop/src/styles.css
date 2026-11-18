@@ -385,3 +385,29 @@ app-dashboard-widget>button,app-dashboard-widget>.actions>button{align-self:flex
 .decision-actions .edit-rule-icon{color:var(--text-secondary)}
 .row-title.policy-name{gap:10px}
 #management-policy .incident-table td{vertical-align:middle}
+/* UI QA 2026-11-18 (leftovers): full-height rail, one-row scope bar, single TailDrop toolbar, compact collection settings. */
+/* The fixed rail only spans the viewport; paint its column on the body too so long pages and full-page captures keep it. */
+body{min-height:100vh;background:linear-gradient(90deg,var(--cards-secondary) 0 63px,var(--cards-tertiary) 63px 64px,transparent 64px)}
+/* Scope bar: preset ranges show a compact local-time summary; explicit UTC inputs appear only for a custom range. */
+.shared-scope{flex-wrap:nowrap;gap:10px;padding:10px 0}.shared-scope>label{flex:1 1 0;min-width:120px}
+.shared-scope select{padding:6px 8px;font-size:12px}.shared-scope label{white-space:nowrap}
+.shared-scope .refresh-button{flex:none}
+.shared-scope .utc-range{width:auto;flex:0 1 auto;flex-wrap:nowrap;gap:10px;align-items:center;align-self:end}
+.shared-scope .range-summary{max-width:230px;font-size:11px;line-height:1.35;white-space:normal}
+.shared-scope #available-history{flex:none;padding:6px 10px;font-size:12px;white-space:nowrap}
+.shared-scope:not(.custom-range) .utc-range>label{display:none}
+.shared-scope.custom-range{flex-wrap:wrap}.shared-scope.custom-range .utc-range{width:100%}
+.shared-scope.custom-range .range-summary{max-width:none}
+@media(max-width:1200px){.shared-scope{flex-wrap:wrap}.shared-scope>label{flex-basis:150px}
+  .shared-scope .utc-range{width:100%}.shared-scope .range-summary{max-width:none}}
+/* TailDrop / Tailscale activity: one toolbar, one status. */
+.activity-toolbar{margin:0 0 12px;gap:10px}
+.activity-toolbar #taildrop-open-downloads{display:inline-flex;align-items:center;gap:8px}
+.activity-toolbar #taildrop-open-downloads svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8}
+.activity-status{display:inline-flex;align-items:center;gap:8px;margin-left:auto;color:var(--text-secondary)}
+/* Collection settings: wide one-line status strip, top-aligned panels, dot + text source states, switch rows. */
+#collection-window>.grid{align-items:start}
+.collection-strip .row{gap:16px}.collection-strip .row p{max-width:none}.collection-strip .actions{margin:0;flex-wrap:nowrap;align-items:center}
+.source-state{display:inline-flex;align-items:center;gap:8px;color:var(--text-secondary)}.source-state.warn .policy-state-dot{background:var(--info-yellow)}
+#collection-window .status-table{padding:8px 0}
+.switch-row{justify-content:space-between;gap:12px;color:var(--text-secondary);padding:4px 0}

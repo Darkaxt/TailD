@@ -59,7 +59,7 @@ const fields:Record<Kind,string[]>={
     <nav id="category-pages" class="category-tabs" aria-label="Category pages" *ngIf="page()!=='About'"><button *ngFor="let item of categoryPages()" [id]="item.id" [class.active]="page()===item.page" [attr.aria-current]="page()===item.page?'page':null" (click)="navigate(item.page)">{{item.label}}</button><button *ngIf="category()==='tailscale'&&adminVisible()" id="nav-admin" (click)="openAdmin()" title="Open Tailscale admin console in your browser">Admin console ↗</button></nav>
     <div class="error" role="alert" *ngIf="category()==='tailscale'&&page()!=='About'&&adminError()">{{adminError()}}</div>
     <taild-ingestion-notice *ngIf="page()==='About'" [state]="runtime()" [catalog]="catalog()" [start]="start" [end]="end" />
-    <fieldset class="shared-scope" aria-label="Shared analytics scope" [disabled]="busy()" *ngIf="analyticsPage()&&catalog() as c">
+    <fieldset class="shared-scope" [class.custom-range]="range==='custom'" aria-label="Shared analytics scope" [disabled]="busy()" *ngIf="analyticsPage()&&catalog() as c">
       <label>Host scope<select id="scope-host" [(ngModel)]="host" (change)="hostChanged()"><option value="">All recorded hosts</option>
         <option *ngFor="let value of hosts()" [value]="value">{{value}}</option></select></label>
       <label>Observed node · traffic only<select id="scope-device" [(ngModel)]="device" (change)="scopeChanged()"><option value="">All / historical binding unknown</option>
@@ -75,7 +75,7 @@ const fields:Record<Kind,string[]>={
       <button id="view-refresh" class="icon-button refresh-button" [disabled]="busy()" [attr.aria-busy]="busy()" (click)="refresh(true)" aria-label="Refresh view" title="Refresh view"><taild-refresh-icon /></button>
       <div class="utc-range"><label>From · UTC<input id="utc-start" [(ngModel)]="start" (change)="customTime()" aria-label="Start UTC timestamp"></label>
         <label>Until · UTC, exclusive<input id="utc-end" [(ngModel)]="end" (change)="customTime()" aria-label="End UTC timestamp"></label>
-        <span class="hint">{{localTime(start)}} → {{localTime(end)}} · {{timezone}}</span>
+        <span class="hint range-summary" [title]="start+' → '+end+' UTC'">{{localTime(start)}} → {{localTime(end)}} · {{timezone}}</span>
         <button id="available-history" (click)="availableHistory()" [disabled]="busy()">Latest retained hour</button></div>
     </fieldset>
     <div *ngIf="analyticsPage()&&error()" id="analytics-error" class="error" role="alert">{{error()}}</div>

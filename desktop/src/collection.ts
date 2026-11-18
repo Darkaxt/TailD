@@ -16,7 +16,7 @@ export interface State {state:string;sources:Record<string,Source>;settings:Sett
   analytics_enabled?:boolean;integration_ready?:{traffic:boolean;dns:boolean}}
 
 @Component({selector:'taild-collection',standalone:true,
-  imports:[CommonModule,FormsModule,DashboardWidgetComponent,BrandMark,RefreshIcon],
+  imports:[CommonModule,FormsModule,DashboardWidgetComponent,BrandMark,RefreshIcon,SfngToggleSwitchComponent],
   template:`
     <section id="collection-window" [attr.aria-busy]="busy()">
       <header><div><div class="eyebrow product-brand"><taild-brand-mark brand="tailscale" /><span>TailD / Settings</span></div><h2 class="collection-title">Collection</h2>
@@ -25,22 +25,19 @@ export interface State {state:string;sources:Record<string,Source>;settings:Sett
           [class.warn]="isWarning(state()?.state)">{{state()?.state || 'Connecting'}}</span></header>
       <div *ngIf="error()" id="collection-error" class="error" role="alert">{{error()}}</div>
       <div class="grid" *ngIf="state() as current">
-        <app-dashboard-widget label="Continuous collection">
-          <div class="row"><div><div class="row-title">Analytics {{enabled()?'enabled':'disabled'}}</div>
-            <p>One recording preference selects available sources: Control D DNS, GlassWire traffic and Tailscale activity. VPN and DNS settings are independent.</p></div>
-            <button id="collection-preferences" (click)="preferences.emit()">Preferences →</button></div>
-          <div class="actions">
+        <app-dashboard-widget label="Continuous collection" class="wide collection-strip">
+          <div class="row"><div><div class="row-title policy-name"><span class="policy-state-dot" [class.enabled]="enabled()&&current.state!=='paused'" aria-hidden="true"></span>Analytics {{enabled()?(current.state==='paused'?'paused':'enabled'):'disabled'}}</div>
+            <p class="hint">One recording preference selects Control D DNS, GlassWire traffic and Tailscale activity. VPN and DNS settings are independent. Pause stops new reads; an active transaction finishes safely.</p></div>
+            <div class="actions"><button id="collection-preferences" (click)="preferences.emit()">Preferences →</button>
             <button id="pause-resume" class="primary" [disabled]="busy() || !enabled()" (click)="run(current.state==='paused'?'resume':'pause')">
               {{current.state==='paused'?'Resume collection':'Pause collection'}}</button>
-            <button id="refresh" class="icon-button refresh-button" [disabled]="busy() || !enabled() || current.state==='paused'" [attr.aria-busy]="busy()" (click)="run('refresh')" aria-label="Refresh collection" title="Refresh collection"><taild-refresh-icon /></button>
-          </div><p class="hint">Changes save automatically. Pause stops new reads; an active transaction finishes safely.</p>
+            <button id="refresh" class="icon-button refresh-button" [disabled]="busy() || !enabled() || current.state==='paused'" [attr.aria-busy]="busy()" (click)="run('refresh')" aria-label="Refresh collection" title="Refresh collection"><taild-refresh-icon /></button></div></div>
         </app-dashboard-widget>
         <app-dashboard-widget label="Sources & health">
           <div class="status-table" *ngFor="let source of sourceNames">
             <div><div class="row-title provider-brand"><taild-brand-mark brand="controld" *ngIf="source==='dns'" /><taild-brand-mark brand="tailscale" *ngIf="source==='context'||source==='activity'" />{{source==='traffic'?'GlassWire':source==='dns'?'Control D':source==='activity'?'Tailscale activity':'TailDNS context'}}</div>
               <p class="hint" *ngIf="current.sources[source]?.last_success_utc as success">Last read {{success}}</p></div>
-            <span [attr.id]="source+'-status'" class="badge" [class.good]="['collecting','connected'].includes(current.sources[source]?.state||'')"
-              [class.warn]="isWarning(current.sources[source]?.state)">{{current.sources[source]?.state || 'Unavailable'}}</span>
+            <span class="source-state" [class.warn]="isWarning(current.sources[source]?.state)"><span class="policy-state-dot" [class.enabled]="['collecting','connected'].includes(current.sources[source]?.state||'')" aria-hidden="true"></span><span [attr.id]="source+'-status'">{{current.sources[source]?.state || 'Unavailable'}}</span></span>
           </div><p class="hint">A successful read is not proof of complete history. Coverage accompanies analytics queries.</p>
         </app-dashboard-widget>
         <app-dashboard-widget label="Sampling & identity">
@@ -70,8 +67,8 @@ export interface State {state:string;sources:Record<string,Source>;settings:Sett
           </div><p class="hint">Valid, complete binding fields autosave on leaving the field. DNS history is collected in the background: seven days for this main endpoint and two hours for every other authorized endpoint. Endpoint scope does not prove host attribution.</p>
           <label class="field">READ API token (optional if already in your Windows vault)
             <input id="read-token" type="password" autocomplete="off" [(ngModel)]="token" [disabled]="busy()"></label>
-          <label><input id="read-confirm" type="checkbox" style="width:auto" [(ngModel)]="readOnly"> This token has READ permissions only</label>
-          <label><input id="persist-token" type="checkbox" style="width:auto" [(ngModel)]="persist"> Save in my Windows credential vault</label>
+          <div class="row switch-row"><span>This token has READ permissions only</span><sfng-toggle name="This token has READ permissions only" controlId="read-confirm" [(ngModel)]="readOnly" /></div>
+          <div class="row switch-row"><span>Save in my Windows credential vault</span><sfng-toggle name="Save in my Windows credential vault" controlId="persist-token" [(ngModel)]="persist" /></div>
           <div class="actions"><button id="use-token" class="primary" (click)="useToken()" [disabled]="busy() || !token || !readOnly">Use READ token</button>
             <button id="remove-token" (click)="removeToken()" [disabled]="busy()">Remove local credential</button></div>
         </app-dashboard-widget>
