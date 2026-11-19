@@ -91,6 +91,20 @@ class AndroidNavigationTest(unittest.TestCase):
         self.assertFalse(re.search(r'(?:composable|navController\.navigate|backTo)\("',source),
             'String destinations cannot coexist with the inherited typed graph')
 
+    def test_user_switcher_takes_canonical_data_sources_with_fork_returns(self):
+        source=(ROOT/'MainActivity.kt').read_text(encoding='utf-8')
+        block=re.search(r'composable<UserSwitcherRoute>\s*\{(.*?)(?=\n              composable<)',source,re.S)
+        self.assertIsNotNone(block,'User switcher destination must remain present')
+        for needed in ('val dataSource = remember { UserSwitcherDataSourceImpl() }',
+                'val loginActions = remember { LoginActionsDataSourceImpl() }',
+                'userSwitcherNav = userSwitcherNav','dataSource = dataSource','loginActions = loginActions'):
+            self.assertIn(needed,block[1])
+        for line in ('composable<AboutRoute> { AboutView(backToPreferences) }',
+                'composable<MDMSettingsRoute> { MDMSettingsDebugView(backToPreferences) }',
+                'composable<ManagedByRoute> { ManagedByView(backToPreferences) }'):
+            self.assertIn(line,source)
+        self.assertFalse(re.search(r'^(?:<<<<<<<|=======|>>>>>>>)',source,re.M),'Unresolved merge markers')
+
     def test_device_links_and_search_keep_fork_device_presentation(self):
         links=(ROOT/'ui/util/DeepLinkNavigator.kt').read_text(encoding='utf-8')
         self.assertTrue(re.search(r'showDevices\(\)\s*navigateOverMain\(PeerDetailsRoute\(node\.StableID\)\)',links),

@@ -1,5 +1,23 @@
 # TailD staged execution
 
+## November 19 upstream maintenance
+
+Stage10 remains the sole ACTIVE product stage; B12 stays open. Independently
+verified prerequisite releases are TailDNS Windows 1.105.0+61/core
+ac39fdc0f1c4642213b92822d76c3192c5e5bc76 and Android 1.103.312+59/source
+e6c4c0ec0af83ea441258b92ea9d1fc534fa7e89. No device, provider-policy or
+production-history actions are authorized by this maintenance.
+
+Pins are prepared in 0bc335d; all 14 immutable overlay inputs and 18 overlay
+outputs are unchanged. Inheritance run 44485827804 correctly refused the one
+unreviewed MainActivity.kt conflict: upstream moved About/MDM/ManagedBy returns
+to backTo<SettingsRoute>() and gave UserSwitcherView explicit remembered
+UserSwitcher/LoginActions data sources. The reviewed resolution keeps the fork
+backToPreferences returns and takes the canonical user-switcher block; it is
+bound to the exact three blobs for e6c4c0e and guarded by
+test_user_switcher_takes_canonical_data_sources_with_fork_returns.
+Compact receipts: D:/Projects/TailD-support/maintenance/20261119.
+
 ## November 18 upstream maintenance
 
 Stage10 remains the sole ACTIVE product stage; B12 stays open. Independently

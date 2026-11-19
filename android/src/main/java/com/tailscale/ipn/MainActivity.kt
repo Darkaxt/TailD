@@ -62,11 +62,14 @@ import com.tailscale.ipn.mdm.ShowHide
 import com.tailscale.ipn.ui.dataSource.DNSSettingsDataSourceImpl
 import com.tailscale.ipn.ui.dataSource.ExitNodePickerDataSourceImpl
 import com.tailscale.ipn.ui.dataSource.HealthDataSourceImpl
+import com.tailscale.ipn.ui.dataSource.LoginActionsDataSourceImpl
+import com.tailscale.ipn.ui.dataSource.LoginQRDataSourceImpl
 import com.tailscale.ipn.ui.dataSource.PeerDetailsDataSourceImpl
 import com.tailscale.ipn.ui.dataSource.RunExitNodeDataSourceImpl
 import com.tailscale.ipn.ui.dataSource.SettingsDataSourceImpl
 import com.tailscale.ipn.ui.dataSource.SubnetRoutingDataSourceImpl
 import com.tailscale.ipn.ui.dataSource.TailnetLockSetupDataSourceImpl
+import com.tailscale.ipn.ui.dataSource.UserSwitcherDataSourceImpl
 import com.tailscale.ipn.ui.model.Ipn
 import com.tailscale.ipn.ui.navigation.AboutRoute
 import com.tailscale.ipn.ui.navigation.BugReportRoute
@@ -126,14 +129,15 @@ import com.tailscale.ipn.ui.view.SubnetRoutingView
 import com.tailscale.ipn.ui.view.TaildropDirView
 import com.tailscale.ipn.ui.view.TaildropDirectoryPickerPrompt
 import com.tailscale.ipn.ui.view.TailnetLockSetupView
-import com.tailscale.ipn.ui.view.UserSwitcherNav
 import com.tailscale.ipn.ui.view.UserSwitcherView
 import com.tailscale.ipn.ui.viewModel.AppViewModel
+import com.tailscale.ipn.ui.viewModel.CustomLoginNav
 import com.tailscale.ipn.ui.viewModel.ExitNodePickerNav
 import com.tailscale.ipn.ui.viewModel.MainViewModel
 import com.tailscale.ipn.ui.viewModel.MainViewModelFactory
 import com.tailscale.ipn.ui.viewModel.PermissionsViewModel
 import com.tailscale.ipn.ui.viewModel.SettingsNav
+import com.tailscale.ipn.ui.viewModel.UserSwitcherNav
 import com.tailscale.ipn.util.ShareFileHelper
 import com.tailscale.ipn.util.TSLog
 import kotlinx.coroutines.Dispatchers
@@ -276,6 +280,7 @@ class MainActivity : ComponentActivity() {
       val taildDestination = rememberSaveable { mutableIntStateOf(0) }
       val taildTailscaleTab = rememberSaveable { mutableIntStateOf(0) }
       var showDialog by remember { mutableStateOf(false) }
+      val loginQRDataSource = remember { LoginQRDataSourceImpl() }
 
       LaunchedEffect(Unit) { appViewModel.triggerDirectoryPicker.collect { showDialog = true } }
 
@@ -409,6 +414,11 @@ class MainActivity : ComponentActivity() {
                       },
                       onNavigateToAuthKey = { navController.navigate(LoginWithAuthKeyRoute) },
                   )
+              val customLoginNav =
+                  CustomLoginNav(
+                      onNavigateHome = backTo<MainRoute>(),
+                      backToSettings = backTo<UserSwitcherRoute>(),
+                  )
 
               composable<MainRoute>(enterTransition = { fadeIn(animationSpec = tween(150)) }) {
                 com.tailscale.ipn.taild.TailDTailscaleView(
@@ -512,7 +522,15 @@ class MainActivity : ComponentActivity() {
               composable<AboutRoute> { AboutView(backToPreferences) }
               composable<MDMSettingsRoute> { MDMSettingsDebugView(backToPreferences) }
               composable<ManagedByRoute> { ManagedByView(backToPreferences) }
-              composable<UserSwitcherRoute> { UserSwitcherView(userSwitcherNav) }
+              composable<UserSwitcherRoute> {
+                val dataSource = remember { UserSwitcherDataSourceImpl() }
+                val loginActions = remember { LoginActionsDataSourceImpl() }
+                UserSwitcherView(
+                    userSwitcherNav = userSwitcherNav,
+                    dataSource = dataSource,
+                    loginActions = loginActions,
+                )
+              }
               composable<PermissionsRoute> {
                 PermissionsView(
                     backToPreferences,
@@ -534,15 +552,17 @@ class MainActivity : ComponentActivity() {
                 IntroView(backTo<MainRoute>())
               }
               composable<LoginWithAuthKeyRoute> {
+                val dataSource = remember { LoginActionsDataSourceImpl() }
                 LoginWithAuthKeyView(
-                    onNavigateHome = backTo<MainRoute>(),
-                    backTo<UserSwitcherRoute>(),
+                    customLoginNav = customLoginNav,
+                    dataSource = dataSource,
                 )
               }
               composable<LoginWithCustomControlRoute> {
+                val dataSource = remember { LoginActionsDataSourceImpl() }
                 LoginWithCustomControlURLView(
-                    onNavigateHome = backTo<MainRoute>(),
-                    backTo<UserSwitcherRoute>(),
+                    customLoginNav = customLoginNav,
+                    dataSource = dataSource,
                 )
               }
             }
@@ -555,7 +575,10 @@ class MainActivity : ComponentActivity() {
         // Login actions are app wide.  If we are told about a browse-to-url, we should render it
         // over whatever screen we happen to be on.
         loginQRCode.collectAsState().value?.let {
-          LoginQRView(onDismiss = { loginQRCode.set(null) })
+          LoginQRView(
+              onDismiss = { loginQRCode.set(null) },
+              dataSource = loginQRDataSource,
+          )
         }
       }
     }

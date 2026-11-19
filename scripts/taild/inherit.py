@@ -41,6 +41,12 @@ REVIEWED_RECONCILIATIONS = {
             'ae878d26615e1847b809b08d8638bc9e3df62492',
             '721782d96f550e6729e8aec3988d12e74b21360b'),
     },
+    'e6c4c0ec0af83ea441258b92ea9d1fc534fa7e89': {
+        'android/src/main/java/com/tailscale/ipn/MainActivity.kt': (
+            'b9b8f91f4ef1f04325ee555c2b1f5cea95cabee0',
+            '098a9cf3592022cd9d79debe459fde100299f946',
+            'e4a4d7d6dfd7f74ca0a1bac2de9e15a8eb7a6dbf'),
+    },
     'c2a979e263b348a7014779476a97b8870b63bf5b': {
         'README.md': (
             '1124d45ece1db5a6169b2c4914f4ca2687bff883',
