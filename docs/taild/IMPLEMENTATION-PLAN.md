@@ -16,6 +16,9 @@ UserSwitcher/LoginActions data sources. The reviewed resolution keeps the fork
 backToPreferences returns and takes the canonical user-switcher block; it is
 bound to the exact three blobs for e6c4c0e and guarded by
 test_user_switcher_takes_canonical_data_sources_with_fork_returns.
+Inheritance run 44486903144 then verified and promoted merge 464b0e8.
+Signer closure 0bc335d00b736ee821e9e8c39603403ac6875476 differs from 82690736
+only in core/module/checksum constants and is unchanged through 464b0e8.
 Compact receipts: D:/Projects/TailD-support/maintenance/20261119.
 
 ## November 18 upstream maintenance
