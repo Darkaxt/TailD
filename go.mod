@@ -5,7 +5,7 @@ go 1.27.4
 require (
 	github.com/tailscale/wireguard-go v0.0.0-20261117232807-a1800e9c5305
 	golang.org/x/mobile v0.0.0-20240806205939-81131f6468ab
-	tailscale.com v1.103.0-pre.0.20261119073348-ac39fdc0f1c4
+	tailscale.com v1.103.0-pre.0.20261120073228-28dc39f56bd0
 )
 
 require (
@@ -51,7 +51,6 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hdevalence/ed25519consensus v0.2.0 // indirect
 	github.com/huin/goupnp v1.3.0 // indirect
-	github.com/illarion/gonotify/v3 v3.0.2 // indirect
 	github.com/insomniacslk/dhcp v0.0.0-20260901064844-234b97448fae // indirect
 	github.com/jellydator/ttlcache/v3 v3.4.1 // indirect
 	github.com/jsimonetti/rtnetlink v1.4.2 // indirect
@@ -94,4 +93,4 @@ require (
 	gvisor.dev/gvisor v0.0.0-20261117040555-0303b2605d5e // indirect
 )
 
-replace tailscale.com => github.com/Darkaxt/tailscale v1.103.0-pre.0.20261119073348-ac39fdc0f1c4
+replace tailscale.com => github.com/Darkaxt/tailscale v1.103.0-pre.0.20261120073228-28dc39f56bd0
