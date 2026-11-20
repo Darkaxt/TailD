@@ -11,6 +11,10 @@ production-history actions are authorized by this maintenance.
 Compatible require/replace/checksum and overlay/build pins are prepared from
 51e08be. All 14 immutable overlay inputs and 18 overlay outputs equal the
 previous verified source; the full backend suite passes (428, 1 skipped).
+TailDNS 2746a72 adds one integration-test sentence to the TailDNS README,
+which conflicts with TailD's own product README. As for c2a979e, the reviewed
+resolution keeps TailD README b3a1a985 byte-identical (it has no inherited
+integration-test section) and is bound to the exact three blobs.
 Compact receipts: D:/Projects/TailD-support/maintenance/20261120.
 
 ## November 19 upstream maintenance
