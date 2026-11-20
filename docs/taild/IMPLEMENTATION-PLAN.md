@@ -15,6 +15,9 @@ TailDNS 2746a72 adds one integration-test sentence to the TailDNS README,
 which conflicts with TailD's own product README. As for c2a979e, the reviewed
 resolution keeps TailD README b3a1a985 byte-identical (it has no inherited
 integration-test section) and is bound to the exact three blobs.
+Inheritance run 44702051238 then verified and promoted merge eef9466.
+Signer closure b1cee79298cd46f32c55a6395d5bdcd2ec1b435a differs from 0bc335d
+only in core/module/checksum constants and is unchanged through eef9466.
 Compact receipts: D:/Projects/TailD-support/maintenance/20261120.
 
 ## November 19 upstream maintenance
