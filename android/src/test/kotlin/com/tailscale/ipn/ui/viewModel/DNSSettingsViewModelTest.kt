@@ -13,6 +13,7 @@ import com.tailscale.ipn.ui.model.IpnLocal
 import com.tailscale.ipn.ui.model.LocalDNSStatus
 import com.tailscale.ipn.ui.model.LocalDNSUpdate
 import com.tailscale.ipn.ui.model.Netmap
+import com.tailscale.ipn.ui.model.Tailcfg
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -146,6 +147,28 @@ class DNSSettingsViewModelTest {
     runCurrent()
     assertTrue(model.uiState.value.useCorpDNS)
     assertEquals(DNSEnablementState.ENABLED, model.uiState.value.enablementState)
+  }
+
+  @Test
+  fun clearedNetmapDropsPreviousProfileDNSConfig() = runTest {
+    val model = model()
+    backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { model.uiState.collect {} }
+    val dns = Tailcfg.DNSConfig(Domains = listOf("old.example.ts.net"))
+    source.netmap.value =
+        Netmap.NetworkMap(
+            SelfNode = Tailcfg.Node(ID = 1, StableID = "self", Name = "phone.old.example.ts.net."),
+            Domain = "old.example.ts.net",
+            UserProfiles = emptyMap(),
+            TKAEnabled = false,
+            DNS = dns,
+        )
+    runCurrent()
+    assertEquals(dns, model.uiState.value.dnsConfig)
+
+    // Logout or a profile switch delivers an empty InitialStatus, clearing the netmap.
+    source.netmap.value = null
+    runCurrent()
+    assertNull(model.uiState.value.dnsConfig)
   }
 
   private class FakeDNSSettingsDataSource : DNSSettingsDataSource {

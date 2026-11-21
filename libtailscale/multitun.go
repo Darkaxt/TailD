@@ -263,6 +263,7 @@ func (d *multiTUN) runDevice(dev *tunDevice) {
 			}
 		}
 	}()
+	loggedHeldWrite := false
 	for {
 		select {
 		case w := <-d.writes:
@@ -270,6 +271,12 @@ func (d *multiTUN) runDevice(dev *tunDevice) {
 			if err == nil {
 				w.reply <- ioReply{n, nil}
 				continue
+			}
+			if !loggedHeldWrite {
+				// Log once per device: a persistent error that is never followed by
+				// a device transition would otherwise stall netstack output silently.
+				loggedHeldWrite = true
+				log.Printf("multiTUN: write failed (%v); holding it until the device is replaced, the tunnel goes down or multiTUN closes", err)
 			}
 
 			// VpnService.Builder.establish invalidates the previous Android TUN

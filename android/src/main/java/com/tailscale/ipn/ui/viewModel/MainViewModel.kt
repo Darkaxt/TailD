@@ -38,7 +38,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -196,10 +195,16 @@ class MainViewModel(private val appViewModel: AppViewModel) : IpnViewModel() {
 
     // handle grouping
     viewModelScope.launch {
-      Notifier.netmap.filterNotNull().collectLatest { netmap ->
+      // A null netmap (empty InitialStatus after logout or before a new profile's
+      // first map) must clear the previous tailnet's peers rather than keep them.
+      Notifier.netmap.collectLatest { netmap ->
         searchJob?.cancel()
         withContext(categorizerDispatcher) {
-          peerCategorizer.regenerateGroupedPeers(netmap)
+          if (netmap == null) {
+            peerCategorizer.clear()
+          } else {
+            peerCategorizer.regenerateGroupedPeers(netmap)
+          }
           val filteredPeers = peerCategorizer.groupedAndFilteredPeers(searchTerm.value)
           _groupedPeers.value = peerCategorizer.peerSets
           _searchViewPeers.value = filteredPeers
@@ -219,8 +224,8 @@ class MainViewModel(private val appViewModel: AppViewModel) : IpnViewModel() {
 
     // Key expiry
     viewModelScope.launch {
-      Notifier.netmap.filterNotNull().collect { netmap ->
-        if (netmap.SelfNode.keyDoesNotExpire) {
+      Notifier.netmap.collect { netmap ->
+        if (netmap == null || netmap.SelfNode.keyDoesNotExpire) {
           showExpiry.set(false)
         } else {
           val expiryNotificationWindowMDM = MDMSettings.keyExpirationNotice.flow.value.value

@@ -17,9 +17,23 @@ import com.tailscale.ipn.ui.notifier.Notifier
 import com.tailscale.ipn.util.TSLog
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
 
-internal suspend fun awaitVPNStartReadiness(states: StateFlow<Ipn.State>): Boolean {
-  val state = states.first { it != Ipn.State.NoState && it != Ipn.State.Stopping }
+/**
+ * Bounds the wait for the backend's first settled state. Startup normally settles within seconds;
+ * without a bound a backend stuck in NoState/Stopping would hold the worker until WorkManager stops
+ * it, and the user would never receive the "connect failed" notification below.
+ */
+internal const val VPN_START_READINESS_TIMEOUT_MILLIS = 60_000L
+
+internal suspend fun awaitVPNStartReadiness(
+    states: StateFlow<Ipn.State>,
+    timeoutMillis: Long = VPN_START_READINESS_TIMEOUT_MILLIS,
+): Boolean {
+  val state =
+      withTimeoutOrNull(timeoutMillis) {
+        states.first { it != Ipn.State.NoState && it != Ipn.State.Stopping }
+      } ?: return false
   return state > Ipn.State.NeedsMachineAuth
 }
 

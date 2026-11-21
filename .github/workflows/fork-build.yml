@@ -7,6 +7,11 @@ on:
         description: Optional TailDNS release sequence to validate without publishing
         required: false
         type: string
+      profileable:
+        description: Diagnostic only - make the validation APK profileable by adb shell (simpleperf)
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -40,6 +45,8 @@ jobs:
           test "$version_code_base" -lt 2147483640
           echo "VERSION_CODE_BASE=$version_code_base" >> "$GITHUB_ENV"
       - name: Build and test exact source
+        env:
+          TAILDNS_PROFILEABLE: ${{ inputs.profileable && 'true' || 'false' }}
         run: |
           set -euo pipefail
           pwsh -NoProfile -File scripts/test-windows-inplace-upgrade.ps1
@@ -53,7 +60,7 @@ jobs:
           (cd "$core_dir" && env CGO_ENABLED=0 GOOS=windows GOARCH=amd64 "$go_bin" build -trimpath -o "$RUNNER_TEMP/taildnsd.exe" ./cmd/tailscaled)
           (cd "$core_dir" && env CGO_ENABLED=0 GOOS=windows GOARCH=amd64 "$go_bin" build -trimpath -o "$RUNNER_TEMP/tailscale.exe" ./cmd/tailscale)
           cd android
-          ./gradlew ktfmtCheck test assembleRelease -PVERSION_CODE_BASE="$VERSION_CODE_BASE"
+          ./gradlew ktfmtCheck test assembleRelease -PVERSION_CODE_BASE="$VERSION_CODE_BASE" -PTAILDNS_PROFILEABLE="$TAILDNS_PROFILEABLE"
           "$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer" manifest print build/outputs/apk/release/android-release-unsigned.apk > "$RUNNER_TEMP/taildns-merged-manifest.xml"
           bash ../scripts/test-thor-recents-resilience.sh "$RUNNER_TEMP/taildns-merged-manifest.xml"
       - name: Preserve unsigned candidate for isolated signing
@@ -79,6 +86,7 @@ jobs:
           KEYSTORE_BASE64: ${{ secrets.TAILDNS_KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.TAILDNS_KEYSTORE_PASSWORD }}
           EXPECTED_SIGNER: ${{ vars.TAILDNS_SIGNER_SHA256 }}
+          TAILDNS_PROFILEABLE: ${{ inputs.profileable && 'true' || 'false' }}
         run: |
           set -euo pipefail
           umask 077
@@ -94,7 +102,7 @@ jobs:
           grep -F "Signer #1 certificate SHA-256 digest: $EXPECTED_SIGNER" signed/signature.txt
           "$tools/aapt" dump badging signed/taildns-validation.apk > signed/package.txt
           grep -F "package: name='io.github.darkaxt.taildns'" signed/package.txt
-          printf 'Android source: %s\nValidation only; not a feature release.\n' "$GITHUB_SHA" > signed/provenance.txt
+          printf 'Android source: %s\nValidation only; not a feature release.\nProfileable by shell: %s\n' "$GITHUB_SHA" "$TAILDNS_PROFILEABLE" > signed/provenance.txt
           (cd signed && sha256sum taildns-validation.apk > SHA256SUMS)
       - name: Upload signed validation artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

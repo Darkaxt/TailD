@@ -67,6 +67,16 @@ android {
   }
 }
 
+// Validation-only diagnostics: merge the profileable overlay into the release variant when
+// explicitly requested. Published release builds never pass this property.
+if (project.findProperty("TAILDNS_PROFILEABLE")?.toString() == "true") {
+  androidComponents {
+    onVariants(selector().withBuildType("release")) { variant ->
+      variant.sources.manifests.addStaticManifestFile("src/profileable/AndroidManifest.xml")
+    }
+  }
+}
+
 dependencies {
   implementation("dev.rikka.shizuku:api:13.1.5")
   implementation("dev.rikka.shizuku:provider:13.1.5")

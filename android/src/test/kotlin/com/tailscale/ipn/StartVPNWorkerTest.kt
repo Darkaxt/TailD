@@ -6,6 +6,7 @@ package com.tailscale.ipn
 import com.tailscale.ipn.ui.model.Ipn
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertFalse
@@ -44,5 +45,20 @@ class StartVPNWorkerTest {
 
     state.value = Ipn.State.Stopped
     assertTrue(readiness.await())
+  }
+
+  @Test
+  fun readinessGivesUpWhenBackendNeverSettles() = runTest {
+    val state = MutableStateFlow(Ipn.State.NoState)
+    val readiness = async { awaitVPNStartReadiness(state) }
+
+    advanceTimeBy(VPN_START_READINESS_TIMEOUT_MILLIS - 1)
+    runCurrent()
+    assertFalse(readiness.isCompleted)
+
+    advanceTimeBy(2)
+    runCurrent()
+    assertTrue(readiness.isCompleted)
+    assertFalse(readiness.await())
   }
 }
