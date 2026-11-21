@@ -62,6 +62,13 @@ class PeerCategorizer {
   var lastSearchResult: List<PeerSet> = emptyList()
   var lastSearchTerm: String = ""
 
+  /** Forget every peer, e.g. after logout or before a new profile's first netmap. */
+  fun clear() {
+    peerSets = emptyList()
+    lastSearchTerm = ""
+    lastSearchResult = emptyList()
+  }
+
   fun regenerateGroupedPeers(netmap: Netmap.NetworkMap) {
     val peers: List<Tailcfg.Node> = netmap.Peers.orEmpty()
     val selfNode = netmap.SelfNode

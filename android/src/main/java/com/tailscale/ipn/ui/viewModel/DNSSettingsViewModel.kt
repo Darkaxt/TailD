@@ -24,7 +24,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -81,9 +80,9 @@ class DNSSettingsViewModel(private val dataSource: DNSSettingsDataSource) : View
   }
 
   private val dnsConfig: StateFlow<Tailcfg.DNSConfig?> =
+      // Null netmap means no current tailnet: never keep the previous profile's DNS.
       dataSource.netmap
-          .filterNotNull()
-          .map { it.DNS }
+          .map { it?.DNS }
           .stateIn(
               viewModelScope,
               SharingStarted.WhileSubscribed(5_000),

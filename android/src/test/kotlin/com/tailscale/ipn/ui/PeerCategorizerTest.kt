@@ -225,4 +225,16 @@ class PeerCategorizerTest {
 
     assertTrue(categorizer.groupedAndFilteredPeers("zulu").isEmpty())
   }
+
+  @Test
+  fun clearForgetsPeersAndCachedSearch() {
+    regenerate()
+    assertTrue(categorizer.groupedAndFilteredPeers("zulu").isNotEmpty())
+
+    categorizer.clear()
+
+    assertTrue(categorizer.peerSets.isEmpty())
+    assertTrue(categorizer.groupedAndFilteredPeers().isEmpty())
+    assertTrue(categorizer.groupedAndFilteredPeers("zulu").isEmpty())
+  }
 }
