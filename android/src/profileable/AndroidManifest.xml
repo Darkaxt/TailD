@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Diagnostic overlay merged only when the build is invoked with -PTAILDNS_PROFILEABLE=true
+  (the "profileable" input of the validation workflow). It lets `adb shell simpleperf`
+  sample the release build's Go and Kotlin stacks. Release builds never include it.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <profileable android:shell="true" />
+    </application>
+</manifest>

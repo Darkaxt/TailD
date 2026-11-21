@@ -189,10 +189,14 @@ object NetworkChangeCallback {
     cachedDefaultNetworkInfo = info
     cachedDefaultInterfaceName = info?.linkProps?.interfaceName
 
-    TSLog.d(
-        TAG,
-        "$why: cachedDefaultNetwork=$newNetwork iface=${cachedDefaultInterfaceName ?: "none"}",
-    )
+    // Capability updates for an unchanged default network (signal, validation) are frequent;
+    // only log a real default-network change outside debug builds.
+    if (BuildConfig.DEBUG || newNetwork != oldNetwork) {
+      TSLog.d(
+          TAG,
+          "$why: cachedDefaultNetwork=$newNetwork iface=${cachedDefaultInterfaceName ?: "none"}",
+      )
+    }
 
     if (newNetwork != oldNetwork) {
       underlyingNetworkListener?.invoke(newNetwork)

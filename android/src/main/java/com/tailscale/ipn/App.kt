@@ -320,16 +320,33 @@ class App : UninitializedApp(), libtailscale.AppContext, ViewModelStoreOwner {
     return org.json.JSONArray(keys).toString()
   }
 
+  @Volatile private var encryptedPrefs: SharedPreferences? = null
+
+  // The Go state store reads and writes through this on every persisted state change. Building
+  // the MasterKey and EncryptedSharedPreferences performs Keystore and Tink keyset work, so create
+  // the (thread-safe) instance once and reuse it. A failed creation is not cached, so callers keep
+  // the existing retry-on-next-call behaviour.
   @Throws(IOException::class, GeneralSecurityException::class)
   fun getEncryptedPrefs(): SharedPreferences {
-    val key = MasterKey.Builder(this).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
-    return EncryptedSharedPreferences.create(
-        this,
-        "secret_shared_prefs",
-        key,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-    )
+    encryptedPrefs?.let {
+      return it
+    }
+    synchronized(this) {
+      encryptedPrefs?.let {
+        return it
+      }
+      val key = MasterKey.Builder(this).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
+      val prefs =
+          EncryptedSharedPreferences.create(
+              this,
+              "secret_shared_prefs",
+              key,
+              EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+              EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+          )
+      encryptedPrefs = prefs
+      return prefs
+    }
   }
 
   fun getStoredDirectoryUri(): Uri? {
@@ -533,10 +550,15 @@ class App : UninitializedApp(), libtailscale.AppContext, ViewModelStoreOwner {
 
     val iface = NetworkChangeCallback.cachedDefaultInterfaceName
 
-    TSLog.d(
-        TAG,
-        "bindSocketToActiveNetwork: binding fd=$fd to net=$net iface=$iface",
-    )
+    // Go binds every new outbound socket through here (DERP, control, STUN, logtail), so a
+    // network change produces a burst of these. TSLog also forwards each line to the uploaded
+    // log stream, so keep the per-socket success line to debug builds; failures still log.
+    if (BuildConfig.DEBUG) {
+      TSLog.d(
+          TAG,
+          "bindSocketToActiveNetwork: binding fd=$fd to net=$net iface=$iface",
+      )
+    }
 
     return try {
       android.os.ParcelFileDescriptor.fromFd(fd).use { pfd -> net.bindSocket(pfd.fileDescriptor) }

@@ -112,6 +112,9 @@ func (a *App) isClientLoggingEnabled() bool {
 	return isClientLoggingEnabled
 }
 
+// logUploadFlushDelay is how long logtail batches log lines before uploading them.
+const logUploadFlushDelay = 10 * time.Minute
+
 // SetupLogs sets up remote logging.
 func (b *backend) setupLogs(logDir string, logID logid.PrivateID, logf logger.Logf, health *health.Tracker, enableUpload bool) {
 	if b.netMon == nil {
@@ -133,7 +136,11 @@ func (b *backend) setupLogs(logDir string, logID logid.PrivateID, logf logger.Lo
 		// SetClientLoggingEnabled path flips this at runtime.
 		Disabled: !enableUpload,
 	}
-	logcfg.FlushDelayFn = func() time.Duration { return 2 * time.Minute }
+	// Each upload is an HTTPS request that wakes the radio, and on cellular it keeps the
+	// modem in its high-power state for several seconds afterwards. Logs are buffered on
+	// disk (filch) and bug reports flush explicitly via SetLogFlusher, so batch uploads
+	// over a longer window than upstream's 2 minutes.
+	logcfg.FlushDelayFn = func() time.Duration { return logUploadFlushDelay }
 
 	filchOpts := filch.Options{
 		ReplaceStderr: true,
