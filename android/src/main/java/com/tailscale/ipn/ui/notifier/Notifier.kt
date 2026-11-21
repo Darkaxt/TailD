@@ -197,7 +197,16 @@ object Notifier {
     }
 
     val cur = _netmap.value
-    var next = initial?.toNetworkMapOrNull(userProfiles.toMap()) ?: cur
+
+    // InitialStatus is a snapshot of the current backend state, not a delta.
+    // Replace the previous map even if the snapshot has no self node, which can
+    // happen before login or after logout.
+    var next =
+        if (initial != null) {
+          initial.toNetworkMapOrNull(userProfiles.toMap())
+        } else {
+          cur
+        }
 
     if (initial != null && next == null) {
       _netmap.set(null)
@@ -209,30 +218,34 @@ object Notifier {
       return
     }
 
-    if (next == null) {
-      return
+    val self = notify.SelfChange
+    if (initial != null && cur != null && next != null && !cur.isSameSelf(next.SelfNode)) {
+      prefs.set(null)
+      health.set(null)
+    }
+    if (initial == null && self != null) {
+      if (next == null || !next.isSameSelf(self)) {
+        // A self node change is a profile boundary. It resets the implicit bus
+        // state, so the publisher must resend any UserProfiles referenced by the
+        // new profile. Clear before applying this Notify's UserProfiles below so
+        // profiles included in the same update are retained.
+        userProfiles.clear()
+        next = self.toEmptyNetworkMap()
+        prefs.set(null)
+        health.set(null)
+        if (BuildConfig.DEBUG) {
+          TSLog.d(
+              TAG,
+              "received self change for a different node; cleared peers and users before applying deltas",
+          )
+        }
+      }
     }
 
-    val self = notify.SelfChange
-    if (initial != null && cur != null && !cur.isSameSelf(next.SelfNode)) {
-      prefs.set(null)
-      health.set(null)
-    }
-    if (initial == null && self != null && !next.isSameSelf(self)) {
-      // A self node change is a profile boundary. It resets the implicit bus
-      // state, so the publisher must resend any UserProfiles referenced by the
-      // new profile. Clear before applying this Notify's UserProfiles below so
-      // profiles included in the same update are retained.
-      userProfiles.clear()
-      next = self.toEmptyNetworkMap()
-      prefs.set(null)
-      health.set(null)
-      if (BuildConfig.DEBUG) {
-        TSLog.d(
-            TAG,
-            "received self change for a different node; cleared peers and users before applying deltas",
-        )
-      }
+    // Peer deltas require a self node to establish which tailnet they belong to.
+    // Wait for InitailStatus or SelfChange to provide one.
+    if (next == null) {
+      return
     }
 
     notify.UserProfiles?.let { userProfiles.putAll(it) }
