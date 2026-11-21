@@ -5,6 +5,10 @@ updates:
     directory: "/android"
     schedule:
       interval: "monthly"
+    # TailDNS: dependency promotion goes through the reviewed upstream
+    # candidate workflows; version-update PRs are disabled (security
+    # updates are unaffected).
+    open-pull-requests-limit: 0
     cooldown:
       default-days: 14
 
@@ -21,5 +25,9 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    # TailDNS: dependency promotion goes through the reviewed upstream
+    # candidate workflows; version-update PRs are disabled (security
+    # updates are unaffected).
+    open-pull-requests-limit: 0
     cooldown:
       default-days: 14
