@@ -11,6 +11,13 @@ production-history actions are authorized by this maintenance.
 Compatible require/replace/checksum and overlay/build pins are prepared from
 42186ba. All 14 immutable overlay inputs and 18 overlay outputs equal the
 previous verified source; the full backend suite passes (428, 1 skipped).
+TailDNS 886c5bf inherits upstream tailscale-android #959, which conflicts with
+TailD's Notifier.kt. 737cb54 adopts upstream's InitialStatus/SelfChange
+structure while keeping TailD's prefs/health resets and observation hook; the
+reviewed resolution keeps that file (3fe7c636) and is bound to the exact three
+blobs. Inheritance run 44913855335 then verified and promoted merge bd3b3b0.
+Signer closure 9644b52f6bb9981a6f2f7268efa2b14aa609eb02 differs from b1cee79
+only in core/module/checksum constants and is unchanged through bd3b3b0.
 Compact receipts: D:/Projects/TailD-support/maintenance/20261121.
 
 ## November 20 upstream maintenance
