@@ -19,6 +19,7 @@ import (
 	"sync/atomic"
 
 	"tailscale.com/drive/driveimpl"
+	"tailscale.com/envknob"
 	_ "tailscale.com/feature/condregister"
 	"tailscale.com/feature/taildrop"
 	"tailscale.com/hostinfo"
@@ -88,6 +89,15 @@ func start(dataDir, directFileRoot string, hwAttestationPref bool, appCtx AppCon
 	// Set HOME to make os.UserHomeDir work.
 	if _, exists := os.LookupEnv("HOME"); !exists {
 		os.Setenv("HOME", dataDir)
+	}
+	// Silent disco: no 3 s disco heartbeats to peers with an active session.
+	// Any app that sends a keepalive more often than magicsock's 45 s session
+	// timeout otherwise keeps those heartbeats (and periodic re-STUN) running
+	// forever, which holds the cellular radio awake. Path discovery still runs
+	// on demand from the send path. envknob values are read at package init, so
+	// this must go through envknob.Setenv rather than os.Setenv.
+	if _, exists := os.LookupEnv("TS_DEBUG_ENABLE_SILENT_DISCO"); !exists {
+		envknob.Setenv("TS_DEBUG_ENABLE_SILENT_DISCO", "true")
 	}
 
 	return newApp(dataDir, directFileRoot, hwAttestationPref, appCtx)
