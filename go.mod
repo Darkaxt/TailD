@@ -3,9 +3,9 @@ module github.com/tailscale/tailscale-android
 go 1.27.4
 
 require (
-	github.com/tailscale/wireguard-go v0.0.0-20261117232807-a1800e9c5305
+	github.com/tailscale/wireguard-go v0.0.0-20261119191353-330f55178f24
 	golang.org/x/mobile v0.0.0-20240806205939-81131f6468ab
-	tailscale.com v1.103.0-pre.0.20261120073228-28dc39f56bd0
+	tailscale.com v1.103.0-pre.0.20261121133751-4de429b3bd22
 )
 
 require (
@@ -93,4 +93,4 @@ require (
 	gvisor.dev/gvisor v0.0.0-20261117040555-0303b2605d5e // indirect
 )
 
-replace tailscale.com => github.com/Darkaxt/tailscale v1.103.0-pre.0.20261120073228-28dc39f56bd0
+replace tailscale.com => github.com/Darkaxt/tailscale v1.103.0-pre.0.20261121133751-4de429b3bd22
