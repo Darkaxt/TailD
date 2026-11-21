@@ -77,7 +77,7 @@ jobs:
               # Restore fork-owned workflow policy before the conflict resolver
               # validates the remaining source conflicts. This is the same
               # policy restoration already required before the merge commit.
-              git restore --source="origin/$base" --staged --worktree -- .github/workflows
+              git restore --source="origin/$base" --staged --worktree -- .github/workflows .github/dependabot.yml
               # The canonical core requirement conflicts with our deliberately
               # replaced core. Resolve those owned lines and the exact reviewed
               # interface triple; unknown dependency/source conflicts stay fatal.
@@ -92,11 +92,13 @@ jobs:
                 fi
               fi
             fi
-            # Fork workflows are policy owned by TailDNS. Restoring them before
+            # Fork workflows and the Dependabot policy (no version-update PRs; the
+            # reviewed candidate workflows own dependency promotion) are owned by
+            # TailDNS. Restoring them before
             # the merge commit also prevents the Actions token from attempting
             # to update workflow files when it pushes the review branch.
-            git restore --source="origin/$base" --staged --worktree -- .github/workflows
-            git diff --exit-code "origin/$base" -- .github/workflows
+            git restore --source="origin/$base" --staged --worktree -- .github/workflows .github/dependabot.yml
+            git diff --exit-code "origin/$base" -- .github/workflows .github/dependabot.yml
             git commit --no-edit
           fi
           if [[ "$core_changed" == true ]]; then

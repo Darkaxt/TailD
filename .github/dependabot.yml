@@ -1,0 +1,33 @@
+version: 2
+
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/android"
+    schedule:
+      interval: "monthly"
+    # TailDNS: dependency promotion goes through the reviewed upstream
+    # candidate workflows; version-update PRs are disabled (security
+    # updates are unaffected).
+    open-pull-requests-limit: 0
+    cooldown:
+      default-days: 14
+
+  ## Go dependencies are managed through the OSS sync process rather
+  ## than updated independently by Dependabot
+  # - package-ecosystem: "gomod"
+  #   directory: "/"
+  #   schedule:
+  #     interval: "monthly"
+  #   cooldown:
+  #     default-days: 14
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    # TailDNS: dependency promotion goes through the reviewed upstream
+    # candidate workflows; version-update PRs are disabled (security
+    # updates are unaffected).
+    open-pull-requests-limit: 0
+    cooldown:
+      default-days: 14
