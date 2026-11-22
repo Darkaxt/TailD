@@ -27,6 +27,7 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.tailscale.ipn.mdm.MDMSettings
 import com.tailscale.ipn.mdm.MDMSettingsChangedReceiver
+import com.tailscale.ipn.taild.IdlePause
 import com.tailscale.ipn.ui.localapi.Client
 import com.tailscale.ipn.ui.model.Ipn
 import com.tailscale.ipn.ui.model.Netmap
@@ -160,7 +161,7 @@ class App : UninitializedApp(), libtailscale.AppContext, ViewModelStoreOwner {
     mdmChangeReceiver = MDMSettingsChangedReceiver()
     val filter = IntentFilter(Intent.ACTION_APPLICATION_RESTRICTIONS_CHANGED)
     registerReceiver(mdmChangeReceiver, filter)
-    com.tailscale.ipn.taild.IdlePause.install(this)
+    IdlePause.install(this)
     createNotificationChannel(
         STATUS_CHANNEL_ID,
         getString(R.string.vpn_status),
@@ -253,13 +254,11 @@ class App : UninitializedApp(), libtailscale.AppContext, ViewModelStoreOwner {
               // If VPN is stopped, show a disconnected notification. If it is running as a
               // foreground
               // service, IPNService will show a connected notification.
-              if (state == Ipn.State.Stopped) {
-                if (com.tailscale.ipn.taild.IdlePause.isPaused(this@App)) {
-                  // The idle-pause service shows its own "paused" notification.
-                  notificationManager.cancel(STATUS_NOTIFICATION_ID)
-                } else {
-                  notifyStatus(vpnRunning = false, hideDisconnectAction = hideDisconnectAction.value)
-                }
+              if (state == Ipn.State.Stopped && IdlePause.isPaused(this@App)) {
+                // The idle-pause service shows its own "paused" notification.
+                notificationManager.cancel(STATUS_NOTIFICATION_ID)
+              } else if (state == Ipn.State.Stopped) {
+                notifyStatus(vpnRunning = false, hideDisconnectAction = hideDisconnectAction.value)
               }
               val vpnRunning = state == Ipn.State.Starting || state == Ipn.State.Running
               updateConnStatus(ableToStartVPN)
