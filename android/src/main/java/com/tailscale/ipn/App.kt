@@ -160,6 +160,7 @@ class App : UninitializedApp(), libtailscale.AppContext, ViewModelStoreOwner {
     mdmChangeReceiver = MDMSettingsChangedReceiver()
     val filter = IntentFilter(Intent.ACTION_APPLICATION_RESTRICTIONS_CHANGED)
     registerReceiver(mdmChangeReceiver, filter)
+    com.tailscale.ipn.taild.IdlePause.install(this)
     createNotificationChannel(
         STATUS_CHANNEL_ID,
         getString(R.string.vpn_status),
@@ -253,7 +254,12 @@ class App : UninitializedApp(), libtailscale.AppContext, ViewModelStoreOwner {
               // foreground
               // service, IPNService will show a connected notification.
               if (state == Ipn.State.Stopped) {
-                notifyStatus(vpnRunning = false, hideDisconnectAction = hideDisconnectAction.value)
+                if (com.tailscale.ipn.taild.IdlePause.isPaused(this@App)) {
+                  // The idle-pause service shows its own "paused" notification.
+                  notificationManager.cancel(STATUS_NOTIFICATION_ID)
+                } else {
+                  notifyStatus(vpnRunning = false, hideDisconnectAction = hideDisconnectAction.value)
+                }
               }
               val vpnRunning = state == Ipn.State.Starting || state == Ipn.State.Running
               updateConnStatus(ableToStartVPN)

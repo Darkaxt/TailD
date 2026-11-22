@@ -2,6 +2,10 @@
 <resources>
     <string name="taild_collect_analytics">Collect analytics</string>
     <string name="taild_collect_analytics_detail">Record private activity, DNS and VPN app/IP byte metadata for up to 7 days, within the storage limit. Gaps remain unknown.</string>
+    <string name="taild_idle_pause">Pause while idle</string>
+    <string name="taild_idle_pause_detail">Disconnect after the screen has been off for 10 minutes with no audio or call, and reconnect when the screen turns on or audio starts.</string>
+    <string name="taild_idle_paused">Paused while idle</string>
+    <string name="taild_idle_paused_detail">Reconnects when the screen turns on or audio starts</string>
     <string name="taild_use_exit_node">Use exit node</string>
     <string name="taild_run_exit_node">Run as exit node</string>
     <string name="taild_exit_node_unavailable">Selected node unavailable</string>

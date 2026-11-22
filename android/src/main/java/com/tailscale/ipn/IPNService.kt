@@ -74,6 +74,7 @@ open class IPNService : VpnService(), libtailscale.IPNService {
         START_NOT_STICKY
       }
       ACTION_START_VPN -> {
+        com.tailscale.ipn.taild.IdlePause.onVpnStartRequested(this)
         app.setWantRunning(true)
         Libtailscale.requestVPN(this)
         START_STICKY
@@ -89,6 +90,7 @@ open class IPNService : VpnService(), libtailscale.IPNService {
               UninitializedApp.getExitNodeName(Notifier.prefs.value, Notifier.netmap.value)
           app.notifyStatus(true, hideDisconnectAction.value, exitNodeName)
         }
+        com.tailscale.ipn.taild.IdlePause.onVpnStartRequested(this)
         app.setWantRunning(true)
         Libtailscale.requestVPN(this)
         START_STICKY
