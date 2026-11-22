@@ -1,3 +1,23 @@
+## TailD Android 1.103.312.44
+
+- Updating TailD in place no longer leaves the VPN down. Replacing the package
+  stopped the VPN service and nothing restarted it, so the backend came back
+  "Running" with no tunnel. TailD now reconnects after an update when the VPN was
+  wanted or paused while idle; a VPN you disconnected stays off.
+- The Connect switch now starts the VPN when the backend reports Running without
+  a tunnel; previously it did nothing in that state.
+
+## TailD Android 1.103.312.43
+
+- Pause while idle: after the screen has been off for 10 minutes (Android may
+  deliver the check up to about 7 minutes later) with no media playing and no
+  call active, TailD disconnects the VPN, which stops keepalives, DERP and control
+  traffic. It reconnects when the screen turns on, when audio playback starts, or
+  from the "Paused while idle" notification's Connect action. Turn it off in
+  Settings > Pause while idle.
+
+## Earlier
+
 TailD Android 1.103.312.40 includes the verified October 24 TailDNS/core updates
 and supports an in-place upgrade from current TailDNS Android installations.
 It retains the existing package and signing identity, settings, node identity,
