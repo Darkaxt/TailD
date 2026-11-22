@@ -275,7 +275,10 @@ class MainViewModel(private val appViewModel: AppViewModel) : IpnViewModel() {
         if (desiredState) {
           // User wants to turn ON the VPN
           when {
-            currentState != State.Running -> showVPNPermissionLauncherIfUnauthorized()
+            // A Running backend without a tunnel (for example after an in-place update) must
+            // still start the VPN, or the switch does nothing.
+            currentState != State.Running || !isVpnActive.value ->
+                showVPNPermissionLauncherIfUnauthorized()
           }
         } else {
           // User wants to turn OFF the VPN

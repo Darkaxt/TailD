@@ -162,6 +162,13 @@
         <receiver
             android:name=".taild.IdlePauseAlarmReceiver"
             android:exported="false" />
+        <receiver
+            android:name=".taild.UpdateReconnectReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
         <service
             android:name=".IPNService"
             android:exported="false"
