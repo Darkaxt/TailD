@@ -110,11 +110,9 @@ fun DeviceLastOnline(node: Tailcfg.Node, isSelf: Boolean = false) {
   Text(
       relative,
       style = MaterialTheme.typography.bodySmall,
-      modifier =
-          Modifier.heightIn(min = 48.dp)
-              .widthIn(min = 48.dp)
-              .clickable { exact = true }
-              .semantics { contentDescription = description },
+      // No 48 dp minimum here: inside a peer row it left a blank band under every
+      // device. The row itself remains the large touch target (peer details).
+      modifier = Modifier.clickable { exact = true }.semantics { contentDescription = description },
   )
   if (exact) {
     AlertDialog(
