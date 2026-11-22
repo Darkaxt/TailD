@@ -156,6 +156,13 @@
         </receiver>
 
         <service
+            android:name=".taild.IdlePauseService"
+            android:exported="false"
+            android:foregroundServiceType="systemExempted" />
+        <receiver
+            android:name=".taild.IdlePauseAlarmReceiver"
+            android:exported="false" />
+        <service
             android:name=".IPNService"
             android:exported="false"
             android:foregroundServiceType="systemExempted"

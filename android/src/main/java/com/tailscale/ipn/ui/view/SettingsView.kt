@@ -379,6 +379,8 @@ private fun SettingsScreen(
           onToggle = onRecordingChange,
       )
       Setting.Text(R.string.taild_delete_history, onClick = onDeleteHistory)
+      Lists.ItemDivider()
+      com.tailscale.ipn.taild.IdlePauseSetting()
       if (state.showExitPicker) {
         Lists.ItemDivider()
         Setting.Switch(
