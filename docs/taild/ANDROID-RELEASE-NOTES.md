@@ -1,3 +1,9 @@
+## TailD Android 1.103.312.45
+
+- Inherits TailDNS Android 1.103.312+64 with the verified shared core 55384a4:
+  upstream network-monitor shutdown fix, removal of a decommissioned DERP
+  fallback server and a wireguard-go update. No TailD behaviour changes.
+
 ## TailD Android 1.103.312.44
 
 - Updating TailD in place no longer leaves the VPN down. Replacing the package
