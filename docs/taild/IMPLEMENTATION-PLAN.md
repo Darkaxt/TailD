@@ -10,7 +10,11 @@ production-history actions are authorized by this maintenance.
 
 Compatible require/replace/checksum and overlay/build pins are prepared from
 2a2858f. The core delta (netmon, dnsfallback, wireguard-go, tests and CI)
-touches none of the 13 overlay source files. Compact receipts:
+touches none of the 13 overlay source files. Inheritance run 45140034439
+verified and promoted merge d953fb6. Signer closure
+1f34e64c60e6283ea8ab3c78e158633b05151d45 differs from 9644b52 only in
+core/module/checksum constants and the reviewed 886c5bf reconciliation entry.
+Compact receipts:
 D:/Projects/TailD-support/maintenance/20261123.
 
 ## November 21 upstream maintenance
