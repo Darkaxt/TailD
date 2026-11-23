@@ -30,6 +30,10 @@ class WorkflowCompositionTest(unittest.TestCase):
         self.workflow = (ROOT / '.github/workflows/upstream-candidate.yml').read_text(encoding='utf-8')
         self.write('.github/workflows/upstream-candidate.yml', self.workflow)
         self.write('.github/workflows/integration-test.yml', 'name: common policy\n')
+        # The updater restores .github/dependabot.yml as fork-owned policy, so the
+        # fixture must carry it like the real repository does.
+        self.write('.github/dependabot.yml',
+                   (ROOT / '.github/dependabot.yml').read_text(encoding='utf-8'))
         self.write('go.mod', 'module example.invalid/test\n\nrequire (\n\ttailscale.com v1.2.2\n'
                    '\tother.example/a v1.0.0\n\tother.example/b v1.0.0\n'
                    '\tother.example/c v1.0.0\n)\n\n'
