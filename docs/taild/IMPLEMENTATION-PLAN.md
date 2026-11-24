@@ -1,5 +1,19 @@
 # TailD staged execution
 
+## November 24 upstream maintenance
+
+Stage10 remains the sole ACTIVE product stage; B12 stays open. Independently
+verified prerequisite releases are TailDNS Windows 1.105.0+65/core
+7ecf3879f4c7ce0af92f21b921996342c2c838af and Android 1.103.312+65/source
+274551a29c48ecb9c46e208728bc6a26db870d1d. No device, provider-policy or
+production-history actions are authorized by this maintenance.
+
+Compatible require/replace/checksum and overlay/build pins are prepared from
+0843000. The core delta (wgengine Status.AsOf, tstun app-connector hooks,
+androidbin cgo fallback, ts2021 HTTP/2 check, module bumps and CI) touches none
+of the 13 overlay source files. Compact receipts:
+D:/Projects/TailD-support/maintenance/20261124.
+
 ## November 23 upstream maintenance
 
 Stage10 remains the sole ACTIVE product stage; B12 stays open. Independently
