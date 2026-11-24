@@ -1,3 +1,10 @@
+## TailD Android 1.103.312.46
+
+- Inherits TailDNS Android 1.103.312+65 with the verified shared core 7ecf387:
+  upstream WireGuard status timestamps, safer app-connector hooks, an Android
+  network-interface fallback and an early HTTP/2 control-connection check. No
+  TailD behaviour changes.
+
 ## TailD Android 1.103.312.45
 
 - Inherits TailDNS Android 1.103.312+64 with the verified shared core 55384a4:
