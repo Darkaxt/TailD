@@ -11,7 +11,11 @@ production-history actions are authorized by this maintenance.
 Compatible require/replace/checksum and overlay/build pins are prepared from
 0843000. The core delta (wgengine Status.AsOf, tstun app-connector hooks,
 androidbin cgo fallback, ts2021 HTTP/2 check, module bumps and CI) touches none
-of the 13 overlay source files. Compact receipts:
+of the 13 overlay source files. Pin commit 3c7a4b0 was followed by 2d03aa9,
+which only removes an accidentally committed bytecode file. Inheritance run
+45354028143 verified and promoted merge 4b77a5c. Signer closure
+2d03aa9fb54016cb717a004ff307e5f347d88d81 changes the reviewed scripts/taild
+tooling from 1f34e64 only in core/module/checksum/overlay-pin constants. Compact receipts:
 D:/Projects/TailD-support/maintenance/20261124.
 
 ## November 23 upstream maintenance
