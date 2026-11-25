@@ -1,3 +1,11 @@
+## TailD Android 1.103.312.47
+
+- Inherits TailDNS Android 1.103.312+66 with the verified shared core 1057748
+  (upstream base 1.107.0): node-key expiry handling after wake, a fix for node
+  keys moving between nodes, Tailscale-only bootstrap DNS fallback and an
+  upstream check that the Go toolchain matches the shared core. No TailD
+  behaviour changes.
+
 ## TailD Android 1.103.312.46
 
 - Inherits TailDNS Android 1.103.312+65 with the verified shared core 7ecf387:
