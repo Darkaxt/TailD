@@ -14,7 +14,11 @@ already accepts a non-decreasing base with a higher global subversion). The
 core merge resolved three conflicts manually (Darkaxt/tailscale PR #64). Of
 the 13 overlay source files only client/systray/systray.go changed (upstream
 clean shutdown on termination signals); the reviewed overlay transforms apply
-unchanged and only that overlay member differs. Compact receipts:
+unchanged and only that overlay member differs. Inheritance run 45575594155
+verified and promoted merge 341f566. Signer closure
+860e0e03c30a6010be6bfa8b0b70e18f8cdb0795 changes the reviewed scripts/taild
+tooling from 2d03aa9 only in core/module/checksum/overlay-pin and 1.107.0 base
+constants (with their focused tests). Compact receipts:
 D:/Projects/TailD-support/maintenance/20261125.
 
 ## November 24 upstream maintenance
