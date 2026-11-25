@@ -4,9 +4,9 @@ import json
 from pathlib import Path
 
 NAMES=('taildns-installer.exe','taildns-ipn.exe','taildns.exe','taildnsd.exe','tailscale.exe')
-CORE='7ecf3879f4c7ce0af92f21b921996342c2c838af'
-CORE_MODULE='v1.103.0-pre.0.20261124073421-7ecf3879f4c7'
-CORE_SUM='h1:uyY40xOXAFLpnsS3bl+gnJCd1REgNwS/Yqf/K4ITVVo='
+CORE='1057748f30600db9ae2ca3ce5f0448e854dbee9b'
+CORE_MODULE='v1.103.0-pre.0.20261125074808-1057748f3060'
+CORE_SUM='h1:+Lp1FmZtQexHcdy1cBx4pQL6v3laUoE3oNk4tLozJRc='
 
 
 def make(package,provenance,subversion):
@@ -14,7 +14,7 @@ def make(package,provenance,subversion):
     package=Path(package);provenance=Path(provenance)
     data=json.loads(provenance.read_bytes())
     if (data.get('schema')!='taild-core-build-v1' or data.get('core_commit')!=CORE or
-        data.get('source_dirty') is not False or data.get('upstream_version')!='1.105.0' or
+        data.get('source_dirty') is not False or data.get('upstream_version')!='1.107.0' or
         type(subversion) is not int or not 1<=subversion<=65535 or data.get('subversion')!=subversion or
         data.get('core_module')!=CORE_MODULE or data.get('module_sum')!=CORE_SUM):
         raise ValueError('Unverified connectivity source/version')

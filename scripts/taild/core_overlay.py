@@ -10,7 +10,7 @@ import argparse
 import json
 from pathlib import Path
 
-PIN='7ecf3879f4c7'
+PIN='1057748f3060'
 SOURCE_FILES=(
     'clientupdate/taildnsupdate/start_windows.go',
     'feature/clientupdate/clientupdate.go',
@@ -72,7 +72,7 @@ def recovery_overlay(source):
 
 def create(core,output):
     core=core.resolve(strict=True)
-    if not core.name.endswith('-'+PIN) or (core/'VERSION.txt').read_text(encoding='utf-8').strip()!='1.105.0':
+    if not core.name.endswith('-'+PIN) or (core/'VERSION.txt').read_text(encoding='utf-8').strip()!='1.107.0':
         raise ValueError('Review TailD overlay against the new inherited core pin before building')
     # Read/transform all inputs before creating output; drift is a build failure,
     # not an invitation to weaken source matching or modify the shared cache.

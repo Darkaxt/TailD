@@ -13,7 +13,7 @@ class CoreOverlayTest(unittest.TestCase):
     def test_local_overlay_unicode_is_independent_of_windows_ansi_code_page(self):
         root=Path(os.environ['TAILD_PACKAGE_TEST_OUTPUT'])/uuid.uuid4().hex
         core=root/('core-'+core_overlay.PIN);core.mkdir(parents=True)
-        (core/'VERSION.txt').write_text('1.105.0',encoding='utf-8')
+        (core/'VERSION.txt').write_text('1.107.0',encoding='utf-8')
         read=Path.read_text
         def legacy_read(path,*args,encoding=None,**kwargs):
             return read(path,*args,encoding=encoding or 'cp1252',**kwargs)

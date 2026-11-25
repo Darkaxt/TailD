@@ -1,5 +1,22 @@
 # TailD staged execution
 
+## November 25 upstream maintenance
+
+Stage10 remains the sole ACTIVE product stage; B12 stays open. Independently
+verified prerequisite releases are TailDNS Windows 1.107.0+66/core
+1057748f30600db9ae2ca3ce5f0448e854dbee9b and Android 1.103.312+66/source
+821a9ac9703d2c941c17d36ddc2454fa1cb99ce3. No device, provider-policy or
+production-history actions are authorized by this maintenance.
+
+Upstream core moved its base to 1.107.0, so the reviewed build, core-manifest
+and release-signer base constants advance from 1.105.0 (the release channel
+already accepts a non-decreasing base with a higher global subversion). The
+core merge resolved three conflicts manually (Darkaxt/tailscale PR #64). Of
+the 13 overlay source files only client/systray/systray.go changed (upstream
+clean shutdown on termination signals); the reviewed overlay transforms apply
+unchanged and only that overlay member differs. Compact receipts:
+D:/Projects/TailD-support/maintenance/20261125.
+
 ## November 24 upstream maintenance
 
 Stage10 remains the sole ACTIVE product stage; B12 stays open. Independently

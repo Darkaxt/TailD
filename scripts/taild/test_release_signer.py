@@ -30,12 +30,12 @@ class SignerTest(unittest.TestCase):
             path=package/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(('synthetic '+name).encode())
         core=package/'connectivity'
         provenance={'schema':'taild-core-build-v1','core_commit':core_manifest.CORE,'core_module':core_manifest.CORE_MODULE,
-            'source_commit':'a'*40,'source_dirty':False,'upstream_version':'1.105.0','subversion':1,
+            'source_commit':'a'*40,'source_dirty':False,'upstream_version':'1.107.0','subversion':1,
             'module_sum':core_manifest.CORE_SUM}
         (core/'core-provenance.json').write_text(json.dumps(provenance))
         (core/'taildns-windows-update.json').write_bytes(core_manifest.make(core,core/'core-provenance.json',1))
         provenance={'source_commit':'a'*40,'source_dirty':False,'fixture_trust':False,'connectivity':True,
-            'subversion':1,'architecture':'windows-amd64','upstream_version':'1.105.0',
+            'subversion':1,'architecture':'windows-amd64','upstream_version':'1.107.0',
             'core_replace':'replace tailscale.com => github.com/Darkaxt/tailscale '+core_manifest.CORE_MODULE,
             'files':manifest.inventory(package)}
         (self.root/'provenance.json').write_text(json.dumps(provenance))
@@ -46,12 +46,12 @@ class SignerTest(unittest.TestCase):
         data=release_signer.sign_package(self.key,self.root,'a'*40,1)
         self.assertEqual(manifest.verify(package),data)
         core_manifest.verify(package/'connectivity',self.public)
-        name='TailD-1.105.0+1-windows-amd64-setup.exe'
+        name='TailD-1.107.0+1-windows-amd64-setup.exe'
         (self.root/name).write_bytes(b'MZ synthetic installer')
         for item in (manifest.MANIFEST,manifest.SIGNATURE):(self.root/item).write_bytes((package/item).read_bytes())
         envelope=release_signer.sign_installer(self.key,self.root,'a'*40,1)
         self.assertEqual(release_channel.verify((self.root/release_channel.ENVELOPE).read_bytes(),
-            (self.root/release_channel.SIGNATURE).read_bytes(),0,'1.105.0',self.public),envelope)
+            (self.root/release_channel.SIGNATURE).read_bytes(),0,'1.107.0',self.public),envelope)
         self.assertEqual(envelope['installer']['sha256'],hashlib.sha256((self.root/name).read_bytes()).hexdigest())
 
     def test_mismatched_source_or_tampered_build_is_not_signed(self):
