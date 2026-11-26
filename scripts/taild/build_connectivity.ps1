@@ -31,7 +31,7 @@ try {
     Checked $Python @('-B',(Join-Path $PSScriptRoot 'core_overlay.py'),'--core',$core,'--output',$overlayRoot)
     $overlay=Join-Path $overlayRoot 'overlay.json'
     $upstream=(Get-Content -LiteralPath (Join-Path $core 'VERSION.txt') -Raw).Trim()
-    $commit='1057748f30600db9ae2ca3ce5f0448e854dbee9b'
+    $commit='4f3a77ffebf14f2fa9207b89d17ba5a77da1b63d'
     $flags="-X tailscale.com/version.longStamp=$upstream-taild.$Subversion -X tailscale.com/version.shortStamp=$upstream -X tailscale.com/version.gitCommitStamp=$commit"
     $payload=Join-Path $out 'payload'
     New-Item -ItemType Directory -Path $payload | Out-Null

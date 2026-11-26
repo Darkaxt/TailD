@@ -1,5 +1,22 @@
 # TailD staged execution
 
+## November 26 upstream maintenance
+
+Stage10 remains the sole ACTIVE product stage; B12 stays open. Independently
+verified prerequisite releases are TailDNS Windows 1.107.0+67/core
+4f3a77ffebf14f2fa9207b89d17ba5a77da1b63d and Android 1.103.312+67/source
+0890c255164847b1791930bcbc48933dbf03e79d. No device, provider-policy or
+production-history actions are authorized by this maintenance.
+
+The core delta is test-only (wgengine/magicsock/endpoint_test.go); all 13
+overlay source files and VERSION.txt (1.107.0) are byte-identical, so the
+reviewed overlay output is unchanged and only core/module/checksum/overlay-pin
+constants advance. TailDNS Android resolved upstream workflow and DNS settings
+conflicts manually (Darkaxt/TailDNS PR #69): upstream now reads the DNS
+configuration from LocalAPI dns-config keyed on self-node updates, alongside
+the retained local-DNS controls. Compact receipts:
+D:/Projects/TailD-support/maintenance/20261126.
+
 ## November 25 upstream maintenance
 
 Stage10 remains the sole ACTIVE product stage; B12 stays open. Independently
