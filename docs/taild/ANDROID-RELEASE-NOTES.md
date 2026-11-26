@@ -1,3 +1,11 @@
+## TailD Android 1.103.312.48
+
+- Inherits TailDNS Android 1.103.312+67 with the verified shared core 4f3a77f
+  (upstream base 1.107.0, test-only core change): the upstream DNS settings
+  screen now reads the DNS configuration from LocalAPI and refreshes it on
+  self-node changes, alongside the retained local-DNS controls. No TailD
+  behaviour changes.
+
 ## TailD Android 1.103.312.47
 
 - Inherits TailDNS Android 1.103.312+66 with the verified shared core 1057748
