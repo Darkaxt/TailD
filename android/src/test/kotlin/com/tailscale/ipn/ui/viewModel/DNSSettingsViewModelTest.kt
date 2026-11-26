@@ -385,8 +385,7 @@ class DNSSettingsViewModelDNSConfigTest {
         callback: (Result<IpnLocal.LoginProfile>) -> Unit,
     ) = Unit
 
-    override fun localDNS(scope: CoroutineScope, callback: (Result<LocalDNSStatus>) -> Unit) =
-        Unit
+    override fun localDNS(scope: CoroutineScope, callback: (Result<LocalDNSStatus>) -> Unit) = Unit
 
     override fun editLocalDNS(
         scope: CoroutineScope,
