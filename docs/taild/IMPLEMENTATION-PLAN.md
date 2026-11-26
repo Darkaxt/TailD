@@ -14,7 +14,10 @@ reviewed overlay output is unchanged and only core/module/checksum/overlay-pin
 constants advance. TailDNS Android resolved upstream workflow and DNS settings
 conflicts manually (Darkaxt/TailDNS PR #69): upstream now reads the DNS
 configuration from LocalAPI dns-config keyed on self-node updates, alongside
-the retained local-DNS controls. Compact receipts:
+the retained local-DNS controls. Inheritance run 45789822829 verified and
+promoted merge d06a6d8. Signer closure
+67bcaad6aa37cb5d2fffcd0e8e8554227b1e32a3 changes the reviewed scripts/taild tooling from 860e0e0 only in
+core/module/checksum/overlay-pin constants. Compact receipts:
 D:/Projects/TailD-support/maintenance/20261126.
 
 ## November 25 upstream maintenance
