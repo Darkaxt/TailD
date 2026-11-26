@@ -16,6 +16,8 @@ jobs:
       (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-integration-test'))
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    outputs:
+      report: ${{ steps.report.outputs.report }}
 
     steps:
       - name: Check out code
@@ -28,5 +30,27 @@ jobs:
           sudo udevadm trigger --name-match=kvm
           ls -l /dev/kvm
 
+      - name: Build Docker build image
+        run: make docker-build-image
+
+      - name: Build debug APK
+        # The emulator is x86_64, so skip building Go for the other ABIs.
+        run: make docker-tailscale-debug GOMOBILE_TARGET=android/amd64
+
+      - name: Build Docker test image
+        run: make docker-build-android-integration-image
+
       - name: Run integration test
-        run: make android-integration-test
+        env:
+          TS_TESTWRAPPER_RESULTS_SUMMARY: "1"
+        shell: bash
+        run: make android-integration-test-run 2>&1 | tee "integration-test-${GITHUB_RUN_ATTEMPT}.log"
+
+      - name: Report test results
+        id: report
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/android-test-report
+        with:
+          check: integration-test
+
