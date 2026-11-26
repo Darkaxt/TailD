@@ -138,7 +138,7 @@ private fun DNSSettingsScreen(
             onBack = backToSettings,
             isTv = isTv,
         )
-      }
+      },
   ) { innerPadding ->
     LoadingIndicator.Wrap {
       LazyColumn(Modifier.padding(innerPadding)) {
