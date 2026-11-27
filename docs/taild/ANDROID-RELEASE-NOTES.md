@@ -1,3 +1,9 @@
+## TailD Android 1.103.312.49
+
+- Inherits TailDNS Android 1.103.312+68 with the verified shared core e0c03b1
+  (upstream base 1.107.0): upstream serve configuration handling, PCP
+  port-mapping updates and connector fixes. No TailD behaviour changes.
+
 ## TailD Android 1.103.312.48
 
 - Inherits TailDNS Android 1.103.312+67 with the verified shared core 4f3a77f
