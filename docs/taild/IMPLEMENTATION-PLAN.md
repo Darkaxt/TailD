@@ -13,7 +13,10 @@ changes; none of the 13 overlay source files or VERSION.txt (1.107.0) changed,
 so the reviewed overlay output is unchanged and only core/module/checksum/
 overlay-pin constants advance. The TailDNS Android upstream delta touched only
 Slack-notification tooling and the fork-deleted smoke-test workflow (kept
-deleted; Darkaxt/TailDNS PR #70). Compact receipts:
+deleted; Darkaxt/TailDNS PR #70). Inheritance run 45964243435 verified and
+promoted merge 39a1935. Signer closure
+ff589bb2a0e4273a0a620842c902b30c442b0c06 changes the reviewed scripts/taild tooling from 67bcaad only in
+core/module/checksum/overlay-pin constants. Compact receipts:
 D:/Projects/TailD-support/maintenance/20261127.
 
 ## November 26 upstream maintenance
