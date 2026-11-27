@@ -1,5 +1,21 @@
 # TailD staged execution
 
+## November 27 upstream maintenance
+
+Stage10 remains the sole ACTIVE product stage; B12 stays open. Independently
+verified prerequisite releases are TailDNS Windows 1.107.0+68/core
+e0c03b1bb0b6eaf3d1002199f17d2fb615d492eb and Android 1.103.312+68/source
+558529f016edc49191da128ea346dd55682af405. No device, provider-policy or
+production-history actions are authorized by this maintenance.
+
+The core delta is upstream serve, PCP port-mapping, derpserver test and conn25
+changes; none of the 13 overlay source files or VERSION.txt (1.107.0) changed,
+so the reviewed overlay output is unchanged and only core/module/checksum/
+overlay-pin constants advance. The TailDNS Android upstream delta touched only
+Slack-notification tooling and the fork-deleted smoke-test workflow (kept
+deleted; Darkaxt/TailDNS PR #70). Compact receipts:
+D:/Projects/TailD-support/maintenance/20261127.
+
 ## November 26 upstream maintenance
 
 Stage10 remains the sole ACTIVE product stage; B12 stays open. Independently
