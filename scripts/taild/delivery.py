@@ -92,6 +92,27 @@ def rollback_core(candidate,journal):
         if path.stat().st_size>1024*1024:raise manifest.PackageError('invalid-connectivity-record')
         if json.loads(path.read_bytes()).get('sequence')==data['subversion']:started=True
     if started:core_command(candidate,'rollback')
+    return started
+
+
+def requiesce(journal,timeout=60):
+    """Stop collection again after a core rollback restarted the tray.
+
+    Restarting the inherited service also restarts its tray, which relaunches
+    TailD.Background before the app-file rollback checks quiescence (observed
+    2026-11-27). Use the updater's cooperative stop; a just-relaunched
+    collector may not have created its maintenance event yet, so wait for it
+    within a fixed deadline instead of failing the recovery.
+    """
+    import updater
+    config={'owner_sid':journal['owner_sid'],'local_data':journal['local_data']}
+    deadline=time.monotonic()+timeout
+    while True:
+        try:
+            updater.graceful_stop(config);return
+        except manifest.PackageError as error:
+            if str(error)!='collector-update-readiness-unavailable' or time.monotonic()>=deadline:raise
+        time.sleep(1)
 
 
 def discard_partial_backup(old):
@@ -145,8 +166,9 @@ def recover(candidate):
     new=journal_manifest(journal,'new');app=installer.app_directory()
     old=journal_manifest(journal,'old') if journal.get('old_manifest') else None
     if journal['phase'] in ('core_started','core_complete'):
-        rollback_core(candidate,journal)
+        restarted=rollback_core(candidate,journal)
         journal['phase']='core_restored';write_journal(journal)
+        if restarted:requiesce(journal)
     # Before extraction a partial backup is expendable only if the entire
     # unchanged original installation still verifies independently.
     if journal['phase']=='preparing' and old is not None and manifest.verify(app,installed=True)==old:

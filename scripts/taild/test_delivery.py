@@ -103,6 +103,37 @@ class DeliveryTest(unittest.TestCase):
         with self.assertRaisesRegex(manifest.PackageError,'replay'):
             delivery.prepare(new,self.owner,str(self.local))
 
+    def test_recovery_stops_collector_relaunched_by_core_rollback_before_app_rollback(self):
+        import updater
+        old,_=self.candidate(1);new,_=self.candidate(2);self.installed(old)
+        delivery.prepare(new,self.owner,str(self.local))
+        shutil.copytree(new,self.app,dirs_exist_ok=True)
+        journal=delivery.read_journal();journal['phase']='core_started';delivery.write_journal(journal)
+        calls=[]
+        readiness=iter([manifest.PackageError('collector-update-readiness-unavailable'),None])
+        def stop(config):
+            calls.append(('stop',config['owner_sid'],config['local_data']))
+            error=next(readiness)
+            if error:raise error
+        real_rollback=installer.rollback
+        with patch.object(delivery,'rollback_core',side_effect=lambda *a:calls.append('core-restored') or True),              patch.object(updater,'graceful_stop',side_effect=stop),              patch.object(delivery.time,'sleep'),              patch.object(installer,'rollback',side_effect=lambda **k:(calls.append('app-rollback'),real_rollback(**k))[1]):
+            delivery.recover(new)
+        expected=('stop',self.owner,str(self.local))
+        self.assertEqual(calls,['core-restored',expected,expected,'app-rollback'])
+        self.assertEqual(manifest.verify(self.app,installed=True)['subversion'],1)
+        self.assertEqual(delivery.read_journal()['phase'],'recovered')
+
+    def test_recovery_without_core_rollback_does_not_stop_again(self):
+        import updater
+        old,_=self.candidate(1);new,_=self.candidate(2);self.installed(old)
+        delivery.prepare(new,self.owner,str(self.local))
+        shutil.copytree(new,self.app,dirs_exist_ok=True)
+        journal=delivery.read_journal();journal['phase']='core_started';delivery.write_journal(journal)
+        with patch.object(delivery,'rollback_core',return_value=False),patch.object(updater,'graceful_stop') as stop:
+            delivery.recover(new)
+        stop.assert_not_called()
+        self.assertEqual(delivery.read_journal()['phase'],'recovered')
+
     def test_journal_signature_tamper_cannot_drive_recovery(self):
         old,_=self.candidate(1);new,_=self.candidate(2);self.installed(old)
         delivery.prepare(new,self.owner,str(self.local))
