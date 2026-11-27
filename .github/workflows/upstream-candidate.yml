@@ -77,6 +77,12 @@ jobs:
               # Restore fork-owned workflow policy before the conflict resolver
               # validates the remaining source conflicts. This is the same
               # policy restoration already required before the merge commit.
+              # Workflows the fork deleted but upstream modified are
+              # modify/delete conflicts that restore cannot resolve: keep the
+              # fork deletion for paths absent from the base.
+              git diff --name-only --diff-filter=U -- .github/workflows .github/dependabot.yml | while IFS= read -r path; do
+                if ! git cat-file -e "origin/$base:$path" 2>/dev/null; then git rm --quiet -- "$path"; fi
+              done
               git restore --source="origin/$base" --staged --worktree -- .github/workflows .github/dependabot.yml
               # The canonical core requirement conflicts with our deliberately
               # replaced core. Resolve those owned lines and the exact reviewed
