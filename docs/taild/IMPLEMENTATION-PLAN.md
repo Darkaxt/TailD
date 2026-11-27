@@ -1,5 +1,20 @@
 # TailD staged execution
 
+## November 27 installer fix maintenance
+
+Stage10 remains the sole ACTIVE product stage; B12 stays open. The +76
+auto-update failed on a locked core image and every failed core step or
+rollback left the service stopped; recovery then found TailD.Background
+relaunched by the restarted tray. Independently verified prerequisite releases
+are TailDNS Windows 1.107.0+69/core 784d139320ac795a153c9d6ac873acacd287f47c
+(Darkaxt/tailscale PR #68: retried locked-image replacement, service restart
+after a failed rollback) and Android 1.103.312+69/source
+6e2fed9cfa35438d9a6a170e0ac912e76e7fac49 (core pin only). The core delta
+touches only cmd/taildns-installer; no overlay source file or VERSION.txt
+(1.107.0) changed, so only core/module/checksum/overlay-pin constants advance.
+TailD recovery now repeats the cooperative collector stop after an actual core
+rollback. Compact receipts: D:/Projects/TailD-support/maintenance/20261127-fix.
+
 ## November 27 upstream maintenance
 
 Stage10 remains the sole ACTIVE product stage; B12 stays open. Independently
