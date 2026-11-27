@@ -134,10 +134,17 @@ class CorePinConflictTest(unittest.TestCase):
         restore = 'git restore --source="origin/$base" --staged --worktree -- .github/workflows'
         self.assertLess(workflow.index(restore), workflow.index('python3 -B scripts/reconcile-upstream-core-pin.py --upstream'))
 
+    def test_fork_deleted_workflow_modify_delete_conflict_keeps_deletion(self):
+        workflow = (Path(__file__).resolve().parents[1] / '.github/workflows/upstream-candidate.yml').read_text()
+        drop = 'git diff --name-only --diff-filter=U -- .github/workflows .github/dependabot.yml'
+        restore = 'git restore --source="origin/$base" --staged --worktree -- .github/workflows'
+        self.assertIn('git cat-file -e "origin/$base:$path"', workflow)
+        self.assertLess(workflow.index(drop), workflow.index(restore))
+
     def test_fork_dependabot_policy_disables_version_update_prs_and_is_restored(self):
         root = Path(__file__).resolve().parents[1]
         workflow = (root / '.github/workflows/upstream-candidate.yml').read_text()
-        self.assertEqual(workflow.count('-- .github/workflows .github/dependabot.yml'), 3)
+        self.assertEqual(workflow.count('-- .github/workflows .github/dependabot.yml'), 4)
         policy = (root / '.github/dependabot.yml').read_text()
         ecosystems = policy.count('\n  - package-ecosystem:')
         self.assertGreater(ecosystems, 0)
