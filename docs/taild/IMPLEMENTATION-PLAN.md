@@ -13,7 +13,11 @@ after a failed rollback) and Android 1.103.312+69/source
 touches only cmd/taildns-installer; no overlay source file or VERSION.txt
 (1.107.0) changed, so only core/module/checksum/overlay-pin constants advance.
 TailD recovery now repeats the cooperative collector stop after an actual core
-rollback. Compact receipts: D:/Projects/TailD-support/maintenance/20261127-fix.
+rollback. Inheritance run 45993889370 verified and promoted merge 693651f.
+Signer closure e0f432f92500cac51ca63f91b9b5bd59a91bc1f9 changes the reviewed
+scripts/taild tooling from ff589bb in core/module/checksum/overlay-pin
+constants and the recovery re-quiesce (4731cf7). Compact receipts:
+D:/Projects/TailD-support/maintenance/20261127-fix.
 
 ## November 27 upstream maintenance
 
