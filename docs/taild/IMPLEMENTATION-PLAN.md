@@ -10,8 +10,11 @@ envknob Setenv/RegisterInt; the November 27 installer fix is preserved) and
 Android 1.103.312+70/source b8a0fbcc1853d3b4dd1b024f20818e5fc105cae9 (test-only
 androidvmtest smoke tests plus the core pin).
 No overlay source file or VERSION.txt (1.107.0) changed, so only
-core/module/checksum/overlay-pin constants advance. Compact receipts:
-D:/Projects/TailD-support/maintenance/20261128.
+core/module/checksum/overlay-pin constants advance. Inheritance run
+46125041762 verified and promoted merge 6409f05. Signer closure
+842ea6994448f276c03d370dba2f99ef76d5d5a0 changes the reviewed scripts/taild
+tooling from e0f432f only in core/module/checksum/overlay-pin constants.
+Compact receipts: D:/Projects/TailD-support/maintenance/20261128.
 
 ## November 27 installer fix maintenance
 
