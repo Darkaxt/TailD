@@ -1,5 +1,18 @@
 # TailD staged execution
 
+## November 28 upstream maintenance
+
+Stage10 remains the sole ACTIVE product stage; B12 stays open. Independently
+verified prerequisite releases are TailDNS Windows 1.107.0+70/core
+2566adb8232fc583ab6aed317b836ee0cb62078e (Darkaxt/tailscale PR #67 refreshed on
+main: netstack illumos ping, promvarz varz filtering, conn25 protocol admission,
+envknob Setenv/RegisterInt; the November 27 installer fix is preserved) and
+Android 1.103.312+70/source b8a0fbcc1853d3b4dd1b024f20818e5fc105cae9 (test-only
+androidvmtest smoke tests plus the core pin).
+No overlay source file or VERSION.txt (1.107.0) changed, so only
+core/module/checksum/overlay-pin constants advance. Compact receipts:
+D:/Projects/TailD-support/maintenance/20261128.
+
 ## November 27 installer fix maintenance
 
 Stage10 remains the sole ACTIVE product stage; B12 stays open. The +76
